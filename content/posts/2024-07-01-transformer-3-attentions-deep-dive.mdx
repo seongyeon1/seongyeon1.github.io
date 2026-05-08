@@ -1,0 +1,150 @@
+---
+title: "[NLP] Transformer 3가지 Attention 자세히 보기 (Encoder/Decoder Self-Attention, Cross-Attention, Multi-Head)"
+date: "2024-07-01"
+category: "study"
+tags: ["transformer", "attention", "self-attention", "cross-attention", "multi-head", "encoder", "decoder", "NLP"]
+summary: "이전 글에서 등장한 Transformer의 3가지 Attention(Encoder Self-Attention, Decoder Masked Self-Attention, Encoder-Decoder Attention)이 각각 어떻게 동작하는지, 그리고 Multi-Head Attention이 왜 필요한지 정리한다."
+series: "Attention 이해하기"
+seriesOrder: 2
+math: true
+---
+
+<Callout type="note">
+**한 줄 요약** — Transformer의 3가지 Attention은 Q/K/V를 어디서 가져오느냐만 다른 같은 메커니즘이다. Multi-Head는 그 한 번의 Attention을 여러 관점에서 동시에 수행하는 트릭이고.
+</Callout>
+
+이전 글([Attention 쉽게 이해하기](/blog/2024-06-24-nlp-attention-query-key-value-transformer-attention-3))에서 Q/K/V 개념과 Scaled Dot-Product Attention 수식을 정리했고, Transformer 내부에 3가지 Attention이 있다고만 언급하고 끝냈다. 이번 글에서는 그 3가지가 **각각 어떻게 동작하는지** 살펴보고, 마지막으로 **Multi-Head Attention** 까지 다룬다.
+
+## 복습: Scaled Dot-Product Attention
+
+$$ \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \cdot V $$
+
+수식은 3가지 Attention 모두 동일. 차이는 오직 **Q, K, V를 어디서 가져오느냐** 그리고 **마스킹 유무** 다.
+
+## 1. Encoder Self-Attention
+
+**역할**: 입력 문장 안에서 토큰들끼리의 관계를 파악한다.
+
+- Q, K, V 모두 **인코더 입력**(직전 레이어 출력 또는 임베딩)에서 동일하게 나옴
+- "self"의 의미 = Q와 K/V의 출처가 같음
+
+예를 들어 *"The animal didn't cross the street because it was too tired"* 라는 문장에서 `it`이 `animal`을 가리키는지 `street`을 가리키는지 결정할 때, Self-Attention이 같은 문장 안에서 가장 관련 있는 토큰에 집중하게 해 준다.
+
+```python title="encoder_self_attention.py"
+# X: 인코더 입력 (batch, seq_len, d_model)
+Q = X @ W_q  # 같은 X에서 Q
+K = X @ W_k  #         K
+V = X @ W_v  #         V (모두 X 출처)
+out = softmax(Q @ K.T / sqrt(d_k)) @ V
+```
+
+## 2. Decoder Masked Self-Attention
+
+**역할**: 디코더가 **지금까지 자신이 생성한 출력 토큰**들끼리 관계를 파악한다.
+
+- Q, K, V 모두 **디코더의 현재 출력 시퀀스**에서 나옴
+- 단, **미래 위치는 가린다(masking)** — 그래서 이름이 *Masked* Self-Attention
+
+### 왜 마스킹이 필요한가
+
+Transformer는 학습 시 모든 위치를 한 번에 처리한다(병렬 학습이 강점이니까). 그런데 디코더는 $t$ 시점의 단어를 예측할 때 $t{+}1, t{+}2, \dots$ 의 **미래 정보를 보면 안 된다** — 추론 시에는 미래 토큰이 아직 존재하지 않기 때문이다. 따라서 학습 중에도 미래 위치의 attention score를 $-\infty$ 로 만들어서 softmax 후 0이 되도록 한다.
+
+4-token 예시 마스크 행렬:
+
+| Q \\ K | t=0 | t=1 | t=2 | t=3 |
+|--------|:---:|:---:|:---:|:---:|
+| t=0    | ✓   | ✗   | ✗   | ✗   |
+| t=1    | ✓   | ✓   | ✗   | ✗   |
+| t=2    | ✓   | ✓   | ✓   | ✗   |
+| t=3    | ✓   | ✓   | ✓   | ✓   |
+
+✗ 자리의 attention score는 $-\infty$ 처리해서 softmax 후 가중치가 0이 된다.
+
+```python title="decoder_masked_self_attention.py"
+# Y: 디코더 입력 (batch, tgt_len, d_model)
+Q = Y @ W_q
+K = Y @ W_k
+V = Y @ W_v
+scores = Q @ K.T / sqrt(d_k)
+scores = scores.masked_fill(causal_mask == 0, float("-inf"))  # 핵심
+out = softmax(scores) @ V
+```
+
+## 3. Encoder-Decoder Attention (Cross-Attention)
+
+**역할**: 디코더가 인코더 출력의 어디에 집중할지 결정한다 — **번역의 핵심 부분**.
+
+- **Q는 디코더에서** (방금 Masked Self-Attention을 통과한 결과)
+- **K, V는 인코더의 최종 출력에서**
+
+번역으로 비유하면 직관적이다. 영→한 번역에서 디코더가 한국어 단어를 하나 만들 때, *"지금 이 단어를 만들려면 영어 원문의 어느 부분을 봐야 할까?"* 를 묻는 게 바로 이 Cross-Attention이다.
+
+```python title="cross_attention.py"
+# H_enc: 인코더 출력, H_dec: 디코더 (Masked Self-Attn 거친 결과)
+Q = H_dec @ W_q
+K = H_enc @ W_k   # 인코더에서
+V = H_enc @ W_v   # 인코더에서
+out = softmax(Q @ K.T / sqrt(d_k)) @ V
+```
+
+<Callout type="tip">
+**왜 K와 V가 둘 다 인코더에서 올까?** *"어디에 집중할지(K)"* 와 *"그 자리에서 무엇을 가져올지(V)"* 는 둘 다 **원문에 대한 정보**이기 때문이다. 디코더는 그 정보를 단지 "조회"하기만 한다 → 그래서 Q만 디코더 출처.
+</Callout>
+
+## 4. Multi-Head Attention
+
+지금까지는 Scaled Dot-Product Attention을 한 번 수행하는 경우를 봤다. 실제 Transformer는 이를 **여러 헤드(보통 $h{=}8$ 개)로 동시에** 수행한다.
+
+### 왜 여러 헤드?
+
+한 번의 Attention은 **하나의 표현 부분공간(subspace)** 만 학습한다. 여러 관점 — 가령 어떤 헤드는 문법적 관계를, 어떤 헤드는 의미적 관계를, 어떤 헤드는 위치적 관계를 — 을 동시에 잡기 위해 헤드를 쪼갠다.
+
+### 어떻게 쪼개나
+
+$d_{\text{model}} = 512$, $h = 8$ 라면 각 헤드는 $d_k = d_v = 512/8 = 64$ 차원에서 동작한다. 즉 **차원을 쪼갠 뒤 헤드별로 병렬 Attention** 을 돌리고, 결과를 다시 concat해서 원래 차원으로 복원한다.
+
+$$ \text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_h)\, W^O $$
+
+$$ \text{head}_i = \text{Attention}(QW_i^Q,\ KW_i^K,\ VW_i^V) $$
+
+```python title="multi_head_attention.py"
+def multi_head_attention(Q, K, V, num_heads=8):
+    d_k = Q.size(-1) // num_heads
+    # 차원을 num_heads 개로 분할 → 각 헤드별 독립적으로 attention
+    Q_split = Q.view(*Q.shape[:-1], num_heads, d_k).transpose(-3, -2)
+    K_split = K.view(*K.shape[:-1], num_heads, d_k).transpose(-3, -2)
+    V_split = V.view(*V.shape[:-1], num_heads, d_k).transpose(-3, -2)
+
+    heads = scaled_dot_product(Q_split, K_split, V_split)  # 헤드별 attention 병렬
+    concat = heads.transpose(-3, -2).reshape(*Q.shape[:-1], -1)
+    return concat @ W_O
+```
+
+<Callout type="note">
+**계산량이 늘지 않는다** — $h$개 헤드 × 각 $d_k = d_{\text{model}}/h$ 이므로 총 파라미터 수와 곱셈 수는 단일 헤드($d_k = d_{\text{model}}$)와 거의 같다. **공짜로 다관점 학습** 을 얻는 셈.
+</Callout>
+
+## 정리
+
+3가지 Attention 비교:
+
+| 구분 | Q 출처 | K 출처 | V 출처 | 마스킹 | 핵심 역할 |
+|------|--------|--------|--------|--------|-----------|
+| Encoder Self-Attention | 인코더 입력 | 인코더 입력 | 인코더 입력 | ✗ | 입력 토큰 간 관계 파악 |
+| Decoder Masked Self-Attention | 디코더 입력 | 디코더 입력 | 디코더 입력 | ✓ (causal) | 출력 토큰 간 관계 (미래 차단) |
+| Encoder-Decoder Attention | 디코더 | **인코더** | **인코더** | ✗ | 출력이 입력 어디에 집중할지 |
+
+그리고 **Multi-Head**는 위 셋 어디에나 적용되는 *직교적인* 확장이다 — 한 Attention 연산을 여러 부분공간에서 병렬로 수행한다는 차원의 이야기.
+
+세 Attention의 차이는 결국 *Q와 K/V의 출처* 와 *마스킹 여부* 두 가지로 환원된다. 같은 식을 이렇게 다양한 의미로 변주하는 게 Transformer의 우아한 점이라 생각한다.
+
+## 다음 글 예고
+
+- Positional Encoding (왜 sin/cos인가? 학습 가능한 임베딩과 비교)
+- Layer Normalization & Residual Connection (Pre-LN vs Post-LN)
+
+## 참고자료
+
+- [Vaswani et al., *Attention Is All You Need* (NeurIPS 2017)](https://arxiv.org/abs/1706.03762)
+- [The Illustrated Transformer (Jay Alammar)](https://jalammar.github.io/illustrated-transformer/)
+- [The Annotated Transformer (Harvard NLP)](http://nlp.seas.harvard.edu/2018/04/03/attention.html)
