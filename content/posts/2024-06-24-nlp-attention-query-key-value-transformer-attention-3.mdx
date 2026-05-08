@@ -1,0 +1,63 @@
+---
+title: "[NLP] Attention 쉽게 이해하기 (Query, Key, Value,  Transformer에서의 attention 3종류)"
+date: "2024-06-24"
+category: "study"
+tags: []
+summary: "학습 내용Transformer에 대해 이해하기 위해 attention을 이해해보고자 한다.기본적인 attention의 개념에 대해 이해해본다 AttentionAttention의 개념을 쉽게 이야기 해보면 한 문장 데이터 안에 토큰들의 상관관계를 파악해서이를 통해 다음 토큰을 예측할때…"
+thumbnail: "/images/2024-06-24-nlp-attention-query-key-value-transformer-attention-3/image-00.png"
+originalUrl: "https://yeonco.tistory.com/74"
+---
+
+> 학습 내용
+
+> -   Transformer에 대해 이해하기 위해 attention을 이해해보고자 한다.
+> -   기본적인 attention의 개념에 대해 이해해본다
+
+## **Attention**
+
+Attention의 개념을 쉽게 이야기 해보면 한 문장 데이터 안에 **토큰들의 상관관계**를 파악해서
+
+이를 통해 다음 토큰을 예측할때 (나는 -> 다음단어)
+
+유사도가 높은 단어를 선택하자는 개념이다
+
+또, attention 하면 빠질 수 없는 개념이 Query, Key, Value의 개념인데,
+
+-   Query : 말그대로 쿼리(질문)이다. 이 단어와 다른 단어들의 상관관계를 알려줘!
+-   Key : 내가 질문한 값들에 대한 답을 얻기 위해 필요한 소스라 생각하면 된다
+-   Value : 이건 비유할만한게 없는거 같아서... 추후에 query와 key를 통해 구한 값을 비교하기 위해 사용하는 값이라고 생각한다.
+
+결국 한 단어가 어떤 다른 단어에 "focus"를 하는지 알아보기 위해서는 attention value 값이 필요하고
+
+이를 구하기 위한 과정은 아래와 같다.
+
+1.  주어진 Query에 대해서 모든 Key와의 유사도를 각각 구함
+2.  이 유사도를 Key와 Mapping 되어있는 Value에 반영
+3.  유사도가 반영되어있는 Value를 모두 더해서 뭉쳐준다 (Attention Value)
+
+## **Transformer 에서의 Attention**
+
+$$ Attention(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \cdot V $$
+
+![](/images/2024-06-24-nlp-attention-query-key-value-transformer-attention-3/image-01.png)
+
+  
+  
+
+## **Transformer 내부의 3개의 Attention**
+
+transformer 내부에는
+
+-   encoder self-attention
+-   decoder masked self-attention
+-   encoder-decoder attention
+
+이렇게 3개의 attention으로 구성되어있는데 이에 대해서 다음 포스트를 통해서 자세하게 다룰 예정이다
+
+![](/images/2024-06-24-nlp-attention-query-key-value-transformer-attention-3/image-02.png)
+
+## **참고자료**
+
+[https://codingopera.tistory.com/43](https://codingopera.tistory.com/43)
+
+[https://jalammar.github.io/illustrated-transformer/](https://jalammar.github.io/illustrated-transformer/)

@@ -1,0 +1,15 @@
+{
+  "_default": "study",
+  "_comment": "Tistory categoryName → 프로젝트 카테고리 매핑. 키는 window.tiara.entry.categoryName 값 (예: 'AIFFLE/STUDY'). 매핑 없으면 _default 사용. 가능 값: study | paper-review | project | tutorial",
+  "AIFFLE/STUDY": "study",
+  "AIFFLE/PROJECT": "project",
+  "AIFFLE/STARTER": "tutorial",
+  "AIFFLE/INFO": "study",
+  "PAPER": "paper-review",
+  "WENIV": "tutorial",
+  "PYTHON/CODING TEST": "study",
+  "PYTHON/개념정리": "study",
+  "PYTHON/info": "study",
+  "SQL/CODING TEST": "study",
+  "SQL/개념정리": "study"
+}
