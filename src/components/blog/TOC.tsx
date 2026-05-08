@@ -46,7 +46,7 @@ const TOC = ({ headings }: { headings: Heading[] }) => {
       {/* Progress bar */}
       <div className="mb-4 h-0.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-150"
+          className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-[width] duration-150 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -62,7 +62,7 @@ const TOC = ({ headings }: { headings: Heading[] }) => {
           >
             <a
               href={`#${heading.id}`}
-              className={`block rounded-md py-1.5 px-2.5 transition-all ${
+              className={`block rounded-md py-1.5 px-2.5 transition-[color,background-color] duration-150 ease-out-expo ${
                 activeId === heading.id
                   ? "bg-primary-50 font-medium text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
                   : "text-gray-400 hover:bg-gray-50 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-800/50 dark:hover:text-gray-300"

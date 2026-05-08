@@ -12,7 +12,7 @@ const categoryGradients: Record<Category, string> = {
 
 const PostCard = ({ post }: { post: Post }) => {
   return (
-    <article className="group relative overflow-hidden rounded-xl border border-gray-200/60 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-200/50 dark:border-gray-800/60 dark:bg-gray-900 dark:hover:shadow-gray-950/50">
+    <article className="group relative overflow-hidden rounded-2xl bg-white shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-gray-900">
       {/* Gradient header strip */}
       <div className={`h-1.5 bg-gradient-to-r ${categoryGradients[post.category]}`} />
 
@@ -34,10 +34,10 @@ const PostCard = ({ post }: { post: Post }) => {
         </div>
 
         <Link href={`/blog/${post.slug}`}>
-          <h2 className="mb-2 text-lg font-bold leading-snug text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
+          <h2 className="mb-2 text-balance text-lg font-bold leading-snug text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
             {post.title}
           </h2>
-          <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+          <p className="mb-4 line-clamp-2 text-pretty text-sm leading-relaxed text-gray-500 dark:text-gray-400">
             {post.summary}
           </p>
         </Link>
@@ -47,7 +47,7 @@ const PostCard = ({ post }: { post: Post }) => {
             <TagBadge key={tag} tag={tag} />
           ))}
           {post.tags.length > 3 && (
-            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-400 dark:bg-gray-800 dark:text-gray-500">
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs tabular-nums text-gray-400 dark:bg-gray-800 dark:text-gray-500">
               +{post.tags.length - 3}
             </span>
           )}

@@ -11,6 +11,13 @@ const config: Config = {
         sans: ["var(--font-pretendard)", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains)", "monospace"],
       },
+      boxShadow: {
+        border: "var(--shadow-border)",
+        "border-hover": "var(--shadow-border-hover)",
+      },
+      transitionTimingFunction: {
+        "ease-out-expo": "cubic-bezier(0.2, 0, 0, 1)",
+      },
       colors: {
         primary: {
           50: "#eef2ff",

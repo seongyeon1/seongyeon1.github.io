@@ -35,14 +35,14 @@ const HomePage = () => {
           <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
             AI &amp; Machine Learning
           </p>
-          <h1 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl lg:text-6xl">
+          <h1 className="mb-6 text-balance text-4xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl lg:text-6xl">
             AI 기술을 탐구하고
             <br />
             <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-purple-500 bg-clip-text text-transparent dark:from-primary-400 dark:via-primary-300 dark:to-purple-400">
               기록합니다
             </span>
           </h1>
-          <p className="max-w-xl text-lg leading-relaxed text-gray-600 dark:text-gray-400">
+          <p className="max-w-xl text-pretty text-lg leading-relaxed text-gray-600 dark:text-gray-400">
             AI 공부기록, 논문 리뷰, 프로젝트 후기를 기록하는 기술 블로그입니다.
           </p>
         </div>
@@ -53,7 +53,7 @@ const HomePage = () => {
         <section className="mb-20 animate-fade-in-up delay-100">
           <Link
             href={`/blog/${featuredPost.slug}`}
-            className="group block overflow-hidden rounded-2xl border border-gray-200/60 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/5 dark:border-gray-800/60 dark:from-gray-900 dark:to-gray-950"
+            className="group block overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-white shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:from-gray-900 dark:to-gray-950"
           >
             <div className="p-8 sm:p-10">
               <div className="mb-4 flex items-center gap-3">
@@ -65,10 +65,10 @@ const HomePage = () => {
                   {featuredPost.date}
                 </span>
               </div>
-              <h2 className="mb-3 text-2xl font-bold text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400 sm:text-3xl">
+              <h2 className="mb-3 text-balance text-2xl font-bold text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400 sm:text-3xl">
                 {featuredPost.title}
               </h2>
-              <p className="max-w-2xl text-gray-600 dark:text-gray-400">
+              <p className="max-w-2xl text-pretty text-gray-600 dark:text-gray-400">
                 {featuredPost.summary}
               </p>
               <div className="mt-6 flex items-center gap-2 text-sm font-medium text-primary-600 dark:text-primary-400">
@@ -92,14 +92,14 @@ const HomePage = () => {
             ([key, meta]) => (
               <div
                 key={key}
-                className="group relative overflow-hidden rounded-xl border border-gray-200/60 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary-500/5 dark:border-gray-800/60 dark:bg-gray-900"
+                className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-gray-900"
               >
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={meta.icon} />
                   </svg>
                 </div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                   {categoryCounts[key] ?? 0}
                 </p>
                 <p className="mt-0.5 text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -120,7 +120,7 @@ const HomePage = () => {
             </h2>
             <Link
               href="/series"
-              className="text-sm font-medium text-gray-500 transition-colors hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
+              className="rounded-md text-sm font-medium text-gray-500 transition-[color,scale] duration-150 ease-out-expo hover:text-primary-600 active:scale-[0.96] dark:text-gray-400 dark:hover:text-primary-400"
             >
               View all →
             </Link>
@@ -130,17 +130,17 @@ const HomePage = () => {
               <Link
                 key={s.name}
                 href={`/series/${encodeURIComponent(s.name)}`}
-                className="group rounded-xl border border-gray-200/60 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary-500/5 dark:border-gray-800/60 dark:bg-gray-900"
+                className="group rounded-2xl bg-white p-6 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-gray-900"
               >
                 <div className="mb-2 flex items-center gap-2">
                   <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
                   </svg>
-                  <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
+                  <span className="text-xs font-medium tabular-nums text-primary-600 dark:text-primary-400">
                     {s.totalCount} posts
                   </span>
                 </div>
-                <h3 className="font-bold text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
+                <h3 className="text-balance font-bold text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
                   {s.name}
                 </h3>
               </Link>
@@ -157,7 +157,7 @@ const HomePage = () => {
           </h2>
           <Link
             href="/blog"
-            className="text-sm font-medium text-gray-500 transition-colors hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
+            className="rounded-md text-sm font-medium text-gray-500 transition-[color,scale] duration-150 ease-out-expo hover:text-primary-600 active:scale-[0.96] dark:text-gray-400 dark:hover:text-primary-400"
           >
             View all →
           </Link>

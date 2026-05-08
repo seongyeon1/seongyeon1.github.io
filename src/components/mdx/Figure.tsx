@@ -15,7 +15,7 @@ const Figure = ({
 }) => {
   return (
     <figure className="my-8">
-      <div className="overflow-hidden rounded-lg">
+      <div className="overflow-hidden rounded-xl outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10">
         <Image
           src={src}
           alt={alt}
@@ -25,7 +25,7 @@ const Figure = ({
         />
       </div>
       {caption && (
-        <figcaption className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
+        <figcaption className="mt-2 text-pretty text-center text-sm text-gray-500 dark:text-gray-400">
           {caption}
         </figcaption>
       )}

@@ -8,6 +8,45 @@ const navItems = [
   { href: "/series", label: "Series" },
 ];
 
+const SunIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+);
+
+const MoonIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+  </svg>
+);
+
+// 두 아이콘을 모두 DOM에 두고 cross-fade.
+// scale 0.25 → 1, opacity 0 → 1, blur 4px → 0px (skill의 정해진 값).
+const ThemeToggle = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) => (
+  <button
+    onClick={onToggle}
+    className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-gray-100 hover:text-gray-700 active:scale-[0.96] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+    aria-label="Toggle dark mode"
+  >
+    <span
+      className={`absolute inset-0 flex items-center justify-center transition-[opacity,filter,scale] duration-300 ease-out-expo ${
+        isDark ? "scale-100 opacity-100 blur-0" : "scale-[0.25] opacity-0 blur-[4px]"
+      }`}
+      aria-hidden={!isDark}
+    >
+      <SunIcon className="h-[18px] w-[18px]" />
+    </span>
+    <span
+      className={`flex items-center justify-center transition-[opacity,filter,scale] duration-300 ease-out-expo ${
+        isDark ? "scale-[0.25] opacity-0 blur-[4px]" : "scale-100 opacity-100 blur-0"
+      }`}
+      aria-hidden={isDark}
+    >
+      <MoonIcon className="h-[18px] w-[18px]" />
+    </span>
+  </button>
+);
+
 const Header = () => {
   const [isDark, setIsDark] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,15 +71,18 @@ const Header = () => {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-300 ease-out-expo ${
         isScrolled
-          ? "border-b border-gray-200/60 bg-white/80 shadow-sm backdrop-blur-xl dark:border-gray-800/60 dark:bg-gray-950/80"
+          ? "bg-white/80 shadow-border backdrop-blur-xl dark:bg-gray-950/80"
           : "bg-white/50 backdrop-blur-md dark:bg-gray-950/50"
       }`}
     >
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white shadow-sm">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 rounded-lg transition-transform duration-150 ease-out-expo active:scale-[0.96]"
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white shadow-border">
             AI
           </div>
           <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">
@@ -54,81 +96,78 @@ const Header = () => {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3.5 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+              className="rounded-lg px-3.5 py-2.5 text-sm font-medium text-gray-600 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-gray-100 hover:text-gray-900 active:scale-[0.96] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
             >
               {item.label}
             </Link>
           ))}
           <div className="ml-2 h-5 w-px bg-gray-200 dark:bg-gray-700" />
-          <button
-            onClick={toggleDark}
-            className="ml-2 rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            aria-label="Toggle dark mode"
-          >
-            {isDark ? (
-              <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            ) : (
-              <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            )}
-          </button>
+          <div className="ml-1">
+            <ThemeToggle isDark={isDark} onToggle={toggleDark} />
+          </div>
         </nav>
 
         {/* Mobile menu button */}
-        <div className="flex items-center gap-2 sm:hidden">
-          <button
-            onClick={toggleDark}
-            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-            aria-label="Toggle dark mode"
-          >
-            {isDark ? (
-              <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            ) : (
-              <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            )}
-          </button>
+        <div className="flex items-center gap-1 sm:hidden">
+          <ThemeToggle isDark={isDark} onToggle={toggleDark} />
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-gray-100 active:scale-[0.96] dark:text-gray-400 dark:hover:bg-gray-800"
             aria-label="Toggle menu"
+            aria-expanded={isMobileMenuOpen}
           >
-            {isMobileMenuOpen ? (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <span className="relative h-5 w-5">
+              <svg
+                className={`absolute inset-0 transition-[opacity,filter,scale] duration-200 ease-out-expo ${
+                  isMobileMenuOpen ? "scale-[0.25] opacity-0 blur-[4px]" : "scale-100 opacity-100 blur-0"
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-            )}
+              <svg
+                className={`absolute inset-0 transition-[opacity,filter,scale] duration-200 ease-out-expo ${
+                  isMobileMenuOpen ? "scale-100 opacity-100 blur-0" : "scale-[0.25] opacity-0 blur-[4px]"
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </span>
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isMobileMenuOpen && (
-        <div className="border-t border-gray-100 bg-white/95 backdrop-blur-xl sm:hidden dark:border-gray-800 dark:bg-gray-950/95">
-          <nav className="mx-auto max-w-5xl px-6 py-3">
+      {/* Mobile menu: grid-rows trick → height transitions, exit animates */}
+      <div
+        className={`grid overflow-hidden bg-white/95 backdrop-blur-xl transition-[grid-template-rows,opacity] duration-200 ease-out-expo sm:hidden dark:bg-gray-950/95 ${
+          isMobileMenuOpen ? "grid-rows-[1fr] opacity-100 shadow-border" : "grid-rows-[0fr] opacity-0"
+        }`}
+        aria-hidden={!isMobileMenuOpen}
+      >
+        <nav className="mx-auto min-h-0 w-full max-w-5xl px-6">
+          <div className="flex flex-col py-2">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                className="rounded-lg px-3 py-3 text-sm font-medium text-gray-600 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-gray-100 hover:text-gray-900 active:scale-[0.96] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
               >
                 {item.label}
               </Link>
             ))}
-          </nav>
-        </div>
-      )}
+          </div>
+        </nav>
+      </div>
     </header>
   );
 };

@@ -16,11 +16,11 @@ const BlogPage = () => {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <div className="mb-10">
-        <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
+        <h1 className="mb-2 text-balance text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
           All Posts
         </h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          {posts.length} articles published
+        <p className="text-pretty text-gray-500 dark:text-gray-400">
+          <span className="tabular-nums">{posts.length}</span> articles published
         </p>
       </div>
 
@@ -29,7 +29,7 @@ const BlogPage = () => {
         {tags.map(({ tag, count }) => (
           <span key={tag} className="flex items-center gap-1">
             <TagBadge tag={tag} />
-            <span className="text-xs text-gray-300 dark:text-gray-600">
+            <span className="text-xs tabular-nums text-gray-300 dark:text-gray-600">
               {count}
             </span>
           </span>
