@@ -1,0 +1,150 @@
+---
+title: "[NLP] Feed-Forward Network — Transformer의 숨은 표현력 (FFN, GELU, SwiGLU, MoE)"
+date: "2024-08-15"
+category: "study"
+tags: ["transformer", "FFN", "feed-forward", "GELU", "SwiGLU", "MoE", "NLP"]
+summary: "Attention이 토큰끼리 섞는 일을 한다면, FFN은 각 토큰을 변환하는 역할을 한다. 단순한 2층 MLP이지만 모델 전체 파라미터의 약 2/3를 차지하는 이 컴포넌트의 구조, 활성 함수 변천(ReLU → GELU → SwiGLU), key-value memory 해석, MoE까지 정리한다."
+series: "Attention 이해하기"
+seriesOrder: 5
+math: true
+---
+
+<Callout type="note">
+**한 줄 요약** — Attention이 토큰들을 *섞는(mixing)* 메커니즘이라면, FFN은 각 토큰을 *변환(transformation)* 하는 메커니즘이다. 단순한 2층 MLP에 불과하지만 모델 전체 파라미터의 **약 2/3**를 차지하며, Transformer의 표현력 대부분이 여기서 나온다.
+</Callout>
+
+이전 글들에서 [Attention 메커니즘](/blog/2024-06-24-nlp-attention-query-key-value-transformer-attention-3), [위치 정보](/blog/2024-07-15-transformer-positional-encoding), [학습 안정화 컴포넌트](/blog/2024-08-01-transformer-layernorm-residual)까지 정리했다. 이번 글은 Transformer 블록의 마지막 퍼즐인 **Feed-Forward Network (FFN)** 다. 단순해 보이지만 알고 보면 모델 표현력의 핵심이다.
+
+## Attention만으로는 부족하다
+
+Self-Attention의 본질은 **토큰 간 정보 혼합** 이다. 다른 토큰의 Value를 가중합해서 가져오는 게 전부 — 결국 Attention의 출력은 입력 토큰들의 *선형 결합* 이다 (가중치만 입력에 의존).
+
+문제는, 선형 결합만으로는 복잡한 표현을 학습할 수 없다는 점이다. 그래서 Transformer 블록 내부에 **비선형성**과 **토큰별 독립적 변환** 을 담당하는 모듈이 필요하다 — 그게 FFN이다.
+
+## FFN의 구조
+
+각 토큰 위치에 **독립적으로** 적용되는 단순한 2층 MLP.
+
+$$ \text{FFN}(x) = \text{Activation}(x W_1 + b_1) W_2 + b_2 $$
+
+- $W_1$ : $(d_{\text{model}} \times d_{\text{ff}})$ — **차원 확장**
+- $W_2$ : $(d_{\text{ff}} \times d_{\text{model}})$ — **차원 복원**
+- 보통 $d_{\text{ff}} = 4 \cdot d_{\text{model}}$ (예: $d_{\text{model}}=512$ 면 $d_{\text{ff}}=2048$)
+
+```python title="ffn.py"
+def feed_forward(x, W1, b1, W2, b2):
+    # x: (batch, seq_len, d_model)
+    h = activation(x @ W1 + b1)   # (batch, seq_len, d_ff)
+    return h @ W2 + b2            # (batch, seq_len, d_model)
+```
+
+<Callout type="tip">
+**Position-wise라는 의미** — FFN은 각 토큰 위치에 *독립적으로*, 그러나 모든 위치에 *동일한 가중치*로 적용된다. 즉 $W_1, W_2$ 는 시퀀스 전체에서 공유되며, 토큰끼리는 FFN 안에서 상호작용하지 않는다 (그건 Attention이 할 일).
+</Callout>
+
+## 왜 차원을 4배로 늘리는가
+
+FFN은 일종의 **확장-수축(expand-contract)** 패턴이다. 중간에 차원을 4배로 늘렸다가 다시 원래대로 줄인다. 이렇게 하면:
+
+- 확장된 공간에서 활성 함수를 적용해 **풍부한 비선형 결합** 을 표현
+- 결과를 다시 $d_{\text{model}}$ 로 압축해 **잔차 연결과 차원 호환** 유지
+
+4배라는 수치 자체는 경험적 선택이지만, 대부분의 후속 모델(BERT, GPT, LLaMA 등)이 이 비율을 유지한다.
+
+### 파라미터의 대부분이 여기 있다
+
+$d_{\text{model}}=512$, $d_{\text{ff}}=2048$ 기준 한 블록의 파라미터 수:
+
+| 컴포넌트 | 파라미터 수 (대략) |
+|----------|-------------------|
+| Multi-Head Attention ($W^Q, W^K, W^V, W^O$) | $4 \cdot d_{\text{model}}^2 \approx 1.05\text{M}$ |
+| FFN ($W_1, W_2$) | $2 \cdot d_{\text{model}} \cdot d_{\text{ff}} \approx 2.10\text{M}$ |
+
+**FFN이 Attention의 약 2배.** 모델이 커질수록 이 비율은 더 벌어지고, GPT-3·LLaMA 같은 대형 모델에서는 FFN이 전체 파라미터의 약 2/3를 차지한다.
+
+## 활성 함수 변천사
+
+FFN의 비선형성을 담당하는 활성 함수는 시대에 따라 진화했다.
+
+### 1세대 — ReLU (원 Transformer)
+
+$$ \text{ReLU}(x) = \max(0, x) $$
+
+단순하고 빠름. 원 Transformer 논문이 사용한 함수.
+
+### 2세대 — GELU (BERT 시대)
+
+$$ \text{GELU}(x) = x \cdot \Phi(x) \approx \tfrac{1}{2} x \left(1 + \tanh\!\left[\sqrt{\tfrac{2}{\pi}}\bigl(x + 0.044715 x^3\bigr)\right]\right) $$
+
+여기서 $\Phi$ 는 표준정규분포의 누적분포함수. ReLU의 hard cutoff와 달리 0 근처에서 부드럽게 변하는 곡선이라 그래디언트 흐름이 더 안정적이다. BERT, GPT-2, GPT-3 등이 채택.
+
+### 3세대 — GLU 계열: SwiGLU, GeGLU (현대 LLM)
+
+Gated Linear Unit 계열은 **두 갈래로 분기된 입력**에서 한쪽이 *게이트* 역할을 한다.
+
+$$ \text{SwiGLU}(x) = \text{Swish}(x W_g) \odot (x W_1) $$
+
+여기서 $\text{Swish}(x) = x \cdot \sigma(x)$ 이고, $\odot$ 는 element-wise 곱. LLaMA, PaLM, Qwen 등 거의 모든 최신 LLM이 SwiGLU(또는 GeGLU — Swish 대신 GELU 사용)를 채택했다.
+
+```python title="swiglu_ffn.py"
+def swiglu_ffn(x, W_g, W_1, W_2):
+    # 입력을 두 갈래로 → 게이트 곱 → 출력 투영
+    return (swish(x @ W_g) * (x @ W_1)) @ W_2
+```
+
+<Callout type="note">
+**왜 GLU 계열이 더 좋은가?** 게이트 분기가 *입력에 따라 정보 흐름을 동적으로 조절* 하기 때문에 표현력이 풍부해진다. 다만 행렬이 하나 더 늘어 파라미터가 1.5배가 되므로, 보통 $d_{\text{ff}}$ 를 줄여서 (예: $\frac{8}{3} d_{\text{model}}$) 전체 파라미터 수를 표준 FFN과 비슷하게 맞춘다.
+</Callout>
+
+## FFN의 해석: Key-Value Memory 관점
+
+Geva et al. (2021)은 흥미로운 관찰을 제시했다 — **FFN을 일종의 key-value 메모리**로 해석할 수 있다는 것이다.
+
+$$ \text{FFN}(x) = \underbrace{\text{Activation}(x W_1)}_{\text{key matching}} \cdot \underbrace{W_2}_{\text{values}} $$
+
+- $W_1$의 각 열은 하나의 *패턴 검출기*(key) — 입력과 내적해서 매칭 점수를 만든다
+- 활성 함수를 통과하면 *어떤 패턴이 활성화됐는지* 가중치 분포가 된다
+- $W_2$의 각 행은 그 패턴에 대응하는 *값(value)* — 매칭된 패턴들의 값을 가중합해서 출력
+
+즉 FFN이 단순한 비선형 변환이 아니라, **모델이 학습해 둔 패턴 사전(dictionary)을 조회하는 메커니즘** 일 수 있다는 해석이다. *LLM의 지식이 주로 FFN에 저장된다* 는 후속 연구들과도 맞물린다.
+
+## 한 발 더: Mixture of Experts (MoE)
+
+FFN이 모델 파라미터의 대부분이라는 사실 때문에, **FFN을 여러 전문가(expert)로 분기시키는** MoE 구조가 자연스럽게 등장했다.
+
+- 토큰마다 라우터가 $k$개의 expert FFN만 활성화 (보통 1~2개)
+- 전체 파라미터는 키우되, 토큰별 *계산량* 은 그대로 유지 (sparse activation)
+- Mixtral, DeepSeek-V3, GPT-4 (추정) 등이 MoE 아키텍처
+
+이건 또 다른 큰 주제이니, 여기서는 *FFN이 MoE의 자연스러운 확장 지점* 이라는 것 정도만 짚고 넘어간다.
+
+## 정리
+
+- **Attention = 토큰 간 정보 혼합**, **FFN = 토큰별 비선형 변환** — 두 메커니즘은 상호 보완적
+- FFN은 단순한 2층 MLP이지만 모델 전체 파라미터의 약 2/3 차지
+- 차원 확장 비율 $d_{\text{ff}} = 4 \cdot d_{\text{model}}$ 은 사실상 표준
+- 활성 함수: ReLU → GELU → SwiGLU / GeGLU 로 진화
+- FFN은 *key-value memory* 관점으로 해석 가능 — LLM 지식 저장의 핵심
+- MoE는 FFN을 분기시켜 효율적으로 키우는 자연스러운 확장
+
+## 시리즈를 마무리하며
+
+이번 글로 *Attention 이해하기* 시리즈를 마무리한다. 5편에 걸쳐 정리한 내용:
+
+| Part | 주제 | 핵심 |
+|------|------|------|
+| [1](/blog/2024-06-24-nlp-attention-query-key-value-transformer-attention-3) | Q/K/V 기초 | Attention의 직관과 수식 |
+| [2](/blog/2024-07-01-transformer-3-attentions-deep-dive) | 3가지 Attention | Encoder/Decoder Self-Attention, Cross-Attention, Multi-Head |
+| [3](/blog/2024-07-15-transformer-positional-encoding) | Positional Encoding | sin/cos PE, 상대 위치의 선형성 |
+| [4](/blog/2024-08-01-transformer-layernorm-residual) | LayerNorm & Residual | Pre-LN vs Post-LN, 깊은 학습 안정성 |
+| 5 | Feed-Forward Network | 표현력의 핵심, GELU/SwiGLU, MoE |
+
+이 다섯 컴포넌트만 이해하면 Transformer 블록의 95%를 알게 된다. 남은 5%는 dropout 위치, label smoothing, optimizer 같은 학습 디테일들이고, *본질적인 구조* 는 여기까지로 다 다뤘다. 같은 식을 변주하면서 **Attention + FFN + 잔차 / 정규화** 로 깊게 쌓는 — 이런 단순함이 Transformer가 NLP를 넘어 비전·오디오·강화학습까지 점령하게 된 비결이라 생각한다.
+
+## 참고자료
+
+- [Vaswani et al., *Attention Is All You Need* (NeurIPS 2017) §3.3](https://arxiv.org/abs/1706.03762)
+- [Hendrycks & Gimpel, *Gaussian Error Linear Units (GELUs)* (2016)](https://arxiv.org/abs/1606.08415)
+- [Shazeer, *GLU Variants Improve Transformer* (2020)](https://arxiv.org/abs/2002.05202)
+- [Geva et al., *Transformer Feed-Forward Layers Are Key-Value Memories* (EMNLP 2021)](https://arxiv.org/abs/2012.14913)
+- [Fedus et al., *Switch Transformer (Sparse MoE)* (2021)](https://arxiv.org/abs/2101.03961)
