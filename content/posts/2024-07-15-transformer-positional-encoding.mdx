@@ -1,0 +1,132 @@
+---
+title: "[NLP] Positional Encoding 이해하기 (왜 sin/cos인가?)"
+date: "2024-07-15"
+category: "study"
+tags: ["transformer", "positional-encoding", "sin-cos", "embeddings", "NLP", "attention"]
+summary: "Self-Attention은 토큰 순서를 모르기 때문에 위치 정보를 따로 주입해야 한다. Transformer가 사용한 sin/cos Positional Encoding의 수식, 왜 이런 형태인지, 학습 가능한 임베딩과의 차이를 정리한다."
+series: "Attention 이해하기"
+seriesOrder: 3
+math: true
+---
+
+<Callout type="note">
+**한 줄 요약** — Self-Attention은 입력을 *집합*처럼 처리하기 때문에 순서 정보가 사라진다. Transformer는 이를 sin/cos 기반 Positional Encoding으로 보완하는데, 학습 없이 임의 길이로 일반화 가능하고 *상대적 위치*가 선형 변환으로 표현되는 수학적 우아함이 있다.
+</Callout>
+
+이전 글에서 [3가지 Attention의 동작](/blog/2024-07-01-transformer-3-attentions-deep-dive)을 살펴봤다. 그런데 곰곰이 생각해 보면 한 가지 빠진 게 있다 — **순서**다. Attention은 모든 토큰을 한꺼번에 보기 때문에 *"나는 너를 사랑해"* 와 *"너는 나를 사랑해"* 의 차이를 구조적으로 알 방법이 없다. 이번 글에서는 Transformer가 이 문제를 어떻게 해결했는지 본다.
+
+## 왜 Positional Encoding이 필요한가
+
+### Self-Attention은 순서를 모른다
+
+Self-Attention 연산은 **순열 등변(permutation-equivariant)** 이다. 입력 토큰 순서를 바꾸면 출력도 같은 방식으로 재정렬될 뿐, 각 토큰의 표현 자체는 바뀌지 않는다.
+
+$$ \text{Attention}(PX) = P \cdot \text{Attention}(X) $$
+
+여기서 $P$는 임의의 순열 행렬. 다시 말해 *"이 토큰이 첫 번째인지 세 번째인지"* 는 Self-Attention 식 안에 정보로서 들어 있지 않다. RNN은 시간 축을 따라 hidden state를 전달하면서 자연스레 위치를 알고, CNN은 conv 연산 자체가 공간적이다. 하지만 Self-Attention은 그렇지 않다.
+
+### 해결책: 위치 정보를 입력에 더하기
+
+Transformer의 접근은 단순하다 — 토큰 임베딩에 **위치별로 다른 벡터**를 더해서 넣어주자.
+
+$$ \text{input}_i = \text{TokenEmbedding}(x_i) + \text{PE}(i) $$
+
+같은 토큰이라도 위치에 따라 입력 벡터가 달라지므로, Attention이 위치를 구분할 수 있게 된다.
+
+<Callout type="tip">
+**왜 더하기인가? Concat이 더 직관적이지 않나?** Concat은 차원이 늘어나지만 더하기는 차원이 보존된다. Transformer 내부는 residual connection이 많아 차원 일관성이 중요하기 때문에 additive 방식을 택했다. 학습된 토큰 임베딩 공간이 충분히 표현력 있다면, 더해도 위치 정보와 의미 정보가 잘 분리된다는 게 경험적으로 확인됐다.
+</Callout>
+
+## sin/cos Positional Encoding
+
+Transformer 원 논문이 제안한 PE는 다음과 같다.
+
+$$ \text{PE}_{(\text{pos},\, 2i)} = \sin\!\left(\frac{\text{pos}}{10000^{2i/d_{\text{model}}}}\right) $$
+
+$$ \text{PE}_{(\text{pos},\, 2i+1)} = \cos\!\left(\frac{\text{pos}}{10000^{2i/d_{\text{model}}}}\right) $$
+
+- $\text{pos}$ : 토큰 위치 (0, 1, 2, …)
+- $i$ : 차원 인덱스 ($0, 1, \dots, d_{\text{model}}/2 - 1$)
+- 짝수 차원은 sin, 홀수 차원은 cos
+
+즉 한 위치 $\text{pos}$의 PE 벡터는 *서로 다른 주파수의 sin/cos 값* 들을 차원 축으로 나열한 것이다. 낮은 차원일수록 짧은 주기로 빠르게 진동하고, 높은 차원일수록 분모 $10000^{2i/d_{\text{model}}}$ 이 커지면서 매우 느린 주기를 갖는다.
+
+```python title="positional_encoding.py"
+import torch
+
+def positional_encoding(seq_len, d_model):
+    pos = torch.arange(seq_len).unsqueeze(1)            # (seq_len, 1)
+    i = torch.arange(d_model // 2).unsqueeze(0)         # (1, d_model/2)
+    angle = pos / (10000 ** (2 * i / d_model))          # (seq_len, d_model/2)
+    pe = torch.zeros(seq_len, d_model)
+    pe[:, 0::2] = torch.sin(angle)  # 짝수 차원
+    pe[:, 1::2] = torch.cos(angle)  # 홀수 차원
+    return pe
+```
+
+### 왜 하필 sin/cos인가?
+
+원 논문이 든 이유 중 가장 멋진 건 **상대 위치가 선형 변환으로 표현된다**는 점이다.
+
+> *"We chose this function because we hypothesized it would allow the model to easily learn to attend by relative positions, since for any fixed offset $k$, $PE_{pos+k}$ can be represented as a linear function of $PE_{pos}$."*
+
+삼각함수의 덧셈공식 덕분이다:
+
+$$ \sin(\text{pos}+k) = \sin(\text{pos})\cos(k) + \cos(\text{pos})\sin(k) $$
+
+$$ \cos(\text{pos}+k) = \cos(\text{pos})\cos(k) - \sin(\text{pos})\sin(k) $$
+
+즉 위치가 $k$ 만큼 떨어진 두 PE 벡터 간의 관계는 **고정된 회전 행렬**로 표현된다. 모델은 이 패턴을 이용해 "두 토큰이 얼마나 떨어져 있는지"를 비교적 어렵지 않게 학습할 수 있다.
+
+또 다른 장점:
+
+- **학습 파라미터 0개** — 가중치 학습이 필요 없으므로 데이터가 적어도 OK
+- **임의 길이로 일반화** — 학습 시 본 적 없는 긴 시퀀스에도 PE가 정의되어 있음 (학습 가능한 임베딩은 `max_len` 제약)
+- **다양한 스케일** — 작은 주파수부터 큰 주파수까지 차원 축에 걸쳐 분포 → 짧은 거리·긴 거리 모두 인코딩 가능
+
+## 학습 가능한 Positional Embedding과 비교
+
+BERT, GPT 같은 후속 모델은 sin/cos 대신 **학습 가능한 위치 임베딩** (`nn.Embedding(max_len, d_model)`) 을 쓰는 경우가 많다.
+
+| 항목 | sin/cos PE | Learned PE |
+|------|------------|------------|
+| 파라미터 수 | 0 | `max_len × d_model` |
+| 길이 일반화 | ✓ (이론상 무한) | ✗ (`max_len` 초과 불가) |
+| 학습 데이터 의존성 | 낮음 | 높음 |
+| 작은 데이터셋 | 강함 | 과적합 위험 |
+| 큰 데이터 + 큰 모델 | 충분히 경쟁력 있음 | 유연한 학습 가능 |
+
+<Callout type="note">
+**현대 대형 LLM의 추세** — 다시 함수 기반 PE로 회귀하는 분위기. **RoPE**(Rotary Position Embedding, LLaMA·Qwen 등)와 **ALiBi**(Attention with Linear Biases) 같은 변형이 등장하면서, *길이 일반화* 와 *효율* 을 모두 잡으려는 방향으로 진화하고 있다.
+</Callout>
+
+## PE 행렬을 그림으로 떠올려 보면
+
+PE 행렬을 `(pos × dim)` 형태로 그려보면 직관이 더 명확해진다.
+
+- **낮은 차원 (왼쪽 열)** — 짧은 주기의 sin/cos 곡선이 위치별로 빠르게 변동
+- **높은 차원 (오른쪽 열)** — 매우 느린 주기, 긴 시퀀스를 따라 천천히 변화
+- 결과적으로 모든 위치마다 서로 다른 **고유 지문(fingerprint)** 같은 벡터가 만들어진다
+
+이 fingerprint를 토큰 임베딩에 더하면, 모델은 한 입력 벡터에서 토큰의 *내용* 과 *위치* 정보를 동시에 보게 된다.
+
+## 정리
+
+- Self-Attention은 순열 등변이라 순서 정보가 없다 → 위치 정보를 별도 주입 필요
+- Transformer는 sin/cos 기반 고정 PE 사용 — **파라미터 0, 무한 길이 일반화 가능**
+- 핵심 매력은 *상대 위치가 선형 변환으로 표현된다*는 점 (삼각함수 덧셈공식)
+- 후속 모델은 Learned PE / RoPE / ALiBi 등으로 다양화
+
+같은 Attention 메커니즘에 *위치라는 한 줄*을 얹는 것만으로 시퀀스 모델이 완성되는 — 이런 구조적 단순함이 Transformer의 매력이라고 생각한다.
+
+## 다음 글 예고
+
+- Layer Normalization & Residual Connection (Pre-LN vs Post-LN, 학습 안정성)
+- Feed-Forward Network — 사실상의 표현력 담당 (왜 Attention 헤드보다 파라미터가 많을까?)
+
+## 참고자료
+
+- [Vaswani et al., *Attention Is All You Need* (NeurIPS 2017) §3.5](https://arxiv.org/abs/1706.03762)
+- [The Illustrated Transformer — Jay Alammar](https://jalammar.github.io/illustrated-transformer/)
+- [Transformer Architecture: The Positional Encoding — Amirhossein Kazemnejad](https://kazemnejad.com/blog/transformer_architecture_positional_encoding/)
+- [Su et al., *RoFormer: Enhanced Transformer with Rotary Position Embedding* (2021)](https://arxiv.org/abs/2104.09864)
