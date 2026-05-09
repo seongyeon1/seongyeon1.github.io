@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>AI Tech Blog</title>
+    <link>https://seongyeon1.github.io</link>
+    <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
+    <language>ko</language>
+    <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>Sat, 09 May 2026 15:01:12 GMT</lastBuildDate>
+    <item>
+      <title>[NLP] Feed-Forward Network — Transformer의 숨은 표현력 (FFN, GELU, SwiGLU, MoE)</title>
+      <link>https://seongyeon1.github.io/blog/2024-08-15-transformer-feed-forward-network/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-08-15-transformer-feed-forward-network/</guid>
+      <description>Attention이 토큰끼리 섞는 일을 한다면, FFN은 각 토큰을 변환하는 역할을 한다. 단순한 2층 MLP이지만 모델 전체 파라미터의 약 2/3를 차지하는 이 컴포넌트의 구조, 활성 함수 변천(ReLU → GELU → SwiGLU), key-value memory 해석, MoE까지 정리한다.</description>
+      <pubDate>Thu, 15 Aug 2024 00:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>transformer</category>
+      <category>FFN</category>
+      <category>feed-forward</category>
+      <category>GELU</category>
+      <category>SwiGLU</category>
+      <category>MoE</category>
+      <category>NLP</category>
+    </item>
+    <item>
+      <title>[NLP] Layer Normalization &amp; Residual Connection — Transformer를 깊게 쌓는 비결 (Pre-LN vs Post-LN)</title>
+      <link>https://seongyeon1.github.io/blog/2024-08-01-transformer-layernorm-residual/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-08-01-transformer-layernorm-residual/</guid>
+      <description>Transformer가 12층, 24층, 96층까지 깊게 쌓일 수 있는 이유는 Residual Connection과 Layer Normalization 두 컴포넌트 덕분이다. 각각의 역할, BatchNorm과의 차이, 그리고 Pre-LN vs Post-LN 트레이드오프를 정리한다.</description>
+      <pubDate>Thu, 01 Aug 2024 00:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>transformer</category>
+      <category>layer-norm</category>
+      <category>residual-connection</category>
+      <category>pre-ln</category>
+      <category>post-ln</category>
+      <category>deep-learning</category>
+      <category>NLP</category>
+    </item>
+    <item>
+      <title>[NLP] Positional Encoding 이해하기 (왜 sin/cos인가?)</title>
+      <link>https://seongyeon1.github.io/blog/2024-07-15-transformer-positional-encoding/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-07-15-transformer-positional-encoding/</guid>
+      <description>Self-Attention은 토큰 순서를 모르기 때문에 위치 정보를 따로 주입해야 한다. Transformer가 사용한 sin/cos Positional Encoding의 수식, 왜 이런 형태인지, 학습 가능한 임베딩과의 차이를 정리한다.</description>
+      <pubDate>Mon, 15 Jul 2024 00:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>transformer</category>
+      <category>positional-encoding</category>
+      <category>sin-cos</category>
+      <category>embeddings</category>
+      <category>NLP</category>
+      <category>attention</category>
+    </item>
+    <item>
+      <title>[NLP] Transformer 3가지 Attention 자세히 보기 (Encoder/Decoder Self-Attention, Cross-Attention, Multi-Head)</title>
+      <link>https://seongyeon1.github.io/blog/2024-07-01-transformer-3-attentions-deep-dive/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-07-01-transformer-3-attentions-deep-dive/</guid>
+      <description>이전 글에서 등장한 Transformer의 3가지 Attention(Encoder Self-Attention, Decoder Masked Self-Attention, Encoder-Decoder Attention)이 각각 어떻게 동작하는지, 그리고 Multi-Head Attention이 왜 필요한지 정리한다.</description>
+      <pubDate>Mon, 01 Jul 2024 00:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>transformer</category>
+      <category>attention</category>
+      <category>self-attention</category>
+      <category>cross-attention</category>
+      <category>multi-head</category>
+      <category>encoder</category>
+      <category>decoder</category>
+      <category>NLP</category>
+    </item>
+    <item>
+      <title>[NLP] Attention 쉽게 이해하기 (Query, Key, Value, Transformer에서의 attention 3종류)</title>
+      <link>https://seongyeon1.github.io/blog/2024-06-24-nlp-attention-query-key-value-transformer-attention-3/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-06-24-nlp-attention-query-key-value-transformer-attention-3/</guid>
+      <description>Transformer를 이해하기 위한 첫걸음으로 Attention의 직관, Q·K·V의 역할, Scaled Dot-Product Attention 수식, 그리고 Transformer 내부에 등장하는 3가지 Attention 종류를 정리한다.</description>
+      <pubDate>Mon, 24 Jun 2024 00:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>transformer</category>
+      <category>attention</category>
+      <category>NLP</category>
+      <category>self-attention</category>
+      <category>Q/K/V</category>
+    </item>
+  </channel>
+</rss>
