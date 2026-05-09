@@ -16,11 +16,11 @@ const Paper = ({
   const authorStr = Array.isArray(authors) ? authors.join(", ") : authors;
 
   return (
-    <div className="my-6 rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-gray-700 dark:bg-gray-800/50">
-      <h3 className="mt-0 text-lg font-semibold text-gray-900 dark:text-gray-100">
+    <div className="my-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-800/50">
+      <h3 className="mt-0 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
         {title}
       </h3>
-      <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+      <p className="mb-2 text-sm text-zinc-600 dark:text-zinc-400">
         {authorStr} ({year})
         {venue && <span className="ml-1">- {venue}</span>}
       </p>

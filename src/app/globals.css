@@ -5,6 +5,10 @@
 /* Design tokens — make-interfaces-feel-better */
 @layer base {
   :root {
+    /* Pretendard variable font from CDN (loaded in layout.tsx <head>) */
+    --font-pretendard: "Pretendard Variable", -apple-system, BlinkMacSystemFont,
+      "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+
     /* Layered shadow that replaces a border for cards/buttons.
        Adapts to any background since it uses transparency. */
     --shadow-border:
@@ -18,8 +22,9 @@
   }
 
   .dark {
-    --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.08);
-    --shadow-border-hover: 0 0 0 1px rgba(255, 255, 255, 0.13);
+    /* Pure-black surface needs a slightly stronger ring for definition */
+    --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.10);
+    --shadow-border-hover: 0 0 0 1px rgba(255, 255, 255, 0.16);
   }
 
   html {
@@ -28,8 +33,9 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Vercel-style: off-white #fafafa light, pure black dark */
   body {
-    @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+    @apply bg-[#fafafa] text-[#0a0a0a] dark:bg-black dark:text-[#ededed];
   }
 
   ::selection {
@@ -113,7 +119,7 @@
 }
 
 [data-rehype-pretty-code-figure] [data-line-numbers] > [data-line]::before {
-  @apply mr-6 inline-block w-4 text-right text-gray-500;
+  @apply mr-6 inline-block w-4 text-right text-zinc-500;
   content: counter(line);
   counter-increment: line;
 }
@@ -123,13 +129,13 @@
 }
 
 [data-rehype-pretty-code-title] {
-  @apply flex items-center gap-2 rounded-t-xl bg-gray-50 px-5 py-3 text-xs font-medium tracking-wide text-gray-500 dark:bg-gray-900 dark:text-gray-400;
+  @apply flex items-center gap-2 rounded-t-xl bg-zinc-50 px-5 py-3 text-xs font-medium tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400;
   box-shadow: var(--shadow-border);
 }
 
 [data-rehype-pretty-code-title]::before {
   content: "";
-  @apply inline-block h-3 w-3 rounded-full bg-gray-300 dark:bg-gray-600;
+  @apply inline-block h-3 w-3 rounded-full bg-zinc-300 dark:bg-zinc-600;
 }
 
 [data-rehype-pretty-code-title] + pre {
@@ -138,7 +144,7 @@
 
 /* Prose customization */
 .prose h2 {
-  @apply mt-12 mb-4 pb-2 border-b border-gray-100 dark:border-gray-800/50;
+  @apply mt-12 mb-4 pb-2 border-b border-zinc-100 dark:border-zinc-800/50;
 }
 
 .prose h3 {
@@ -161,7 +167,7 @@
 }
 
 .prose blockquote {
-  @apply border-l-primary-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg py-1 px-1 not-italic;
+  @apply border-l-primary-500 bg-zinc-50 dark:bg-zinc-900/50 rounded-r-lg py-1 px-1 not-italic;
 }
 
 /* Image outlines: pure black/white at 10% opacity, never tinted */
@@ -187,9 +193,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-gray-300 dark:bg-gray-700;
+  @apply rounded-full bg-zinc-300 dark:bg-zinc-700;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-600;
+  @apply bg-zinc-400 dark:bg-zinc-600;
 }

@@ -35,14 +35,14 @@ const HomePage = () => {
           <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
             AI &amp; Machine Learning
           </p>
-          <h1 className="mb-6 text-balance text-4xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl lg:text-6xl">
+          <h1 className="mb-6 text-balance text-4xl font-extrabold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl lg:text-6xl">
             AI 기술을 탐구하고
             <br />
-            <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-purple-500 bg-clip-text text-transparent dark:from-primary-400 dark:via-primary-300 dark:to-purple-400">
+            <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-cyan-400 bg-clip-text text-transparent dark:from-primary-400 dark:via-primary-300 dark:to-cyan-300">
               기록합니다
             </span>
           </h1>
-          <p className="max-w-xl text-pretty text-lg leading-relaxed text-gray-600 dark:text-gray-400">
+          <p className="max-w-xl text-pretty text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
             AI 공부기록, 논문 리뷰, 프로젝트 후기를 기록하는 기술 블로그입니다.
           </p>
         </div>
@@ -53,7 +53,7 @@ const HomePage = () => {
         <section className="mb-20 animate-fade-in-up delay-100">
           <Link
             href={`/blog/${featuredPost.slug}`}
-            className="group block overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-white shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:from-gray-900 dark:to-gray-950"
+            className="group block overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-white shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:from-zinc-900 dark:to-zinc-950"
           >
             <div className="p-8 sm:p-10">
               <div className="mb-4 flex items-center gap-3">
@@ -61,14 +61,14 @@ const HomePage = () => {
                   Latest
                 </span>
                 <CategoryBadge category={featuredPost.category} />
-                <span className="text-sm text-gray-400 dark:text-gray-500">
+                <span className="text-sm text-zinc-400 dark:text-zinc-500">
                   {featuredPost.date}
                 </span>
               </div>
-              <h2 className="mb-3 text-balance text-2xl font-bold text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400 sm:text-3xl">
+              <h2 className="mb-3 text-balance text-2xl font-bold text-zinc-900 transition-colors group-hover:text-primary-600 dark:text-zinc-100 dark:group-hover:text-primary-400 sm:text-3xl">
                 {featuredPost.title}
               </h2>
-              <p className="max-w-2xl text-pretty text-gray-600 dark:text-gray-400">
+              <p className="max-w-2xl text-pretty text-zinc-600 dark:text-zinc-400">
                 {featuredPost.summary}
               </p>
               <div className="mt-6 flex items-center gap-2 text-sm font-medium text-primary-600 dark:text-primary-400">
@@ -84,7 +84,7 @@ const HomePage = () => {
 
       {/* Categories */}
       <section className="mb-20 animate-fade-in-up delay-200">
-        <h2 className="mb-8 text-xl font-bold text-gray-900 dark:text-gray-100">
+        <h2 className="mb-8 text-xl font-bold text-zinc-900 dark:text-zinc-100">
           Categories
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -92,17 +92,17 @@ const HomePage = () => {
             ([key, meta]) => (
               <div
                 key={key}
-                className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-gray-900"
+                className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-zinc-900"
               >
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={meta.icon} />
                   </svg>
                 </div>
-                <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                <p className="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                   {categoryCounts[key] ?? 0}
                 </p>
-                <p className="mt-0.5 text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="mt-0.5 text-sm font-medium text-zinc-500 dark:text-zinc-400">
                   {meta.label}
                 </p>
               </div>
@@ -115,12 +115,12 @@ const HomePage = () => {
       {series.length > 0 && (
         <section className="mb-20 animate-fade-in-up delay-300">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
               Series
             </h2>
             <Link
               href="/series"
-              className="rounded-md text-sm font-medium text-gray-500 transition-[color,scale] duration-150 ease-out-expo hover:text-primary-600 active:scale-[0.96] dark:text-gray-400 dark:hover:text-primary-400"
+              className="rounded-md text-sm font-medium text-zinc-500 transition-[color,scale] duration-150 ease-out-expo hover:text-primary-600 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-primary-400"
             >
               View all →
             </Link>
@@ -130,7 +130,7 @@ const HomePage = () => {
               <Link
                 key={s.name}
                 href={`/series/${encodeURIComponent(s.name)}`}
-                className="group rounded-2xl bg-white p-6 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-gray-900"
+                className="group rounded-2xl bg-white p-6 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-zinc-900"
               >
                 <div className="mb-2 flex items-center gap-2">
                   <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -140,7 +140,7 @@ const HomePage = () => {
                     {s.totalCount} posts
                   </span>
                 </div>
-                <h3 className="text-balance font-bold text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
+                <h3 className="text-balance font-bold text-zinc-900 transition-colors group-hover:text-primary-600 dark:text-zinc-100 dark:group-hover:text-primary-400">
                   {s.name}
                 </h3>
               </Link>
@@ -152,12 +152,12 @@ const HomePage = () => {
       {/* Recent Posts */}
       <section className="mb-20 animate-fade-in-up delay-400">
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
             Recent Posts
           </h2>
           <Link
             href="/blog"
-            className="rounded-md text-sm font-medium text-gray-500 transition-[color,scale] duration-150 ease-out-expo hover:text-primary-600 active:scale-[0.96] dark:text-gray-400 dark:hover:text-primary-400"
+            className="rounded-md text-sm font-medium text-zinc-500 transition-[color,scale] duration-150 ease-out-expo hover:text-primary-600 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-primary-400"
           >
             View all →
           </Link>

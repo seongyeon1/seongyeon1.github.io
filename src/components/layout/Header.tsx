@@ -25,7 +25,7 @@ const MoonIcon = ({ className }: { className?: string }) => (
 const ThemeToggle = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) => (
   <button
     onClick={onToggle}
-    className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-gray-100 hover:text-gray-700 active:scale-[0.96] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+    className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-500 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-zinc-100 hover:text-zinc-700 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
     aria-label="Toggle dark mode"
   >
     <span
@@ -73,8 +73,8 @@ const Header = () => {
     <header
       className={`sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-300 ease-out-expo ${
         isScrolled
-          ? "bg-white/80 shadow-border backdrop-blur-xl dark:bg-gray-950/80"
-          : "bg-white/50 backdrop-blur-md dark:bg-gray-950/50"
+          ? "bg-white/80 shadow-border backdrop-blur-xl dark:bg-black/80"
+          : "bg-white/50 backdrop-blur-md dark:bg-black/50"
       }`}
     >
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
@@ -85,7 +85,7 @@ const Header = () => {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white shadow-border">
             AI
           </div>
-          <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">
+          <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             Tech Blog
           </span>
         </Link>
@@ -96,12 +96,12 @@ const Header = () => {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3.5 py-2.5 text-sm font-medium text-gray-600 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-gray-100 hover:text-gray-900 active:scale-[0.96] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+              className="rounded-lg px-3.5 py-2.5 text-sm font-medium text-zinc-600 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-zinc-100 hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             >
               {item.label}
             </Link>
           ))}
-          <div className="ml-2 h-5 w-px bg-gray-200 dark:bg-gray-700" />
+          <div className="ml-2 h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
           <div className="ml-1">
             <ThemeToggle isDark={isDark} onToggle={toggleDark} />
           </div>
@@ -112,7 +112,7 @@ const Header = () => {
           <ThemeToggle isDark={isDark} onToggle={toggleDark} />
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-gray-100 active:scale-[0.96] dark:text-gray-400 dark:hover:bg-gray-800"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-500 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-zinc-100 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800"
             aria-label="Toggle menu"
             aria-expanded={isMobileMenuOpen}
           >
@@ -148,7 +148,7 @@ const Header = () => {
 
       {/* Mobile menu: grid-rows trick → height transitions, exit animates */}
       <div
-        className={`grid overflow-hidden bg-white/95 backdrop-blur-xl transition-[grid-template-rows,opacity] duration-200 ease-out-expo sm:hidden dark:bg-gray-950/95 ${
+        className={`grid overflow-hidden bg-white/95 backdrop-blur-xl transition-[grid-template-rows,opacity] duration-200 ease-out-expo sm:hidden dark:bg-black/95 ${
           isMobileMenuOpen ? "grid-rows-[1fr] opacity-100 shadow-border" : "grid-rows-[0fr] opacity-0"
         }`}
         aria-hidden={!isMobileMenuOpen}
@@ -160,7 +160,7 @@ const Header = () => {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 text-sm font-medium text-gray-600 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-gray-100 hover:text-gray-900 active:scale-[0.96] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                className="rounded-lg px-3 py-3 text-sm font-medium text-zinc-600 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-zinc-100 hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               >
                 {item.label}
               </Link>

@@ -37,10 +37,10 @@ const SeriesPage = async ({ params }: Props) => {
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">
           Series
         </p>
-        <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
+        <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
           {series.name}
         </h1>
-        <p className="text-pretty text-gray-500 dark:text-gray-400">
+        <p className="text-pretty text-zinc-500 dark:text-zinc-400">
           <span className="tabular-nums">{series.totalCount}</span> posts in this series
         </p>
       </div>
@@ -49,21 +49,21 @@ const SeriesPage = async ({ params }: Props) => {
           <li key={post.slug}>
             <Link
               href={`/blog/${post.slug}`}
-              className="group flex items-start gap-4 rounded-2xl bg-white p-5 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-gray-900"
+              className="group flex items-start gap-4 rounded-2xl bg-white p-5 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-zinc-900"
             >
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 text-sm font-bold tabular-nums text-white shadow-sm">
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="text-balance font-bold text-gray-900 transition-colors group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
+                <h2 className="text-balance font-bold text-zinc-900 transition-colors group-hover:text-primary-600 dark:text-zinc-100 dark:group-hover:text-primary-400">
                   {post.title}
                 </h2>
-                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-gray-400 dark:text-gray-500">
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-zinc-400 dark:text-zinc-500">
                   <CategoryBadge category={post.category} />
                   <span className="tabular-nums">{post.date}</span>
                   <span>{post.readingTime}</span>
                 </div>
-                <p className="mt-2 line-clamp-2 text-pretty text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-2 line-clamp-2 text-pretty text-sm text-zinc-500 dark:text-zinc-400">
                   {post.summary}
                 </p>
               </div>

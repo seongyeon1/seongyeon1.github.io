@@ -44,14 +44,14 @@ const TOC = ({ headings }: { headings: Heading[] }) => {
   return (
     <nav className="sticky top-24">
       {/* Progress bar */}
-      <div className="mb-4 h-0.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+      <div className="mb-4 h-0.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
         <div
           className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-[width] duration-150 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
         On this page
       </h3>
       <ul className="space-y-0.5 text-[13px]">
@@ -65,7 +65,7 @@ const TOC = ({ headings }: { headings: Heading[] }) => {
               className={`block rounded-md py-1.5 px-2.5 transition-[color,background-color] duration-150 ease-out-expo ${
                 activeId === heading.id
                   ? "bg-primary-50 font-medium text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
-                  : "text-gray-400 hover:bg-gray-50 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-800/50 dark:hover:text-gray-300"
+                  : "text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-300"
               }`}
             >
               {heading.text}

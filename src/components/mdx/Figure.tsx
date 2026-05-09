@@ -25,7 +25,7 @@ const Figure = ({
         />
       </div>
       {caption && (
-        <figcaption className="mt-2 text-pretty text-center text-sm text-gray-500 dark:text-gray-400">
+        <figcaption className="mt-2 text-pretty text-center text-sm text-zinc-500 dark:text-zinc-400">
           {caption}
         </figcaption>
       )}

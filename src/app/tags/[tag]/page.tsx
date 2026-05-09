@@ -29,13 +29,13 @@ const TagPage = async ({ params }: Props) => {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <div className="mb-10">
-        <h1 className="mb-2 text-balance text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
+        <h1 className="mb-2 text-balance text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
           <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent dark:from-primary-400 dark:to-primary-300">
             #
           </span>
           {decoded}
         </h1>
-        <p className="text-pretty text-gray-500 dark:text-gray-400">
+        <p className="text-pretty text-zinc-500 dark:text-zinc-400">
           <span className="tabular-nums">{posts.length}</span> {posts.length === 1 ? "post" : "posts"} tagged
         </p>
       </div>
