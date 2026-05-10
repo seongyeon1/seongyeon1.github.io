@@ -1,0 +1,166 @@
+---
+title: "[논문 리뷰] MetaSPO — 태스크를 가로지르는 시스템 프롬프트를 메타러닝하기"
+date: "2026-01-22T22:30:00+09:00"
+category: "paper-review"
+tags: ["prompt-optimization", "meta-learning", "NeurIPS-2025"]
+summary: "프롬프트를 태스크별로 일일이 튜닝하는 게 아니라, 모든 태스크에 공통으로 좋은 시스템 프롬프트를 메타러닝으로 학습한다. Bilevel 최적화 + Beam Search로 5개 벤치마크에서 미지 태스크 일반화를 검증한 NeurIPS 2025 논문."
+series: "프롬프트 최적화 시리즈"
+seriesOrder: 1
+math: true
+---
+
+<Paper
+  title="Meta-level System Prompt Optimization (MetaSPO)"
+  authors="Yumin Choi, Jinheon Baek, Sung Ju Hwang"
+  year={2025}
+  venue="NeurIPS 2025"
+  arxiv="2505.09666"
+/>
+
+## 한 줄 요약
+
+> 시스템 프롬프트는 *모든 태스크에 공통*, 유저 프롬프트는 *태스크별*로 분리한 뒤, 메타러닝으로 **전이 가능한 시스템 프롬프트**를 학습한다. 새 태스크에 대해서도 그대로 잘 동작.
+
+## 배경 — 프롬프트 최적화의 한계
+
+자동 프롬프트 최적화(APE, ProTeGi, OPRO 등)는 빠르게 발전했지만 한 가지 가정을 공유한다.
+
+> **"한 태스크에 대해 잘 도는 프롬프트를 찾자."**
+
+이게 약점이다. 새 태스크가 들어오면 처음부터 다시 탐색해야 한다. 도메인이 살짝만 바뀌어도 학습된 프롬프트가 망가진다.
+
+저자들이 던지는 질문은 단순하다.
+
+> *"여러 태스크를 가로질러 잘 작동하는 프롬프트는 무엇이 다른가?"*
+
+답은 **시스템 프롬프트**라는 거다. 시스템 프롬프트가 모델의 페르소나/가이드라인을 잡고, 유저 프롬프트가 태스크 디테일을 채우는 구조라면 — 시스템 프롬프트는 태스크 간 공유될 수 있다.
+
+## 핵심 아이디어 — Bilevel + Meta-Learning
+
+<Callout type="note">
+**프롬프트를 두 층으로 분리**:<br />
+- 시스템 프롬프트(공통) — 모든 태스크가 공유<br />
+- 유저 프롬프트(태스크별) — 각 태스크에 특화<br /><br />
+**메타 목적**: 시스템 프롬프트가 *어떤 태스크에 붙여도 잘 작동*하도록 학습.
+</Callout>
+
+이 분리 자체가 통찰이다. 페르소나·일관된 톤·안전 가이드 같은 *공유 가능한* 부분과, 입출력 형식·도메인 용어 같은 *태스크 특화* 부분이 한 프롬프트에 섞여 있던 게 기존 방식.
+
+## 방법론 — Bilevel 최적화
+
+전체 흐름은 두 개의 중첩된 루프다.
+
+```
+Outer Loop:  시스템 프롬프트 후보 생성 → 메타 스코어 평가
+  Inner Loop: 각 태스크에 대해 유저 프롬프트 최적화 (Beam Search)
+```
+
+### 수식 — 무엇을 최적화하는가
+
+태스크 집합 $\mathcal{T} = \{t_1, ..., t_N\}$가 주어졌을 때:
+
+$$
+S^* = \arg\max_{S} \frac{1}{N} \sum_{t \in \mathcal{T}} \max_{U_t} \text{Acc}(S, U_t, t)
+$$
+
+- $S$: 시스템 프롬프트
+- $U_t$: 태스크 $t$의 유저 프롬프트
+- 안쪽 $\max_{U_t}$ — **Inner loop** (태스크별 유저 프롬프트 최적화)
+- 바깥쪽 $\max_S$ — **Outer loop** (메타 스코어 = 모든 태스크의 평균 정확도 최대화)
+
+### 알고리즘 골격
+
+```python
+def meta_train(tasks, iterations):
+    S = initial_system_prompt()          # "You are a helpful assistant."
+    U = {t: initial_user(t) for t in tasks}
+
+    for _ in range(iterations):
+        # Inner: 태스크별 유저 프롬프트 Beam Search
+        for t in tasks:
+            cands = generate_user_candidates(U[t], t)
+            U[t] = top_k(cands, k=user_top_k)
+
+        # Outer: 시스템 프롬프트 후보 생성
+        S_cands = generate_system_candidates(S)
+        for cand in S_cands:
+            meta_score = mean(eval(cand, U[t], t) for t in tasks)
+            if meta_score > best:
+                S, best = cand, meta_score
+
+    return S, U
+```
+
+### 후보 생성 — LLM In-Context Learning
+
+후보 시스템 프롬프트는 별도의 강한 LLM(예: GPT-4o)이 만든다. **현재 프롬프트의 실패 케이스 + 잘 된 케이스**를 컨텍스트로 주고 *"더 나은 시스템 프롬프트를 제안해줘"*. 이게 한 라운드.
+
+논문은 두 가지 LLM 역할을 분리한다:
+- **Base LM** — 평가용 (vLLM/API, 학습 모델)
+- **Optim LM** — 후보 생성용 (보통 더 강한 모델)
+
+작은 Base LM의 행동을 큰 Optim LM이 진단·교정하는 구조.
+
+## 실험 — 5개 벤치마크
+
+| 벤치마크 | 태스크 수 | 유형 |
+|---------|---------|------|
+| Amazon | 7 | 리뷰 평점 예측 (1–5) |
+| BigBench | 8 | 논리·추론 |
+| MedMCQA | 8 | 의료 객관식 |
+| Safety | 6 | 독성·안전성 탐지 |
+| Grounding | 6 | 오픈도메인 QA |
+
+각 벤치마크에서 태스크를 **메타-학습용 / 메타-테스트용**으로 분할:
+
+```yaml
+# Amazon 예시
+meta_train_tasks: [beauty, game, baby, office]   # 4개로 학습
+meta_test_tasks:  [electronics, pet, sports]     # 3개 미지 태스크에서 평가
+```
+
+### 평가 시나리오 두 가지
+
+1. **Unseen Generalization**: 학습된 시스템 프롬프트를 미지 태스크에 그대로 쓰기 (=*제로샷 전이*)
+2. **Test-Time Adaptation**: 미지 태스크에 대해 ProTeGi로 추가 적응 (=*초기점 부트스트랩*)
+
+두 번째 시나리오가 흥미롭다. MetaSPO 시스템 프롬프트가 *좋은 시작점* 역할을 한다는 가설을 검증.
+
+### 결과 요약
+
+논문에서 두 가지가 일관되게 관찰된다:
+- **단일 태스크 최적화 < MetaSPO 시스템 프롬프트** — 일반화 성능에서 명확한 차이
+- **Test-Time Adaptation 시 수렴 속도 향상** — 같은 budget으로 더 빨리 더 높이
+
+핵심 메시지는: *"태스크별로 처음부터 탐색하지 말고, 메타-학습된 시스템 프롬프트에서 시작하자."*
+
+## 내 생각 / 한계점
+
+### 좋은 점
+
+- **분리의 힘**: 시스템/유저 프롬프트 분리는 단순하지만 강력하다. 실무에서도 이 구조로 가는 게 정신 건강에 좋다.
+- **Test-Time Adaptation 시나리오**가 실용적이다. 신규 도메인에 들어갈 때 MetaSPO 출력으로 시작 → ProTeGi/APE로 미세 조정. 이 흐름이 곧바로 옮겨와도 된다.
+- **Optim LM과 Base LM 분리**가 합리적이다. 작은 모델을 운영에 쓰면서, 최적화 단계만 큰 모델을 쓰면 비용/성능 균형.
+
+### 한계
+
+1. **Beam Search의 한계**: Inner loop는 보수적이다. 다양성이 떨어지고 local optimum에 갇히기 쉽다. (이 문제를 정면 돌파하는 게 [다음 편 GEPA](/blog/2026-01-28-gepa-reflective-prompt-evolution).)
+2. **메타-스코어가 단일 목표**: 평균 정확도만 본다. 분산이 큰 태스크가 있어도 평균만 좋으면 통과. 다목적 최적화는 아님.
+3. **태스크 set의 가정**: 메타-학습 태스크가 *대표성을 가진다*는 가정. 실무에선 도메인 분포가 비대칭일 때 어떻게 가중치를 줄지 정해야 한다.
+4. **Optim LM 비용**: 매 outer step마다 GPT-4o급 호출. 큰 budget이 필요.
+
+### 흥미로운 후속 질문
+
+- 시스템 프롬프트의 *어떤 부분*이 전이를 만드는가? (페르소나? 안전 가이드? 출력 포맷?)
+- 학습된 시스템 프롬프트를 사람이 읽고 이해할 수 있는가? — 해석 가능성 측면
+
+## 다음 편 예고
+
+다음 편은 같은 *프롬프트 최적화* 영역의 정반대 접근 — **GEPA**다. Beam search 대신 유전 알고리즘 + Pareto, 정량 점수 대신 자연어 피드백.
+
+→ [다음 편: GEPA — 자연어 피드백으로 진화하는 프롬프트](/blog/2026-01-28-gepa-reflective-prompt-evolution)
+
+## 참고 자료
+
+- 논문: [arXiv:2505.09666](https://arxiv.org/abs/2505.09666)
+- 비교군: APE (Zhou et al. 2023), ProTeGi (Pryzant et al. 2023), OPRO (Yang et al. 2024)

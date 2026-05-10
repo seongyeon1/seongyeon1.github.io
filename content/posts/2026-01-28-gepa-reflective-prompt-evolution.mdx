@@ -1,0 +1,162 @@
+---
+title: "[논문 리뷰] GEPA — 자연어 피드백으로 진화하는 프롬프트, RL을 이긴다"
+date: "2026-01-28T20:15:00+09:00"
+category: "paper-review"
+tags: ["prompt-optimization", "GEPA", "evolutionary-algorithm", "DSPy"]
+summary: "스칼라 보상 대신 자연어 피드백으로 프롬프트를 진화시키는 알고리즘. 유전 + 파레토 + 반성적 돌연변이 세 축으로 GRPO 대비 35배 적은 샘플로 더 높은 성능을 낸다."
+series: "프롬프트 최적화 시리즈"
+seriesOrder: 2
+math: true
+---
+
+<Paper
+  title="GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning"
+  authors="Agrawal et al."
+  year={2025}
+  venue="arXiv preprint"
+  arxiv="2507.19457"
+/>
+
+## 한 줄 요약
+
+> 보상 신호를 *숫자*가 아니라 *자연어 진단*으로 받아 프롬프트를 진화시킨다. **GEPA = Genetic-Pareto + Reflective Mutation**. RL 기반 GRPO보다 10–20% 더 높은 성능을 **35배 적은 샘플**로 달성.
+
+## 배경 — 보상이 너무 빈약하다
+
+지금까지의 자동 프롬프트 최적화는 대부분 **스칼라 보상**으로 돌았다.
+
+```
+프롬프트 → 평가 → 점수(0.62) → "더 나은 프롬프트로 진화"
+```
+
+문제는 *0.62라는 숫자가 뭘 알려주는가*다. 답이 틀렸다는 건 알지만, **왜** 틀렸는지, **어떻게** 고쳐야 할지 신호가 없다. RL 식 표현으로는 sparse reward 문제.
+
+저자들의 제안은 단순하다.
+
+> *"LLM은 자연어로 진단할 수 있다. 점수 대신 진단 문장을 보상으로 쓰자."*
+
+## 핵심 아이디어 세 축
+
+<Callout type="note">
+**1. Genetic** — 프롬프트 인구(population)를 유지하며 진화시킨다.<br />
+**2. Pareto** — 다목적(정확도·근거성·관련성·…)에서 비-지배되는 프론티어를 선택해 다양성을 보존.<br />
+**3. Reflective Mutation** — 실패 사례를 LLM이 자연어로 분석한 뒤, 그 분석을 바탕으로 변이.
+</Callout>
+
+이 셋의 조합이 GEPA의 정체성이다. 어느 하나 빼도 다른 알고리즘이 된다 — 유전+점수만 쓰면 GA, 반성적 변이만 쓰면 OPRO/Reflexion 계열.
+
+## 방법론 — 한 사이클
+
+```python
+def gepa_optimize(program, dataset, budget):
+    population = [program]
+
+    while budget > 0:
+        # 1) 평가 + 자연어 피드백 수집
+        for p in population:
+            p.score, p.feedback = evaluate_with_feedback(p, dataset)
+
+        # 2) Pareto 프론티어 선택 (다목적, 비-지배)
+        frontier = pareto_select(population)
+
+        # 3) 반성적 돌연변이 — LLM이 실패 분석 → 개선안
+        for parent in frontier:
+            child = reflect_and_mutate(parent, parent.feedback)
+            if eval(child) improves:
+                population.append(child)
+
+        # 4) 시스템-aware 교차 — 상호 보완 강점 결합
+        children = crossover(frontier)
+        population.extend(children)
+
+        budget -= 1
+
+    return best(population)
+```
+
+### Step 1 — 자연어 피드백 함수 $\mu_f$
+
+가장 핵심적인 구조 변화다. 평가 함수가 점수만 주는 게 아니라 진단을 같이 준다.
+
+$$
+\mu_f(p, \mathcal{D}) = (\text{score}, \text{textual feedback})
+$$
+
+피드백 예시 (논문/구현체에서 자주 인용되는 패턴):
+
+> *"QueryGenerator failed: Generated query 'Madeira archipelago' but the original question was about 'Portugal population'. The retrieved context was already narrowed to Madeira. Suggestion: QueryGenerator should consider the original question scope relative to the current context."*
+
+이걸 단순 점수 0.4 vs 0.62로 비교했다고 상상해보자. 어느 쪽이 *어디를* 어떻게 고쳐야 할지 명확한가.
+
+### Step 2 — Pareto 프론티어 선택
+
+다목적 평가에서 한 후보가 다른 후보를 *모든 차원에서 압도*할 때 그것을 dominated라 한다. 그렇지 않은(=어느 한 차원이라도 더 나은) 후보들이 **Pareto frontier**.
+
+이걸 선택 풀로 쓰는 이유는 **다양성 보존**이다. 단일 목표 최적화는 빠르게 한 점으로 수렴해 local optimum에 갇히기 쉬운데, Pareto는 서로 다른 강점을 가진 후보들을 동시에 살려둔다.
+
+<Callout type="tip">
+RAG 시나리오에서 자연스러운 다목적 — 정확도 / 근거성(citation) / 관련성(retrieval relevance) / 응답 길이 / 비용. GEPA는 이걸 모두 따로 채점하고 frontier를 만든다.
+</Callout>
+
+### Step 3 — Reflective Mutation
+
+부모 프롬프트와 그 *피드백*을 LLM(GPT-4o급)에 넣고 *"이 진단을 반영해 개선된 프롬프트를 제안해라"*. 이게 한 번의 돌연변이.
+
+차이점은 명확하다 — 무작위 변형이 아니라 **진단-기반 변형**.
+
+### Step 4 — System-aware Crossover
+
+여러 프롬프트의 *상보적 강점*을 결합한다. 시스템 전체의 흐름을 알고 있는 LLM이 두 부모를 보고 *"이 둘의 좋은 부분을 합친 자식"*을 만든다. 단순 토큰 cross가 아니라 **의미 기반 합성**.
+
+## 실험 결과 — 핵심 표 하나
+
+| 방법 | MATH | 롤아웃 횟수 (상대) |
+|------|------|-------------------|
+| GRPO (RL 기반) | ~83% | 35× |
+| MIPROv2 | ~80% | 1× |
+| **GEPA** | **~93%** | **1×** |
+
+같은 1× 예산에서 MIPROv2 대비 +13%p, 35× 더 비싼 GRPO 대비 +10%p. **샘플 효율과 성능을 동시에** 가져간다.
+
+다른 벤치마크(HotPotQA, GSM8K)에서도 일관된 우위. 자세한 수치는 원 논문 표 참조.
+
+### 왜 RL을 이기는가
+
+직관:
+- RL은 **소량의 신호(reward)** 를 **많은 샘플로** 분산해서 받는다.
+- GEPA는 **풍부한 신호(텍스트 피드백)** 를 **적은 샘플로** 집중해서 받는다.
+
+LLM이 자연어를 잘 다룬다는 *내장 능력*을 활용하는 게 핵심. 점수 0.62를 보고 LLM이 할 수 있는 게 별로 없지만, *"근거 인용이 빠졌다"*를 보고 *"근거를 명시하라는 지시 추가"* 같은 액션은 자연스럽다.
+
+## 내 생각 / 한계점
+
+### 좋은 점
+
+- **해석 가능성**이 거의 무료다. 진화 과정 자체가 *자연어 로그*로 남는다. 왜 이 프롬프트가 됐는지 사람이 읽고 이해할 수 있다.
+- **모듈성**: 한 모듈씩 따로 최적화 가능 (Query / Retrieval / Generation을 따로). DSPy의 모듈 시그니처 위에서 자연스럽게 동작.
+- **Pareto가 옳은 선택**이다. 실무 RAG에서 정확도만 보면 응답이 산만해지고, 근거성만 보면 단순 복붙이 된다. 다축 평가가 정신 건강에 좋다.
+
+### 한계
+
+1. **태스크 특화** — MetaSPO와 달리 전이 학습이 약하다. 새 태스크에는 처음부터 다시 돌려야 한다. ([1편 MetaSPO](/blog/2026-01-22-metaspo-meta-system-prompt)와 정확히 반대 트레이드오프.)
+2. **Optim LM 비용** — 매 변이/교차마다 GPT-4o급 호출. 작은 budget에선 부담.
+3. **피드백 품질에 종속** — Optim LM이 약하면 진단이 부정확하고, 진화가 잘못된 방향으로 갈 수 있다.
+4. **다목적 가중치 정하기** — Pareto는 가중치 없이 frontier를 만들지만, 실제로 *최종 한 점*을 고를 땐 결국 가중치가 필요하다. 이건 사용자 결정.
+
+### 실무 적용 포인트
+
+- DSPy 사용 중이라면 즉시 도입할 만하다. `dspy.GEPA` optimizer가 이미 있다.
+- 비용 제약이 있다면 **부분 모듈만** GEPA로 (예: Generation 단계만), 나머지는 fewshot/MIPRO.
+- 시스템 프롬프트의 *베이스라인*을 MetaSPO로 잡고, *모듈별 미세조정*을 GEPA로 — 다음 편 비교 글에서 자세히.
+
+## 다음 편 예고
+
+지금까지 본 두 알고리즘(MetaSPO, GEPA)은 정반대의 강점을 가진다. 다음 편은 **언제 무엇을 쓸지** 정리하는 비교 글이다. APE/ProTeGi까지 포함해 4개 기법을 한 표로.
+
+→ [다음 편: 프롬프트 최적화 기법 비교](/blog/2026-02-02-prompt-optimization-comparison)
+
+## 참고 자료
+
+- 논문: [arXiv:2507.19457](https://arxiv.org/abs/2507.19457)
+- DSPy 공식: [dspy.ai](https://dspy.ai/)
+- 이전 편: [MetaSPO 리뷰](/blog/2026-01-22-metaspo-meta-system-prompt)

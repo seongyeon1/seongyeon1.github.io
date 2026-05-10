@@ -1,0 +1,172 @@
+---
+title: "프롬프트 최적화 기법 비교 — APE · ProTeGi · MetaSPO · GEPA, 언제 무엇을 쓸까"
+date: "2026-02-02T15:40:00+09:00"
+category: "study"
+tags: ["prompt-optimization", "survey", "DSPy"]
+summary: "자동 프롬프트 최적화의 4대 접근(APE / ProTeGi / MetaSPO / GEPA)을 한 자리에 두고, 알고리즘 패러다임·샘플 효율·전이 가능성·해석 가능성으로 비교한다. 마지막으로 실무에서 어떤 조합으로 묶어 쓰면 좋은지 정리."
+series: "프롬프트 최적화 시리즈"
+seriesOrder: 3
+math: true
+---
+
+## 들어가며
+
+[1편 MetaSPO](/blog/2026-01-22-metaspo-meta-system-prompt)와 [2편 GEPA](/blog/2026-01-28-gepa-reflective-prompt-evolution)에서 두 가지 정반대 접근을 봤다.
+
+- **MetaSPO** — 메타러닝으로 *전이 가능한* 시스템 프롬프트
+- **GEPA** — 자연어 피드백으로 *세밀하게* 진화하는 프롬프트
+
+이 글은 이 둘에 더해 더 오래된 두 baseline — **APE**와 **ProTeGi** — 까지 한자리에 두고, *언제 무엇을 쓸지* 정리한다.
+
+## 4대 기법 한 줄 요약
+
+| 기법 | 핵심 아이디어 | 출처 |
+|------|--------------|------|
+| **APE** | LLM에게 "더 나은 프롬프트를 제안해줘" + 점수로 후보 선택 | Zhou et al., 2023 |
+| **ProTeGi** | 텍스트 그래디언트로 프롬프트 수정 (실패 케이스 → 자연어 비판 → 패치) | Pryzant et al., 2023 |
+| **MetaSPO** | 시스템/유저 분리 + Bilevel 메타러닝 → 전이 가능한 시스템 프롬프트 | NeurIPS 2025 |
+| **GEPA** | 유전 알고리즘 + 파레토 + 반성적 변이 (자연어 피드백) | arXiv 2507.19457 |
+
+## 패러다임 차이 — 두 축으로 보기
+
+두 가지 차원이 모든 차이를 설명한다.
+
+**축 1 — 보상 신호의 형태**
+- *스칼라 점수* (APE) ↔ *자연어 진단* (ProTeGi, GEPA)
+
+**축 2 — 최적화의 단위**
+- *단일 태스크* (APE, ProTeGi, GEPA) ↔ *태스크 집합* (MetaSPO)
+
+```
+                  단일 태스크          태스크 집합 (메타)
+스칼라 점수      │   APE             │   (드물다)
+자연어 진단      │   ProTeGi, GEPA   │   MetaSPO + GEPA 조합
+```
+
+MetaSPO는 *축 2의 오른쪽*을 차지하고, GEPA는 *축 1의 아래쪽*을 가장 강하게 차지한다. 둘은 서로 다른 차원을 푼다 — 그래서 합칠 수 있다.
+
+## 상세 비교표
+
+| 차원 | APE | ProTeGi | MetaSPO | GEPA |
+|------|:---:|:-------:|:-------:|:----:|
+| 보상 신호 | 점수 | 텍스트 그래디언트 | 점수(평균) | 자연어 피드백 |
+| 탐색 전략 | 후보 풀 + 선택 | Gradient-like 패치 | Beam Search | Genetic + Pareto |
+| 최적화 단위 | 단일 태스크 | 단일 태스크 | 태스크 집합 | 단일 태스크 (모듈별) |
+| 전이 가능성 | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ |
+| 샘플 효율 | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| 해석 가능성 | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| 다목적 최적화 | ✗ | ✗ | △(단일 메타스코어) | ✓ Pareto |
+| 모듈성 | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| 프로덕션 준비도 | 높음 (간단) | 중간 | 낮음 (연구) | 높음 (DSPy) |
+
+## 알고리즘 직관 — 한 그림
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ APE — "후보 만들고 점수 매기고 골라라"                              │
+│   Generate N candidates → Evaluate → Pick best                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│ ProTeGi — "실패 케이스로 텍스트 그래디언트 만들어 패치"               │
+│   Failures → LLM critique (gradient-like) → Apply patch          │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│ MetaSPO — "Bilevel: 안쪽은 유저, 바깥쪽은 시스템 프롬프트"           │
+│   Outer: System prompt → Meta-Score (avg across tasks)          │
+│   Inner: User prompt per task (Beam Search)                     │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│ GEPA — "유전 + 파레토 + 자연어 반성"                                │
+│   Population → Evaluate w/ feedback → Pareto select →           │
+│   Reflective mutation + System-aware crossover                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+## 의사 결정 — 어떤 상황에 무엇을
+
+<Callout type="tip">
+**선택 가이드 (실무)**:<br />
+- 빠르게 한 태스크에 적용 → **APE** (가장 간단)<br />
+- 실패 케이스가 명확하고 패치하고 싶다 → **ProTeGi**<br />
+- 여러 도메인/태스크에 *전이* 필요 → **MetaSPO**<br />
+- 다목적 + 해석 가능 + 샘플 효율 → **GEPA** (DSPy 환경이면 더더욱)<br />
+- 여러 도메인 + 모듈별 세밀 조정 → **MetaSPO + GEPA 조합**
+</Callout>
+
+### 시나리오별 권장
+
+| 시나리오 | 1순위 | 2순위 |
+|---------|------|-------|
+| 단일 태스크 빠른 시작 | APE | ProTeGi |
+| 신규 도메인 부트스트랩 | MetaSPO 시스템 프롬프트 → ProTeGi 미세 | MetaSPO 단독 |
+| RAG 파이프라인 모듈 최적화 | GEPA (모듈별) | ProTeGi |
+| 다목적 (정확도+근거성+비용) | GEPA Pareto | — |
+| 다중 도메인 + 모듈 튜닝 | MetaSPO 시스템 → GEPA 모듈 | GEPA 단독 |
+| 해석 가능성 우선 | GEPA | ProTeGi |
+| 비용 제약 (소형 budget) | GEPA (35× 적은 샘플) | MetaSPO 재사용 |
+
+## 시너지 — MetaSPO + GEPA 결합
+
+두 알고리즘은 정확히 보완적이다.
+
+- MetaSPO는 *어떤 태스크에도 잘 통하는 시스템 프롬프트*를 준다 → **출발점이 좋음**
+- GEPA는 *그 시스템 프롬프트 위에서 모듈별로 진화* → **세밀 조정**
+
+### 권장 파이프라인
+
+```
+Phase 1: MetaSPO로 도메인 가족(Family) 학습
+  Input:  여러 태스크 (Amazon-* 또는 Med-* 등)
+  Output: 전이 가능한 시스템 프롬프트 S*
+
+Phase 2: GEPA로 신규 태스크에서 모듈별 진화
+  Initial: S* (MetaSPO 결과를 시스템 프롬프트로 주입)
+  Optimize: Query / Retrieval / Generation 모듈 각각
+  Feedback: 자연어 진단으로 진화
+```
+
+### 통합 피드백 루프 — 의사코드
+
+```python
+def unified_feedback(prediction, expected, context):
+    """MetaSPO 식 정량 + GEPA 식 정성 결합"""
+    accuracy = score(prediction, expected)
+
+    if accuracy < 0.8:
+        diagnosis = analyze_failure(prediction, expected, context)
+        # "Answer missed key entity 'Paris'.
+        #  Retrieval returned irrelevant docs.
+        #  Suggest: Improve query expansion."
+    else:
+        diagnosis = "OK"
+
+    return {"score": accuracy, "feedback": diagnosis}
+```
+
+이 함수를 GEPA의 평가 함수로 쓰면 점수와 자연어 피드백 둘 다 활용 가능. **메타-스코어로 시스템 프롬프트를 고르고, 자연어 피드백으로 모듈 변이**.
+
+## 실무 도입 우선순위
+
+처음부터 4종을 다 도입하면 부담스럽다. 단계화한다면:
+
+1. **즉시** — DSPy + GEPA. 모듈성·해석 가능성·샘플 효율 모두 합리적.
+2. **단기** — 도메인 가족이 늘어나기 시작하면 MetaSPO 도입. 시스템 프롬프트 부트스트랩 용도.
+3. **중기** — APE/ProTeGi는 *단순 백업* 또는 *비-DSPy 환경*에서. 굳이 메인으로 갈 이유는 약하다.
+4. **장기** — 통합 평가 함수(unified_feedback)와 자체 운영 데이터로 지속 개선 루프.
+
+## 정리 — 한 줄로
+
+> **APE/ProTeGi는 옛 paradigm — 점수 vs 자연어. MetaSPO/GEPA는 새 paradigm — 메타러닝 vs 진화.<br />실무에선 둘을 조합해 쓰는 게 가장 실용적이다.**
+
+각 기법은 **서로 다른 차원**을 푼다. 같은 자리에서 경쟁하는 게 아니다. 그래서 *교체*가 아니라 *조합*이 답이다 — MetaSPO가 출발점, GEPA가 미세조정.
+
+## 참고 자료
+
+- 1편: [MetaSPO 리뷰](/blog/2026-01-22-metaspo-meta-system-prompt)
+- 2편: [GEPA 리뷰](/blog/2026-01-28-gepa-reflective-prompt-evolution)
+- APE: Zhou et al., *Large Language Models Are Human-Level Prompt Engineers*, ICLR 2023
+- ProTeGi: Pryzant et al., *Automatic Prompt Optimization with "Gradient Descent" and Beam Search*, EMNLP 2023
+- DSPy 공식: [dspy.ai](https://dspy.ai/)
