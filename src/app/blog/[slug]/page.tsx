@@ -16,9 +16,24 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
+  const url = `/blog/${post.slug}/`;
   return {
     title: post.title,
     description: post.summary,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      title: post.title,
+      description: post.summary,
+      publishedTime: new Date(post.date).toISOString(),
+      tags: post.tags,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.summary,
+    },
   };
 };
 
