@@ -12,9 +12,15 @@ type Props = {
 export const generateStaticParams = () => {
   const series = getAllSeries();
   if (series.length === 0) return [{ name: "__none__" }];
-  // Next.js가 파일 경로 생성 시 자동 인코딩하므로 raw 이름을 반환해야 한다.
-  // 직접 encodeURIComponent하면 디렉토리명이 %25... 이중 인코딩됨.
-  return series.map((s) => ({ name: s.name }));
+  // `next build` (output: export) decodes the param before creating the
+  // directory, so the raw name maps to `out/series/<이름>/` and GitHub Pages
+  // (which decodes request paths) serves it correctly. But `next dev` matches
+  // the URL segment verbatim — i.e. still percent-encoded — so in dev the
+  // param must be returned pre-encoded or the route 500s with
+  // "missing param ... in generateStaticParams()". Hence the split.
+  // Either way `SeriesPage`/`generateMetadata` run `decodeURIComponent`.
+  const encodeForDev = process.env.NODE_ENV !== "production";
+  return series.map((s) => ({ name: encodeForDev ? encodeURIComponent(s.name) : s.name }));
 };
 
 export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
