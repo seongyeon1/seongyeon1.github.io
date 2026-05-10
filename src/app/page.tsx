@@ -118,13 +118,10 @@ const HomePage = () => {
       {/* Featured Post — magazine layout */}
       {featuredPost && featuredMeta && (
         <section className="mb-20 animate-fade-in-up delay-200">
-          <Link
-            href={`/blog/${featuredPost.slug}`}
-            className="group grid overflow-hidden rounded-3xl bg-white shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover lg:grid-cols-[1fr_320px] dark:bg-zinc-900"
-          >
+          <article className="group relative grid overflow-hidden rounded-3xl bg-white shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover lg:grid-cols-[1fr_320px] dark:bg-zinc-900">
             {/* Left: text */}
             <div className="p-8 sm:p-10 lg:p-12">
-              <div className="mb-5 flex flex-wrap items-center gap-2">
+              <div className="relative z-10 mb-5 flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
                   Latest
                 </span>
@@ -136,12 +133,14 @@ const HomePage = () => {
                 )}
               </div>
               <h2 className="mb-4 text-balance text-2xl font-bold leading-tight text-zinc-900 transition-colors group-hover:text-primary-600 dark:text-zinc-100 dark:group-hover:text-primary-400 sm:text-3xl">
-                {featuredPost.title}
+                <Link href={`/blog/${featuredPost.slug}`} className="before:absolute before:inset-0 before:content-['']">
+                  {featuredPost.title}
+                </Link>
               </h2>
               <p className="mb-6 max-w-2xl text-pretty leading-relaxed text-zinc-600 dark:text-zinc-400">
                 {featuredPost.summary}
               </p>
-              <div className="mb-6 flex flex-wrap gap-1.5">
+              <div className="relative z-10 mb-6 flex flex-wrap gap-1.5">
                 {featuredPost.tags.slice(0, 5).map((tag) => (
                   <TagBadge key={tag} tag={tag} />
                 ))}
@@ -168,9 +167,9 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Right: visual (hidden on mobile) */}
+            {/* Right: visual (hidden on mobile) — decorative, clicks fall through to the card link */}
             <div
-              className={`relative hidden overflow-hidden bg-gradient-to-br ${featuredMeta.tone} lg:block`}
+              className={`pointer-events-none relative hidden overflow-hidden bg-gradient-to-br ${featuredMeta.tone} lg:block`}
             >
               <div
                 className={`absolute inset-0 flex items-center justify-center ${featuredMeta.tone.split(" ").filter((c) => c.startsWith("text-")).join(" ")}`}
@@ -183,7 +182,7 @@ const HomePage = () => {
                 {String(posts.length).padStart(2, "0")}
               </span>
             </div>
-          </Link>
+          </article>
         </section>
       )}
 

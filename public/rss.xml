@@ -6,7 +6,256 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 09 May 2026 15:01:12 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 10 May 2026 17:54:22 GMT</lastBuildDate>
+    <item>
+      <title>GitHub Pages 블로그를 구글 검색에 노출시키기 (Search Console 편)</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-11-google-search-console-github-pages/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-11-google-search-console-github-pages/</guid>
+      <description>정적 블로그를 배포만 해선 구글에 안 뜬다 — Search Console 속성 등록, 소유권 확인, sitemap.xml 제출, URL 색인 요청까지 GitHub Pages + Next.js 기준으로 정리.</description>
+      <pubDate>Mon, 11 May 2026 00:00:00 GMT</pubDate>
+      <category>tutorial</category>
+      <category>google-search-console</category>
+      <category>seo</category>
+      <category>github-pages</category>
+      <category>nextjs</category>
+      <category>sitemap</category>
+      <category>blog</category>
+    </item>
+    <item>
+      <title>Claude Code 스킬 제작기 — 회사 PPT 템플릿을 자동화하다 오픈소스까지</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-10-bc-ppt-skill-making-of/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-10-bc-ppt-skill-making-of/</guid>
+      <description>Braincrew 사내 PPT 템플릿을 매번 손으로 채우던 일을 Claude Code 스킬로 자동화한 과정 — 이미지 기반 PPTX 한계, 편집 가능 PPTX로의 개선, 그리고 오픈소스 버전(oh-my-slides)에서는 회사 템플릿 대신 사용자 PPTX를 받아 에셋을 추출하는 구조까지.</description>
+      <pubDate>Sun, 10 May 2026 11:30:00 GMT</pubDate>
+      <category>project</category>
+      <category>claude-code</category>
+      <category>skill</category>
+      <category>opensource</category>
+      <category>pptx</category>
+      <category>automation</category>
+    </item>
+    <item>
+      <title>정적 블로그에 댓글 시스템 도입하기 (Giscus 편)</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-10-giscus-comments-setup/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-10-giscus-comments-setup/</guid>
+      <description>Next.js 정적 블로그에 GitHub Discussions 기반 Giscus 댓글을 붙이기 위한 사전 설정 — Discussions 활성화부터 카테고리 생성, Giscus 앱 설치, 설정값 수집까지.</description>
+      <pubDate>Sun, 10 May 2026 00:00:00 GMT</pubDate>
+      <category>tutorial</category>
+      <category>giscus</category>
+      <category>github-discussions</category>
+      <category>comments</category>
+      <category>nextjs</category>
+      <category>blog</category>
+    </item>
+    <item>
+      <title>AI 시대의 Python 컨벤션 — Ruff·Pre-commit·CLAUDE.md로 코드 멱등성 잡기</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-08-python-convention-ruff/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-08-python-convention-ruff/</guid>
+      <description>AI가 코드를 짜는 시대, 사람의 리뷰 속도는 더 이상 따라가지 못한다. 누가 썼든 같은 기준으로 정규화되도록 시스템을 짜야 한다. Ruff·Pre-commit부터 mypy·pytest, CLAUDE.md까지의 5-layer 스택을 정리한다.</description>
+      <pubDate>Fri, 08 May 2026 13:15:00 GMT</pubDate>
+      <category>study</category>
+      <category>python</category>
+      <category>ruff</category>
+      <category>linter</category>
+      <category>convention</category>
+      <category>pre-commit</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] EnterpriseRAG-Bench: 사내 지식 RAG 벤치마크</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-05-enterprise-rag-bench-review/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-05-enterprise-rag-bench-review/</guid>
+      <description>위키·뉴스 데이터에 치우쳐 있던 RAG 벤치마크의 한계를 지적하고, Slack·Gmail·Jira 등 9종 사내 소스를 모사한 50만 문서 규모의 합성 코퍼스와 500개 질문셋을 제안한 논문.</description>
+      <pubDate>Tue, 05 May 2026 07:20:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>RAG</category>
+      <category>benchmark</category>
+      <category>evaluation</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] SEISMIC — Learned Sparse Retrieval을 마이크로초 단위로 끌어내리기</title>
+      <link>https://seongyeon1.github.io/blog/2026-04-30-seismic-sparse-retrieval/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-30-seismic-sparse-retrieval/</guid>
+      <description>SPLADE 같은 Learned Sparse Retrieval은 좋지만 느렸다. 1차 검색에 100ms. SEISMIC은 &apos;Concentration of Importance&apos; 한 가지 관찰에서 출발해 같은 정확도를 0.3ms에 — 100배 이상 빠르게 만든다. SIGIR 2024 best paper 후보로 꼽힌 IR 인덱스 구조.</description>
+      <pubDate>Thu, 30 Apr 2026 13:30:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>RAG</category>
+      <category>retrieval</category>
+      <category>sparse</category>
+      <category>SIGIR-2024</category>
+    </item>
+    <item>
+      <title>리눅스 텍스트 처리 — sed, awk, cut, sort, uniq, xargs 실전 정리</title>
+      <link>https://seongyeon1.github.io/blog/2026-04-28-linux-text-processing/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-28-linux-text-processing/</guid>
+      <description>파이프로 연결되는 7~8개의 작은 도구가 곧 데이터 처리 언어다. 한 줄짜리 명령으로 로그를 분석하고 CSV를 다듬는 실전 패턴 위주로 정리.</description>
+      <pubDate>Tue, 28 Apr 2026 14:05:00 GMT</pubDate>
+      <category>study</category>
+      <category>linux</category>
+      <category>cli</category>
+      <category>text-processing</category>
+    </item>
+    <item>
+      <title>SSH·SCP·Rsync — 원격 접속과 파일 동기화 한 묶음</title>
+      <link>https://seongyeon1.github.io/blog/2026-04-22-linux-ssh-scp-rsync/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-22-linux-ssh-scp-rsync/</guid>
+      <description>원격 서버 접속, 키 인증, ~/.ssh/config로 별명 만들기, 포트 포워딩, 그리고 파일 옮기는 scp/rsync까지. 실전에서 매일 쓰는 패턴 위주로 정리.</description>
+      <pubDate>Wed, 22 Apr 2026 12:40:00 GMT</pubDate>
+      <category>study</category>
+      <category>linux</category>
+      <category>cli</category>
+      <category>ssh</category>
+      <category>rsync</category>
+    </item>
+    <item>
+      <title>리눅스 네트워크 디버깅 — ss, curl, dig, tcpdump 실전 정리</title>
+      <link>https://seongyeon1.github.io/blog/2026-04-15-linux-network-debugging/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-15-linux-network-debugging/</guid>
+      <description>포트가 열려있는지, 도메인이 어디로 가는지, 연결이 어디서 끊기는지 — 네트워크 문제를 좁혀가는 CLI 도구 한 묶음. ss · curl · dig · ping · traceroute · tcpdump.</description>
+      <pubDate>Wed, 15 Apr 2026 11:35:00 GMT</pubDate>
+      <category>study</category>
+      <category>linux</category>
+      <category>cli</category>
+      <category>network</category>
+    </item>
+    <item>
+      <title>리눅스 권한 정리 — chmod, chown, sudo와 그 너머</title>
+      <link>https://seongyeon1.github.io/blog/2026-04-09-linux-permissions/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-09-linux-permissions/</guid>
+      <description>ls -l의 그 알 수 없는 &apos;drwxr-xr-x&apos;를 읽는 법부터, chmod의 숫자/기호 두 가지 표기, chown으로 소유권 옮기기, sudo의 올바른 쓰임, 그리고 setuid·sticky bit까지.</description>
+      <pubDate>Thu, 09 Apr 2026 13:25:00 GMT</pubDate>
+      <category>study</category>
+      <category>linux</category>
+      <category>cli</category>
+      <category>permissions</category>
+    </item>
+    <item>
+      <title>리눅스 프로세스·리소스 모니터링 — top, htop, ps, df 실전 정리</title>
+      <link>https://seongyeon1.github.io/blog/2026-04-02-linux-process-monitoring/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-02-linux-process-monitoring/</guid>
+      <description>CPU·메모리·디스크가 어떻게 쓰이고 있는지 빠르게 확인하는 명령어들. top·htop·btop으로 한눈에, ps로 프로세스 콕 집기, free·df·du·iostat까지 흐름 순서로 정리.</description>
+      <pubDate>Thu, 02 Apr 2026 12:50:00 GMT</pubDate>
+      <category>study</category>
+      <category>linux</category>
+      <category>cli</category>
+      <category>monitoring</category>
+    </item>
+    <item>
+      <title>리눅스 로그 보는 명령어 정리 — tail, less, journalctl, lnav</title>
+      <link>https://seongyeon1.github.io/blog/2026-03-26-linux-log-commands/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-03-26-linux-log-commands/</guid>
+      <description>서버에서 장애 조사할 때 가장 먼저 손이 가는 도구들. tail로 따라가기, less로 탐색, journalctl로 systemd 로그 보기, lnav 같은 현대적 대안까지 정리.</description>
+      <pubDate>Thu, 26 Mar 2026 14:10:00 GMT</pubDate>
+      <category>study</category>
+      <category>linux</category>
+      <category>cli</category>
+      <category>logging</category>
+    </item>
+    <item>
+      <title>파일 검색 명령어 정리 — find, grep, fd, ripgrep</title>
+      <link>https://seongyeon1.github.io/blog/2026-03-19-file-search-commands/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-03-19-file-search-commands/</guid>
+      <description>터미널에서 &apos;그 파일 어디 있더라&apos;와 &apos;이 단어 어느 파일에 있더라&apos;를 빠르게 해결하는 네 가지 도구 — find, grep, fd, ripgrep을 한 번에 정리한다.</description>
+      <pubDate>Thu, 19 Mar 2026 13:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>linux</category>
+      <category>cli</category>
+    </item>
+    <item>
+      <title>man이 너무 길 때 — tldr로 리눅스 명령어 빠르게 익히기</title>
+      <link>https://seongyeon1.github.io/blog/2026-03-12-tldr-linux-commands/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-03-12-tldr-linux-commands/</guid>
+      <description>man 페이지를 끝까지 읽지 않고도 자주 쓰는 옵션 한두 개만 빠르게 확인하고 싶을 때, tldr이 가장 편하다. 설치부터 실전 활용까지 정리.</description>
+      <pubDate>Thu, 12 Mar 2026 10:45:00 GMT</pubDate>
+      <category>study</category>
+      <category>linux</category>
+      <category>cli</category>
+    </item>
+    <item>
+      <title>혼자 써도 따라야 할 Git Convention — 커밋 메시지부터 브랜치까지</title>
+      <link>https://seongyeon1.github.io/blog/2026-03-05-git-convention/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-03-05-git-convention/</guid>
+      <description>Conventional Commits, 브랜치 네이밍, PR 템플릿 — 협업 없이 혼자 쓰는 프로젝트라도 컨벤션을 정해두면 미래의 내가 고마워한다.</description>
+      <pubDate>Thu, 05 Mar 2026 12:30:00 GMT</pubDate>
+      <category>study</category>
+      <category>git</category>
+      <category>convention</category>
+      <category>workflow</category>
+    </item>
+    <item>
+      <title>Git 시작하기 — 가장 자주 쓰는 명령어 9개</title>
+      <link>https://seongyeon1.github.io/blog/2026-02-26-git-basics/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-26-git-basics/</guid>
+      <description>Git을 처음 만지는 사람이 첫 commit부터 push까지 걸어가는 데 필요한 9개 명령어를 흐름 순서대로 정리한다. config / init / status / add / commit / remote / push / clone / pull.</description>
+      <pubDate>Thu, 26 Feb 2026 11:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>git</category>
+      <category>github</category>
+    </item>
+    <item>
+      <title>Markdown 정복기 (3) — GFM과 MDX 확장 문법</title>
+      <link>https://seongyeon1.github.io/blog/2026-02-19-markdown-extended/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-19-markdown-extended/</guid>
+      <description>Markdown 시리즈 3편(완). GitHub Flavored Markdown(체크박스, 각주, 자동 링크 등)부터 MDX의 React 컴포넌트 임베딩까지, 표준을 넘어서는 확장 문법을 정리한다.</description>
+      <pubDate>Thu, 19 Feb 2026 13:40:00 GMT</pubDate>
+      <category>study</category>
+      <category>markdown</category>
+      <category>GFM</category>
+      <category>MDX</category>
+    </item>
+    <item>
+      <title>Markdown 정복기 (2) — 코드, 표, 이미지</title>
+      <link>https://seongyeon1.github.io/blog/2026-02-12-markdown-code-tables-images/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-12-markdown-code-tables-images/</guid>
+      <description>Markdown 시리즈 2편. 자주 쓰지만 자주 깨지는 영역 — 코드 블록(언어 지정, 라인 강조), 표(정렬), 이미지(크기·캡션)를 정리한다.</description>
+      <pubDate>Thu, 12 Feb 2026 12:15:00 GMT</pubDate>
+      <category>study</category>
+      <category>markdown</category>
+      <category>writing</category>
+    </item>
+    <item>
+      <title>Markdown 정복기 (1) — 기본 문법 한 번에 정리</title>
+      <link>https://seongyeon1.github.io/blog/2026-02-05-markdown-basics/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-05-markdown-basics/</guid>
+      <description>Markdown 시리즈 1편. 헤딩, 강조, 리스트, 링크, 인용 등 어떤 환경에서도 통하는 기본 문법을 한 번에 정리한다.</description>
+      <pubDate>Thu, 05 Feb 2026 05:30:00 GMT</pubDate>
+      <category>study</category>
+      <category>markdown</category>
+      <category>writing</category>
+    </item>
+    <item>
+      <title>프롬프트 최적화 기법 비교 — APE · ProTeGi · MetaSPO · GEPA, 언제 무엇을 쓸까</title>
+      <link>https://seongyeon1.github.io/blog/2026-02-02-prompt-optimization-comparison/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-02-prompt-optimization-comparison/</guid>
+      <description>자동 프롬프트 최적화의 4대 접근(APE / ProTeGi / MetaSPO / GEPA)을 한 자리에 두고, 알고리즘 패러다임·샘플 효율·전이 가능성·해석 가능성으로 비교한다. 마지막으로 실무에서 어떤 조합으로 묶어 쓰면 좋은지 정리.</description>
+      <pubDate>Mon, 02 Feb 2026 06:40:00 GMT</pubDate>
+      <category>study</category>
+      <category>prompt-optimization</category>
+      <category>survey</category>
+      <category>DSPy</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] GEPA — 자연어 피드백으로 진화하는 프롬프트, RL을 이긴다</title>
+      <link>https://seongyeon1.github.io/blog/2026-01-28-gepa-reflective-prompt-evolution/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-01-28-gepa-reflective-prompt-evolution/</guid>
+      <description>스칼라 보상 대신 자연어 피드백으로 프롬프트를 진화시키는 알고리즘. 유전 + 파레토 + 반성적 돌연변이 세 축으로 GRPO 대비 35배 적은 샘플로 더 높은 성능을 낸다.</description>
+      <pubDate>Wed, 28 Jan 2026 11:15:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>prompt-optimization</category>
+      <category>GEPA</category>
+      <category>evolutionary-algorithm</category>
+      <category>DSPy</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] MetaSPO — 태스크를 가로지르는 시스템 프롬프트를 메타러닝하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-01-22-metaspo-meta-system-prompt/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-01-22-metaspo-meta-system-prompt/</guid>
+      <description>프롬프트를 태스크별로 일일이 튜닝하는 게 아니라, 모든 태스크에 공통으로 좋은 시스템 프롬프트를 메타러닝으로 학습한다. Bilevel 최적화 + Beam Search로 5개 벤치마크에서 미지 태스크 일반화를 검증한 NeurIPS 2025 논문.</description>
+      <pubDate>Thu, 22 Jan 2026 13:30:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>prompt-optimization</category>
+      <category>meta-learning</category>
+      <category>NeurIPS-2025</category>
+    </item>
     <item>
       <title>[NLP] Feed-Forward Network — Transformer의 숨은 표현력 (FFN, GELU, SwiGLU, MoE)</title>
       <link>https://seongyeon1.github.io/blog/2024-08-15-transformer-feed-forward-network/</link>
