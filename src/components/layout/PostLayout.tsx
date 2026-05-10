@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Post, Heading } from "@/types/post";
+import { formatDateTime } from "@/lib/date";
 import TOC from "@/components/blog/TOC";
 import TagBadge from "@/components/blog/TagBadge";
 import CategoryBadge from "@/components/blog/CategoryBadge";
@@ -44,7 +45,7 @@ const PostLayout = ({
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
               </svg>
-              <time>{post.date}</time>
+              <time className="tabular-nums" dateTime={post.date}>{formatDateTime(post.date)}</time>
             </div>
             <div className="flex items-center gap-1.5 text-sm text-zinc-400 dark:text-zinc-500">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getAllSeries, getSeriesByName } from "@/lib/series";
+import { formatDateTime } from "@/lib/date";
 import CategoryBadge from "@/components/blog/CategoryBadge";
 import type { Metadata } from "next";
 
@@ -60,7 +61,7 @@ const SeriesPage = async ({ params }: Props) => {
                 </h2>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-zinc-400 dark:text-zinc-500">
                   <CategoryBadge category={post.category} />
-                  <span className="tabular-nums">{post.date}</span>
+                  <span className="tabular-nums">{formatDateTime(post.date)}</span>
                   <span>{post.readingTime}</span>
                 </div>
                 <p className="mt-2 line-clamp-2 text-pretty text-sm text-zinc-500 dark:text-zinc-400">
