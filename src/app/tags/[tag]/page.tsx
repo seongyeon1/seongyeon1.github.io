@@ -9,7 +9,14 @@ type Props = {
 
 export const generateStaticParams = () => {
   const tags = getAllTags();
-  return Array.from(tags.keys()).map((tag) => ({ tag }));
+  // Same dev/build split as /series/[name]: `next build` (output: export)
+  // decodes the param when creating the directory, but `next dev` matches the
+  // URL segment verbatim — so any tag with a space or non-ASCII char 500s in
+  // dev unless returned pre-encoded. `TagPage`/`generateMetadata` decode it.
+  const encodeForDev = process.env.NODE_ENV !== "production";
+  return Array.from(tags.keys()).map((tag) => ({
+    tag: encodeForDev ? encodeURIComponent(tag) : tag,
+  }));
 };
 
 export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
