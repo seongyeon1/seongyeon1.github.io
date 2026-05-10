@@ -173,13 +173,31 @@ Next.js App Router 규약 사용:
 
 ### 10.1 Configuration
 
-- Repo: `seongyeon1/seongyeon1.github.io` (사전에 GitHub Discussions 활성화 + `Comments` 카테고리 생성 + Giscus GitHub App 설치 필요 — 사용자 작업)
-- mapping: `pathname` (포스트 slug별 1 토론)
-- reactionsEnabled: `1`
-- inputPosition: `bottom`
-- lang: `ko`
-- loading: `lazy` (자체 lazy mount이지만 iframe 자체 속성도 lazy)
-- theme: `light` / `dark` 동적 전환
+GitHub 사전 작업 완료 (2026-05-10):
+
+- Discussions 활성화 ✅
+- `Announcements` 카테고리 (Announcement 타입) 사용 ✅
+- Giscus GitHub App 설치 ✅
+
+컴포넌트 상수:
+
+```ts
+const GISCUS_CONFIG = {
+  repo: "seongyeon1/seongyeon1.github.io",
+  repoId: "R_kgDOSX5tLA",
+  category: "Announcements",
+  categoryId: "DIC_kwDOSX5tLM4C8sKD",
+  mapping: "pathname",
+  strict: "0",
+  reactionsEnabled: "1",
+  emitMetadata: "0",
+  inputPosition: "bottom",
+  lang: "ko",
+  // theme은 런타임 동적 전환 (10.2 참조)
+};
+```
+
+위 값은 모두 public 정보 → 환경변수로 숨길 필요 없음. 컴포넌트에 직접 박는다.
 
 ### 10.2 Component
 
@@ -252,6 +270,6 @@ posts.ts::getAllPosts()
 
 ## 15. Risks
 
-- **Giscus 리포 설정 누락**: 댓글이 보이지 않음. 작업 완료 전 사용자가 GitHub Discussions + Giscus App 활성화 필수.
+- ~~**Giscus 리포 설정 누락**~~: 2026-05-10 사용자가 Discussions·Announcements 카테고리·Giscus App 설치 모두 완료. ID도 수집 완료.
 - **avatar.png 용량 (784KB)**: Hero에서만 표시되더라도 LCP에 영향 가능. 빌드 시점에 작은 사이즈 webp/avif를 별도 생성하지 않으면 next/image의 자동 최적화에 의존. → next/image 사용으로 해결.
 - **`getAllPosts()` 중복 호출**: page.tsx + Footer.tsx에서 각각 호출. 빌드 시점이라 성능 영향 없음. 모듈 레벨 메모이제이션이 이미 있으면 그대로 사용.

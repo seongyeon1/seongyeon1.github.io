@@ -1,0 +1,164 @@
+---
+title: "정적 블로그에 댓글 시스템 도입하기 (Giscus 편)"
+date: "2026-05-10"
+category: "tutorial"
+tags: ["giscus", "github-discussions", "comments", "nextjs", "blog"]
+summary: "Next.js 정적 블로그에 GitHub Discussions 기반 Giscus 댓글을 붙이기 위한 사전 설정 — Discussions 활성화부터 카테고리 생성, Giscus 앱 설치, 설정값 수집까지."
+series: "블로그 만들기"
+seriesOrder: 1
+math: true
+draft: true
+---
+
+## 공부하게 된 계기
+
+Next.js로 직접 만든 블로그에 댓글을 붙이려는데, 백엔드/DB를 새로 만들고 싶진 않았다.
+선택지를 좁혀보면 보통 셋 중 하나다.
+
+- **Disqus** — 가장 유명하지만 광고/트래킹 + 800KB 넘는 번들로 LCP가 나빠진다.
+- **Utterances** — GitHub Issues 기반. 가볍지만 리액션이 없고 운영 추적이 불편.
+- **Giscus** — GitHub Discussions 기반. 무료, 광고 없음, 다크모드 자동, 리액션/이모지 지원.
+
+이번 편은 Giscus를 고른 뒤 **코드를 짜기 전에 GitHub 쪽에서 끝내야 하는 사전 설정**을 정리한다.
+이 단계만 끝내면 다음 편에서 컴포넌트 한 개로 댓글이 동작하게 만들 수 있다.
+
+<Callout type="note">
+대상 리포는 댓글이 저장될 리포다. 블로그 코드와 같은 리포여도 되고, 댓글 전용 리포를 따로 파도 된다.
+이 글에서는 `seongyeon1/seongyeon1.github.io`를 예시로 사용한다.
+</Callout>
+
+## 사전 체크리스트
+
+작업을 시작하기 전에 다음 두 가지가 만족돼야 한다.
+
+1. **리포가 public** — Giscus는 public 리포에서만 동작한다.
+2. **본인이 리포 admin** — Discussions 활성화와 앱 설치 권한이 필요하다.
+
+## 1단계 — Discussions 활성화
+
+1. 리포 페이지 → 우상단 **Settings**
+2. 좌측 사이드바 **General** (기본 선택)
+3. 아래로 스크롤 → **Features** 섹션
+4. **Discussions** 체크박스 → **Set up discussions** 클릭
+5. 안내 페이지가 뜨면 그대로 **Start discussion** (welcome 글이 자동 생성된다)
+
+리포 상단 탭에 **Discussions**가 추가되면 성공이다.
+
+<Callout type="tip">
+welcome 글은 그냥 두거나, 처음 인사말로 본인 페이지 가이드를 적어둬도 된다.
+나중에 카테고리 정리할 때 General로 자동 분류된다.
+</Callout>
+
+## 2단계 — Announcement 타입 카테고리 준비
+
+여기가 가장 자주 빼먹는 단계다.
+Discussions를 댓글 저장소로 쓰려면 **Announcement 타입** 카테고리가 필요하다.
+
+> Announcement 타입의 카테고리는 **maintainer만 새 토론을 만들 수 있다.**
+> 즉 일반 사용자는 새 토론(=새 글)을 못 만들지만, Giscus가 페이지마다 자동으로 생성한 토론에 **댓글은 달 수 있다.**
+> 이래야 댓글 저장소가 무한 생성된 빈 토론으로 어지럽혀지지 않는다.
+
+GitHub은 Discussions를 켜면 **`Announcements`라는 Announcement 타입 카테고리를 기본 제공**한다.
+그래서 두 가지 선택지가 있다.
+
+**A. 기본 `Announcements` 그대로 쓰기 (간단, 추천)**
+별도 작업 없이 바로 다음 단계로 넘어가면 된다. 이 글에서도 이 방식을 사용한다.
+
+**B. 댓글 전용 카테고리 따로 만들기**
+운영상 댓글과 공지를 분리하고 싶을 때.
+
+1. 리포 → **Discussions** 탭
+2. 좌측 사이드바 카테고리 목록 옆 ✏️ (Edit) 또는 우측 **Categories** 링크
+3. **New category** 클릭
+4. 입력값:
+   - **Category name**: `Comments` (또는 원하는 이름)
+   - **Description**: `Blog post comments`
+   - **Discussion Format**: **Announcement** 선택 ← **중요**
+   - 아이콘: 💬 추천
+5. **Create**
+
+## 3단계 — Giscus GitHub App 설치
+
+1. 브라우저로 [github.com/apps/giscus](https://github.com/apps/giscus) 접속
+2. **Install** 클릭
+3. 계정/조직 선택
+4. **Only select repositories** 선택 → 댓글을 저장할 리포 체크
+5. **Install**
+
+<Callout type="warning">
+**All repositories**를 고르지 말 것. 다른 리포에까지 권한이 열린다.
+**Only select repositories**로 댓글용 리포 하나만 허용하는 게 안전하다.
+</Callout>
+
+## 4단계 — 설정값 받아오기
+
+이제 컴포넌트에 박을 두 개의 ID를 받아올 차례다.
+
+1. [giscus.app](https://giscus.app) 접속 → 우상단에서 한국어 전환
+2. **저장소** 입력란에 `소유자/리포명` 형식으로 입력 (예: `seongyeon1/seongyeon1.github.io`)
+3. 아래에 초록 체크 3개가 떠야 한다:
+   - ✅ 저장소가 존재하고 public
+   - ✅ giscus 앱이 설치됨
+   - ✅ Discussions 활성화됨
+4. **페이지 ↔️ Discussions 연결** → `pathname` 선택 (URL 경로별로 토론 1개)
+5. **Discussion 카테고리** → `Announcements` 선택 (또는 직접 만든 Announcement 타입 카테고리)
+6. 페이지 하단 `<script>` 블록에서 두 값을 메모
+
+```html title="giscus.app이 생성해주는 스크립트"
+<script src="https://giscus.app/client.js"
+        data-repo="seongyeon1/seongyeon1.github.io"
+        data-repo-id="R_kgDOSX5tLA"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOSX5tLM4C8sKD"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="ko"
+        crossorigin="anonymous"
+        async>
+</script>
+```
+
+이 두 값(`data-repo-id`, `data-category-id`)은 **공개돼도 괜찮은 값**이다.
+환경변수로 숨길 필요 없이 컴포넌트에 그대로 박아도 된다.
+
+## 매핑 전략 비교
+
+`data-mapping`은 어떤 값을 토론 키로 쓸지 결정한다.
+
+| 값 | 동작 | 추천 상황 |
+| --- | --- | --- |
+| `pathname` | URL 경로별 1 토론 | **블로그 (추천)** — slug가 그대로 키 |
+| `url` | 전체 URL | 도메인이 자주 바뀌면 안 좋음 |
+| `title` | 페이지 `<title>` | 제목 바꾸면 댓글 끊김 |
+| `og:title` | OG 메타 제목 | 동상 |
+| `specific` | 직접 지정 | 경로가 안 정해진 동적 페이지 |
+
+`pathname`을 선택하면 `/blog/2026-05-10-...` 같은 slug 기반 키가 생긴다.
+나중에 슬러그를 바꾸면 댓글이 새 토론으로 분리되니 주의.
+
+## 다음 편 예고
+
+여기까지가 GitHub 쪽 사전 설정이다. 다음 편에서는 실제로 Next.js에 컴포넌트를 붙이고
+
+- `IntersectionObserver`로 lazy 마운트 (LCP 보호)
+- 다크모드 토글에 맞춰 `MutationObserver`로 테마 동기화
+- 컴포넌트 한 줄로 `PostLayout`에 끼우기
+
+까지 다룬다.
+
+수식이 가능한지도 한 번 확인:
+$$
+\text{Comment Latency} = T_{\text{intersection}} + T_{\text{iframe load}}
+$$
+
+지연 시간을 줄이려면 첫 항을 늦추는 게 가장 쉽다 — 다음 편의 핵심.
+
+## 참고 자료
+
+- [giscus 공식 사이트](https://giscus.app)
+- [giscus GitHub 저장소](https://github.com/giscus/giscus)
+- [GitHub Docs — Discussions 활성화](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/enabling-or-disabling-github-discussions-for-a-repository)
