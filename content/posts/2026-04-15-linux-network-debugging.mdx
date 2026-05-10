@@ -1,0 +1,396 @@
+---
+title: "리눅스 네트워크 디버깅 — ss, curl, dig, tcpdump 실전 정리"
+date: "2026-04-15T20:35:00+09:00"
+category: "study"
+tags: ["linux", "cli", "network"]
+summary: "포트가 열려있는지, 도메인이 어디로 가는지, 연결이 어디서 끊기는지 — 네트워크 문제를 좁혀가는 CLI 도구 한 묶음. ss · curl · dig · ping · traceroute · tcpdump."
+series: "리눅스 명령어 시리즈"
+seriesOrder: 6
+---
+
+## 공부하게 된 계기
+
+"내 컴퓨터에선 되는데 서버에선 안 돼요." 네트워크 문제는 디버깅하기 어렵기로 악명 높다. 이유는 단순하다 — **여러 레이어가 있기 때문**이다.
+
+문제는 어디서든 생길 수 있다:
+
+- DNS가 잘못 풀려서 (Layer 7)
+- 방화벽이 막아서
+- 포트에 아무도 안 듣고 있어서
+- 서비스는 떠 있는데 응답이 느려서
+- 패킷이 중간 라우터에서 떨어져서
+
+각 레이어를 짚는 도구가 다르다. 이 글에서는 흐름 순서로 정리한다.
+
+## 1) `ss` — 누가 어느 포트를 듣고 있나
+
+`netstat`은 deprecated. 현대 리눅스는 `ss`를 쓴다(같은 정보, 훨씬 빠름).
+
+```bash
+# TCP 리스닝 소켓
+ss -ltn
+
+# 프로세스 정보까지 (sudo 필요)
+sudo ss -ltnp
+
+# UDP도 함께
+sudo ss -lutnp
+
+# 모든 연결 (established 포함)
+ss -tan
+```
+
+옵션 의미:
+- `l` listening
+- `t` TCP
+- `u` UDP
+- `n` numeric (포트를 이름 대신 숫자로)
+- `p` process
+
+### 자주 쓰는 한 줄
+
+```bash
+# 3000번 포트 누가 잡고 있나
+sudo ss -ltnp | grep :3000
+
+# 80, 443 모두
+sudo ss -ltnp '( sport = :80 or sport = :443 )'
+
+# 특정 프로세스의 모든 연결
+sudo ss -tnp | grep nginx
+```
+
+`lsof -i :3000`도 같은 결과를 준다. 둘 다 알면 환경에 따라 골라 쓸 수 있다.
+
+## 2) `ping` — 살아 있나
+
+```bash
+ping google.com
+
+# 횟수 제한
+ping -c 4 google.com
+
+# 인터벌 0.2초
+ping -i 0.2 google.com
+```
+
+핵심은 **ICMP**라는 점. 일부 서버/방화벽은 ICMP를 막아둔다 — 그래서 ping 안 된다고 서버가 죽었다고 단정하면 안 된다. 다만 **로컬 네트워크에서** 먼저 통하는지 확인할 때는 가장 빠른 방법.
+
+## 3) `traceroute` / `mtr` — 어디서 끊기나
+
+### `traceroute`
+
+```bash
+traceroute google.com
+```
+
+```
+ 1  router.local (192.168.1.1)    1.2 ms
+ 2  10.0.0.1                       8.5 ms
+ 3  *                              *           ← 여기서 끊김
+ 4  *                              *
+```
+
+각 홉을 차례로 출력. `*`이 연속해서 나오면 그 지점부터 라우팅이 안 된다는 뜻.
+
+### `mtr` — 더 똑똑한 traceroute
+
+```bash
+brew install mtr
+sudo apt install mtr
+
+mtr google.com
+```
+
+`traceroute`와 `ping`을 합친 도구. 실시간으로 갱신되며 각 홉의 패킷 손실률, 평균 RTT를 보여준다. 네트워크 품질 진단에 더 유용.
+
+## 4) `dig` / `nslookup` — DNS 어디로 가나
+
+```bash
+# 가장 자주 쓰는 형태
+dig google.com
+
+# 짧게
+dig google.com +short
+# → 142.250.207.46
+
+# 특정 레코드
+dig example.com MX
+dig example.com TXT
+dig example.com NS
+
+# 특정 DNS 서버 사용
+dig @8.8.8.8 example.com
+dig @1.1.1.1 example.com
+
+# trace — 루트부터 한 단계씩
+dig +trace example.com
+```
+
+`dig`는 출력이 자세하고 trace가 강력하다. `nslookup`은 인터랙티브 모드도 되고 더 간단하다.
+
+```bash
+nslookup google.com
+nslookup google.com 8.8.8.8
+```
+
+### 자주 쓰는 시나리오
+
+```bash
+# 도메인이 진짜 내 서버를 가리키나
+dig myapp.com +short
+
+# 어느 DNS 서버가 응답하나
+dig myapp.com NS +short
+
+# CDN 이용 중인지
+dig myapp.com CNAME
+
+# 메일 라우팅 확인
+dig myapp.com MX
+```
+
+<Callout type="tip">
+도메인 변경 후 "왜 안 바뀌어요" 가장 흔한 원인은 **DNS 캐시**다. macOS는 `sudo dscacheutil -flushcache`, systemd 환경은 `sudo systemd-resolve --flush-caches`. 또는 `dig @8.8.8.8`로 캐시 우회 직접 조회.
+</Callout>
+
+## 5) `curl` — 그 HTTP 응답 직접 보기
+
+브라우저로는 알 수 없는 것들을 본다.
+
+```bash
+# 단순 GET
+curl https://api.example.com/posts
+
+# 헤더만
+curl -I https://example.com
+
+# verbose — 요청·응답 헤더 다 보기
+curl -v https://example.com
+
+# 헤더 포함 응답
+curl -i https://api.example.com/posts
+
+# POST + JSON
+curl -X POST https://api.example.com/posts \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Hello"}'
+
+# Bearer 토큰
+curl -H "Authorization: Bearer $TOKEN" https://api.example.com/me
+
+# 리디렉션 따라가기
+curl -L https://example.com
+
+# 파일로 저장
+curl -o output.html https://example.com
+curl -O https://example.com/file.zip   # 원본 파일명 그대로
+
+# 응답 시간 측정
+curl -w "@-" -o /dev/null -s https://example.com <<'EOF'
+namelookup:  %{time_namelookup}s
+connect:     %{time_connect}s
+starttx:     %{time_starttransfer}s
+total:       %{time_total}s
+EOF
+```
+
+### `httpie` — curl의 사용자 친화적 대안
+
+```bash
+brew install httpie
+sudo apt install httpie
+
+http GET https://api.example.com/posts
+http POST https://api.example.com/posts title=Hello
+```
+
+JSON 자동 컬러링, 직관적인 문법. 일상 API 테스트엔 더 편하다.
+
+## 6) `wget` — 다운로드 전용
+
+```bash
+# 단순 다운로드
+wget https://example.com/file.zip
+
+# 백그라운드
+wget -b https://example.com/largefile.iso
+
+# 재귀적으로 (사이트 미러링)
+wget -r -l 2 https://example.com
+
+# 이어받기
+wget -c https://example.com/largefile.iso
+```
+
+`curl`은 거의 모든 걸 할 수 있지만, **반복 다운로드와 미러링은 `wget`이 편하다**.
+
+## 7) `tcpdump` — 패킷 직접 보기
+
+가장 강력하지만 가장 위험하기도 한 도구. 평문 트래픽이 보일 수 있으니 운영 환경에선 신중히.
+
+```bash
+# 인터페이스 목록
+sudo tcpdump -D
+
+# 80번 포트로 들어오는 트래픽
+sudo tcpdump -i any port 80
+
+# 특정 호스트와의 트래픽
+sudo tcpdump -i any host 1.2.3.4
+
+# DNS 트래픽만
+sudo tcpdump -i any port 53
+
+# 파일로 저장 (Wireshark에서 분석)
+sudo tcpdump -i any port 443 -w capture.pcap
+
+# 자세히 (페이로드 16진수까지)
+sudo tcpdump -i any -X port 80
+```
+
+평소엔 `ss`/`curl`/`dig`로 다 풀리고, 정말 안 되는 마지막 수단으로 `tcpdump`.
+
+<Callout type="warning">
+운영 서버에서 `tcpdump`를 켜둔 채로 잊으면 디스크가 가득 찬다. **`-c 1000` 같은 패킷 수 제한**, 또는 **`-G 60 -W 10`처럼 회전 조건**을 같이 걸어두는 습관.
+</Callout>
+
+## 8) `nc` (netcat) — 포트 연결 테스트
+
+```bash
+# 포트 열려있나 빠르게
+nc -zv example.com 443
+
+# UDP
+nc -zuv example.com 53
+
+# 간이 채팅 / 디버깅
+nc -l 1234           # 한쪽: 1234 포트로 듣기
+nc localhost 1234    # 다른쪽: 연결
+
+# HTTP 요청 직접 만들기
+echo -e "GET / HTTP/1.0\r\nHost: example.com\r\n\r\n" | nc example.com 80
+```
+
+`telnet`이 옛날에 하던 일을 더 깔끔하게 한다.
+
+## 9) `iftop` / `nethogs` — 누가 대역폭을 먹나
+
+```bash
+sudo apt install iftop nethogs
+```
+
+```bash
+# 인터페이스별 실시간 트래픽
+sudo iftop -i eth0
+
+# 프로세스별 대역폭
+sudo nethogs eth0
+```
+
+`top`이 CPU/메모리라면 `iftop`/`nethogs`는 네트워크 IO. 어느 프로세스가 갑자기 트래픽을 먹는지 잡을 때.
+
+## 실전 패턴 6개
+
+### A. "API가 안 돼요" — 1분 안에 좁히기
+
+```bash
+# 1) DNS 풀리나
+dig myapi.com +short
+
+# 2) 포트 열려있나
+nc -zv myapi.com 443
+
+# 3) 응답 헤더 — 어느 단계에서 막힘?
+curl -v https://myapi.com/health
+
+# 4) 내 서버에서 Listen 중인가
+sudo ss -ltnp | grep :443
+```
+
+이 4단계만 거치면 거의 다 답이 나온다.
+
+### B. "느려요" — 어디서 느린지
+
+```bash
+curl -w "namelookup:%{time_namelookup} connect:%{time_connect} ttfb:%{time_starttransfer} total:%{time_total}\n" \
+  -o /dev/null -s https://api.example.com/health
+```
+
+DNS 조회, TCP 연결, 첫 바이트, 총 시간이 분리돼서 어느 단계가 병목인지 보인다.
+
+### C. SSH 연결 안 됨
+
+```bash
+# 22번 포트 열려있나
+nc -zv server.com 22
+
+# verbose SSH
+ssh -vvv user@server.com
+
+# 어느 키를 쓰려는지
+ssh -T -i ~/.ssh/specific_key user@server.com
+```
+
+### D. Docker 컨테이너에서 외부 접속 안 됨
+
+```bash
+# 컨테이너 안에서
+docker exec -it my-app sh
+
+# 안에서:
+nslookup api.external.com
+curl -v https://api.external.com
+```
+
+DNS, 라우팅, 방화벽 어느 단계인지 한 단계씩.
+
+### E. "어느 프로세스가 인터넷 다 잡고 있어"
+
+```bash
+sudo nethogs
+# 또는
+sudo iftop -i eth0
+```
+
+### F. SSL 인증서 정보 보기
+
+```bash
+echo | openssl s_client -servername example.com -connect example.com:443 2>/dev/null \
+  | openssl x509 -noout -dates -subject -issuer
+```
+
+만료일, 발급자, 도메인 한 번에 확인.
+
+## 정리
+
+<Callout type="tip">
+**증상별 첫 손**:<br />
+- "포트 누가 잡고 있나" → `sudo ss -ltnp`<br />
+- "도메인 어디로" → `dig +short`<br />
+- "API 응답 직접" → `curl -v` (또는 `http`)<br />
+- "어디서 끊기나" → `mtr`<br />
+- "패킷 직접 보기" → `tcpdump` (마지막 수단)<br />
+- "대역폭 누가" → `iftop`/`nethogs`
+</Callout>
+
+네트워크 디버깅의 가장 큰 적은 "다 망했어요"라는 막연함이다. **레이어를 하나씩 쪼개서** 확인하는 습관 — DNS → TCP → HTTP → 응답 — 만 잡히면 어떤 문제든 1분 안에 어디인지 좁힐 수 있다.
+
+## 시리즈 정리
+
+이번 편으로 6편이다.
+
+- [1편: tldr](/blog/2026-03-12-tldr-linux-commands)
+- [2편: 파일 검색](/blog/2026-03-19-file-search-commands)
+- [3편: 로그](/blog/2026-03-26-linux-log-commands)
+- [4편: 프로세스·리소스 모니터링](/blog/2026-04-02-linux-process-monitoring)
+- [5편: 권한·소유권](/blog/2026-04-09-linux-permissions)
+- 6편 (이 글): 네트워크 디버깅
+
+다음 편: SSH·SCP·Rsync.
+
+## 참고 자료
+
+- `man ss`, `man dig`, `man curl`, `man tcpdump`
+- [HTTPie 공식](https://httpie.io)
+- [Wireshark](https://www.wireshark.org) — `tcpdump` 결과 분석할 때

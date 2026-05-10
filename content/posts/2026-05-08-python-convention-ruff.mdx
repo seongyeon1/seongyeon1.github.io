@@ -1,0 +1,406 @@
+---
+title: "AI 시대의 Python 컨벤션 — Ruff·Pre-commit·CLAUDE.md로 코드 멱등성 잡기"
+date: "2026-05-08T22:15:00+09:00"
+category: "study"
+tags: ["python", "ruff", "linter", "convention", "pre-commit"]
+summary: "AI가 코드를 짜는 시대, 사람의 리뷰 속도는 더 이상 따라가지 못한다. 누가 썼든 같은 기준으로 정규화되도록 시스템을 짜야 한다. Ruff·Pre-commit부터 mypy·pytest, CLAUDE.md까지의 5-layer 스택을 정리한다."
+math: false
+---
+
+## 들어가며 — AI가 비결정적이라면, 시스템이 결정적이어야 한다
+
+요즘 코드의 절반 이상이 Claude Code, Cursor, Copilot에서 흘러나온다. 그런데 AI는 본질적으로 **비결정적**이다. 같은 프롬프트에 매번 다른 코드가 나온다. 어떨 땐 `snake_case`, 어떨 땐 `camelCase`. 타입 힌트를 붙였다가 안 붙였다가. import 순서도 제각각.
+
+사람의 리뷰는 이 속도를 따라잡지 못한다. AI 코드 생성 속도가 리뷰 속도의 10배쯤 된다. 수동으로 기준을 잡으려는 시도는 결국 무너진다.
+
+답은 한 줄이다.
+
+> **"누가 썼느냐"가 아니라, "그 코드가 우리 기준을 통과했느냐"로 품질을 판단한다.**
+
+이걸 *코드의 멱등성*이라고 부른다. 입력(누가 어떻게 썼든)이 달라도 출력(저장소에 들어간 코드)은 같은 기준을 만족한다. 이 글은 Python 환경에서 그 멱등성을 만드는 5개 레이어를 정리한다.
+
+## 5-Layer 멱등성 스택
+
+| Layer | 다루는 것 | 도구 |
+|-------|----------|------|
+| **1. 스타일** | 포맷·import·미사용 변수 | Ruff + Pre-commit |
+| **2. 구조·동작** | 타입 / 동작 일관성 | mypy + pytest |
+| **3. AI 행동** | AI가 처음부터 올바른 코드 생성 | CLAUDE.md + Hooks |
+| **4. 변경 이력** | 커밋 메시지 / 머지 게이트 | Conventional Commits + CI |
+| **5. 환경** | 도구 설정 단일화 | pyproject.toml |
+
+Layer 1·2는 사실 AI 시대 이전부터 필요한 것들이다. 새롭게 등장한 게 **Layer 3 — 하네스 엔지니어링**. AI가 코드를 만들기 *전에* 행동을 제약하는 레이어다.
+
+이 글은 위 다섯을 흐름 순서로 본다.
+
+## Layer 1 — Ruff + Pre-commit (스타일 멱등성)
+
+### Ruff란
+
+[Ruff](https://docs.astral.sh/ruff/)는 Rust로 만들어진 Python 린터·포매터다. 핵심 특징:
+
+- **속도**: Flake8 대비 10~100배. 큰 모노레포도 1~2초.
+- **통합**: Flake8 + Black + isort + pyupgrade + 등등을 하나로.
+- **800+ 규칙**: pycodestyle, pyflakes, isort, pep8-naming, bugbear, pylint 등 다 포함.
+- **자동 수정**: `--fix`로 가능한 건 자동 교정.
+- **단일 설정**: `pyproject.toml` 하나.
+
+설치:
+
+```bash
+pip install ruff
+# 또는
+uv add --dev ruff
+```
+
+### 기본 사용
+
+```bash
+# 검사
+ruff check .
+
+# 자동 수정 가능한 건 고침
+ruff check --fix .
+
+# 포맷팅 (Black 대체)
+ruff format .
+
+# 포맷이 맞는지만 확인 (CI용)
+ruff format --check .
+```
+
+### 설정 — `pyproject.toml`
+
+```toml title="pyproject.toml"
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes
+  "I",    # isort
+  "N",    # pep8-naming
+  "UP",   # pyupgrade
+  "B",    # flake8-bugbear
+  "SIM",  # flake8-simplify
+  "RUF",  # ruff-specific
+]
+ignore = [
+  "E501",  # line too long (formatter가 처리)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # tests에선 assert 허용
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+```
+
+이 한 블록이 Flake8 + Black + isort 설정 파일 3개를 대체한다.
+
+### Pre-commit — `git commit`이 게이트
+
+도구는 깔아둬도 까먹으면 의미가 없다. **커밋 시점에 자동 실행**이 답.
+
+```bash
+pip install pre-commit
+```
+
+```yaml title=".pre-commit-config.yaml"
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+```
+
+```bash
+# 한 번 설치 (.git/hooks/에 hook 배치)
+pre-commit install
+
+# 전체 파일에 한 번 돌리기 (도입 시점)
+pre-commit run --all-files
+```
+
+이제 `git commit` 할 때마다 Ruff가 자동으로 돈다. 통과 못 하면 commit 자체가 막힌다.
+
+<Callout type="tip">
+**도입 첫날엔 무조건 깨진다**. 기존 코드가 새 기준을 통과 못 하기 때문. `pre-commit run --all-files`를 먼저 한 번 돌려서 자동 수정 가능한 건 다 고치고, 나머지는 PR로 정리한 뒤에 본격 도입하는 게 자연스럽다.
+</Callout>
+
+### PEP 8 짧게 짚기
+
+Ruff가 알아서 강제하니 다 외울 필요는 없지만 — 자주 마주치는 4가지만:
+
+| 항목 | 잘못된 예 | 맞는 예 |
+|------|----------|---------|
+| 함수명 | `MyFunction` | `my_function` |
+| 클래스명 | `user_service` | `UserService` |
+| 상수 | `max_size = 100` | `MAX_SIZE = 100` |
+| import | `from os.path import *` | 명시적으로 |
+
+## Layer 2 — mypy + pytest (구조·동작 멱등성)
+
+스타일이 같아져도, 타입이 깨지거나 동작이 바뀌면 의미 없다.
+
+### mypy — 타입 정합성
+
+```bash
+pip install mypy
+```
+
+```toml title="pyproject.toml"
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+```
+
+`strict = true`는 사실상 모든 타입 체크 옵션을 켜는 메타 플래그. 처음 도입할 때는 깨지는 곳이 많아서 부담스럽지만, **AI에게 강력한 가이드**가 된다.
+
+> 흥미로운 부수효과: 타입 힌트가 명확할수록 AI가 더 일관된 코드를 만든다. 함수 시그니처가 곧 명세가 되기 때문.
+
+### pytest + 커버리지
+
+```toml title="pyproject.toml"
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+  "--cov=src",
+  "--cov-report=term-missing",
+  "--cov-fail-under=85",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+```
+
+`--cov-fail-under=85`로 커버리지 85% 미만이면 실패. 이게 *행동 멱등성*의 핵심:
+
+> AI가 리팩토링을 했을 때, **동작은 동일해야 한다**. 코드가 바뀌어도 테스트가 통과하면 OK.
+
+이 한 줄이 AI 시대의 안전망이다.
+
+## Layer 3 — CLAUDE.md & Rules (AI 행동 멱등성)
+
+여기가 AI 시대에 새로 생긴 레이어다. Layer 1·2는 *사후 교정*이지만, Layer 3은 **AI가 처음부터 우리 기준에 맞게 코드를 만들도록** 규칙을 주입하는 단계.
+
+### CLAUDE.md — 프로젝트 헌법
+
+프로젝트 루트에 `CLAUDE.md`를 두면 Claude Code가 자동으로 읽는다 (Cursor는 `.cursorrules`, Copilot은 `.github/copilot-instructions.md`).
+
+```md title="CLAUDE.md"
+# 프로젝트 가이드라인
+
+## 기술 스택
+- Python 3.12
+- FastAPI, Pydantic v2, SQLAlchemy 2.x
+- 패키지 매니저: uv
+
+## 코드 컨벤션
+- snake_case 함수/변수, PascalCase 클래스
+- 모든 public 함수에 타입 힌트 필수
+- docstring은 Google style
+- 테스트는 `tests/` 아래, 함수명 `test_`로 시작
+
+## 금지 패턴
+- `from x import *` 금지
+- `print()`로 디버깅 — `logger`만 사용
+- 빈 `except:` — 항상 구체적 예외
+
+## 아키텍처
+- src/api/ — FastAPI 라우터
+- src/services/ — 비즈니스 로직
+- src/repositories/ — DB 접근
+- 라우터 → 서비스 → 리포지토리 (단방향)
+```
+
+이게 AI에게 주는 *프롬프트의 멱등성*. 누가 어떤 프롬프트로 요청해도, AI는 같은 규칙을 따른다.
+
+### `.claude/rules/` — 도메인별 규칙
+
+복잡한 프로젝트는 한 파일에 다 넣지 말고 도메인별로 쪼갠다.
+
+```
+.claude/
+└── rules/
+    ├── backend.md
+    ├── frontend.md
+    ├── database.md
+    ├── testing.md
+    └── security.md
+```
+
+에이전트가 작업 컨텍스트에 따라 자동 로드.
+
+### Hooks — AI 생성 직후 자동 검증
+
+Claude Code의 [Hooks](https://docs.claude.com/en/docs/claude-code/hooks)는 도구 호출 전후로 셸 명령을 실행한다. AI가 파일을 쓴 직후에 `ruff`와 `mypy`를 자동으로 돌리는 게 가능.
+
+```json title=".claude/settings.json"
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ruff check --fix $CLAUDE_FILE_PATHS && ruff format $CLAUDE_FILE_PATHS"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+AI가 코드를 만들면 → Hooks가 즉시 ruff로 정규화 → 사람이 보기 전에 품질 게이트 통과. 사이클이 자동으로 돈다.
+
+<Callout type="note">
+하네스 엔지니어링의 본질: **비결정적 입력(AI)** → **결정적 출력(코드)**. CLAUDE.md가 입력 단계 통제, Hooks가 생성 직후 통제, Pre-commit이 커밋 단계 통제. 세 겹의 그물.
+</Callout>
+
+## Layer 4 — Conventional Commits + CI 게이트
+
+로컬 Pre-commit은 `--no-verify`로 우회 가능하다. 그래서 **CI가 최후 방어선**.
+
+### Conventional Commits — 커밋 메시지 강제
+
+[별도 글](/blog/2026-03-05-git-convention)에서 자세히 다뤘다. 핵심만:
+
+```
+feat(auth): add Google OAuth login
+fix(post): correct date sorting on blog list
+chore: upgrade ruff to v0.5.0
+```
+
+`commitizen`이 검증, `commitlint`가 강제.
+
+### GitHub Actions — 풀 게이트
+
+```yaml title=".github/workflows/ci.yml"
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --dev
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy src/
+
+      - name: Test
+        run: uv run pytest --cov=src --cov-fail-under=85
+```
+
+이 네 단계가 모든 PR에 적용된다. AI가 만든 코드든 사람이 만든 코드든 **같은 게이트**.
+
+## Layer 5 — `pyproject.toml`로 환경 단일화
+
+도구마다 설정 파일이 따로 있던 시대(`.flake8`, `.isort.cfg`, `setup.cfg`, `mypy.ini`, `pytest.ini`...)는 끝났다. 이제는 `pyproject.toml` 하나.
+
+```toml title="pyproject.toml"
+[project]
+name = "myapp"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["fastapi>=0.110", "pydantic>=2.6"]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.5", "mypy>=1.10", "pytest>=8.0", "pytest-cov>=5.0"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+
+[tool.pytest.ini_options]
+addopts = ["--cov=src", "--cov-fail-under=85"]
+```
+
+설정 한 군데. 새로 들어온 사람이 이 파일만 보면 프로젝트의 모든 도구가 이해된다.
+
+## 도입 우선순위 — 즉시 vs 단기 vs 중기
+
+5-layer를 한꺼번에 도입하면 부담스럽다. 비용 대비 효과 순서로 단계화.
+
+| 순위 | 작업 | 비용 | 효과 |
+|------|------|------|------|
+| **즉시** | `pyproject.toml` + Ruff + Pre-commit | 1시간 | 매우 큼 |
+| **즉시** | `CLAUDE.md` 작성 | 30분 | AI 사용 시 매우 큼 |
+| 단기 | mypy 점진 도입 (`# type: ignore` 허용하면서) | 1주~1달 | 큼 |
+| 단기 | pytest + 커버리지 게이트 | 1~2주 | 큼 |
+| 중기 | Claude Code Hooks | 며칠 | 중간 |
+| 중기 | Conventional Commits + commitizen | 1일 | 중간 |
+| 장기 | GitHub Actions CI 풀 게이트 | 며칠 | 매우 큼 (팀 성숙 후) |
+
+<Callout type="tip">
+**오늘 당장 할 것 단 3개**:<br />
+1. `ruff` 설치 + `pyproject.toml`에 설정 추가<br />
+2. `pre-commit install`<br />
+3. `CLAUDE.md`에 프로젝트 컨벤션 한 페이지 작성<br /><br />
+이 3개로 비용 거의 0에 효과는 5-layer의 절반 이상.
+</Callout>
+
+## 도입 효과 — 무엇이 달라지나
+
+- **스타일 논쟁 소멸**: PR 코멘트에서 "여기는 단일 따옴표로 통일해주세요" 같은 게 없어진다. Ruff가 자동.
+- **AI 리팩토링 안전망**: 테스트가 동작 보존을 보장하니 큰 변경도 두렵지 않다.
+- **AI 행동 일관성**: 팀 멤버가 각자 AI를 써도 결과물이 비슷해진다. CLAUDE.md 덕분.
+- **운영 비용 감소**: 깨끗한 코드만 저장소에 들어가니 디버깅·확장이 쉽다.
+
+## 정리
+
+> **AI는 비결정적이다. 하지만 시스템은 결정적일 수 있다.**
+
+이 한 줄이 5-layer 스택의 정신이다. 사람이 일일이 잡으려는 시도는 AI 속도에 무너진다. 도구가 자동으로 강제하는 시스템만이 견딘다.
+
+가장 중요한 건 — **완벽한 시스템을 한 번에 만들려고 하지 말 것**. 즉시 가능한 3가지(Ruff, Pre-commit, CLAUDE.md)부터 시작해서 점진적으로 쌓는다. 한 달 뒤에는 코드 스타일 논쟁이 일어나지 않는 팀이 된다.
+
+## 참고 자료
+
+- [Ruff 공식 문서](https://docs.astral.sh/ruff/)
+- [Pre-commit 공식](https://pre-commit.com)
+- [PEP 8 — Style Guide for Python Code](https://peps.python.org/pep-0008/)
+- [mypy 공식](https://mypy-lang.org)
+- [Claude Code Hooks 문서](https://docs.claude.com/en/docs/claude-code/hooks)
+- [Git Convention 글](/blog/2026-03-05-git-convention) — Conventional Commits 자세히

@@ -1,0 +1,211 @@
+---
+title: "man이 너무 길 때 — tldr로 리눅스 명령어 빠르게 익히기"
+date: "2026-03-12T19:45:00+09:00"
+category: "study"
+tags: ["linux", "cli"]
+summary: "man 페이지를 끝까지 읽지 않고도 자주 쓰는 옵션 한두 개만 빠르게 확인하고 싶을 때, tldr이 가장 편하다. 설치부터 실전 활용까지 정리."
+series: "리눅스 명령어 시리즈"
+seriesOrder: 1
+---
+
+## 공부하게 된 계기 — `man`이 너무 길다
+
+리눅스 명령어를 처음 만나면 보통 이렇게 한다.
+
+```bash
+man tar
+```
+
+그러면 50줄짜리 옵션 설명이 끝없이 펼쳐진다. 정작 알고 싶은 건 "tar.gz로 묶는 명령 한 줄"인데 말이다. 결국 "tar gz example"을 구글에 친다. 매번.
+
+이걸 매번 반복하다가 알게 된 게 [`tldr`](https://tldr.sh)이다. 이름 그대로 *Too Long; Didn't Read* — **자주 쓰는 사용 예제 몇 줄만** 보여준다.
+
+```bash
+tldr tar
+```
+
+그러면 이런 게 나온다.
+
+```
+tar
+
+  Archiving utility.
+  Often combined with a compression method, such as gzip or bzip2.
+
+  - [c]reate an archive and write it to a [f]ile:
+    tar cf target.tar file1 file2 file3
+
+  - [c]reate a g[z]ipped archive and write it to a [f]ile:
+    tar czf target.tar.gz file1 file2 file3
+
+  - [c]reate a g[z]ipped archive from a directory:
+    tar czf target.tar.gz directory
+
+  - E[x]tract a (compressed) archive [f]ile into the current directory:
+    tar xf source.tar[.gz|.bz2|.xz]
+```
+
+원하던 게 바로 두 번째 줄이다.
+
+## `man`, `--help`, `tldr` — 무엇이 다른가
+
+세 도구의 역할이 살짝씩 다르다.
+
+| 도구 | 출처 | 분량 | 목적 |
+|------|------|------|------|
+| `man <cmd>` | 시스템 매뉴얼 (공식) | 길다 | **모든** 옵션·동작 정의 확인 |
+| `<cmd> --help` | 명령어 자체 빌트인 | 중간 | 옵션 빠른 참조 |
+| `tldr <cmd>` | 커뮤니티 cheatsheet | 짧다 | **자주 쓰는 사용 예제** |
+
+세 가지는 경쟁 관계가 아니라 **레이어가 다르다**.
+
+<Callout type="tip">
+실전 흐름: `tldr`로 흔한 케이스를 먼저 확인 → 옵션 디테일이 필요하면 `--help` → 정확한 동작이나 edge case가 궁금하면 `man`. 90%는 `tldr`에서 끝난다.
+</Callout>
+
+## 설치
+
+`tldr`은 여러 클라이언트가 있다. 가장 많이 쓰이는 건 Node.js 기반과 Rust 기반(`tealdeer`).
+
+### macOS (Homebrew)
+
+```bash
+# Node.js 클라이언트 (오리지널)
+brew install tldr
+
+# 또는 Rust 클라이언트 (훨씬 빠르다)
+brew install tealdeer
+```
+
+### Linux
+
+```bash
+# npm
+npm install -g tldr
+
+# Ubuntu/Debian
+sudo apt install tldr
+
+# Arch
+sudo pacman -S tldr
+```
+
+### Python 클라이언트
+
+```bash
+pip install tldr
+```
+
+처음 실행하면 cheatsheet 캐시를 받는다. 일주일에 한 번씩 갱신해주면 좋다.
+
+```bash
+tldr --update
+```
+
+## 자주 까먹는 명령어 5개로 체험해보기
+
+### 1) `find` — "그 파일 어디 있더라"
+
+```bash
+tldr find
+```
+
+```
+- Find files by extension:
+  find root_path -name '*.ext'
+
+- Find files matching multiple path/name patterns:
+  find root_path -path '**/path/**/*.ext' -or -name '*pattern*'
+
+- Find directories matching a given name, in case-insensitive mode:
+  find root_path -type d -iname '*lib*'
+
+- Find files modified in the last 7 days:
+  find root_path -daystart -mtime -7
+```
+
+`man find`은 800줄이 넘는다. tldr은 10줄로 끝.
+
+### 2) `tar` — 압축
+
+위에서 본 그 예제. 매번 `czf`인지 `xzf`인지 헷갈리는 사람에게 구원이다.
+
+### 3) `ssh` — 포트 포워딩
+
+```bash
+tldr ssh
+```
+
+```
+- Tunnel a local port to a remote machine:
+  ssh -L local_port:host:remote_port user@hostname
+
+- Tunnel a remote port to a local machine:
+  ssh -R remote_port:host:local_port user@hostname
+```
+
+`-L`인지 `-R`인지 매번 헷갈리는 게 정상이다.
+
+### 4) `awk` — 한 줄 짜리 데이터 처리
+
+```bash
+tldr awk
+```
+
+```
+- Print the fifth column (a.k.a. field) in a space-separated file:
+  awk '{print $5}' filename
+
+- Print the second column of the lines containing "foo":
+  awk '/foo/ {print $2}' filename
+```
+
+awk 책 한 권을 사야 할 것 같지만, 실전에서 쓰는 건 이 두 패턴이 80%다.
+
+### 5) `git rebase` — 무서운 명령어 빠르게 확인
+
+```bash
+tldr git rebase
+```
+
+`git rebase --interactive HEAD~3` 같은 자주 쓰는 형태가 바로 나온다. man은 옵션 알파벳 순서라 실전 흐름과 멀다.
+
+## 동작 원리 — 그 cheatsheet은 어디서 오나
+
+`tldr`이 보여주는 내용은 모두 [tldr-pages/tldr](https://github.com/tldr-pages/tldr) GitHub 저장소에 있다. 마크다운 파일로 명령어마다 한 페이지씩 작성돼 있고, 누구나 PR을 보낼 수 있다.
+
+```
+pages/
+├── common/
+│   ├── tar.md
+│   ├── git.md
+│   └── ...
+├── linux/
+├── osx/
+└── windows/
+```
+
+OS별 디렉토리가 따로 있어서 `tldr brew`는 macOS 항목으로, `tldr apt`는 linux 항목으로 자동 매칭된다.
+
+<Callout type="note">
+오타 발견하거나 더 좋은 예제가 떠오르면 PR을 보내면 된다. 이게 진짜 동작 원리다 — 어느 한 회사가 만든 게 아니라 **수만 명의 사용자가 자기가 자주 쓰는 패턴을 모은 결과물**이다. 그래서 "실전적"이다.
+</Callout>
+
+## 한 발짝 더 — 다른 대안들
+
+`tldr`이 정착했다면, 비슷한 결의 다른 도구도 한 번 둘러볼 만하다.
+
+- **[cheat](https://github.com/cheat/cheat)**: 자기만의 cheatsheet을 직접 추가해서 쓰는 도구. 회사 내부 명령어를 정리하는 용도로 좋다.
+- **[navi](https://github.com/denisidoro/navi)**: cheatsheet을 **인터랙티브하게** 골라 실행. fzf로 검색해서 바로 실행까지 이어진다.
+- **[bro](https://github.com/hubsmoke/bro)**: tldr과 비슷하지만 투표 시스템이 있어 인기 답변이 위로 뜬다.
+
+가장 단순하고 진입 장벽 낮은 건 여전히 `tldr`이다. 일단 깔아두면 쉘에서 `man` 칠 때마다 `tldr`로 손이 가게 된다.
+
+## 정리
+
+- `man`은 사전, `tldr`은 회화책이다. 둘 다 필요하지만 자주 쓰는 건 회화책이다.
+- 설치는 `brew install tldr` 한 줄.
+- 모르는 명령어를 만났을 때 **첫 번째로 치는 명령**을 `man`에서 `tldr`로 바꾸면 검색 시간이 눈에 띄게 줄어든다.
+- 좋은 예제가 빠져있다 싶으면 GitHub에 PR. 본인이 자주 쓰는 패턴이 다른 사람에게도 도움이 된다.
+
+검색 탭을 안 열고 터미널 안에서 끝내는 경험은 생각보다 중독성 있다. 일단 깔아보자.

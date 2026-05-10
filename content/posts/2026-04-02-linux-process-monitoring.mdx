@@ -1,0 +1,421 @@
+---
+title: "리눅스 프로세스·리소스 모니터링 — top, htop, ps, df 실전 정리"
+date: "2026-04-02T21:50:00+09:00"
+category: "study"
+tags: ["linux", "cli", "monitoring"]
+summary: "CPU·메모리·디스크가 어떻게 쓰이고 있는지 빠르게 확인하는 명령어들. top·htop·btop으로 한눈에, ps로 프로세스 콕 집기, free·df·du·iostat까지 흐름 순서로 정리."
+series: "리눅스 명령어 시리즈"
+seriesOrder: 4
+---
+
+## 공부하게 된 계기
+
+서버가 느리다. CI가 자꾸 OOM으로 죽는다. 디스크가 갑자기 가득 찼다. 이럴 때 가장 먼저 손이 가야 할 도구들이 있다.
+
+이 글은 **장애 조사 흐름** 순서로 모니터링 도구를 정리한다. "뭐가 이상한지 모르는 상태"에서 시작해, "어느 프로세스가 어떻게 자원을 먹고 있는지"까지 좁혀가는 길이다.
+
+## 1) `top` — 가장 보편적인 시작점
+
+```bash
+top
+```
+
+리눅스가 깔린 거의 모든 환경에서 동작한다. 화면 상단은 시스템 전체 요약, 하단은 프로세스 목록.
+
+### 위쪽 헤더 읽는 법
+
+```
+top - 14:32:11 up 12 days, 4:01,  1 user,  load average: 0.42, 0.55, 0.61
+Tasks: 234 total,   1 running, 233 sleeping
+%Cpu(s):  3.2 us,  1.1 sy,  0.0 ni, 95.6 id,  0.1 wa
+MiB Mem :  16384.0 total,   1234.5 free,   8765.4 used,   6384.1 buff/cache
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.
+```
+
+가장 자주 보는 항목:
+
+- **load average**: 1분 / 5분 / 15분 평균. CPU 코어 수와 비교 — 8코어 머신에서 load 8.0이면 100% 활용.
+- **%Cpu — `wa`(I/O wait)**: 이 수치가 높으면 CPU가 아니라 디스크가 병목.
+- **Mem — `used` vs `free`**: 리눅스는 빈 메모리를 캐시로 쓰니 `free`가 작은 건 정상. 진짜 부족한지 보려면 `available`(아래에서 보여주는 도구도 있음) 또는 swap 사용량 체크.
+
+### `top` 안에서의 키 조작
+
+| 키 | 동작 |
+|----|------|
+| `M` | 메모리 사용량으로 정렬 |
+| `P` | CPU 사용량으로 정렬 (기본) |
+| `T` | 실행 시간으로 정렬 |
+| `c` | 명령어 풀 경로 토글 |
+| `1` | CPU별 사용량 분리 표시 |
+| `k` | 프로세스 kill (PID 입력) |
+| `r` | nice 값 변경 |
+| `q` | 종료 |
+
+이 정도만 외워두면 90%는 커버된다.
+
+## 2) `htop` — 색깔 있는 top
+
+```bash
+brew install htop
+sudo apt install htop
+```
+
+`top`과 같은 정보를 더 보기 좋게. 화살표·마우스로 프로세스 선택 가능, 트리 뷰(`F5`), 검색(`F3`).
+
+기본 뷰가 훨씬 직관적이라 한 번 깔아두면 `top` 자리를 거의 다 차지한다. 단점은 깔려있지 않은 환경(컨테이너, 미니멀 서버)에서는 못 쓰는 것.
+
+<Callout type="tip">
+컨테이너 들어가서 `htop`이 없을 때 빠른 설치: `apk add htop` (Alpine), `apt update && apt install -y htop` (Debian/Ubuntu). 1분이면 된다.
+</Callout>
+
+## 3) `btop` — 더 예쁜 후속 주자
+
+```bash
+brew install btop
+sudo apt install btop
+```
+
+`htop`보다 한 단계 더 시각화에 신경 쓴 도구. CPU·메모리·네트워크·디스크 그래프가 동시에 그려진다. 마우스 인터랙션도 자연스럽다.
+
+`top` < `htop` < `btop` 순으로 화면이 화려해지지만 정보 밀도는 비슷. 취향대로.
+
+## 4) `ps` — 한 시점의 스냅샷
+
+`top`/`htop`이 실시간 동영상이라면, `ps`는 사진 한 장.
+
+```bash
+# 모든 프로세스
+ps aux
+
+# 트리 형태
+ps auxf
+
+# 특정 사용자
+ps -u nginx
+
+# 특정 명령어 검색 (grep과 조합)
+ps aux | grep node
+```
+
+### 자주 쓰는 컬럼 의미
+
+```
+USER  PID  %CPU  %MEM  VSZ   RSS  TTY  STAT  START  TIME  COMMAND
+```
+
+- **VSZ**: 가상 메모리 (예약된 주소 공간 — 실제 사용량 아님, 거의 항상 무시 가능)
+- **RSS**: 실제 점유 메모리 (이게 중요)
+- **STAT**: `R` 실행, `S` 슬립, `D` 인터럽트 못하는 슬립 (보통 I/O 대기), `Z` 좀비
+
+### 자주 쓰는 정렬
+
+```bash
+# 메모리 많이 먹는 순
+ps aux --sort=-%mem | head -10
+
+# CPU 많이 먹는 순
+ps aux --sort=-%cpu | head -10
+```
+
+### `pgrep` / `pkill` — 이름으로 찾기
+
+```bash
+# 이름에 'node'가 들어간 프로세스의 PID
+pgrep node
+
+# 자세히
+pgrep -a node
+
+# 찾아서 죽이기
+pkill node
+pkill -f "npm run dev"   # 전체 명령줄로 매치
+```
+
+`ps aux | grep node | grep -v grep | awk '{print $2}' | xargs kill` 같은 옛날 패턴은 이제 `pkill`로 한 줄.
+
+## 5) `free` — 메모리 빠른 체크
+
+```bash
+free -h
+```
+
+```
+              total        used        free      shared  buff/cache   available
+Mem:           16Gi       8.5Gi       1.2Gi       312Mi       6.3Gi       6.8Gi
+Swap:         2.0Gi          0B       2.0Gi
+```
+
+<Callout type="warning">
+**보통 사람의 함정**: `free`가 1.2Gi만 남았다고 메모리 부족이 아니다. **`available`을 봐야 한다** — 이게 "캐시까지 회수하면 새 프로세스에 줄 수 있는 양". 위 예시에서는 6.8Gi가 진짜 여유. 캐시(`buff/cache`)는 빌려쓰는 거라 필요하면 즉시 회수된다.
+</Callout>
+
+```bash
+# 1초마다 갱신
+free -h -s 1
+```
+
+## 6) `df` — 디스크 용량 (파일시스템 단위)
+
+```bash
+df -h
+```
+
+```
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p1  500G  430G   70G  87% /
+tmpfs           7.9G     0  7.9G   0% /dev/shm
+/dev/nvme1n1     1T   2.3G  1.0T   1% /data
+```
+
+`-h`는 사람이 읽기 쉬운 단위(KB/MB/GB). `-i`는 inode 사용량 — 작은 파일이 어마어마하게 많은 경우 디스크 용량은 멀쩡한데 inode가 다 차서 새 파일 생성 실패하는 일이 있다.
+
+```bash
+df -i
+```
+
+## 7) `du` — 어디가 차지하고 있나 (디렉토리 단위)
+
+`df`로 "디스크가 87% 찼다"를 알았다면, `du`로 "그게 어디 있는지" 찾는다.
+
+```bash
+# 현재 디렉토리 총합
+du -sh .
+
+# 한 단계 아래 디렉토리들 각각
+du -sh */
+
+# 큰 순서대로
+du -sh */ | sort -rh
+
+# 가장 큰 10개 디렉토리
+du -h --max-depth=1 / 2>/dev/null | sort -rh | head -10
+```
+
+`-s`는 summary(합산), `-h`는 human-readable. 안 붙이면 각 파일까지 다 출력된다.
+
+### `ncdu` — 인터랙티브 du
+
+```bash
+brew install ncdu
+sudo apt install ncdu
+```
+
+```bash
+ncdu /
+```
+
+스캔 후 화살표로 들어가며 어디가 무거운지 탐색할 수 있다. 디스크 청소할 때 가장 빨리 답을 준다.
+
+<Callout type="tip">
+디스크 가득 찬 사고가 났을 때 표준 흐름:<br />
+1. `df -h` — 어느 파티션이 찼나<br />
+2. `du -sh /var/* 2>/dev/null \| sort -rh \| head` — 어느 큰 디렉토리인가<br />
+3. 들어가서 한 단계씩 좁힌다 (또는 그냥 `ncdu /var`)<br />
+4. 자주 범인: `/var/log/`, `/var/lib/docker/`, `/tmp/`, 사용자 홈의 빌드 캐시
+</Callout>
+
+## 8) `iostat` — 디스크 I/O
+
+```bash
+sudo apt install sysstat   # iostat가 들어있는 패키지
+```
+
+```bash
+# 1초마다 갱신, 5번
+iostat -x 1 5
+```
+
+```
+Device  r/s   w/s   rkB/s   wkB/s  await  %util
+nvme0   12.4  87.2  198.4  1834.5    2.3   42.1
+```
+
+핵심 컬럼:
+- **r/s, w/s**: 초당 read/write 횟수
+- **await**: I/O 평균 대기시간 (ms). 두 자리 ms 넘기 시작하면 디스크 병목 의심
+- **%util**: 디스크가 얼마나 바쁜지. 100%에 가까우면 포화
+
+`top`에서 `wa`(I/O wait)가 높았다면 `iostat`로 어느 디스크가 범인인지 좁힌다.
+
+### `iotop` — 어느 프로세스가 디스크를 먹나
+
+```bash
+sudo apt install iotop
+```
+
+```bash
+sudo iotop -o    # 실제로 IO 하는 프로세스만
+```
+
+`top`의 디스크 IO 버전. 백업 스크립트, 빌드 프로세스 같은 것들이 잘 잡힌다.
+
+## 9) `kill` — 프로세스 신호
+
+```bash
+# 일반 종료 (SIGTERM)
+kill <PID>
+
+# 강제 종료 (SIGKILL) — 마지막 수단
+kill -9 <PID>
+
+# 설정 리로드 (SIGHUP) — 데몬에 자주 씀
+kill -HUP <PID>
+
+# 사용 가능한 신호 목록
+kill -l
+```
+
+<Callout type="warning">
+**`kill -9`는 첫 손이 아니다**. SIGKILL은 정리(파일 닫기, 트랜잭션 롤백, 자식 프로세스 회수)를 못 하고 강제 종료다. 데이터베이스 같은 거에 쓰면 사고 난다.<br /><br />
+순서: 일반 `kill` (SIGTERM) → 5~10초 기다림 → 그래도 살아있으면 `kill -9`.
+</Callout>
+
+### `pkill` / `killall`
+
+```bash
+# 이름으로
+pkill nginx
+
+# 정규식으로 매치
+pkill -f "python.*train.py"
+
+# 특정 사용자의 모든 프로세스
+pkill -u jenkins
+```
+
+`killall`도 비슷하지만 macOS와 Linux에서 동작이 살짝 다르다. 안전하게는 `pkill`.
+
+## 10) `watch` — 무엇이든 반복 실행
+
+`watch`는 그 자체로 모니터링 도구는 아니지만, **다른 도구를 주기적으로 갱신**할 때 만능이다.
+
+```bash
+# 2초마다 갱신
+watch ps aux --sort=-%mem | head
+
+# 1초마다, 변화한 부분 강조
+watch -n 1 -d "df -h"
+
+# Docker 컨테이너 상태
+watch docker ps
+```
+
+기본은 2초 간격. `-n 1`로 1초, `-d`로 변경 부분 하이라이트.
+
+## 11) `glances` — 한 화면에 다 띄우는 종합 도구
+
+```bash
+pip install glances
+brew install glances
+```
+
+```bash
+glances
+```
+
+CPU·메모리·디스크·네트워크·프로세스를 한 화면에 모아 보여준다. `top` + `iotop` + `iftop` 묶음에 가까운 느낌. 운영 머신에 한 번 깔아두면 SSH 들어가서 `glances` 한 줄로 대부분 파악된다.
+
+`-w` 옵션으로 웹 인터페이스도 띄울 수 있어 모니터링 대시보드로도 쓸 수 있다.
+
+## 실전 패턴 7개
+
+### A. "서버가 느려요" — 1분 안에 좁히기
+
+```bash
+# 1) 부하 수준 확인
+uptime
+# load average: 8.42, 6.55, 4.61   (8코어 머신이라면 100% 포화)
+
+# 2) CPU vs IO인지
+top   # %Cpu의 us·sy·wa 보고 결정
+
+# 3) 어느 프로세스
+ps aux --sort=-%cpu | head -5
+ps aux --sort=-%mem | head -5
+```
+
+### B. OOM(Out of Memory) 흔적
+
+```bash
+# 커널 메시지에서 OOM 검색
+sudo dmesg -T | grep -i "killed process"
+
+# journal에서
+journalctl -k --since "1 day ago" | grep -i oom
+```
+
+### C. 좀비 프로세스 찾기
+
+```bash
+ps aux | awk '$8 ~ /Z/ { print }'
+```
+
+좀비 자체는 메모리를 거의 안 먹지만, 부모 프로세스가 자식 회수를 안 하고 있다는 신호다.
+
+### D. 특정 포트 누가 잡고 있나
+
+```bash
+sudo lsof -i :3000
+# 또는
+sudo ss -ltnp | grep 3000
+```
+
+### E. CPU 100% 잡아먹는 자식 프로세스 찾기
+
+```bash
+ps -eo pid,ppid,pcpu,comm --sort=-pcpu | head
+```
+
+`PPID`(부모 PID)도 보이니 어느 프로세스의 자식인지 파악 가능.
+
+### F. 큰 파일 찾기 (디스크 가득 찼을 때)
+
+```bash
+# 100MB 이상 파일
+sudo find / -type f -size +100M 2>/dev/null | head -20
+
+# 디렉토리 + 인터랙티브
+sudo ncdu /
+```
+
+### G. 컨테이너의 자원 사용량
+
+```bash
+docker stats
+docker stats my-api          # 특정 컨테이너만
+docker stats --no-stream     # 한 번만 찍고 종료 (스크립트용)
+```
+
+`docker stats`는 컨테이너용 `top`이라고 보면 된다.
+
+## 정리 — 어떤 걸 쓸까
+
+<Callout type="tip">
+**상시 띄워둘 것**: 운영 머신에 SSH 들어가면 일단 `htop` (또는 `btop`, `glances`).<br />
+**메모리 의심**: `free -h` → `ps aux --sort=-%mem`.<br />
+**디스크 의심**: `df -h` → `du -sh /*` 또는 `ncdu`.<br />
+**I/O 의심**: `iostat -x 1` → `iotop`.<br />
+**프로세스 정리**: `pgrep` / `pkill` (`kill -9`는 마지막 수단).<br />
+**컨테이너 환경**: `docker stats`.
+</Callout>
+
+이 정도면 일상 운영 중 만나는 자원 문제의 90%를 커버한다. "정량적으로 측정하기 전에 추측하지 말 것"이 모든 모니터링의 첫 원칙이다.
+
+## 시리즈 정리
+
+리눅스 명령어 시리즈는 이번 편으로 4편이 됐다.
+
+- [1편: tldr로 리눅스 명령어 빠르게 익히기](/blog/2026-03-12-tldr-linux-commands)
+- [2편: 파일 검색 명령어 — find, grep, fd, ripgrep](/blog/2026-03-19-file-search-commands)
+- [3편: 로그 보는 명령어 — tail, less, journalctl, lnav](/blog/2026-03-26-linux-log-commands)
+- 4편 (이 글): 프로세스·리소스 모니터링
+
+다음 편 후보: 네트워크 디버깅(`netstat`/`ss`/`tcpdump`/`curl`), 권한·소유권(`chmod`/`chown`/`sudo`), 또는 SSH·SCP·Rsync 한 묶음.
+
+## 참고 자료
+
+- `man top`, `man ps`, `man iostat`
+- [htop 공식](https://htop.dev/)
+- [btop GitHub](https://github.com/aristocratos/btop)
+- [glances 공식](https://nicolargo.github.io/glances/)
+- [Brendan Gregg, USE Method](https://www.brendangregg.com/usemethod.html) — 시스템 성능 분석의 정석
