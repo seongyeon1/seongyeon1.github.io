@@ -201,12 +201,12 @@ const HomePage = () => {
               View all →
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="scrollbar-hide -mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2">
             {series.map((s) => (
               <Link
                 key={s.name}
                 href={`/series/${encodeURIComponent(s.name)}`}
-                className="group rounded-2xl bg-white p-6 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-zinc-900"
+                className="group w-[280px] shrink-0 snap-start rounded-2xl bg-white p-6 shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-zinc-900"
               >
                 <div className="mb-2 flex items-center gap-2">
                   <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
