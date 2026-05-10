@@ -199,3 +199,21 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-zinc-400 dark:bg-zinc-600;
 }
+
+/* ─── Custom utilities ──────────────────────────── */
+@layer utilities {
+  /* 가로 스크롤 carousel용 — 스크롤바 숨김 */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* 픽셀 아바타가 모든 사이즈에서 선명하게 — bilinear 필터 비활성 */
+  .image-pixelated {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+  }
+}

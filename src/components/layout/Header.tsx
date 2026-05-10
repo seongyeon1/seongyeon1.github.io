@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const navItems = [
@@ -81,12 +82,18 @@ const Header = () => {
         <Link
           href="/"
           className="flex items-center gap-2.5 rounded-lg transition-transform duration-150 ease-out-expo active:scale-[0.96]"
+          aria-label="sy/dev — home"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white shadow-border">
-            AI
-          </div>
-          <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Tech Blog
+          <Image
+            src="/images/avatar.png"
+            alt=""
+            width={32}
+            height={32}
+            priority
+            className="image-pixelated h-8 w-8 rounded-full ring-1 ring-zinc-200/70 dark:ring-zinc-700/70"
+          />
+          <span className="font-mono text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            sy<span className="text-primary-600 dark:text-primary-400">/dev</span>
           </span>
         </Link>
 

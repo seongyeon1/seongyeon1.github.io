@@ -6,6 +6,7 @@ import TOC from "@/components/blog/TOC";
 import TagBadge from "@/components/blog/TagBadge";
 import CategoryBadge from "@/components/blog/CategoryBadge";
 import SeriesNav from "@/components/blog/SeriesNav";
+import Comments from "@/components/blog/Comments";
 
 const PostLayout = ({
   post,
@@ -89,6 +90,13 @@ const PostLayout = ({
             ))}
           </div>
         </footer>
+
+        <section className="mt-16 border-t border-zinc-200/60 pt-8 dark:border-zinc-800/60">
+          <h2 className="mb-6 text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            Comments
+          </h2>
+          <Comments />
+        </section>
       </article>
     </div>
   );
