@@ -42,9 +42,11 @@
     @apply bg-primary-200 dark:bg-primary-800;
   }
 
-  /* Headings should balance line lengths */
-  h1, h2, h3 {
+  /* Headings should balance line lengths and never split Korean words */
+  h1, h2, h3, h4 {
     text-wrap: balance;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -167,7 +169,23 @@
 }
 
 .prose blockquote {
-  @apply border-l-primary-500 bg-zinc-50 dark:bg-zinc-900/50 rounded-r-lg py-1 px-1 not-italic;
+  @apply my-6 rounded-r-lg border-l-2 border-l-primary-500 bg-zinc-50 px-5 py-3 font-normal not-italic text-zinc-600 dark:bg-zinc-900/40 dark:text-zinc-300;
+}
+
+/* Tailwind Typography wraps blockquotes in curly quotes — drop them, they
+   collide with literal quotes and look odd around inline code. */
+.prose blockquote p:first-of-type::before,
+.prose blockquote p:last-of-type::after {
+  content: none;
+}
+
+.prose blockquote p {
+  @apply my-2;
+}
+
+/* Inline code inside a blockquote: no clashing background box, just a tint */
+.prose blockquote code {
+  @apply bg-transparent px-0 font-medium text-zinc-700 dark:text-zinc-200;
 }
 
 /* Image outlines: pure black/white at 10% opacity, never tinted */

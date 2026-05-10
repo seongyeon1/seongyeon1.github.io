@@ -39,14 +39,23 @@ const config: Config = {
           css: {
             maxWidth: "none",
             code: {
-              backgroundColor: "rgb(var(--tw-prose-pre-bg))",
-              padding: "0.2em 0.4em",
+              backgroundColor: "#f4f4f5", // zinc-100
+              color: "#3f3f46", // zinc-700
+              padding: "0.15em 0.4em",
               borderRadius: "0.375rem",
-              fontWeight: "400",
-              fontSize: "0.875em",
+              fontWeight: "500",
+              fontSize: "0.85em",
             },
             "code::before": { content: "none" },
             "code::after": { content: "none" },
+          },
+        },
+        invert: {
+          css: {
+            code: {
+              backgroundColor: "#27272a", // zinc-800
+              color: "#d4d4d8", // zinc-300
+            },
           },
         },
       },
