@@ -69,4 +69,4 @@ npm run typecheck  # TypeScript 타입 체크
 - 아키텍처 상세: `@docs/architecture.md`
 - 포스트 작성법: `@docs/content-guide.md`
 - 컴포넌트 목록: `@docs/components.md`
-- 포스팅 계획/백로그: `@docs/posting-plan.md` — 새 글 작성/제안 시 다음 발행 예정 글·시리즈 순서 확인
+- 편집 계획/백로그: `@docs/editorial-plan.md` — 새 글 작성/제안 시 다음 발행 예정 글·시리즈 순서 확인 (`docs/posting-plan.md`는 별개 — 기존 글 자동 발행 스케줄)
