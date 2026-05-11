@@ -45,7 +45,8 @@
 5. ⬜ _(옵션)_ 글쓰기 워크플로 — `/new-post`·`/review-post` 스킬, 이미지 파이프라인, frontmatter 규칙
 
 ### Git 시리즈 — 입문 끝, 심화 코스 예정 (Pro Git 기반)
-상세 아웃라인: `docs/superpowers/specs/2026-05-11-git-series-design.md`
+상세 아웃라인 + 편별 실무 팁: `docs/superpowers/specs/2026-05-11-git-series-design.md`
+(각 편에 `## 실무에서 — 알아두면 좋은 것들` 섹션: alias·유용한 config·`gh` CLI·rerere/autosquash·"방금 망쳤을 때" 처방 등)
 1. ✅ Git 시작하기 — 명령어 9개 — `2026-02-26-git-basics`
 2. ✅ 혼자 써도 따라야 할 Git Convention — `2026-03-05-git-convention`
 3. ⬜ 브랜치, 제대로 (ch.3.1–3.4)
