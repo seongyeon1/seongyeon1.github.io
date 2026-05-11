@@ -31,7 +31,7 @@ next-env.d.ts
 .vercel
 
 # claude / sy
-.claude
+# .claude
 .sy-memory
 
 reference/
