@@ -6,7 +6,18 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 11 May 2026 01:03:01 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 11 May 2026 14:28:20 GMT</lastBuildDate>
+    <item>
+      <title>브랜치, 제대로 — 만들고 옮기고 합치고 지우기</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-25-git-branching/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-25-git-branching/</guid>
+      <description>브랜치가 왜 41바이트짜리 포인터인지부터 — switch로 만들고 옮겨다니기, fast-forward와 3-way merge의 차이, 머지된 브랜치 정리, topic 브랜치 워크플로, 그리고 실무 팁까지. Git 시리즈 3편.</description>
+      <pubDate>Mon, 25 May 2026 11:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>git</category>
+      <category>branch</category>
+      <category>merge</category>
+    </item>
     <item>
       <title>GitHub Pages 블로그를 구글 검색에 노출시키기 (Search Console 편)</title>
       <link>https://seongyeon1.github.io/blog/2026-05-11-google-search-console-github-pages/</link>
