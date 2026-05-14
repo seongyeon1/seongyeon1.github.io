@@ -1,17 +1,19 @@
 상태,발행예정일,제목(가안),카테고리,시리즈,seriesOrder,메모
 발행완료,2026-05-10,정적 블로그에 댓글 시스템 도입하기 (Giscus 편),tutorial,블로그 만들기,1,
 발행완료,2026-05-11,GitHub Pages 블로그를 구글 검색에 노출시키기 (Search Console 편),tutorial,블로그 만들기,2,
-작성중,2026-05-18,블로그 SEO 마감 — OG 이미지 자동 생성 · RSS · JSON-LD,tutorial,블로그 만들기,3,2편 다음 편 예고에 이미 공개. opengraph-image / rss.xml / Article JSON-LD
-아이디어,2026-05-25,"브랜치, 제대로 — 만들고 옮기고 합치고 지우기",study,Git 시리즈,3,Pro Git ch.3.1–3.4 / 아웃라인: docs/superpowers/specs/2026-05-11-git-series-design.md
-아이디어,2026-06-01,(RAG 논문 리뷰 시리즈 다음 편),paper-review,RAG 논문 리뷰 시리즈,3,후보 논문 정해서 채우기
-아이디어,2026-06-08,merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가,study,Git 시리즈,4,Pro Git ch.3.5–3.6 (Rebase의 위험성 강조)
-아이디어,2026-06-15,Attention 이해하기 시리즈 마무리 (디코딩·추론 or 전체 정리),study,Attention 이해하기,6,시리즈가 5편쯤에서 멈춰 있음
-아이디어,2026-06-22,리모트와 협업 — fetch / pull / push를 정확히,study,Git 시리즈,5,"Pro Git ch.2.5, 3.5 / 1편의 remote·push·pull을 깊게"
-아이디어,2026-06-29,(프롬프트 최적화 or 신규 study 한 편),study,,,
-아이디어,2026-07-06,되돌리기 총정리 — reset · revert · restore · reflog · stash,study,Git 시리즈,6,"Pro Git ch.2.4, 7.3, 7.7 / 세 개의 트리 그림"
-아이디어,2026-07-13,(프로젝트 후기 한 편),project,,,최근에 만든 거 회고
-아이디어,2026-07-20,GitHub 활용 — fork · PR · issue · Actions 맛보기,study,Git 시리즈,7,Pro Git ch.6 / 이 블로그 deploy.yml을 예시로
-아이디어,2026-08-03,Git 내부 — .git 디렉토리를 열어보면,study,Git 시리즈,8,옵션·마지막 / Pro Git ch.10 / 7편 발행 시 포함 여부 결정
-아이디어,,블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰),tutorial,블로그 만들기,4,옵션 — 3편 끝나고. Actions 기초는 Git 7편에서
-아이디어,,,,,,
-아이디어,,,,,,
+발행완료,2026-05-25,"브랜치, 제대로 — 만들고 옮기고 합치고 지우기",study,Git 시리즈,3,발행 — 2026-05-25-git-branching.mdx (Pro Git ch.3.1–3.4)
+작성중,2026-05-18,블로그 SEO 마감 — OG 이미지 자동 생성 · RSS · JSON-LD,tutorial,블로그 만들기,3,2편 다음 편 예고에 이미 공개. opengraph-image / rss.xml / Article JSON-LD (PR #14 draft)
+아이디어,2026-05-19,(RAG 논문 리뷰 시리즈 다음 편),paper-review,RAG 논문 리뷰 시리즈,3,후보 논문 정해서 채우기
+아이디어,2026-05-20,merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가,study,Git 시리즈,4,Pro Git ch.3.5–3.6 (Rebase의 위험성 강조)
+아이디어,2026-05-21,Attention 이해하기 시리즈 마무리 (디코딩·추론 or 전체 정리),study,Attention 이해하기,6,시리즈가 5편쯤에서 멈춰 있음 — 한 편으로 닫기
+아이디어,2026-05-22,리모트와 협업 — fetch / pull / push를 정확히,study,Git 시리즈,5,"Pro Git ch.2.5, 3.5 / 1편의 remote·push·pull을 깊게"
+아이디어,2026-05-23,Harness 만들기 1편 — 왜 만들고 어떻게 짰나 (skills · agents · hooks 구조),project,Harness 만들기,1,harness/braincrew — 25 skills · 24 agents · 36 rules · 21 hooks · 15 commands. skill description 매 turn 주입 vs path-gated rule 분리 원리
+아이디어,2026-05-24,되돌리기 총정리 — reset · revert · restore · reflog · stash,study,Git 시리즈,6,"Pro Git ch.2.4, 7.3, 7.7 / 세 개의 트리 그림"
+아이디어,2026-05-25,RPG 포트폴리오 만들기 — Kaboom.js 픽셀 RPG 단일 페이지 (NDA 마스킹 메커니즘),project,,,harness/public-portfolio — No-Build · Kaboom.js 3000 · PUBLIC_MODE 한 줄 토글 마스킹
+아이디어,2026-05-26,GitHub 활용 — fork · PR · issue · Actions 맛보기,study,Git 시리즈,7,Pro Git ch.6 / 이 블로그 deploy.yml을 예시로
+아이디어,2026-05-27,Harness 만들기 2편 — 듀얼 메모리 + sy 글로벌 CLI 워크플로,project,Harness 만들기,2,"global ~/.sy/memory/ ↔ project .sy-memory/, sy가 claude --plugin-dir로 부팅"
+아이디어,2026-05-28,Git 내부 — .git 디렉토리를 열어보면,study,Git 시리즈,8,옵션·마지막 / Pro Git ch.10 / 7편 발행 시 포함 여부 결정
+아이디어,2026-05-29,Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키,project,,,harness/braincrew-wiki — Karpathy LLM-wiki 패턴 팀 확장. Next.js 16 + Bun + Vercel
+아이디어,2026-05-30,(프롬프트 최적화 or 신규 study 한 편),study,,,
+아이디어,2026-05-31,(프로젝트 후기 한 편),project,,,최근에 만든 거 회고 — bc-ppt 후속?
+아이디어,2026-06-01,블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰),tutorial,블로그 만들기,4,3편 끝나고. Actions 기초는 Git 7편에서
