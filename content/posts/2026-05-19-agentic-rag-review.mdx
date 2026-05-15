@@ -1,0 +1,95 @@
+---
+title: "[논문 리뷰] A-RAG: Agentic RAG가 2026년의 기본기가 된 이유"
+date: "2026-05-19T09:00:00+09:00"
+category: "paper-review"
+tags: ["RAG", "agentic-rag", "retrieval"]
+summary: "단일 retriever→generator 파이프라인이 한계를 보이는 가운데, 질의 분해·병렬 검색·검증·합성을 에이전트가 분담하는 A-RAG의 계층적 검색 인터페이스를 살펴본다."
+series: "RAG 논문 리뷰 시리즈"
+seriesOrder: 3
+draft: true
+math: true
+---
+
+<Paper
+  title="A-RAG: Scaling Agentic Retrieval-Augmented Generation via Hierarchical Retrieval Interfaces"
+  authors="(논문 원저자 — 발행 전 확정)"
+  year={2026}
+  venue="arXiv preprint"
+  arxiv="2602.03442"
+/>
+
+## 한 줄 요약
+
+> "검색"을 한 번의 벡터 룩업이 아니라, **에이전트가 호출하는 계층적 인터페이스**로 다시 정의하자. 2026년의 RAG 병목은 generation이 아니라 retrieval이며, A-RAG는 질의 분해 → 병렬 검색 → 검증 → 합성을 분담하는 멀티에이전트 토폴로지에서 retrieval을 "도구(tool)" 추상화로 노출한다.
+
+## 1. 왜 지금 Agentic RAG인가
+
+2023년식 *naive RAG* — 문서를 청크하고, 벡터 DB에 넣고, top-k를 LLM에 끼워넣는 — 는 사실상 끝났다. 2026년 현재 production RAG의 합의는 셋이다.
+
+1. **Retrieval이 병목이다.** 모델은 충분히 똑똑한데, 잘못된 컨텍스트를 받으면 잘못 답한다.
+2. **검색은 단발이 아니다.** 첫 검색 결과를 보고 *재질의*해야 풀리는 문제가 많다.
+3. **검색은 도구다.** LLM에게 노출되는 retrieval은 함수 시그니처를 가진 도구 호출이어야 한다.
+
+A-RAG는 이 세 가지 합의를 한 묶음의 아키텍처로 만든 논문이다.
+
+## 2. 핵심 아이디어 — Hierarchical Retrieval Interfaces
+
+전통적 RAG에서 retriever는 `search(query) -> chunks` 하나뿐이다. A-RAG는 retrieval을 **계층화된 인터페이스 집합**으로 노출한다.
+
+- `coarse_search(topic)` — 토픽 수준 후보 문서/섹션
+- `fine_search(query, in=section_id)` — 좁힌 범위에서의 의미 검색
+- `entity_lookup(entity)` — 엔티티/그래프 인접 노드
+- `verify(claim, evidence_ids)` — 주어진 주장과 근거의 일치 여부
+
+에이전트는 작업의 단계에 따라 적절한 인터페이스를 *선택*하고, 결과를 보고 다음 호출을 결정한다.
+
+## 3. 아키텍처
+
+```
+                 ┌──────────────────┐
+   user query ──►│  Planner Agent   │  (질의 분해 → 서브태스크 N개)
+                 └──────┬───────────┘
+                        ▼
+        ┌───────────────┴───────────────┐
+        ▼               ▼               ▼
+  Retriever Agent  Retriever Agent  Retriever Agent   (병렬, 서로 다른 인터페이스)
+        │               │               │
+        └───────┬───────┴───────┬───────┘
+                ▼               ▼
+          Validator Agent  (근거 충돌·결손 체크, 필요시 재검색 요청)
+                ▼
+          Synthesizer Agent  → final answer + citations
+```
+
+핵심은 **Validator가 Planner에게 재검색을 요청할 수 있다**는 점이다. 루프가 닫혀 있다.
+
+## 4. GraphRAG와의 차이
+
+- **GraphRAG**: 검색 대상이 subgraph. 구조화된 지식그래프에서 다중 홉 추론이 강점.
+- **A-RAG**: 검색 대상은 여전히 텍스트지만, 검색 *행위* 자체를 에이전트의 도구로 분해. 그래프가 없는 사내 문서에도 그대로 적용된다.
+
+둘은 배타적이지 않다 — A-RAG의 인터페이스 중 하나로 `graph_walk()` 를 넣으면 그대로 합쳐진다.
+
+## 5. 실전 적용 포인트
+
+- **도구 시그니처를 먼저 그려라.** 어떤 retrieval 함수가 어떤 인자를 받는지가 시스템의 골격이다. 인덱스는 그 다음 문제.
+- **Planner 프롬프트는 짧게, 인터페이스 설명은 길게.** 에이전트는 선택지를 이해해야 좋은 호출을 한다.
+- **Validator를 빼먹지 마라.** Self-correction 없는 Agentic RAG는 비싼 naive RAG다.
+
+## 6. 한계 — 공짜는 없다
+
+- **Latency**: 단발 RAG 대비 호출 수가 N배. 5초 응답이 15초가 되는 건 흔하다.
+- **토큰 비용**: 에이전트 루프의 중간 사고/툴 호출이 모두 과금된다.
+- **디버깅 난이도**: 실패가 어느 에이전트에서 났는지 추적할 트레이싱이 필수.
+
+> 결론: Agentic RAG는 *언제나* 정답이 아니라, **재질의가 필요한 도메인**에서 정답이다. FAQ봇에는 과하고, 사내 지식 검색·리서치 에이전트엔 거의 필수다.
+
+## 다음 편 예고
+
+다음 편(RAG 논문 리뷰 #4)에서는 **Self-RAG / CRAG**를 비교한다 — A-RAG가 "에이전트 토폴로지"라면, Self-RAG·CRAG는 "단일 모델 안에서의 자기 검증"이다. 둘이 합쳐지면 어떤 그림이 나오는지까지 이어서 다룬다.
+
+## 참고
+
+- [A-RAG (arXiv 2602.03442)](https://arxiv.org/html/2602.03442v1)
+- [State of RAG in 2026 — Squirro](https://squirro.com/squirro-blog/state-of-rag-genai)
+- [RAG Production Guide 2026 — Lushbinary](https://lushbinary.com/blog/rag-retrieval-augmented-generation-production-guide/)
