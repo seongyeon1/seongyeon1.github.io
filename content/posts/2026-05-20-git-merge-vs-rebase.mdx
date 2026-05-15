@@ -1,0 +1,94 @@
+---
+title: "merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가"
+date: "2026-05-20T09:00:00+09:00"
+category: "study"
+tags: ["git", "merge", "rebase", "workflow"]
+summary: "merge는 기록, rebase는 재서술. 두 명령의 동작과 황금률(공유 브랜치 rebase 금지), 그리고 팀 규약 패턴 세 가지를 정리한다."
+series: "Git 시리즈"
+seriesOrder: 4
+draft: true
+---
+
+## 두 그래프
+
+같은 작업을 두 가지 방식으로 합치면 히스토리 그래프가 이렇게 갈린다.
+
+```
+merge (기록 보존)              rebase (선형화)
+
+*   Merge branch 'feat'        * feat: c
+|\                             * feat: b
+| * feat: c                    * feat: a
+| * feat: b                    * main: m2
+| * feat: a                    * main: m1
+* | main: m2
+|/
+* main: m1
+```
+
+왼쪽은 *언제, 어떤 작업이, 어디서 갈라졌다 합쳐졌는지*를 그대로 남긴다. 오른쪽은 *마치 한 줄로 작업한 것처럼* 보이게 만든다. **올바름의 문제가 아니라 관점의 문제다** — 팀이 무엇을 더 중요하게 보느냐.
+
+## `git merge` 의 동작
+
+`git merge feat` 은 두 가지 모드로 작동한다.
+
+- **Fast-forward**: `main`에 새 커밋이 없으면 그냥 포인터를 `feat` 끝으로 이동. merge commit이 안 생긴다.
+- **3-way merge**: `main`에도 커밋이 있으면 공통 조상 + 두 갈래 끝, 셋을 비교해 새 merge commit 하나를 만든다. 부모가 둘인 커밋이다.
+
+핵심: **기존 커밋을 건드리지 않는다.** 새 커밋(merge commit) 하나를 *추가* 할 뿐이다.
+
+## `git rebase` 의 동작
+
+`git rebase main` 은 *내 커밋들을 떼어내서 main 끝에 다시 적용*한다.
+
+```
+before:  main: m1 — m2
+              \
+               feat: a — b — c
+
+after:   main: m1 — m2 — a' — b' — c'
+```
+
+`a'`, `b'`, `c'` 는 원본 `a`, `b`, `c`와 *내용은 같지만 다른 커밋*이다 (parent와 SHA가 바뀜). 즉 **rebase는 커밋을 다시 쓴다.**
+
+## 황금률 — 공유 브랜치는 rebase 금지
+
+이게 깨지는 시나리오.
+
+1. 동료 B가 내 `feat` 브랜치를 받아 작업 중이다.
+2. 내가 `feat`을 rebase 해서 `a`, `b`, `c` → `a'`, `b'`, `c'` 로 바꾼다.
+3. force-push 한다.
+4. B의 로컬엔 옛날 `a, b, c` 위에 자기 커밋이 쌓여있다.
+5. B가 다시 pull → **두 줄기가 다 살아서** 같은 작업이 두 번 들어간다.
+
+복구는 가능하지만 비대칭적으로 비싸다. 황금률은 단순하다.
+
+> *내가 혼자 보는 브랜치만 rebase 한다. 누구든 한 번이라도 받아본 브랜치는 rebase 하지 않는다.*
+
+## 팀 규약 패턴 3가지
+
+GitHub/GitLab의 PR merge 옵션이 그대로 팀 정책이 된다.
+
+| 패턴 | 결과 그래프 | 장점 | 단점 |
+|---|---|---|---|
+| **Always merge commit** | 갈라짐·합쳐짐 그대로 보존 | bisect·revert 단위가 명확, 히스토리에 진실 | 그래프가 복잡 |
+| **Squash merge** | PR 하나당 커밋 하나 | main이 깔끔, PR=커밋 | 중간 커밋 손실, bisect 입자 거침 |
+| **Rebase and merge** | 평탄한 선형 | 깔끔하면서 커밋 보존 | force 흐름이 잦아 사고 위험 |
+
+정답은 없다. **팀이 main을 *읽는 방식* 에 맞추는 게 정답이다** — release note를 PR 단위로 뽑는다면 squash, bisect를 자주 한다면 merge commit, 작은 팀이고 모두 git에 능숙하면 rebase.
+
+## 실무 팁
+
+- `git pull --rebase` 를 기본으로. 무심한 `git pull`이 만드는 자잘한 merge commit을 없앤다 (`git config --global pull.rebase true`).
+- `git rebase -i HEAD~5` — 커밋 합치기·메시지 수정·순서 변경. 푸시 전 정리는 모든 rebase 중 가장 안전하다.
+- `git rerere` (reuse recorded resolution) — 같은 충돌을 두 번 풀지 않게. 긴 리베이스에 큰 도움.
+- 사고 났을 때: `git reflog` 가 항상 답이다. rebase 직전 HEAD가 거기 남아있다.
+
+## 다음 편 예고
+
+다음 편(Git 시리즈 #5)은 **리모트와 협업 — fetch / pull / push 를 정확히** 다룬다. 1편에서 표면만 훑은 remote·tracking·upstream을 깊게 본다. `git fetch` 가 하는 일과 `git pull` 이 정확히 무엇의 합성인지부터.
+
+## 참고
+
+- [Pro Git Book ch.3.6 — Rebasing](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
+- [GitHub Docs — About merge methods](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-merge-methods-on-github)

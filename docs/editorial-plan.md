@@ -26,7 +26,7 @@
 | 발행완료 | 2026-05-25 | 브랜치, 제대로 — 만들고 옮기고 합치고 지우기 | study | Git 시리즈 | 3 | 발행 — `2026-05-25-git-branching.mdx` (Pro Git ch.3.1–3.4) |
 | 작성중 | 2026-05-18 | 블로그 SEO 마감 — OG 이미지 자동 생성 · RSS · JSON-LD | tutorial | 블로그 만들기 | 3 | 2편 "다음 편 예고"에 이미 공개함. `opengraph-image`, `/rss.xml`, `Article` JSON-LD |
 | 작성중 | 2026-05-19 (화) | [논문 리뷰] A-RAG: Agentic RAG가 2026년의 기본기가 된 이유 | paper-review | RAG 논문 리뷰 시리즈 | 3 | 초안 작성 — `2026-05-19-agentic-rag-review.mdx` (A-RAG arXiv 2602.03442) |
-| 아이디어 | 2026-05-20 (수) | merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가 | study | Git 시리즈 | 4 | Pro Git ch.3.5–3.6 (Rebase의 위험성 강조) |
+| 작성중 | 2026-05-20 (수) | merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가 | study | Git 시리즈 | 4 | 초안 작성 — `2026-05-20-git-merge-vs-rebase.mdx` (Pro Git ch.3.5–3.6) |
 | 아이디어 | 2026-05-21 (목) | Attention 이해하기 시리즈 마무리 (디코딩·추론 or 전체 정리) | study | Attention 이해하기 | 6 | 시리즈가 5편쯤에서 멈춰 있음 — 한 편으로 닫기 |
 | 아이디어 | 2026-05-22 (금) | 리모트와 협업 — fetch / pull / push를 정확히 | study | Git 시리즈 | 5 | Pro Git ch.2.5, 3.5 / 1편의 remote·push·pull을 깊게 |
 | 아이디어 | 2026-05-23 (토) | Harness 만들기 1편 — 왜 만들고 어떻게 짰나 (skills · agents · hooks 구조) | project | Harness 만들기 | 1 | `harness/braincrew` — 25 skills · 24 agents · 36 rules · 21 hooks · 15 commands |
