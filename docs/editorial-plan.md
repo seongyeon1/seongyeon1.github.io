@@ -23,6 +23,12 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 발행완료 | 2026-05-10 | 정적 블로그에 댓글 시스템 도입하기 (Giscus 편) | tutorial | 블로그 만들기 | 1 | — |
 | 발행완료 | 2026-05-11 | GitHub Pages 블로그를 구글 검색에 노출시키기 (Search Console 편) | tutorial | 블로그 만들기 | 2 | — |
+| 발행완료 | 2026-05-12 | Container와 Docker 기초 — 왜 필요하고 어떻게 작동하는가 | study | 배포 환경 이해하기 | 1 | `2026-05-30-docker-container-basics.mdx` (frontmatter date: 5/12) — Image·Container·Registry, VM vs Container |
+| 발행완료 | 2026-05-13 | Kubernetes 핵심 — Pod, Service, Deployment가 하는 일 | study | 배포 환경 이해하기 | 2 | `2026-05-31-kubernetes-fundamentals.mdx` (5/13) — Pod·Service·Deployment, 선언형 배포, YAML |
+| 발행완료 | 2026-05-14 | AWS 핵심 서비스 — EC2, S3, RDS, VPC로 클라우드 인프라 구성하기 | study | 배포 환경 이해하기 | 3 | `2026-06-01-aws-core-services.mdx` (5/14) — EC2·S3·RDS·VPC, 프리티어, 실전 아키텍처 |
+| 발행완료 | 2026-05-15 | 배포 전략 — Blue-Green, Canary, Rolling Deployment 무중단 배포의 기술 | study | 배포 환경 이해하기 | 4 | `2026-06-02-deployment-strategies.mdx` (5/15) — 3가지 전략 비교, Kubernetes 구현, GitHub Actions 예제 |
+| 발행완료 | 2026-05-16 | GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 자동화 배포 파이프라인 | study | 배포 환경 이해하기 | 5 | `2026-06-03-gitops-cicd.mdx` (5/16) — CI/CD 파이프라인, GitHub Actions, ArgoCD, GitOps 원칙 |
+| 발행완료 | 2026-05-17 | 모니터링·로깅 — Prometheus, Grafana, ELK Stack으로 운영 환경 관찰하기 | study | 배포 환경 이해하기 | 6 | `2026-06-04-monitoring-logging.mdx` (5/17) — Prometheus·Grafana·ELK, 알람, 운영 체크리스트 |
 | 발행완료 | 2026-05-25 | 브랜치, 제대로 — 만들고 옮기고 합치고 지우기 | study | Git 시리즈 | 3 | 발행 — `2026-05-25-git-branching.mdx` (Pro Git ch.3.1–3.4) |
 | 작성중 | 2026-05-18 | 블로그 SEO 마감 — OG 이미지 자동 생성 · RSS · JSON-LD | tutorial | 블로그 만들기 | 3 | 2편 "다음 편 예고"에 이미 공개함. `opengraph-image`, `/rss.xml`, `Article` JSON-LD |
 | 작성중 | 2026-05-19 (화) | [논문 리뷰] A-RAG: Agentic RAG가 2026년의 기본기가 된 이유 | paper-review | RAG 논문 리뷰 시리즈 | 3 | 초안 작성 — `2026-05-19-agentic-rag-review.mdx` (A-RAG arXiv 2602.03442) |
@@ -37,13 +43,9 @@
 | 아이디어 | 2026-05-27 (수) | Harness 만들기 2편 — 듀얼 메모리 + `sy` 글로벌 CLI 워크플로 | project | Harness 만들기 | 2 | global `~/.sy/memory/` ↔ project `.sy-memory/`, `sy` 가 `claude --plugin-dir` 로 부팅 |
 | 아이디어 | 2026-05-28 (목) | Git 내부 — `.git` 디렉토리를 열어보면 | study | Git 시리즈 | 8 | 옵션·마지막 / Pro Git ch.10 / 7편 발행 시 포함 여부 최종 결정 |
 | 아이디어 | 2026-05-29 (금) | Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키 | project | | | `harness/braincrew-wiki` — Karpathy LLM-wiki 패턴 팀 확장. raw → routine → 정제 PR |
-| 예약 | 2026-05-30 (토) | Container와 Docker 기초 — 왜 필요하고 어떻게 작동하는가 | study | 배포 환경 이해하기 | 1 | `2026-05-30-docker-container-basics.mdx` — Image·Container·Registry, VM vs Container |
-| 예약 | 2026-05-31 (일) | Kubernetes 핵심 — Pod, Service, Deployment가 하는 일 | study | 배포 환경 이해하기 | 2 | `2026-05-31-kubernetes-fundamentals.mdx` — Pod·Service·Deployment, 선언형 배포, YAML |
-| 예약 | 2026-06-01 (월) | AWS 핵심 서비스 — EC2, S3, RDS, VPC로 클라우드 인프라 구성하기 | study | 배포 환경 이해하기 | 3 | `2026-06-01-aws-core-services.mdx` — EC2·S3·RDS·VPC, 프리티어, 실전 아키텍처 |
-| 예약 | 2026-06-02 (화) | 배포 전략 — Blue-Green, Canary, Rolling Deployment 무중단 배포의 기술 | study | 배포 환경 이해하기 | 4 | `2026-06-02-deployment-strategies.mdx` — 3가지 전략 비교, Kubernetes 구현, GitHub Actions 예제 |
-| 예약 | 2026-06-03 (수) | GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 자동화 배포 파이프라인 | study | 배포 환경 이해하기 | 5 | `2026-06-03-gitops-cicd.mdx` — CI/CD 파이프라인, GitHub Actions, ArgoCD, GitOps 원칙 |
-| 예약 | 2026-06-04 (목) | 모니터링·로깅 — Prometheus, Grafana, ELK Stack으로 운영 환경 관찰하기 | study | 배포 환경 이해하기 | 6 | `2026-06-04-monitoring-logging.mdx` — Prometheus·Grafana·ELK, 알람, 운영 체크리스트 |
 | 아이디어 | 2026-06-05 (금) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
+
+> 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 
 ## 작성 마일스톤 _(매일 cadence — "주말 sprint" 룰)_
 
