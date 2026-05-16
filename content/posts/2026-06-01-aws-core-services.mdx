@@ -1,0 +1,388 @@
+---
+title: "AWS 핵심 서비스 — EC2, S3, RDS, VPC로 클라우드 인프라 구성하기"
+date: "2026-06-01"
+category: "study"
+tags: ["aws", "cloud", "ec2", "s3", "rds", "vpc", "infrastructure"]
+summary: "Docker와 Kubernetes는 애플리케이션 배포 도구다. 그 애플리케이션이 실제로 돌아갈 서버(인프라)는? AWS는 On-demand 방식으로 필요한 컴퓨팅, 스토리지, 데이터베이스를 빌려주는 클라우드 플랫폼이다. EC2·S3·RDS·VPC의 역할과 실무 사용법을 정리한다."
+series: "배포 환경 이해하기"
+seriesOrder: 3
+---
+
+<Callout type="note">
+**한 줄 요약** — AWS는 클라우드 인프라 제공자다. **EC2(서버) + S3(파일) + RDS(DB) + VPC(네트워크)**의 조합으로 전체 웹 애플리케이션 아키텍처를 구성할 수 있다.
+</Callout>
+
+Docker와 Kubernetes까지 배웠다면, 이제 질문이 생긴다: "이 앱들이 실제로 돌아갈 서버는 어디에?" 
+
+전통적으로는:
+- 물리 서버를 구입 (비싸고, 유지보수 필요)
+- 데이터센터에 설치 (전기, 냉각, 보안 담당)
+- 트래픽 늘면 서버 추가 구입 (또 기다려야 함)
+
+**AWS(Amazon Web Services)**는 다른 방식을 제안한다:
+> **필요한 만큼만 빌려쓰고, 필요없으면 반납. 비용은 사용한 만큼만.**
+
+이것이 **클라우드 컴퓨팅**이고, AWS는 가장 큰 클라우드 제공자다.
+
+## AWS의 4가지 핵심 서비스
+
+### 1. EC2 — 서버 (Elastic Compute Cloud)
+
+**역할**: "클라우드에서 빌린 서버"
+
+#### 개념
+
+```
+On-Premise (전통)
+├─ 물리 서버 구입 ($5,000)
+├─ 데이터센터 배치 (1주일 소요)
+└─ 고정 비용 (유휴할 때도 돈 냄)
+
+AWS EC2 (클라우드)
+├─ 콘솔에서 인스턴스 생성 (2분)
+├─ 필요할 때만 켜기 (Pay-as-you-go)
+└─ 안 쓰면 즉시 종료
+```
+
+#### 인스턴스 타입
+
+| 타입 | vCPU | 메모리 | 용도 | 시간당 비용 |
+|------|------|--------|------|----------|
+| t2.micro | 1 | 1GB | 소규모 앱, 테스트 | $0.01 |
+| t2.small | 1 | 2GB | 웹 서버 | $0.02 |
+| m5.large | 2 | 8GB | 중규모 앱 | $0.10 |
+| c5.xlarge | 4 | 8GB | CPU 집약적 | $0.17 |
+
+**프리티어** (무료):
+- t2.micro: 월 750시간 무료 (충분히 24/7 운영 가능)
+- 1년 동안 무료 (신규 가입자)
+
+#### 사용 방식
+
+```bash
+# 1. 콘솔에서 인스턴스 생성
+AWS Console → EC2 → Instances → Launch Instance
+
+# 2. 설정
+- AMI (이미지): Ubuntu 20.04, Amazon Linux 2 등 선택
+- 인스턴스 타입: t2.micro 선택
+- 스토리지: 30GB 설정
+- 보안: 포트 22(SSH), 80(HTTP), 443(HTTPS) 열기
+
+# 3. 생성 → 공개 IP 할당 받음 (예: 54.123.45.67)
+
+# 4. SSH 접속
+$ ssh -i my-key.pem ec2-user@54.123.45.67
+
+# 5. 앱 배포
+$ docker pull my-app:1.0
+$ docker run -d -p 80:8000 my-app:1.0
+```
+
+#### Elastic Load Balancer (ALB)
+
+한 대의 EC2로 충분하지 않으면:
+
+```
+Client 요청
+  ↓
+Application Load Balancer
+  ↓
+  ├─ EC2 Instance 1
+  ├─ EC2 Instance 2
+  └─ EC2 Instance 3
+```
+
+자동으로 요청을 3개 인스턴스에 분산.
+
+#### Auto Scaling
+
+트래픽이 늘면 자동으로 인스턴스 추가:
+
+```
+트래픽 10% 증가 감지
+  ↓
+Auto Scaling Group이 판단
+  ↓
+EC2 인스턴스 2개 추가 생성
+  ↓
+3개 → 5개 인스턴스로 자동 확장 ✅
+```
+
+### 2. S3 — 파일 저장소 (Simple Storage Service)
+
+**역할**: 무제한 파일 저장, 언제 어디서나 접근
+
+#### 개념
+
+```
+EC2 인스턴스의 디스크 크기는 제한적 (보통 30~100GB)
+→ 더 많은 파일 필요 시?
+
+S3: 사실상 무제한 스토리지 (몇 PB까지 가능)
+     버킷(디렉토리) 생성 → 파일 업로드
+     → URL로 누구나 다운로드 가능
+```
+
+#### 버킷과 객체
+
+```
+S3
+└─ my-app-bucket (버킷 = 최상위 디렉토리)
+   ├─ images/
+   │  ├─ profile-1.jpg
+   │  ├─ profile-2.jpg
+   │  └─ ...
+   ├─ uploads/
+   │  └─ document.pdf
+   └─ ...
+```
+
+#### 사용 사례
+
+**1. 정적 파일 호스팅:**
+```
+웹사이트의 JS, CSS, 이미지 저장
+→ S3 URL로 제공
+→ 저렴하고 빠름 (CDN 연계 가능)
+```
+
+**2. 로그 저장:**
+```
+앱에서 생성되는 대량의 로그
+→ EC2 디스크가 가득 찬다
+→ S3에 자동 저장
+→ 분석 필요 시 조회
+```
+
+**3. 백업:**
+```
+RDS 스냅샷 → S3에 자동 저장
+EC2 인스턴스 이미지 → S3에 저장
+```
+
+#### 접근 방식
+
+```bash
+# AWS CLI
+$ aws s3 cp my-file.txt s3://my-bucket/
+
+# Python SDK
+import boto3
+s3 = boto3.client('s3')
+s3.put_object(Bucket='my-bucket', Key='my-file.txt', Body=b'content')
+
+# 웹 URL로 공개 (ACL 설정 시)
+https://my-bucket.s3.amazonaws.com/my-file.txt
+```
+
+#### 가격
+
+| 스토리지 | 가격 |
+|---------|------|
+| 첫 1GB | 무료 (프리티어) |
+| 1GB ~ 1TB | $0.023/GB |
+| 1TB 이상 | $0.022/GB |
+
+(데이터 전송 비용 별도)
+
+### 3. RDS — 데이터베이스 (Relational Database Service)
+
+**역할**: 관리형 데이터베이스 서비스
+
+#### 개념
+
+```
+전통: EC2에 데이터베이스 설치
+├─ PostgreSQL 설치
+├─ 백업 스케줄 관리
+├─ 패치 및 업그레이드 수동
+└─ 높은 복잡성
+
+RDS: 완전 관리형
+├─ AWS가 자동 백업
+├─ 자동 패치
+├─ 자동 장애 복구 (Multi-AZ)
+└─ 콘솔에서 클릭만 하면 끝
+```
+
+#### 지원 엔진
+
+- PostgreSQL
+- MySQL
+- MariaDB
+- Oracle
+- SQL Server
+
+#### 사용 방식
+
+```bash
+# 1. 콘솔에서 DB 인스턴스 생성
+AWS Console → RDS → Create Database
+- Engine: PostgreSQL 14
+- Instance class: db.t3.micro (프리티어)
+- Storage: 20GB
+- Username: admin
+- Password: secure_password
+
+# 2. 엔드포인트 받음 (예: mydb.c9akciq32.us-east-1.rds.amazonaws.com)
+
+# 3. 애플리케이션에서 연결
+DATABASE_URL=postgresql://admin:password@mydb.c9akciq32.us-east-1.rds.amazonaws.com:5432/mydb
+
+# 4. EC2 인스턴스에서 접속
+$ psql -h mydb.c9akciq32.us-east-1.rds.amazonaws.com -U admin
+```
+
+#### 주요 기능
+
+**자동 백업:**
+```
+매일 백업 생성 (최대 35일 보관)
+특정 시점으로 복구 가능
+```
+
+**읽기 복제본 (Read Replica):**
+```
+Primary DB (쓰기)
+  ↓
+Read Replica 1 (읽기만, 다른 리전)
+Read Replica 2 (읽기만, 다른 리전)
+
+조회가 많으면 → Replica에서 조회
+```
+
+**Multi-AZ (고가용성):**
+```
+Primary (us-east-1a)
+  ↓
+동기 복제
+  ↓
+Standby (us-east-1b)
+
+Primary 장애 발생 → 자동으로 Standby로 failover
+```
+
+#### 가격
+
+- db.t3.micro: $0.017/시간 (약 $12/월)
+- 프리티어: 12개월 750GB 저장소 + 백업 무료
+
+### 4. VPC — 네트워크 (Virtual Private Cloud)
+
+**역할**: AWS 리소스들을 위한 가상 네트워크
+
+#### 개념
+
+```
+VPC (Virtual Private Cloud)
+│
+├─ Public Subnet (인터넷 접근 가능)
+│  └─ EC2 인스턴스 (웹 서버)
+│     Port: 80, 443 열림
+│
+├─ Private Subnet (인터넷 차단)
+│  └─ RDS 인스턴스 (데이터베이스)
+│     EC2에서만 접근 가능
+│
+└─ Route Table (라우팅 규칙)
+   ├─ 0.0.0.0/0 → Internet Gateway (외부 통신)
+   └─ VPC 내부 → 내부 통신
+```
+
+#### 보안 그룹 (Security Groups)
+
+방화벽처럼 작동:
+
+```yaml
+EC2 보안 그룹:
+  Inbound:
+    - Port 22 (SSH): 0.0.0.0/0 (모든 IP에서 접근 가능)
+    - Port 80 (HTTP): 0.0.0.0/0
+    - Port 443 (HTTPS): 0.0.0.0/0
+  
+  Outbound:
+    - 모든 트래픽 허용
+
+RDS 보안 그룹:
+  Inbound:
+    - Port 5432 (PostgreSQL): EC2 보안그룹에서만
+  
+  Outbound:
+    - 모든 트래픽 허용
+```
+
+이렇게 하면 RDS는 **EC2를 통해서만 접근 가능**.
+
+## 실전: 웹 애플리케이션 아키텍처
+
+```
+┌─────────────────────────────────────────┐
+│           인터넷 (0.0.0.0/0)            │
+└────────────────┬────────────────────────┘
+                 │
+         ┌───────▼────────┐
+         │  Route 53 DNS  │
+         │ (example.com)  │
+         └───────┬────────┘
+                 │
+         ┌───────▼──────────────┐
+         │ Application Load     │
+         │ Balancer (ALB)       │
+         └───────┬──────────────┘
+                 │
+      ┌──────────┼──────────┐
+      │          │          │
+┌─────▼─┐  ┌─────▼─┐  ┌─────▼─┐
+│ EC2-1 │  │ EC2-2 │  │ EC2-3 │  (Auto Scaling)
+│ :8000 │  │ :8000 │  │ :8000 │
+└───────┘  └───────┘  └───────┘
+      │          │          │
+      └──────────┼──────────┘
+                 │ (Private Subnet)
+         ┌───────▼──────────┐
+         │ RDS PostgreSQL   │
+         │ (Multi-AZ)       │
+         └──────────────────┘
+                 │
+         ┌───────▼──────────┐
+         │ S3 (Logs, Files) │
+         └──────────────────┘
+```
+
+**흐름:**
+1. 사용자가 `example.com` 접속
+2. Route 53이 ALB의 IP로 라우팅
+3. ALB가 EC2 3개에 요청 분산
+4. EC2가 RDS에 쿼리 실행 (Private Subnet 통신)
+5. 업로드 파일은 S3에 저장
+6. 로그는 CloudWatch로 수집
+
+## 비용 관리 팁
+
+1. **프리티어 최대 활용**: EC2 t2.micro, RDS db.t3.micro, S3 5GB는 무료
+2. **언제 사용할지 명확히**: 테스트할 때만 켜고, 안 쓸 때는 종료
+3. **AWS Pricing Calculator**: 예상 비용 계산
+4. **Cost Explorer**: 실제 사용 비용 모니터링
+5. **Reserved Instance**: 1년 선결제 시 40~60% 할인
+
+## 핵심 정리
+
+| 서비스 | 역할 | 가격 예시 |
+|--------|------|---------|
+| **EC2** | 서버 | $0.01/시간 (t2.micro) |
+| **S3** | 파일 저장소 | $0.023/GB |
+| **RDS** | 데이터베이스 | $0.017/시간 (db.t3.micro) |
+| **VPC** | 네트워크 | 무료 |
+
+## 다음 글 예고
+
+- **배포 전략**: Blue-Green, Canary, Rolling... 무중단 배포 방식 비교
+
+## 참고자료
+
+- [AWS Free Tier](https://aws.amazon.com/free/)
+- [AWS EC2 Documentation](https://docs.aws.amazon.com/ec2/)
+- [AWS S3 Documentation](https://docs.aws.amazon.com/s3/)
+- [AWS RDS Documentation](https://docs.aws.amazon.com/rds/)
+- [AWS VPC Documentation](https://docs.aws.amazon.com/vpc/)
