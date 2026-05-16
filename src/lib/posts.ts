@@ -30,9 +30,14 @@ const parsePost = (filename: string): Post => {
 
 export const getAllPosts = (): Post[] => {
   const isProduction = process.env.NODE_ENV === "production";
+  const now = Date.now();
   return getPostFiles()
     .map(parsePost)
-    .filter((post) => !(isProduction && post.draft))
+    .filter((post) => {
+      if (!isProduction) return true;
+      if (post.draft) return false;
+      return new Date(post.date).getTime() <= now;
+    })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 

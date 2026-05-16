@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # 매일 00:05 UTC = 09:05 KST — 예약 발행 글을 자동으로 노출
+    - cron: "5 0 * * *"
 
 permissions:
   contents: read
