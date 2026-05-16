@@ -28,9 +28,12 @@ const main = async () => {
       return { ...data, slug: f.replace(/\.mdx$/, "") };
     }),
   );
-  posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const now = Date.now();
+  const visible = posts
+    .filter((p) => !p.draft && new Date(p.date).getTime() <= now)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  const items = posts
+  const items = visible
     .map(
       (p) => `    <item>
       <title>${escape(p.title)}</title>
@@ -58,7 +61,7 @@ ${items}
 `;
 
   await fs.writeFile(OUT, xml);
-  console.log(`✓ Generated ${OUT} (${posts.length} posts)`);
+  console.log(`✓ Generated ${OUT} (${visible.length} posts)`);
 };
 
 main().catch((err) => {
