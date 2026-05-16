@@ -41,7 +41,7 @@
 | 예약 | 2026-05-31 (일) | Kubernetes 핵심 — Pod, Service, Deployment가 하는 일 | study | 배포 환경 이해하기 | 2 | `2026-05-31-kubernetes-fundamentals.mdx` — Pod·Service·Deployment, 선언형 배포, YAML |
 | 예약 | 2026-06-01 (월) | AWS 핵심 서비스 — EC2, S3, RDS, VPC로 클라우드 인프라 구성하기 | study | 배포 환경 이해하기 | 3 | `2026-06-01-aws-core-services.mdx` — EC2·S3·RDS·VPC, 프리티어, 실전 아키텍처 |
 | 예약 | 2026-06-02 (화) | 배포 전략 — Blue-Green, Canary, Rolling Deployment 무중단 배포의 기술 | study | 배포 환경 이해하기 | 4 | `2026-06-02-deployment-strategies.mdx` — 3가지 전략 비교, Kubernetes 구현, GitHub Actions 예제 |
-| 아이디어 | 2026-06-03 (수) | GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 | study | 배포 환경 이해하기 | 5 | 자동 배포 파이프라인. 이 블로그 deploy.yml 연계. |
+| 예약 | 2026-06-03 (수) | GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 자동화 배포 파이프라인 | study | 배포 환경 이해하기 | 5 | `2026-06-03-gitops-cicd.mdx` — CI/CD 파이프라인, GitHub Actions, ArgoCD, GitOps 원칙 |
 | 아이디어 | 2026-06-04 (목) | 모니터링·로깅 — Prometheus, ELK Stack 기초 | study | 배포 환경 이해하기 | 6 | 성능 모니터링, 로그 수집. 기초 개념. |
 | 아이디어 | 2026-06-05 (금) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
 
