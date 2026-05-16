@@ -42,7 +42,7 @@
 | 예약 | 2026-06-01 (월) | AWS 핵심 서비스 — EC2, S3, RDS, VPC로 클라우드 인프라 구성하기 | study | 배포 환경 이해하기 | 3 | `2026-06-01-aws-core-services.mdx` — EC2·S3·RDS·VPC, 프리티어, 실전 아키텍처 |
 | 예약 | 2026-06-02 (화) | 배포 전략 — Blue-Green, Canary, Rolling Deployment 무중단 배포의 기술 | study | 배포 환경 이해하기 | 4 | `2026-06-02-deployment-strategies.mdx` — 3가지 전략 비교, Kubernetes 구현, GitHub Actions 예제 |
 | 예약 | 2026-06-03 (수) | GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 자동화 배포 파이프라인 | study | 배포 환경 이해하기 | 5 | `2026-06-03-gitops-cicd.mdx` — CI/CD 파이프라인, GitHub Actions, ArgoCD, GitOps 원칙 |
-| 아이디어 | 2026-06-04 (목) | 모니터링·로깅 — Prometheus, ELK Stack 기초 | study | 배포 환경 이해하기 | 6 | 성능 모니터링, 로그 수집. 기초 개념. |
+| 예약 | 2026-06-04 (목) | 모니터링·로깅 — Prometheus, Grafana, ELK Stack으로 운영 환경 관찰하기 | study | 배포 환경 이해하기 | 6 | `2026-06-04-monitoring-logging.mdx` — Prometheus·Grafana·ELK, 알람, 운영 체크리스트 |
 | 아이디어 | 2026-06-05 (금) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
 
 ## 작성 마일스톤 _(매일 cadence — "주말 sprint" 룰)_
@@ -97,14 +97,14 @@
 ### 프롬프트 최적화 시리즈 — 일단락 (3편: MetaSPO / GEPA / 비교)
 - 새 기법·논문 나오면 추가편으로.
 
-### 배포 환경 이해하기 — 진행 중 (6편)
+### 배포 환경 이해하기 — 완료 (6편)
 기초부터 실무까지: Container → Kubernetes → AWS → 배포 전략 → GitOps/CI-CD → 모니터링
-1. ⬜ Container와 Docker 기초 — `2026-05-30-docker-container-basics` (Image·Container·Registry)
-2. ⬜ Kubernetes 핵심 (Pod · Service · Deployment)
-3. ⬜ AWS 핵심 서비스 (EC2 · S3 · RDS · VPC)
-4. ⬜ 배포 전략 (Blue-Green / Canary / Rolling)
-5. ⬜ GitOps와 CI/CD (GitHub Actions → Kubernetes)
-6. ⬜ 모니터링·로깅 (Prometheus / ELK Stack)
+1. ✅ Container와 Docker 기초 — `2026-05-30-docker-container-basics` (Image·Container·Registry)
+2. ✅ Kubernetes 핵심 (Pod · Service · Deployment)
+3. ✅ AWS 핵심 서비스 (EC2 · S3 · RDS · VPC)
+4. ✅ 배포 전략 (Blue-Green / Canary / Rolling)
+5. ✅ GitOps와 CI/CD (GitHub Actions → Kubernetes)
+6. ✅ 모니터링·로깅 (Prometheus / ELK Stack)
 
 ### Harness 만들기 — 예정 (2편)
 대상: `harness/braincrew` — Claude Code 를 위한 multi-agent orchestration harness.
