@@ -1,0 +1,316 @@
+---
+title: "Container와 Docker 기초 — 왜 필요하고 어떻게 작동하는가"
+date: "2026-05-30"
+category: "study"
+tags: ["docker", "container", "deployment", "infrastructure", "devops"]
+summary: "\"내 PC에서는 잘 되는데 서버에서는 안 돼\"라는 문제를 근본적으로 해결하는 Container와 Docker의 개념, 구조(이미지·컨테이너·레지스트리), 기본 명령어, 그리고 VM과의 차이를 정리한다."
+series: "배포 환경 이해하기"
+seriesOrder: 1
+---
+
+<Callout type="note">
+**한 줄 요약** — Container는 애플리케이션과 그 의존성(라이브러리, 런타임, 설정)을 하나로 묶어 **어느 환경에서나 같은 방식으로 실행**하는 격리된 프로세스고, Docker는 container를 만들고 관리하는 도구다.
+</Callout>
+
+"내 PC에서는 잘 되는데 왜 서버에서는 안 되지?" — 개발자라면 누구나 한번은 마주한 악몽이다. 원인은 보통 환경 차이 — Python 버전이 다르고, 설치된 라이브러리가 다르고, OS도 다르다. 이 문제를 근본적으로 해결하는 기술이 **Container**고, 그를 쉽게 다루게 해주는 도구가 **Docker**다.
+
+## 문제: 환경의 불일치 (Environment Hell)
+
+### 전통적인 배포 과정
+
+```
+로컬 PC (macOS)
+├─ Python 3.11
+├─ PostgreSQL 14.5
+├─ Node.js 18.0
+└─ 내 앱 실행 ✅
+
+↓ 소스코드 + README 업로드
+
+서버 (Ubuntu Linux)
+├─ Python 3.8 (오래된 버전)
+├─ PostgreSQL 12.1 (낮은 버전)
+├─ Node.js 12.0
+└─ 의존성 불일치 → 앱 실행 ❌
+```
+
+**원인들:**
+- 패키지 버전 불일치
+- OS별 라이브러리 차이
+- 설정 파일 누락
+- 언어 런타임 버전 차이
+
+이 문제를 매번 수동으로 디버깅하는 것은 악몽이다.
+
+## 해결책: Container
+
+### Container의 핵심 아이디어
+
+> **"애플리케이션이 필요로 하는 모든 것(코드, 라이브러리, 런타임, 설정)을 하나의 패키지로 만들어서 어디든 배포하자."**
+
+```
+Dockerfile (조리법)
+  ↓
+Docker Image (준비된 상태)
+  ↓
+Docker Container (실행 중인 상태)
+  ↓
+어디서든 같은 환경 ✅
+```
+
+### VM (Virtual Machine) vs Container
+
+많이 헷갈리는 부분이라 비교해보자:
+
+| 구분 | VM | Container |
+|------|----|---------  |
+| 크기 | 수 GB (OS 포함) | 수십~수백 MB |
+| 시작 시간 | 분 단위 | 초 단위 |
+| 리소스 | 무겁다 (전체 OS) | 가볍다 (공유 커널) |
+| 격리 수준 | 완전 격리 | 프로세스 수준 격리 |
+| 부팅 오버헤드 | 높음 | 낮음 |
+
+**관계도:**
+```
+호스트 OS (Linux)
+├─ VM1 [OS + App A]  ← 무거움
+├─ VM2 [OS + App B]  ← 무거움
+└─ VM3 [OS + App C]  ← 무거움
+
+호스트 OS (Linux)
+├─ Docker Container A [App A + 최소 의존성] ← 가벼움
+├─ Docker Container B [App B + 최소 의존성] ← 가벼움
+└─ Docker Container C [App C + 최소 의존성] ← 가벼움
+```
+
+Container는 **같은 OS 커널을 공유**하면서 프로세스 수준에서 격리하기 때문에 훨씬 가볍다.
+
+## Docker의 세 가지 구성 요소
+
+### 1. Dockerfile — 조리법
+
+애플리케이션을 container로 만드는 방법을 명시.
+
+```dockerfile
+FROM python:3.11-slim          # 기반 이미지: Python 3.11
+WORKDIR /app                   # 작업 디렉토리
+COPY requirements.txt .        # 의존성 파일 복사
+RUN pip install -r requirements.txt  # 의존성 설치
+COPY . .                       # 소스코드 복사
+EXPOSE 8000                    # 열 포트
+CMD ["python", "app.py"]       # 실행 명령어
+```
+
+각 줄은 **계층(layer)**을 만들고, 캐싱되어 다시 빌드할 때 변경된 부분만 다시 처리된다.
+
+### 2. Docker Image — 준비된 상태
+
+Dockerfile을 바탕으로 빌드한 **읽기 전용 템플릿**.
+
+```bash
+$ docker build -t my-app:1.0 .
+# Dockerfile을 읽고 Image 생성
+```
+
+Image는:
+- 애플리케이션의 스냅샷
+- 어디서든 재현 가능
+- 변경 불가능 (immutable)
+
+### 3. Docker Container — 실행 중인 상태
+
+Image를 바탕으로 실행한 **격리된 프로세스**.
+
+```bash
+$ docker run -p 8000:8000 my-app:1.0
+# Image → Container 생성 및 실행
+```
+
+Container는:
+- Image에서 생성된 인스턴스
+- 변경 가능 (실행 중 파일 수정 가능, 하지만 권장하지 않음)
+- 종료되면 사라짐
+
+### 관계:
+```
+Python 공식 이미지 (alpine, slim, full)
+  ↓
+Dockerfile (나만의 설정 추가)
+  ↓
+Docker Image (my-app:1.0)
+  ↓ (docker run)
+Docker Container (실행 중)
+```
+
+## Docker 기본 명령어
+
+### 이미지 관련
+
+```bash
+# 이미지 빌드
+docker build -t my-app:1.0 .
+
+# 이미지 목록
+docker images
+
+# 이미지 삭제
+docker rmi my-app:1.0
+
+# 이미지 다운로드 (Registry에서)
+docker pull python:3.11
+```
+
+### 컨테이너 관련
+
+```bash
+# 컨테이너 실행
+docker run -d -p 8000:8000 --name web my-app:1.0
+  # -d: 백그라운드 실행
+  # -p: 포트 바인딩 (호스트:컨테이너)
+  # --name: 이름 지정
+
+# 실행 중인 컨테이너 목록
+docker ps
+
+# 모든 컨테이너 (실행 중 + 종료된)
+docker ps -a
+
+# 컨테이너 로그
+docker logs web
+
+# 컨테이너에 접속
+docker exec -it web /bin/bash
+
+# 컨테이너 중지
+docker stop web
+
+# 컨테이너 재시작
+docker restart web
+
+# 컨테이너 삭제
+docker rm web
+```
+
+### 실행 예시
+
+```bash
+# Node.js 앱 실행
+$ docker run -p 3000:3000 node:18 npm start
+
+# PostgreSQL 데이터베이스 실행
+$ docker run -e POSTGRES_PASSWORD=secret -p 5432:5432 postgres:15
+
+# 로컬 파일을 컨테이너와 공유
+$ docker run -v /Users/me/data:/app/data my-app:1.0
+```
+
+## Docker Registry — 이미지 저장소
+
+### 중앙 집중식 저장소
+
+Image를 공유하고 배포하기 위해 Registry가 필요하다.
+
+```
+로컬 PC (docker build)
+  ↓
+Docker Image 생성
+  ↓ (docker push)
+Docker Registry (Docker Hub, ECR, GCR 등)
+  ↓ (docker pull)
+서버 (docker run)
+```
+
+### Docker Hub (공식)
+
+```bash
+# 이미지 태그 지정
+$ docker tag my-app:1.0 username/my-app:1.0
+
+# Registry에 푸시
+$ docker login
+$ docker push username/my-app:1.0
+
+# 다른 곳에서 다운로드
+$ docker pull username/my-app:1.0
+$ docker run username/my-app:1.0
+```
+
+### 프라이빗 Registry (기업)
+
+- **AWS ECR** (Elastic Container Registry)
+- **Google GCR** (Google Container Registry)
+- **Azure ACR** (Azure Container Registry)
+- Self-hosted: **Harbor**, **Nexus**
+
+## 실전: 간단한 Flask 앱 Container화
+
+### 1단계: 앱 준비
+
+```python
+# app.py
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return 'Hello from Docker!'
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)
+```
+
+```
+# requirements.txt
+Flask==2.3.0
+```
+
+### 2단계: Dockerfile 작성
+
+```dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 8000
+CMD ["python", "app.py"]
+```
+
+### 3단계: 빌드 및 실행
+
+```bash
+$ docker build -t my-flask:1.0 .
+$ docker run -p 8000:8000 my-flask:1.0
+# http://localhost:8000 접속 → "Hello from Docker!"
+```
+
+### 4단계: 배포
+
+```bash
+$ docker tag my-flask:1.0 username/my-flask:1.0
+$ docker push username/my-flask:1.0
+
+# 다른 서버에서
+$ docker pull username/my-flask:1.0
+$ docker run -p 8000:8000 username/my-flask:1.0
+# 같은 환경에서 실행 ✅
+```
+
+## 핵심 요점
+
+1. **Container = 애플리케이션 + 의존성의 완전한 패키지**
+2. **Dockerfile = 조리법, Image = 준비된 상태, Container = 실행 중인 프로세스**
+3. **VM보다 가볍고 빠르다** (공유 커널)
+4. **"내 PC에서는 잘 되는데"는 이제 과거의 일** (같은 Image 사용)
+5. **다음 단계: 여러 컨테이너를 조율하기 위해 Kubernetes 필요**
+
+## 다음 글 예고
+
+- **Kubernetes**: 수십 개의 Container를 어떻게 관리할까? Pod, Service, Deployment...
+
+## 참고자료
+
+- [Docker Official Documentation](https://docs.docker.com/)
+- [Docker Handbook (freeCodeCamp)](https://www.freecodecamp.org/news/the-docker-handbook/)
+- [A Beginner-Friendly Introduction to Containers, VMs and Docker (Freepik)](https://medium.freecodecamp.org/a-beginner-friendly-introduction-to-containers-vms-and-docker-79a9e3e119b)
