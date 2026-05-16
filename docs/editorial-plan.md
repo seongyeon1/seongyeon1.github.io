@@ -38,7 +38,7 @@
 | 아이디어 | 2026-05-28 (목) | Git 내부 — `.git` 디렉토리를 열어보면 | study | Git 시리즈 | 8 | 옵션·마지막 / Pro Git ch.10 / 7편 발행 시 포함 여부 최종 결정 |
 | 아이디어 | 2026-05-29 (금) | Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키 | project | | | `harness/braincrew-wiki` — Karpathy LLM-wiki 패턴 팀 확장. raw → routine → 정제 PR |
 | 예약 | 2026-05-30 (토) | Container와 Docker 기초 — 왜 필요하고 어떻게 작동하는가 | study | 배포 환경 이해하기 | 1 | `2026-05-30-docker-container-basics.mdx` — Image·Container·Registry, VM vs Container |
-| 아이디어 | 2026-05-31 (일) | Kubernetes 핵심 — Pod, Service, Deployment, StatefulSet | study | 배포 환경 이해하기 | 2 | k8s 리소스 타입 설명. 선언형 배포. |
+| 예약 | 2026-05-31 (일) | Kubernetes 핵심 — Pod, Service, Deployment가 하는 일 | study | 배포 환경 이해하기 | 2 | `2026-05-31-kubernetes-fundamentals.mdx` — Pod·Service·Deployment, 선언형 배포, YAML |
 | 아이디어 | 2026-06-01 (월) | AWS 핵심 서비스 — EC2, S3, RDS, VPC | study | 배포 환경 이해하기 | 3 | 주요 AWS 서비스 정리. 프리티어 범위. |
 | 아이디어 | 2026-06-02 (화) | 배포 전략 — Blue-Green, Canary, Rolling Deployment | study | 배포 환경 이해하기 | 4 | 다양한 배포 방식 비교. 장단점. |
 | 아이디어 | 2026-06-03 (수) | GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 | study | 배포 환경 이해하기 | 5 | 자동 배포 파이프라인. 이 블로그 deploy.yml 연계. |

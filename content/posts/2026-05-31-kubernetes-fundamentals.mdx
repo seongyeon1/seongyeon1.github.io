@@ -1,0 +1,412 @@
+---
+title: "Kubernetes 핵심 — Pod, Service, Deployment가 하는 일"
+date: "2026-05-31"
+category: "study"
+tags: ["kubernetes", "k8s", "container-orchestration", "deployment", "pod", "service"]
+summary: "Docker로 Container를 만들었다면, 이제 수십~수백 개의 Container를 어떻게 관리할까? Kubernetes(k8s)는 Container 자동 배포, 스케일링, 네트워킹을 담당한다. Pod·Service·Deployment의 핵심 개념과 워크플로우를 정리한다."
+series: "배포 환경 이해하기"
+seriesOrder: 2
+---
+
+<Callout type="note">
+**한 줄 요약** — Kubernetes는 Container 오케스트레이션 플랫폼이다. **Pod(실행 단위) + Service(네트워킹) + Deployment(자동 관리)**의 조합으로 수많은 Container를 선언형으로 관리한다.
+</Callout>
+
+지난 글에서 Docker로 하나의 Container를 만드는 방법을 배웠다. 하지만 현실은 더 복잡하다:
+
+- "서버 1에서 앱 3개를 동시에 실행하고,
+- 트래픽이 많아지면 자동으로 앱을 5개로 늘리고,
+- 한 앱의 버전을 업데이트할 때 무중단 배포를 해야 하고,
+- 여러 앱 간에 통신해야 하고,
+- 한 서버가 죽으면 다른 서버로 옮겨야 하고..."
+
+Docker 명령어로 이 모든 걸 수동으로 하기는 불가능하다. 이 문제를 해결하기 위해 **Kubernetes(k8s)**가 나왔다.
+
+## Kubernetes란?
+
+### 정의
+
+> **Container 오케스트레이션 플랫폼** — 여러 노드(서버)에서 Container를 자동으로 배포, 스케일링, 관리해주는 시스템.
+
+### 역할
+
+```
+당신: "Flask 앱 3개를 실행하고, 트래픽 많으면 10개로 늘려줘"
+  ↓
+Kubernetes: "좋아. 자동으로 관리하겠어"
+  ↓
+결과: Pod 3개 시작 → 트래픽 증가 감지 → Pod 10개로 자동 확장 ✅
+```
+
+## 핵심 개념 3가지
+
+### 1. Pod — Container의 최소 실행 단위
+
+**정의**: 하나 이상의 Container를 감싼 래퍼.
+
+```yaml
+# 최소 Pod 정의 (YAML)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+spec:
+  containers:
+  - name: flask-app
+    image: username/my-flask:1.0
+    ports:
+    - containerPort: 8000
+```
+
+**특징:**
+- 보통 1 Pod = 1 Container (권장)
+- 같은 Pod의 Container들은 localhost로 통신 (네트워크 공유)
+- Pod가 죽으면 자동으로 재시작되지 않음 (그래서 Deployment이 필요)
+
+**생명주기:**
+```
+Pod 생성
+  ↓
+Container 시작
+  ↓
+앱 실행 (Running)
+  ↓
+Pod 삭제 (또는 노드 장애)
+  ↓
+Container 종료
+```
+
+### 2. Service — Pod 간 네트워킹과 노출
+
+**문제**: Pod는 일시적이다. Pod가 재시작되면 IP 주소가 바뀐다. 그럼 다른 Pod는 어떻게 통신할까?
+
+**해결책**: Service — Pod 앞에 있는 안정적인 네트워크 인터페이스.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  selector:
+    app: web          # label이 "app: web"인 Pod들을 묶음
+  ports:
+  - port: 80         # Service 포트
+    targetPort: 8000 # Pod 포트
+  type: LoadBalancer # 외부 노출
+```
+
+**Service 타입:**
+
+| 타입 | 역할 | 사용처 |
+|------|------|--------|
+| **ClusterIP** | 클러스터 내부 통신 | 앱 간 통신 |
+| **NodePort** | 각 노드의 고정 포트로 노출 | 개발/테스트 |
+| **LoadBalancer** | 클라우드 로드밸런서로 외부 노출 | 프로덕션 (AWS ELB 등) |
+| **ExternalName** | 외부 DNS에 매핑 | 외부 서비스 접근 |
+
+**동작 원리:**
+
+```
+Client 요청 → Service (IP 고정, 포트 80)
+              ↓
+              Pod A (IP: 10.0.1.5, 포트 8000)
+              Pod B (IP: 10.0.1.6, 포트 8000)
+              Pod C (IP: 10.0.1.7, 포트 8000)
+
+Service가 자동으로 요청을 Pod A/B/C에 분산 (Load Balancing)
+```
+
+### 3. Deployment — Pod의 자동 관리
+
+**문제**: 개발자가 "Pod 3개 실행" 명령 → Pod 2개는 정상이지만 1개는 노드 장애로 종료 → 수동으로 다시 생성?
+
+**해결책**: Deployment — "원하는 상태"를 선언하면 Kubernetes가 자동으로 유지.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 3  # 항상 3개의 Pod 유지
+  selector:
+    matchLabels:
+      app: web
+  template:  # Pod 템플릿
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: flask-app
+        image: username/my-flask:1.0
+        ports:
+        - containerPort: 8000
+```
+
+**Deployment의 역할:**
+
+```
+↓ kubectl apply (선언형)
+Deployment: "Pod 3개, 이미지 my-flask:1.0 유지해줄게"
+  ↓
+ReplicaSet 생성 (Pod 관리)
+  ↓
+Pod 3개 생성
+  ↓
+Pod 2개 → 3개 (자동 회복) ✅
+```
+
+**무중단 배포 (Rolling Update):**
+
+```
+이미지 업데이트: my-flask:1.0 → my-flask:1.1
+  ↓
+Deployment: "이미지 바꾸겠어"
+  ↓
+Pod 1개 종료 → 새 이미지로 재시작
+Pod 2개 종료 → 새 이미지로 재시작
+Pod 3개 종료 → 새 이미지로 재시작
+  ↓
+서비스 무중단 (항상 최소 N개 Pod 유지) ✅
+```
+
+## 아키텍처: Master와 Worker Node
+
+Kubernetes 클러스터는 크게 두 부분:
+
+```
+Master Node (제어 평면)
+├─ kube-apiserver (Kubernetes API)
+├─ etcd (상태 저장소)
+├─ kube-scheduler (Pod 배치 결정)
+└─ kube-controller-manager (자동 복구 등)
+
+Worker Node 1          Worker Node 2          Worker Node 3
+├─ Pod A           ├─ Pod C           ├─ Pod B
+├─ Pod B           └─ Pod D           └─ Pod E
+└─ kubelet         └─ kubelet         └─ kubelet
+(Agent)            (Agent)            (Agent)
+```
+
+**역할:**
+- **Master**: 전체 클러스터의 상태 관리, 명령 처리
+- **Worker**: 실제 Pod 실행
+- **kubelet**: 각 Worker에서 Master의 명령 받아 Pod 관리
+
+## 선언형 배포 — Kubernetes의 핵심
+
+### 명령형 vs 선언형
+
+**명령형 (명령어):**
+```bash
+$ kubectl run web --image=my-flask:1.0 --replicas=3
+$ kubectl scale deployment web --replicas=5
+$ kubectl set image deployment/web web=my-flask:1.1
+```
+
+**선언형 (YAML 파일):**
+```yaml
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: my-flask:1.1
+```
+
+```bash
+$ kubectl apply -f deployment.yaml
+# Kubernetes가 자동으로 필요한 변경 수행
+```
+
+**선언형의 이점:**
+- YAML을 버전 관리 (Git)
+- 재현 가능 (같은 YAML = 같은 결과)
+- Infrastructure as Code (IaC)
+
+## 실전: Flask 앱 배포
+
+### 1단계: Deployment 작성
+
+```yaml
+# flask-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+      - name: flask-app
+        image: username/my-flask:1.0
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+```
+
+### 2단계: Service 작성
+
+```yaml
+# flask-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: flask-app
+  ports:
+  - port: 80
+    targetPort: 8000
+```
+
+### 3단계: 배포
+
+```bash
+$ kubectl apply -f flask-deployment.yaml
+deployment.apps/flask-app created
+
+$ kubectl apply -f flask-service.yaml
+service/flask-service created
+
+# 상태 확인
+$ kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+flask-app-5d4f5c7b9d-7j8kl   1/1     Running   0          10s
+flask-app-5d4f5c7b9d-9x2m4   1/1     Running   0          10s
+flask-app-5d4f5c7b9d-k5p3q   1/1     Running   0          10s
+
+$ kubectl get services
+NAME              TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)        AGE
+flask-service     LoadBalancer   10.96.12.34    34.56.78.90      80:30456/TCP   5s
+```
+
+### 4단계: 스케일링
+
+```bash
+# Pod을 5개로 증가
+$ kubectl scale deployment flask-app --replicas=5
+
+# 자동 스케일링 (CPU 기반)
+$ kubectl autoscale deployment flask-app --min=3 --max=10 --cpu-percent=80
+```
+
+### 5단계: 무중단 배포
+
+```bash
+# 이미지 업데이트
+$ kubectl set image deployment/flask-app \
+  flask-app=username/my-flask:1.1 --record
+
+# 상태 확인
+$ kubectl rollout status deployment/flask-app
+Waiting for rollout to finish: 1 old replicas, 2 new replicas...
+
+# 배포 히스토리
+$ kubectl rollout history deployment/flask-app
+REVISION  CHANGE-CAUSE
+1         <none>
+2         kubectl set image deployment/flask-app...
+
+# 이전 버전으로 롤백
+$ kubectl rollout undo deployment/flask-app --to-revision=1
+```
+
+## ConfigMap과 Secrets — 설정 관리
+
+### ConfigMap (공개 설정)
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DATABASE_URL: "postgresql://db:5432/myapp"
+  LOG_LEVEL: "INFO"
+```
+
+Pod에서 사용:
+```yaml
+env:
+- name: DATABASE_URL
+  valueFrom:
+    configMapKeyRef:
+      name: app-config
+      key: DATABASE_URL
+```
+
+### Secrets (민감 정보)
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secrets
+type: Opaque
+data:
+  password: c3VwZXJzZWNyZXQ=  # base64 인코딩
+```
+
+## 자주 하는 질문
+
+**Q: Pod과 Container의 차이?**  
+A: Container는 Docker의 개념, Pod는 Kubernetes의 개념. Pod은 Container를 감싼 래퍼로 1~N개 Container를 가질 수 있음.
+
+**Q: Service 없이 Pod끼리 직접 통신?**  
+A: 가능하지만, Pod IP는 변함. Service는 고정 IP/DNS 제공으로 안정적 통신 가능.
+
+**Q: Deployment 없이 Pod만 쓰면?**  
+A: Pod 장애 시 자동 복구 안 됨. 본격적인 운영엔 Deployment 필수.
+
+**Q: 여러 앱을 하나의 Cluster에?**  
+A: 가능. 보통 namespace로 분리 (예: `namespace: production`, `namespace: staging`).
+
+## 핵심 정리
+
+| 개념 | 역할 |
+|------|------|
+| **Pod** | Container 최소 실행 단위 |
+| **Service** | Pod 네트워킹, 외부 노출 |
+| **Deployment** | Pod 자동 관리, 스케일링, 무중단 배포 |
+| **ConfigMap** | 설정 분리 |
+| **Secrets** | 민감 정보 관리 |
+
+## 다음 글 예고
+
+- **AWS**: EC2, S3, RDS... 클라우드 환경에서 인프라 관리하기
+
+## 참고자료
+
+- [Kubernetes Official Documentation](https://kubernetes.io/docs/)
+- [Kubernetes in 100 Seconds](https://www.youtube.com/watch?v=PziYflu8cB8)
+- [A Kubernetes Tutorial for Beginners](https://matthewpalmer.net/kubernetes-app-deployment/)
