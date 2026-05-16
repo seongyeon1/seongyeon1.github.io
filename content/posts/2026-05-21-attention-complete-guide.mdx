@@ -1,0 +1,241 @@
+---
+title: "Attention 이해하기 완결편 — 전체 그림과 추론 최적화"
+date: 2026-05-21T09:00:00+09:00
+category: study
+tags: ["attention", "transformer", "neural-networks", "deep-learning"]
+summary: "Attention 메커니즘 5부를 거쳐 학습한 Q·K·V, positional encoding, layer normalization을 이용해 전체 그림을 정리하고, 실무에서 중요한 추론 최적화 기법(KV 캐시, 배치 처리)을 다룹니다."
+series: "Attention 이해하기"
+seriesOrder: 6
+---
+
+import Paper from '@/components/post/Paper';
+import Figure from '@/components/post/Figure';
+
+## 이전 편까지의 여정
+
+[1편](https://seongyeon1.github.io/posts/attention-mechanism-intro)에서 Attention의 기본 수식 Q·K·V 연산을 배웠고, [2편](https://seongyeon1.github.io/posts/attention-three-types)에서 self/cross/masked attention의 차이를 이해했습니다. [3편](https://seongyeon1.github.io/posts/positional-encoding-intro)은 positional encoding이 시퀀스 순서를 어떻게 인코딩하는지, [4편](https://seongyeon1.github.io/posts/normalization-residual)은 layer normalization과 residual connection이 안정적인 학습을 어떻게 가능하게 하는지 배웠습니다. [5편](https://seongyeon1.github.io/posts/ffn-activation)에서는 feed-forward network와 activation의 역할을 정리했죠.
+
+이번 완결편에서는 이 모든 조각을 한 장으로 모으고, 실무에서 대부분의 시간을 차지하는 **추론(inference) 단계**의 최적화 기법을 집중적으로 봅니다.
+
+## 1. Transformer 블록 전체 구조
+
+```
+Input Sequence
+    ↓
+[Token Embedding + Positional Encoding]
+    ↓
+┌─────────────────────────────────┐
+│  Self-Attention Block           │
+│  • Linear: x → Q, K, V          │
+│  • Attention(Q,K,V) = softmax(QK^T/√d)V  │
+│  • Multi-Head (n개 병렬)        │
+│  • Output Projection            │
+│  • Residual + LayerNorm         │
+└─────────────────────────────────┘
+    ↓
+┌─────────────────────────────────┐
+│  Feed-Forward Block             │
+│  • Linear (d → 4d)              │
+│  • ReLU / GELU Activation       │
+│  • Linear (4d → d)              │
+│  • Residual + LayerNorm         │
+└─────────────────────────────────┘
+    ↓
+(×N layers - Decoder의 경우 Cross-Attention 추가)
+    ↓
+Output Logits (또는 Hidden States)
+```
+
+**핵심 설계**: residual connection 덕분에 gradient가 깊은 층까지 흐르고, layer norm이 수치 안정성을 보장합니다. attention은 context를 '선택'하는 기제이고, FFN은 각 token을 '변형'하는 기제입니다.
+
+## 2. 학습 vs 추론 — 근본적인 차이
+
+학습 때는 한 번에 전체 시퀀스를 넣고 backward pass로 gradient를 계산합니다. **추론은 다릅니다:**
+
+```python
+# 학습: 한 번에 모든 token 처리
+logits = model(input_ids)  # shape: (batch, seq_len, vocab_size)
+loss = criterion(logits, targets)
+loss.backward()
+
+# 추론: token 하나씩 생성 (autoregressive)
+token = start_token
+for step in range(max_steps):
+    next_logits = model(token.unsqueeze(0))  # ← 이전 모든 token 다시 처리
+    next_token = sample(next_logits[-1, :])  # ← 마지막 token만 사용
+    token = cat([token, next_token])
+    if next_token == eos_token: break
+```
+
+각 추론 스텝마다 **지금까지의 모든 token을 다시 계산**합니다. 이것이 병목입니다.
+
+## 3. KV 캐시 (Key-Value Cache) — 추론의 심장
+
+**아이디어**: Q는 새 token마다 계산해야 하지만, K와 V는 이전 token들에 대해 **이미 계산한 결과를 재사용**할 수 있습니다.
+
+```python
+# 캐시 없음: O(n²)
+# step=1: 1개 token 처리
+# step=2: 2개 token 처리 (1개는 중복 계산)
+# step=3: 3개 token 처리 (2개는 중복 계산)
+# ...
+# 총 1+2+3+...+n = O(n²)
+
+# KV 캐시: O(n)
+# step=1: K,V 계산 후 저장 → cache = {1}
+# step=2: 새 K,V 계산 후 기존 cache에 추가 → cache = {1,2}
+# step=3: 새 K,V 계산 후 기존 cache에 추가 → cache = {1,2,3}
+```
+
+**메모리 vs 속도의 trade-off**: KV 캐시는 GPU 메모리를 더 쓰지만, 추론 시간을 4~10배 줄입니다. 대형 모델에서는 필수입니다.
+
+```python
+class AttentionWithCache:
+    def __init__(self):
+        self.kv_cache = None  # {layer: (k_cache, v_cache), ...}
+    
+    def forward(self, x, use_cache=True):
+        B, T, D = x.shape
+        Q = self.W_q(x)  # (B, T, D)
+        K = self.W_k(x)  # (B, T, D)
+        V = self.W_v(x)  # (B, T, D)
+        
+        if use_cache and self.kv_cache is not None:
+            # 이전 K,V와 현재 K,V 연결
+            K = cat([self.kv_cache['K'], K], dim=1)
+            V = cat([self.kv_cache['V'], V], dim=1)
+        
+        # 캐시 업데이트 (이전 스텝 + 현재)
+        if use_cache:
+            self.kv_cache = {'K': K, 'V': V}
+        
+        # Attention: Q는 현재 token 1개만 사용
+        scores = Q @ K.transpose(-1, -2) / sqrt(D)  # (B, 1, T+prev)
+        attn = softmax(scores, dim=-1)
+        output = attn @ V  # (B, 1, D)
+        
+        return output
+```
+
+## 4. Batch 추론 — 여러 시퀀스 동시 처리
+
+실제 배포에서는 사용자 여러 명의 요청을 동시에 처리합니다.
+
+```python
+# 나이브 방식: 시퀀스마다 순차 처리
+for seq in sequences:
+    output = model(seq)  # ← GPU 유휴 시간 많음
+
+# 배치 처리: 같은 길이의 시퀀스끼리 묶기
+def batch_inference(sequences, max_new_tokens=50):
+    # 1단계: 같은 길이로 패딩
+    input_ids = pad_sequence(sequences, batch_first=True)  # (B, T)
+    
+    kv_cache = None
+    for step in range(max_new_tokens):
+        logits = model(input_ids, kv_cache=kv_cache)  # (B, 1, vocab)
+        next_tokens = logits.argmax(dim=-1)  # (B, 1)
+        input_ids = cat([input_ids, next_tokens], dim=1)
+        
+        # 캐시 업데이트 (배치 내 모든 시퀀스 공유)
+        kv_cache = model.update_cache(...)
+        
+        # 완료된 시퀀스 제거 (동적 배치)
+        if all_done(input_ids):
+            break
+    
+    return input_ids
+```
+
+**라우팅 전략 (Iterative Batching)**:
+- 길이가 짧은 시퀀스는 먼저 완료 → GPU에서 제거
+- 남은 시퀀스끼리만 계속 처리
+- GPU 활용률 극대화
+
+## 5. 수치 안정성과 정확도
+
+큰 모델을 추론할 때 조심할 점:
+
+| 기법 | 목적 | 효과 |
+|------|------|------|
+| **Softmax 스케일링** (`QK^T / √d`) | attention score가 너무 커지는 것 방지 | gradient vanishing 완화 |
+| **Layer Norm** | 각 층의 입력 분포 정규화 | 수치 안정성, 학습 속도 향상 |
+| **Float32 → Float16** | 메모리 절약 | 속도 2배, 메모리 50% ↓ (정확도 손실 미미) |
+| **Quantization** (INT8) | 극단적 메모리 절약 | 속도 3~4배, 메모리 75% ↓ |
+
+Float16 추론 코드:
+
+```python
+model = model.to(torch.float16).cuda()
+
+with torch.cuda.amp.autocast(dtype=torch.float16):
+    output = model(input_ids, kv_cache=kv_cache)
+```
+
+## 6. 마지막 조각: Cross-Attention (Decoder 전용)
+
+Encoder-Decoder 구조(예: T5, BART)에서는 decoder의 각 self-attention 블록 다음에 **cross-attention**이 옵니다.
+
+```
+Decoder Input
+    ↓
+Self-Attention (← 내가 생성한 token들끼리)
+    ↓
+Cross-Attention (Q: decoder, K,V: encoder output)
+    • Q = decoder hidden state
+    • K, V = encoder output (frozen)
+    • → decoder가 encoder context를 참고
+    ↓
+Feed-Forward
+    ↓
+```
+
+추론에서 cross-attention의 K,V는 **encoder pass가 끝나면 더 이상 변하지 않으므로**, 추론 내내 **같은 캐시를 재사용**합니다. 오직 Q만 매 스텝 새로 계산됩니다.
+
+```python
+# Encoder pass (한 번만)
+encoder_output = encoder(source_ids)  # (B, src_len, D)
+encoder_kv = {'K': encoder_output, 'V': encoder_output}  # 고정
+
+# Decoder autoregressive pass
+decoder_input = start_token
+for step in range(max_steps):
+    # 1. Self-attention in decoder (동적 캐시)
+    self_attn = decoder.self_attention(decoder_input, cache=decoder_cache)
+    
+    # 2. Cross-attention (정적 캐시 — encoder KV)
+    cross_attn = decoder.cross_attention(
+        query=self_attn,
+        key=encoder_kv['K'],  # ← 매번 같음
+        value=encoder_kv['V']  # ← 매번 같음
+    )
+    
+    next_token = decoder.output_layer(cross_attn)
+    decoder_input = cat([decoder_input, next_token])
+```
+
+## 7. 실무 체크리스트
+
+모델을 배포할 때 확인할 것:
+
+- [ ] **KV 캐시 구현** 완료? (추론 속도 4~10배 차이)
+- [ ] **배치 추론** 지원? (처리량 5~50배)
+- [ ] **Float16** 검증? (메모리 50% 절감, 정확도 확인)
+- [ ] **Sequence 길이 제한** 설정? (메모리 OOM 방지)
+- [ ] **Padding 전략** 정의? (attention mask 올바른지)
+- [ ] **모니터링**: latency (p50/p99), throughput, memory peak
+
+## 다음 스텝
+
+Attention 시리즈는 여기서 마무리하지만, 한 발 더 나아가고 싶다면:
+
+- **Efficient Attention**: FlashAttention, Sparse Attention, Linear Attention (계산 O(n²) → O(n))
+- **Prefix Tuning / LoRA**: 큰 모델을 적은 메모리로 fine-tune하기
+- **Speculative Decoding**: 작은 모델이 큰 모델의 추론을 가속화
+- **Mixture of Experts (MoE)**: 토큰마다 다른 경로 선택
+
+## 참고
+
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762) — Vaswani et al., 2017
+- [Llama 2: Open Foundation and Fine-Tuned Chat Models](https://arxiv.org/abs/2307.09288) — KV 캐시 구현 예시
+- [Efficient Transformers: A Survey](https://arxiv.org/abs/2009.06732) — 추론 최적화 기법 총정리
