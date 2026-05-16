@@ -1,0 +1,377 @@
+---
+title: "배포 전략 — Blue-Green, Canary, Rolling Deployment 무중단 배포의 기술"
+date: "2026-06-02"
+category: "study"
+tags: ["deployment", "devops", "zero-downtime", "blue-green", "canary", "rolling"]
+summary: "새 버전을 배포할 때 서비스를 멈출 수 없다. 사용자는 계속 접속 중이다. 따라서 배포 방식이 중요하다. Blue-Green, Canary, Rolling 배포 전략을 비교하고, 각 상황에서 언제 어떤 전략을 쓸지 정리한다."
+series: "배포 환경 이해하기"
+seriesOrder: 4
+---
+
+<Callout type="note">
+**한 줄 요약** — 무중단 배포는 세 가지 전략이 있다: **Blue-Green(전체 교체)**은 빠르고 안전하지만 비싸고, **Canary(점진)**는 안전하지만 느리고, **Rolling(순차)**는 균형잡혔다.
+</Callout>
+
+"새 버전 배포합니다!" → 서비스 5분 중단 → 사용자 1000명 피해 → 회사 신뢰 하락.
+
+이런 악몽을 피하기 위해 **무중단 배포(Zero-Downtime Deployment)**가 필요하다. 같은 시간에 여러 버전이 동시에 실행되다가 점진적으로 전환하는 방식들을 알아보자.
+
+## 상황: 버전 업그레이드
+
+```
+현재 운영 중
+├─ 앱 v1.0 (Pod 5개)
+│  ├─ Pod A
+│  ├─ Pod B
+│  ├─ Pod C
+│  ├─ Pod D
+│  └─ Pod E
+
+새 버전 준비
+└─ 앱 v1.1 (아직 배포 안 됨)
+```
+
+이제 사용자에게 영향 없이 v1.0 → v1.1로 전환해야 한다.
+
+## 전략 1: Blue-Green 배포
+
+### 개념
+
+```
+Blue (현재)              Green (새 버전)
+├─ v1.0 Pod A      ├─ v1.1 Pod A'
+├─ v1.0 Pod B      ├─ v1.1 Pod B'
+├─ v1.0 Pod C      ├─ v1.1 Pod C'
+├─ v1.0 Pod D      └─ v1.1 Pod D'
+└─ v1.0 Pod E
+
+Load Balancer가 모든 트래픽을 Blue로 → Green으로 **한 번에 전환**
+```
+
+**단계:**
+
+1. **Green 환경 준비**: v1.1의 모든 Pod 시작 (Blue와 동일 스펙)
+2. **테스트**: Green 환경이 정상인지 확인
+3. **전환**: Load Balancer가 Blue → Green으로 라우팅 변경
+4. **롤백 대기**: Green이 안정적이면 Blue 환경 보관 (빠른 롤백용)
+
+### 장점
+
+- ✅ 빠른 배포 (모든 Pod가 동시에 전환)
+- ✅ 즉각적인 롤백 (Green 문제면 다시 Blue로)
+- ✅ 테스트 완료 후 배포 (사용자 영향 X)
+
+### 단점
+
+- ❌ 비싼 리소스 (Blue + Green 동시 실행)
+- ❌ 완전 환경 복제 필요
+- ❌ 데이터베이스 마이그레이션이 복잡
+
+### Kubernetes 구현
+
+```yaml
+# green-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-green
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: myapp
+      version: v1.1
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v1.1
+    spec:
+      containers:
+      - name: myapp
+        image: myapp:v1.1
+```
+
+```bash
+# 1. Blue 환경 실행 중 (기존)
+$ kubectl get pods -l version=v1.0
+myapp-v1.0-xxx  Running
+
+# 2. Green 환경 준비
+$ kubectl apply -f green-deployment.yaml
+$ kubectl get pods -l version=v1.1
+myapp-v1.1-xxx  Running
+
+# 3. 테스트 (Green 환경으로 직접 요청)
+$ kubectl port-forward svc/app-green 8000:8000
+# http://localhost:8000 접속 → 정상 작동 확인
+
+# 4. Service가 Green을 가리키도록 변경
+$ kubectl patch service myapp -p '{"spec":{"selector":{"version":"v1.1"}}}'
+
+# 5. 모든 트래픽이 Green으로 전환됨
+
+# 6. Blue 유지 (빠른 롤백용)
+# 문제 발생 시: kubectl patch service myapp -p '{"spec":{"selector":{"version":"v1.0"}}}'
+
+# 7. 안정화 후 Blue 삭제
+$ kubectl delete deployment app-blue
+```
+
+## 전략 2: Canary 배포
+
+### 개념
+
+```
+v1.0 (기존)              v1.1 (새 버전)
+├─ Pod A           ├─ Pod A'(1개만)
+├─ Pod B           
+├─ Pod C
+├─ Pod D
+└─ Pod E
+
+트래픽 비율:
+사용자 100명 중
+├─ 95명 → v1.0 (기존, 안전)
+└─ 5명 → v1.1 (새 버전, 테스트)
+```
+
+**단계:**
+
+1. **Pod 1개 배포**: v1.1의 Pod 1개만 시작
+2. **부분 트래픽 라우팅**: Service가 5~10%의 요청을 v1.1로
+3. **모니터링**: v1.1의 에러율, 응답시간 감시
+4. **점진 확장**: 안전하면 v1.1 Pod를 10% → 25% → 50% → 100%로 늘리기
+5. **완전 전환**: 모든 요청이 v1.1로 가면 v1.0 삭제
+
+### 장점
+
+- ✅ 리소스 절약 (소수의 Pod만 새 버전)
+- ✅ 실제 사용자로 테스트 (5%만 영향)
+- ✅ 문제 발생 시 빠른 롤백 (95%는 v1.0)
+- ✅ 점진적 검증
+
+### 단점
+
+- ❌ 배포 시간 길다 (수십 분~수시간)
+- ❌ 두 버전 동시 운영 (복잡한 상태 관리)
+- ❌ 데이터베이스 마이그레이션 어려움
+
+### Kubernetes 구현 (Istio 사용)
+
+```yaml
+# Virtual Service: 트래픽 분배
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: myapp
+spec:
+  hosts:
+  - myapp
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: myapp
+        subset: v1-0
+      weight: 90        # v1.0: 90%
+    - destination:
+        host: myapp
+        subset: v1-1
+      weight: 10        # v1.1: 10%
+  timeout: 30s
+
+---
+# Destination Rule: Pod 분류
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: myapp
+spec:
+  host: myapp
+  subsets:
+  - name: v1-0
+    labels:
+      version: v1.0
+  - name: v1-1
+    labels:
+      version: v1.1
+```
+
+```bash
+# 1. v1.0 Pod 5개 실행 (기존)
+$ kubectl apply -f deployment-v1.0.yaml
+
+# 2. v1.1 Pod 1개 추가
+$ kubectl apply -f deployment-v1.1.yaml
+
+# 3. Istio Virtual Service로 90:10 트래픽 분배
+$ kubectl apply -f canary-vs.yaml
+
+# 4. 모니터링 (예: Prometheus)
+# 에러율: v1.0 < 0.1%, v1.1 < 0.5% → OK
+# 응답시간: v1.0 = 50ms, v1.1 = 48ms → OK
+
+# 5. 트래픽 비율 증가 (수동 또는 자동)
+# 90:10 → 70:30 → 50:50 → 30:70 → 0:100
+
+# 6. v1.0 삭제
+$ kubectl delete deployment myapp-v1.0
+```
+
+## 전략 3: Rolling 배포
+
+### 개념
+
+```
+시간 →
+
+t=0초
+v1.0 v1.0 v1.0 v1.0 v1.0 (5개)
+
+t=30초
+v1.1 v1.0 v1.0 v1.0 v1.0 (1개씩 교체)
+
+t=60초
+v1.1 v1.1 v1.0 v1.0 v1.0
+
+t=120초
+v1.1 v1.1 v1.1 v1.1 v1.1 (완료)
+```
+
+**특징**: 1개씩 순차적으로 교체. Kubernetes **기본 배포 전략**.
+
+### 장점
+
+- ✅ 자동 (kubectl이 알아서 함)
+- ✅ 리소스 효율적 (신구 버전 합쳐도 충분)
+- ✅ 간단하고 신뢰성 높음
+
+### 단점
+
+- ❌ 모든 사용자가 변화를 겪음 (v1.0 → v1.1 섞여 있음)
+- ❌ 배포 중 성능 편차 가능
+- ❌ 세밀한 제어 어려움
+
+### Kubernetes 구현
+
+```yaml
+# deployment.yaml (기본값)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # 동시에 추가할 Pod 수
+      maxUnavailable: 1  # 동시에 내릴 Pod 수
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: myapp:v1.1  # 새 이미지로 업데이트
+```
+
+```bash
+# 1. 이미지만 변경 (Kubernetes가 자동으로 Rolling 시작)
+$ kubectl set image deployment/myapp myapp=myapp:v1.1
+
+# 2. 배포 진행 상황 확인
+$ kubectl rollout status deployment/myapp
+Waiting for rollout to finish: 3 out of 5 new replicas have been updated...
+
+# 3. 배포 완료
+$ kubectl get pods
+myapp-v1.1-xxx  Running
+myapp-v1.1-yyy  Running
+myapp-v1.1-zzz  Running
+myapp-v1.1-aaa  Running
+myapp-v1.1-bbb  Running
+
+# 4. 문제 발생 시 즉시 롤백
+$ kubectl rollout undo deployment/myapp
+```
+
+## 비교: 언제 뭘 쓸까?
+
+| 상황 | 추천 전략 | 이유 |
+|------|---------|------|
+| 중요한 기능 업데이트 | Blue-Green | 빠른 롤백, 완전 테스트 가능 |
+| 매일 여러 번 배포 | Rolling | 간단하고 자동화 가능 |
+| 신뢰할 수 없는 새 버전 | Canary | 소수 사용자로 먼저 검증 |
+| 성능 개선만 | Rolling | 세밀한 제어 불필요 |
+| 큰 변경사항 | Blue-Green | 테스트 후 배포 |
+
+## 실전: GitHub Actions + Kubernetes로 Blue-Green
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy Blue-Green
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t myapp:${{ github.sha }} .
+        docker push myapp:${{ github.sha }}
+    
+    - name: Deploy Green Environment
+      run: |
+        kubectl set image deployment/app-green myapp=myapp:${{ github.sha }}
+        kubectl rollout status deployment/app-green
+    
+    - name: Test Green Environment
+      run: |
+        kubectl port-forward svc/app-green 8000:8000 &
+        sleep 5
+        curl http://localhost:8000/health || exit 1
+    
+    - name: Switch Traffic to Green
+      if: success()
+      run: |
+        kubectl patch service myapp -p '{"spec":{"selector":{"version":"v1.1"}}}'
+    
+    - name: Rollback to Blue if Failed
+      if: failure()
+      run: |
+        kubectl patch service myapp -p '{"spec":{"selector":{"version":"v1.0"}}}'
+```
+
+## 핵심 정리
+
+| 전략 | 배포 시간 | 리소스 | 롤백 속도 | 사용처 |
+|------|---------|--------|---------|--------|
+| Blue-Green | 빠름 | 많음 | 극빠름 | 중요 배포 |
+| Canary | 느림 | 적음 | 느림 | 신뢰성 낮은 배포 |
+| Rolling | 중간 | 중간 | 중간 | 일상적 배포 |
+
+## 다음 글 예고
+
+- **GitOps와 CI/CD**: 배포를 자동화하고 선언형으로 관리하기
+
+## 참고자료
+
+- [Kubernetes Deployment Strategies](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
+- [Blue-Green Deployments](https://martinfowler.com/bliki/BlueGreenDeployment.html)
+- [Canary Releases](https://martinfowler.com/bliki/CanaryRelease.html)
+- [Istio Virtual Services](https://istio.io/latest/docs/reference/config/networking/virtual-service/)
