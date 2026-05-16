@@ -28,9 +28,10 @@
 | 작성중 | 2026-05-19 (화) | [논문 리뷰] A-RAG: Agentic RAG가 2026년의 기본기가 된 이유 | paper-review | RAG 논문 리뷰 시리즈 | 3 | 초안 작성 — `2026-05-19-agentic-rag-review.mdx` (A-RAG arXiv 2602.03442) |
 | 작성중 | 2026-05-20 (수) | merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가 | study | Git 시리즈 | 4 | 초안 작성 — `2026-05-20-git-merge-vs-rebase.mdx` (Pro Git ch.3.5–3.6) |
 | 발행완료 | 2026-05-21 (목) | Attention 이해하기 시리즈 마무리 (디코딩·추론 or 전체 정리) | study | Attention 이해하기 | 6 | `2026-05-21-attention-complete-guide.mdx` |
-| 아이디어 | 2026-05-22 (금) | 리모트와 협업 — fetch / pull / push를 정확히 | study | Git 시리즈 | 5 | Pro Git ch.2.5, 3.5 / 1편의 remote·push·pull을 깊게 |
-| 아이디어 | 2026-05-23 (토) | Harness 만들기 1편 — 왜 만들고 어떻게 짰나 (skills · agents · hooks 구조) | project | Harness 만들기 | 1 | `harness/braincrew` — 25 skills · 24 agents · 36 rules · 21 hooks · 15 commands |
-| 아이디어 | 2026-05-24 (일) | 되돌리기 총정리 — reset · revert · restore · reflog · stash | study | Git 시리즈 | 6 | Pro Git ch.2.4, 7.3, 7.7 / 세 개의 트리 그림 |
+| 예약 | 2026-05-22 (금) | [논문 리뷰] DeepSeek-V4 — 1M Context에서 KV Cache 10% 수준으로 압축한 Hybrid Attention | paper-review | 논문 리뷰 | | Attention 시리즈 마무리(FFN) 다음. Q/K/V·Multi-Head와 연결. `2026-05-22-deepseek-v4-paper-review.mdx` |
+| 아이디어 | 2026-05-23 (토) | 리모트와 협업 — fetch / pull / push를 정확히 | study | Git 시리즈 | 5 | Pro Git ch.2.5, 3.5 / 1편의 remote·push·pull을 깊게 |
+| 아이디어 | 2026-05-24 (일) | Harness 만들기 1편 — 왜 만들고 어떻게 짰나 (skills · agents · hooks 구조) | project | Harness 만들기 | 1 | `harness/braincrew` — 25 skills · 24 agents · 36 rules · 21 hooks · 15 commands |
+| 아이디어 | 2026-05-25 (월) | 되돌리기 총정리 — reset · revert · restore · reflog · stash | study | Git 시리즈 | 6 | Pro Git ch.2.4, 7.3, 7.7 / 세 개의 트리 그림 |
 | 아이디어 | 2026-05-25 (월) | RPG 포트폴리오 만들기 — Kaboom.js 픽셀 RPG 단일 페이지 (NDA 마스킹 메커니즘) | project | | | `harness/public-portfolio` — No-Build · Kaboom.js 3000 · `PUBLIC_MODE` 한 줄 토글 |
 | 아이디어 | 2026-05-26 (화) | GitHub 활용 — fork · PR · issue · Actions 맛보기 | study | Git 시리즈 | 7 | Pro Git ch.6 / 이 블로그 `deploy.yml`을 예시로 |
 | 아이디어 | 2026-05-27 (수) | Harness 만들기 2편 — 듀얼 메모리 + `sy` 글로벌 CLI 워크플로 | project | Harness 만들기 | 2 | global `~/.sy/memory/` ↔ project `.sy-memory/`, `sy` 가 `claude --plugin-dir` 로 부팅 |
