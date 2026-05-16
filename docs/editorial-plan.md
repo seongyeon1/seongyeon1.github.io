@@ -37,9 +37,13 @@
 | 아이디어 | 2026-05-27 (수) | Harness 만들기 2편 — 듀얼 메모리 + `sy` 글로벌 CLI 워크플로 | project | Harness 만들기 | 2 | global `~/.sy/memory/` ↔ project `.sy-memory/`, `sy` 가 `claude --plugin-dir` 로 부팅 |
 | 아이디어 | 2026-05-28 (목) | Git 내부 — `.git` 디렉토리를 열어보면 | study | Git 시리즈 | 8 | 옵션·마지막 / Pro Git ch.10 / 7편 발행 시 포함 여부 최종 결정 |
 | 아이디어 | 2026-05-29 (금) | Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키 | project | | | `harness/braincrew-wiki` — Karpathy LLM-wiki 패턴 팀 확장. raw → routine → 정제 PR |
-| 아이디어 | 2026-05-30 (토) | (프롬프트 최적화 or 신규 study 한 편) | study | | | — |
-| 아이디어 | 2026-05-31 (일) | (프로젝트 후기 한 편) | project | | | 최근에 만든 거 회고 — bc-ppt 후속? |
-| 아이디어 | 2026-06-01 (월) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
+| 아이디어 | 2026-05-30 (토) | Container와 Docker 기초 — 왜 필요하고 어떻게 작동하는가 | study | 배포 환경 이해하기 | 1 | 이미지, 컨테이너, 레지스트리 개념. Docker 명령어 기초. |
+| 아이디어 | 2026-05-31 (일) | Kubernetes 핵심 — Pod, Service, Deployment, StatefulSet | study | 배포 환경 이해하기 | 2 | k8s 리소스 타입 설명. 선언형 배포. |
+| 아이디어 | 2026-06-01 (월) | AWS 핵심 서비스 — EC2, S3, RDS, VPC | study | 배포 환경 이해하기 | 3 | 주요 AWS 서비스 정리. 프리티어 범위. |
+| 아이디어 | 2026-06-02 (화) | 배포 전략 — Blue-Green, Canary, Rolling Deployment | study | 배포 환경 이해하기 | 4 | 다양한 배포 방식 비교. 장단점. |
+| 아이디어 | 2026-06-03 (수) | GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 | study | 배포 환경 이해하기 | 5 | 자동 배포 파이프라인. 이 블로그 deploy.yml 연계. |
+| 아이디어 | 2026-06-04 (목) | 모니터링·로깅 — Prometheus, ELK Stack 기초 | study | 배포 환경 이해하기 | 6 | 성능 모니터링, 로그 수집. 기초 개념. |
+| 아이디어 | 2026-06-05 (금) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
 
 ## 작성 마일스톤 _(매일 cadence — "주말 sprint" 룰)_
 
@@ -80,9 +84,9 @@
 7. ⬜ GitHub 활용 — fork/PR/issue/Actions 맛보기 (ch.6)
 8. ⬜ _(옵션)_ Git 내부 — `.git` 디렉토리 (ch.10)
 
-### Attention 이해하기 — 멈춤 (5편)
-- Q·K·V → 3 attentions → positional encoding → layernorm/residual → FFN 까지 옴.
-- 디코더/추론 단계 한 편 또는 "전체 그림 한 장으로 정리" 한 편으로 마무리하면 깔끔.
+### Attention 이해하기 — 완료 (5편 + 1 논문리뷰)
+- ✅ Q·K·V → 3 attentions → positional encoding → layernorm/residual → FFN 까지 옴.
+- ✅ [논문 리뷰] DeepSeek-V4로 마무리 — Hybrid Attention · KV Cache 최적화
 
 ### RAG 논문 리뷰 시리즈 — 진행 중 (2편)
 - 발행: Seismic(sparse retrieval), Enterprise RAG Bench.
@@ -92,6 +96,15 @@
 
 ### 프롬프트 최적화 시리즈 — 일단락 (3편: MetaSPO / GEPA / 비교)
 - 새 기법·논문 나오면 추가편으로.
+
+### 배포 환경 이해하기 — 진행 중 (6편)
+기초부터 실무까지: Container → Kubernetes → AWS → 배포 전략 → GitOps/CI-CD → 모니터링
+1. ⬜ Container와 Docker 기초 — `2026-05-30-docker-container-basics`
+2. ⬜ Kubernetes 핵심
+3. ⬜ AWS 핵심 서비스
+4. ⬜ 배포 전략 (Blue-Green / Canary / Rolling)
+5. ⬜ GitOps와 CI/CD
+6. ⬜ 모니터링·로깅 (Prometheus / ELK)
 
 ### Harness 만들기 — 예정 (2편)
 대상: `harness/braincrew` — Claude Code 를 위한 multi-agent orchestration harness.
