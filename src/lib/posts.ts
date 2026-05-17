@@ -6,6 +6,14 @@ import type { Post, Frontmatter } from "@/types/post";
 
 const POSTS_DIR = path.join(process.cwd(), "content/posts");
 
+// Bare "YYYY-MM-DD" frontmatter dates are treated as KST midnight so posts
+// flip visibility at 00:00 KST on the publish day. ISO strings with explicit
+// time/offset are parsed as-is.
+const parsePostDate = (d: string): number => {
+  if (/T\d/.test(d)) return new Date(d).getTime();
+  return new Date(`${d}T00:00:00+09:00`).getTime();
+};
+
 const getPostFiles = (): string[] => {
   if (!fs.existsSync(POSTS_DIR)) return [];
   return fs
@@ -36,9 +44,9 @@ export const getAllPosts = (): Post[] => {
     .filter((post) => {
       if (!isProduction) return true;
       if (post.draft) return false;
-      return new Date(post.date).getTime() <= now;
+      return parsePostDate(post.date) <= now;
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => parsePostDate(b.date) - parsePostDate(a.date));
 };
 
 export const getPostBySlug = (slug: string): Post | undefined => {

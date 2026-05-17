@@ -6,7 +6,36 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 16 May 2026 17:06:32 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 17 May 2026 16:36:23 GMT</lastBuildDate>
+    <item>
+      <title>정적 블로그 SEO 마감하기 — OG 이미지 · RSS · JSON-LD (마감 편)</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-18-blog-seo-og-rss-jsonld/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-18-blog-seo-og-rss-jsonld/</guid>
+      <description>2편에서 검색 노출까지 했으니 이번엔 마감 — OG 이미지 자동 생성으로 공유 링크 살리고, /rss.xml로 구독자를 받고, Article JSON-LD로 검색 결과를 풍부하게.</description>
+      <pubDate>Mon, 18 May 2026 00:00:00 GMT</pubDate>
+      <category>tutorial</category>
+      <category>seo</category>
+      <category>open-graph</category>
+      <category>rss</category>
+      <category>json-ld</category>
+      <category>nextjs</category>
+      <category>github-pages</category>
+      <category>blog</category>
+    </item>
+    <item>
+      <title>모니터링·로깅 — Prometheus, Grafana, ELK Stack으로 운영 환경 관찰하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-04-monitoring-logging/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-04-monitoring-logging/</guid>
+      <description>배포 완료 후 &apos;지금 서버는 잘 돌고 있나?&apos; 하고 싶으면? 모니터링과 로깅이 필요하다. 메트릭 수집(Prometheus) → 시각화(Grafana) → 알람 설정, 그리고 로그 수집(ELK)으로 운영 환경의 모든 신호를 포착하자.</description>
+      <pubDate>Sun, 17 May 2026 00:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>monitoring</category>
+      <category>logging</category>
+      <category>prometheus</category>
+      <category>grafana</category>
+      <category>elk</category>
+      <category>observability</category>
+    </item>
     <item>
       <title>GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 자동화 배포 파이프라인</title>
       <link>https://seongyeon1.github.io/blog/2026-06-03-gitops-cicd/</link>
