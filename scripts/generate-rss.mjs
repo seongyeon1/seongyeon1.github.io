@@ -11,6 +11,12 @@ const SITE_DESC = "AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는
 const POSTS_DIR = "content/posts";
 const OUT = "public/rss.xml";
 
+// Bare "YYYY-MM-DD" dates are KST midnight; ISO with explicit time uses its own offset.
+const parsePostDate = (d) => {
+  if (/T\d/.test(d)) return new Date(d).getTime();
+  return new Date(`${d}T00:00:00+09:00`).getTime();
+};
+
 const escape = (s = "") =>
   String(s)
     .replace(/&/g, "&amp;")
@@ -30,8 +36,8 @@ const main = async () => {
   );
   const now = Date.now();
   const visible = posts
-    .filter((p) => !p.draft && new Date(p.date).getTime() <= now)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+    .filter((p) => !p.draft && parsePostDate(p.date) <= now)
+    .sort((a, b) => parsePostDate(b.date) - parsePostDate(a.date));
 
   const items = visible
     .map(

@@ -5,8 +5,8 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    # 매일 00:05 UTC = 09:05 KST — 예약 발행 글을 자동으로 노출
-    - cron: "5 0 * * *"
+    # 매일 15:00 UTC = 00:00 KST (자정) — KST 자정에 그날 예약 글을 노출
+    - cron: "0 15 * * *"
 
 permissions:
   contents: read
