@@ -39,12 +39,12 @@ const SeriesPage = async ({ params }: Props) => {
   if (!series) notFound();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <div className="mb-10">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mb-8 sm:mb-10">
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">
           Series
         </p>
-        <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="mb-2 text-[26px] font-extrabold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           {series.name}
         </h1>
         <p className="text-pretty text-zinc-500 dark:text-zinc-400">

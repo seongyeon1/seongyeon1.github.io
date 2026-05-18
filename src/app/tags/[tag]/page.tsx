@@ -34,9 +34,9 @@ const TagPage = async ({ params }: Props) => {
   const posts = getPostsByTag(decoded);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <div className="mb-10">
-        <h1 className="mb-2 text-balance text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mb-8 sm:mb-10">
+        <h1 className="mb-2 text-balance text-[26px] font-extrabold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent dark:from-primary-400 dark:to-primary-300">
             #
           </span>
@@ -46,7 +46,7 @@ const TagPage = async ({ params }: Props) => {
           <span className="tabular-nums">{posts.length}</span> {posts.length === 1 ? "post" : "posts"} tagged
         </p>
       </div>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
         {posts.map((post) => (
           <PostCard key={post.slug} post={post} />
         ))}

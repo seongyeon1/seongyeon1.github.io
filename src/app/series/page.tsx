@@ -11,9 +11,9 @@ const SeriesListPage = () => {
   const seriesList = getAllSeries();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <div className="mb-10">
-        <h1 className="mb-2 text-balance text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mb-8 sm:mb-10">
+        <h1 className="mb-2 text-balance text-[26px] font-extrabold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           Series
         </h1>
         <p className="text-pretty text-zinc-500 dark:text-zinc-400">
@@ -21,7 +21,7 @@ const SeriesListPage = () => {
         </p>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
         {seriesList.map((s) => (
           <Link
             key={s.name}
@@ -29,7 +29,7 @@ const SeriesListPage = () => {
             className="group overflow-hidden rounded-2xl bg-white shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-zinc-900"
           >
             <div className="h-1.5 bg-gradient-to-r from-primary-500 to-cyan-400" />
-            <div className="p-6">
+            <div className="p-5 sm:p-6">
               <div className="mb-3 flex items-center gap-2">
                 <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
