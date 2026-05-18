@@ -113,7 +113,7 @@
 }
 
 [data-rehype-pretty-code-figure] code {
-  @apply grid text-[13px] leading-relaxed;
+  @apply grid text-[12.5px] leading-relaxed sm:text-[13px];
 }
 
 [data-rehype-pretty-code-figure] [data-line] {
@@ -161,11 +161,11 @@
 }
 
 .prose p {
-  @apply leading-[1.8];
+  @apply leading-[1.75] sm:leading-[1.8];
 }
 
 .prose li {
-  @apply leading-[1.8];
+  @apply leading-[1.75] sm:leading-[1.8];
 }
 
 .prose blockquote {
