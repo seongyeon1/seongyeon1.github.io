@@ -1,49 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { Heading } from "@/types/post";
+import { useActiveHeading } from "@/lib/useActiveHeading";
+import { useScrollProgress } from "@/lib/useScrollProgress";
 
 const TOC = ({ headings }: { headings: Heading[] }) => {
-  const [activeId, setActiveId] = useState<string>("");
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        }
-      },
-      { rootMargin: "-80px 0px -80% 0px" }
-    );
-
-    for (const heading of headings) {
-      const el = document.getElementById(heading.id);
-      if (el) observer.observe(el);
-    }
-
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [headings]);
+  const activeId = useActiveHeading(headings);
+  const progress = useScrollProgress();
 
   if (headings.length === 0) return null;
 
   return (
     <nav className="sticky top-24">
-      {/* Progress bar */}
       <div className="mb-4 h-0.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
         <div
           className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-[width] duration-150 ease-out"
