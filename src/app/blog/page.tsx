@@ -1,7 +1,7 @@
 import { getAllPosts } from "@/lib/posts";
 import { getTagList } from "@/lib/tags";
 import PostCard from "@/components/blog/PostCard";
-import TagBadge from "@/components/blog/TagBadge";
+import TagFilter from "@/components/blog/TagFilter";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,9 +14,9 @@ const BlogPage = () => {
   const tags = getTagList();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <div className="mb-10">
-        <h1 className="mb-2 text-balance text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mb-8 sm:mb-10">
+        <h1 className="mb-2 text-balance text-[26px] font-extrabold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           All Posts
         </h1>
         <p className="text-pretty text-zinc-500 dark:text-zinc-400">
@@ -24,20 +24,9 @@ const BlogPage = () => {
         </p>
       </div>
 
-      {/* Tags */}
-      <div className="mb-10 flex flex-wrap gap-2">
-        {tags.map(({ tag, count }) => (
-          <span key={tag} className="flex items-center gap-1">
-            <TagBadge tag={tag} />
-            <span className="text-xs tabular-nums text-zinc-300 dark:text-zinc-600">
-              {count}
-            </span>
-          </span>
-        ))}
-      </div>
+      <TagFilter tags={tags} />
 
-      {/* Post List */}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
         {posts.map((post) => (
           <PostCard key={post.slug} post={post} />
         ))}
