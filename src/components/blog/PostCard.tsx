@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Post, Category } from "@/types/post";
-import { formatDateTime } from "@/lib/date";
+import { formatDateShort, formatDateTime } from "@/lib/date";
 import TagBadge from "./TagBadge";
 import CategoryBadge from "./CategoryBadge";
 
@@ -14,28 +14,24 @@ const categoryGradients: Record<Category, string> = {
 const PostCard = ({ post }: { post: Post }) => {
   return (
     <article className="group relative overflow-hidden rounded-2xl bg-white shadow-border transition-[box-shadow,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:shadow-border-hover dark:bg-zinc-900">
-      {/* Gradient header strip */}
-      <div className={`h-1.5 bg-gradient-to-r ${categoryGradients[post.category]}`} />
+      <div className={`h-1 bg-gradient-to-r sm:h-1.5 ${categoryGradients[post.category]}`} />
 
-      <div className="p-6">
-        <div className="mb-3 flex items-center gap-3">
+      <div className="p-5 sm:p-6">
+        <div className="mb-3 flex items-center gap-2">
           <CategoryBadge category={post.category} />
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
-            <span className="tabular-nums">{formatDateTime(post.date)}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <span className="h-[3px] w-[3px] rounded-full bg-zinc-300 dark:bg-zinc-700" />
+          <span className="inline-flex items-center gap-1 text-[11px] tabular-nums text-zinc-400 sm:text-xs dark:text-zinc-500">
+            <span className="sm:hidden">{formatDateShort(post.date)}</span>
+            <span className="hidden sm:inline">{formatDateTime(post.date)}</span>
+          </span>
+          <span className="h-[3px] w-[3px] rounded-full bg-zinc-300 dark:bg-zinc-700" />
+          <span className="inline-flex items-center gap-1 text-[11px] text-zinc-400 sm:text-xs dark:text-zinc-500">
             {post.readingTime}
-          </div>
+          </span>
         </div>
 
         <Link href={`/blog/${post.slug}`}>
-          <h2 className="mb-2 text-balance text-lg font-bold leading-snug text-zinc-900 transition-colors group-hover:text-primary-600 dark:text-zinc-100 dark:group-hover:text-primary-400">
+          <h2 className="mb-2 text-balance text-[17px] font-bold leading-snug tracking-tight text-zinc-900 transition-colors group-hover:text-primary-600 sm:text-lg dark:text-zinc-100 dark:group-hover:text-primary-400">
             {post.title}
           </h2>
           <p className="mb-4 line-clamp-2 text-pretty text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
