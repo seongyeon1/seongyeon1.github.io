@@ -13,8 +13,8 @@ const Footer = () => {
   const recentPosts = getAllPosts().slice(0, 3);
 
   return (
-    <footer className="mt-20 border-t border-zinc-200/60 dark:border-zinc-800/60">
-      <div className="mx-auto max-w-5xl px-6 py-14">
+    <footer className="mt-14 border-t border-zinc-200/60 sm:mt-20 dark:border-zinc-800/60">
+      <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6 sm:py-14">
         <div className="grid gap-10 sm:grid-cols-[1.2fr_1fr_1fr]">
           {/* Brand */}
           <div>
