@@ -181,7 +181,9 @@ No change. `src/components/blog/TOC.tsx` continues to render in the right sideba
 
 **File**: `src/components/blog/SeriesNav.tsx`
 
-- On mobile, ensure prev/next buttons stack vertically if labels are long. Add `min-w-0` and `truncate` to inner label text.
+- Inner padding `px-6` → `px-5 sm:px-6`.
+- Title link `text-lg` → `text-base sm:text-lg`.
+- List item title `text-sm` left as-is, but ensure long titles wrap cleanly (already use `text-pretty`).
 - No structural changes.
 
 ---
