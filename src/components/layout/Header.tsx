@@ -117,6 +117,7 @@ const Header = () => {
         {/* Mobile menu button */}
         <div className="flex items-center gap-1 sm:hidden">
           <ThemeToggle isDark={isDark} onToggle={toggleDark} />
+          <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-500 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-zinc-100 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800"
@@ -167,7 +168,7 @@ const Header = () => {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 text-sm font-medium text-zinc-600 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-zinc-100 hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="rounded-lg px-3 py-3.5 text-sm font-medium text-zinc-600 transition-[color,background-color,scale] duration-150 ease-out-expo hover:bg-zinc-100 hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               >
                 {item.label}
               </Link>
