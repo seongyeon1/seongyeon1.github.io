@@ -30,9 +30,9 @@
 | 발행완료 | 2026-05-16 | GitOps와 CI/CD — GitHub Actions에서 Kubernetes까지 자동화 배포 파이프라인 | study | 배포 환경 이해하기 | 5 | `2026-06-03-gitops-cicd.mdx` (5/16) — CI/CD 파이프라인, GitHub Actions, ArgoCD, GitOps 원칙 |
 | 발행완료 | 2026-05-17 | 모니터링·로깅 — Prometheus, Grafana, ELK Stack으로 운영 환경 관찰하기 | study | 배포 환경 이해하기 | 6 | `2026-06-04-monitoring-logging.mdx` (5/17) — Prometheus·Grafana·ELK, 알람, 운영 체크리스트 |
 | 발행완료 | 2026-05-25 | 브랜치, 제대로 — 만들고 옮기고 합치고 지우기 | study | Git 시리즈 | 3 | 발행 — `2026-05-25-git-branching.mdx` (Pro Git ch.3.1–3.4) |
-| 작성중 | 2026-05-18 | 블로그 SEO 마감 — OG 이미지 자동 생성 · RSS · JSON-LD | tutorial | 블로그 만들기 | 3 | 2편 "다음 편 예고"에 이미 공개함. `opengraph-image`, `/rss.xml`, `Article` JSON-LD |
-| 작성중 | 2026-05-19 (화) | [논문 리뷰] A-RAG: Agentic RAG가 2026년의 기본기가 된 이유 | paper-review | RAG 논문 리뷰 시리즈 | 3 | 초안 작성 — `2026-05-19-agentic-rag-review.mdx` (A-RAG arXiv 2602.03442) |
-| 작성중 | 2026-05-20 (수) | merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가 | study | Git 시리즈 | 4 | 초안 작성 — `2026-05-20-git-merge-vs-rebase.mdx` (Pro Git ch.3.5–3.6) |
+| 발행완료 | 2026-05-18 | 블로그 SEO 마감 — OG 이미지 자동 생성 · RSS · JSON-LD | tutorial | 블로그 만들기 | 3 | `2026-05-18-blog-seo-og-rss-jsonld.mdx` |
+| 발행완료 | 2026-05-19 (화) | [논문 리뷰] A-RAG: Agentic RAG가 2026년의 기본기가 된 이유 | paper-review | RAG 논문 리뷰 시리즈 | 3 | `2026-05-19-agentic-rag-review.mdx` (A-RAG arXiv 2602.03442) |
+| 발행완료 | 2026-05-20 (수) | merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가 | study | Git 시리즈 | 4 | `2026-05-20-git-merge-vs-rebase.mdx` (Pro Git ch.3.5–3.6) |
 | 발행완료 | 2026-05-21 (목) | Attention 이해하기 시리즈 마무리 (디코딩·추론 or 전체 정리) | study | Attention 이해하기 | 6 | `2026-05-21-attention-complete-guide.mdx` |
 | 예약 | 2026-05-22 (금) | [논문 리뷰] DeepSeek-V4 — 1M Context에서 KV Cache 10% 수준으로 압축한 Hybrid Attention | paper-review | 논문 리뷰 | | Attention 시리즈 마무리(FFN) 다음. Q/K/V·Multi-Head와 연결. `2026-05-22-deepseek-v4-paper-review.mdx` |
 | 발행완료 | 2026-05-23 (토) | 리모트와 협업 — fetch / pull / push를 정확히 | study | Git 시리즈 | 5 | `2026-05-23-git-remote-workflow.mdx` |
