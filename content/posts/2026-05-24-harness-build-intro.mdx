@@ -1,0 +1,124 @@
+---
+title: "Harness 만들기 1편 — 왜 만들고 어떻게 짰나"
+date: "2026-05-24T09:00:00+09:00"
+category: "project"
+tags: ["harness", "claude", "agents", "architecture", "multi-agent"]
+summary: "Claude Code를 위한 multi-agent orchestration harness인 `harness/braincrew`를 왜 만들었고, 25개 skills, 24개 agents, 36개 규칙, 21개 hooks, 15개 명령어를 어떻게 설계했는지 설명한다."
+series: "Harness 만들기"
+seriesOrder: 1
+---
+
+## 왜 만들었나
+
+Claude를 쓰다 보니 같은 작업을 여러 세션에서 반복하게 된다. 이메일 확인, 캘린더 조회, 깃 상태 확인... 이런 걸 매번 손으로 물어봐야 하는 게 지칠 정도였다.
+
+그래서 생각한 게: **"일관된 구조로 모든 작업을 organize하면 어떨까?"**
+
+`harness/braincrew`는 이런 고민에서 시작한 **Claude를 위한 다중 에이전트 오케스트레이션 플랫폼**이다. 한 마디로: 비서가 혼자 일하는 게 아니라, 특화된 팀이 역할 분리로 일하는 구조.
+
+## Harness의 3가지 핵심 설계 원칙
+
+**1. 역할 분리 (Separation of Concerns)**
+- 각 agent는 정해진 일만 한다
+- skills는 describe해서 매 turn 주입 (discovery 빠름)
+- path-gated rules는 정적 선언으로 trigger
+
+**2. 규칙-주입 아키텍처**
+- 규칙은 `rules/` 에 선언적으로 정의
+- 요청이 들어오면 matching rule이 agent를 라우팅
+- 중앙화된 권한 관리
+
+**3. 스킬 우선, 에이전트 차등**
+- 대부분의 일은 이미 만들어진 스킬(44개 k-skill 포함)로 해결
+- 정말 필요할 때만 전문화된 agent 스폰
+
+## 구조: Skills · Agents · Hooks · Rules
+
+**Skills (44개)**
+웹검색, 한국 날씨, 지하철, 택배, 법령 검색 등. 각 skill은 `SKILL.md` 로 설명되고, 매 turn 주입되어 discovery가 빠르다.
+
+**Agents (24개)**
+- 일반: `general-purpose`, `explore`, `plan` 
+- 전문: `code-reviewer`, `contract-analyzer`, `journal-curator`
+- 도메인: `braincrew-wiki-curator`, `editorial-assistant`
+
+각 agent는 특화된 프롬프트와 tool 권한을 가진다.
+
+**Hooks (21개)**
+git commit 후 lint, PR 생성 후 auto-check, Slack 메시지 수신 후 trigger 같은 **event-driven automation**.
+
+**Rules (36개)**
+path-gated 조건부 디스패치:
+```
+if file matches `src/**/*.ts` and user asks "refactor" → code-reviewer
+if slack message mentions @harness → slack-responder
+if git branch matches `feature/*` → auto-lint + auto-test
+```
+
+## 15개의 global commands
+
+```bash
+/quick           # 재빠른 조회 (날씨·지하철·캘린더)
+/search          # 웹 or k-skill 검색
+/post            # 블로그 글쓰기 스킬
+/review          # PR 리뷰
+/test            # 테스트 실행·분석
+/audit           # 보안·성능·코드 감사
+/sync            # 캘린더·노션·위키 동기화
+/remind          # 리마인더·cron 관리
+/slack           # Slack 메시지 송수신
+/hook-debug      # hook 트리거 확인
+/agent-list      # 활성 agent 목록
+/skill-discover  # 스킬 검색
+/config          # harness 설정
+/memory          # 장기 메모리 관리
+/help            # 명령어 도움말
+```
+
+## 계층별 요청 흐름
+
+```
+[사용자 메시지]
+    ↓
+[Rule Matcher] — path·context·intent 매칭
+    ↓
+[Agent Router] — 적절한 agent 선택 (또는 skill 직접 호출)
+    ↓
+[Executor] — skill/tool 실행
+    ↓
+[Hook Trigger] — commit/PR 생성 등 side effect 처리
+    ↓
+[응답]
+```
+
+예: "`src/auth/login.ts`를 리뷰해줘"
+1. Rule Matcher: path `src/**/*.ts` + intent `review` 감지
+2. Router: `code-reviewer` agent 스폰
+3. Executor: 파일 읽고, TypeScript linter 규칙 적용
+4. Hook: lint 통과 → auto-format PR 제안
+5. 응답: "3개 이슈 발견, PR 제안됨"
+
+## 실무에서 — 알아두면 좋은 것들
+
+**1. Skill discovery가 일단 선 (fast path)**
+복잡한 prompt 전에 "이미 있는 skill이 있나?" 먼저 확인. 44개 k-skill만 해도 대부분의 한국 특화 작업 커버.
+
+**2. Rule은 정적, Hook은 동적**
+- Rule: 초기화 시점에만 읽음 (빠름, 예측 가능)
+- Hook: 이벤트 발생할 때마다 체크 (유연함, 지연 가능)
+
+**3. Agent 스폰은 비용**
+가볍게 할 수 있으면 skill + rule로, 정말 지능이 필요하면 agent 스폰.
+
+## 다음 편 예고
+
+Harness 2편에서는 **"듀얼 메모리 + `sy` CLI"**를 다룬다. 
+- global `~/.sy/memory/` (user profile, 기술 선택지, lesson learned)
+- project `.sy-memory/` (아키텍처 결정, 진행 중인 작업)
+- 한 줄 명령어로 `sy` 가 모든 harness를 부팅하는 magic
+
+## 참고
+
+- `harness/braincrew` GitHub repo
+- `/skill-creator` — 새 skill 만드는 방법
+- `docs/AGENTS.md`, `docs/RULES.md` — 상세 스펙
