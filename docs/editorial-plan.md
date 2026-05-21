@@ -33,7 +33,7 @@
 | 발행완료 | 2026-05-18 | 블로그 SEO 마감 — OG 이미지 자동 생성 · RSS · JSON-LD | tutorial | 블로그 만들기 | 3 | `2026-05-18-blog-seo-og-rss-jsonld.mdx` |
 | 발행완료 | 2026-05-19 (화) | [논문 리뷰] A-RAG: Agentic RAG가 2026년의 기본기가 된 이유 | paper-review | RAG 논문 리뷰 시리즈 | 3 | `2026-05-19-agentic-rag-review.mdx` (A-RAG arXiv 2602.03442) |
 | 발행완료 | 2026-05-20 (수) | merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가 | study | Git 시리즈 | 4 | `2026-05-20-git-merge-vs-rebase.mdx` (Pro Git ch.3.5–3.6) |
-| 발행완료 | 2026-05-21 (목) | Attention 이해하기 시리즈 마무리 (디코딩·추론 or 전체 정리) | study | Attention 이해하기 | 6 | `2026-05-21-attention-complete-guide.mdx` |
+|| 발행완료 | 2026-05-21 (목) | [논문 리뷰] Code-as-Agent Harness — LLM을 실전 엔지니어링 워크플로에 연결하는 법 | paper-review | | | `2026-05-21-code-as-agent-harness-review.mdx` |
 | 예약 | 2026-05-22 (금) | [논문 리뷰] DeepSeek-V4 — 1M Context에서 KV Cache 10% 수준으로 압축한 Hybrid Attention | paper-review | 논문 리뷰 | | Attention 시리즈 마무리(FFN) 다음. Q/K/V·Multi-Head와 연결. `2026-05-22-deepseek-v4-paper-review.mdx` |
 | 발행완료 | 2026-05-23 (토) | 리모트와 협업 — fetch / pull / push를 정확히 | study | Git 시리즈 | 5 | `2026-05-23-git-remote-workflow.mdx` |
 | 발행완료 | 2026-05-24 (일) | Harness 만들기 1편 — 왜 만들고 어떻게 짰나 (skills · agents · hooks 구조) | project | Harness 만들기 | 1 | `2026-05-24-harness-build-intro.mdx` |

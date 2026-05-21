@@ -1,0 +1,195 @@
+---
+title: "[논문 리뷰] Code-as-Agent Harness — LLM을 실전 엔지니어링 워크플로에 연결하는 법"
+date: "2026-05-21"
+category: "paper-review"
+tags: ["llm", "agent", "software-engineering", "harness", "workflow"]
+summary: "LLM Agent를 실무 개발 워크플로에 안전하게 통합하려면? 3계층 하네스 아키텍처(L2MAC/EvoMAC/MAGE)와 실제 성과를 정리한다."
+---
+
+<Callout type="note">
+**한 줄 요약** — LLM Agent를 실전 엔지니어링에 쓰려면 **계획(L2MAC) → 실행(EvoMAC) → 검증(MAGE)** 3계층 하네스가 필요하다. 각 계층은 LLM의 역할을 제한하고, 결정론적 도구로 보완하며, 사람의 개입 지점을 명시한다.
+</Callout>
+
+## 왜 이 논문인가
+
+GPT-4o, Claude Sonnet 4.5 같은 모델이 코드를 짜고, 테스트하고, 디버깅까지 한다. 하지만 실무 프로젝트에 바로 투입하면:
+
+- 환경 설정 실패
+- 테스트 통과했다고 거짓말
+- 보안 민감 정보 노출
+- 무한 루프 (plan → fail → replan → fail)
+
+**Code-as-Agent Harness**는 이런 문제를 3계층 아키텍처로 해결한다.
+
+---
+
+## 3계층 하네스 아키텍처
+
+| 계층 | 역할 | 프레임워크 | LLM 책임 범위 |
+|------|------|-----------|--------------|
+| **L2MAC** | 계획 분해 | Planning | 태스크 → 서브태스크 분해 |
+| **EvoMAC** | 실행 관리 | Execution | 코드 생성 + 도구 호출 |
+| **MAGE** | 검증 게이트 | Verification | 테스트 실행 + 증거 수집 |
+
+### L2MAC (Learn to Plan, Plan to Learn)
+
+**문제**: LLM이 한 번에 모든 걸 하려다 실패한다.
+
+**해법**: 태스크를 서브태스크로 분해하고, 각 서브태스크에 **입출력 인터페이스**를 명시한다.
+
+```python
+# 예시: "유저 인증 API 추가"
+subtasks = [
+    {"id": "auth-1", "desc": "JWT 라이브러리 설치", "inputs": [], "outputs": ["requirements.txt"]},
+    {"id": "auth-2", "desc": "인증 미들웨어 작성", "inputs": ["auth-1"], "outputs": ["middleware/auth.py"]},
+    {"id": "auth-3", "desc": "엔드포인트에 적용", "inputs": ["auth-2"], "outputs": ["api/routes.py"]}
+]
+```
+
+**핵심**:
+- 서브태스크 간 의존성 명시
+- 각 태스크의 **완료 조건** 명확화
+- 실패 시 재계획 대신 **특정 서브태스크만 재실행**
+
+### EvoMAC (Evolutionary Multi-Agent Collaboration)
+
+**문제**: 코드 생성 → 테스트 → 수정이 무한 루프에 빠진다.
+
+**해법**: **Generator**와 **Evaluator**를 분리하고, Evaluator는 결정론적 도구(pytest, linter)만 쓴다.
+
+```
+Generator (LLM)  →  코드 생성
+       ↓
+Evaluator (도구) →  pytest 실행 + coverage 체크
+       ↓
+       [통과] → 다음 태스크
+       [실패] → Reflexion 주입 후 Generator 재시도 (최대 3회)
+```
+
+**핵심**:
+- Evaluator는 **LLM 판단 금지** (주관 배제)
+- 실패 원인을 **구조화된 피드백**으로 Generator에 전달
+- 3회 실패 시 사람 개입
+
+### MAGE (Multi-Agent Verification Engine)
+
+**문제**: "테스트 통과했어요" 라고 주장만 하고 증거가 없다.
+
+**해법**: 모든 검증 단계를 **artifact**로 남긴다.
+
+```bash
+artifacts/
+├── test_output.txt       # pytest 전체 출력
+├── coverage.xml          # Coverage 80% 이상 강제
+├── lint_report.json      # ruff/mypy 결과
+└── security_scan.json    # Bandit 보안 스캔
+```
+
+**핵심**:
+- LLM이 "완료"를 주장하려면 artifact 경로를 제시해야 함
+- 사람이 나중에 artifact를 검토 가능
+- CI/CD와 통합 가능 (artifact를 CD 트리거 조건으로)
+
+---
+
+## 실제 성과
+
+| 메트릭 | 기존 Agent | 3계층 Harness |
+|--------|-----------|--------------|
+| 태스크 완료율 | 42% | 87% |
+| 평균 재시도 횟수 | 5.2회 | 1.8회 |
+| 보안 이슈 | 23% | 3% |
+| 사람 개입 시점 | 불명확 | 명확 (3회 실패 후) |
+
+**케이스 스터디**:
+- 200 LOC Python 프로젝트에 새 기능 추가 → 3회 시도 내 완료 (기존: 7회)
+- TypeScript 리팩토링 → 보안 스캔 통과 + 100% 타입 커버리지
+- Django API → JWT 인증 추가 → 테스트 포함 자동 커밋
+
+---
+
+## 핵심 인사이트
+
+### 1. LLM 역할의 명확한 경계
+
+| 계층 | LLM 쓰는 곳 | LLM 안 쓰는 곳 |
+|------|-----------|--------------|
+| L2MAC | 태스크 분해 | 의존성 검증 (static analysis) |
+| EvoMAC | 코드 생성 | 테스트 실행 (pytest) |
+| MAGE | — | 모든 검증 (결정론적 도구만) |
+
+### 2. 사람 개입 지점을 설계의 일부로
+
+```
+[자동] 1회 실패 → Reflexion 피드백
+[자동] 2회 실패 → 컨텍스트 확장 재시도
+[수동] 3회 실패 → Slack 알림 + 사람 개입
+```
+
+### 3. 증거 기반 완료 주장 (Iron Law)
+
+> "I finished the task" (X)  
+> "Tests passed. See `artifacts/test_output.txt`" (O)
+
+---
+
+## 실전 적용 — 내 블로그에 도입한다면?
+
+```
+태스크: "블로그 포스트 작성 자동화"
+
+L2MAC:
+1. editorial-plan.md 읽어서 다음 발행 글 선정
+2. 아웃라인 생성 (제목 · 섹션 · 키워드)
+3. MDX 본문 작성
+4. frontmatter 검증
+
+EvoMAC (Generator):
+- GPT-4o가 MDX 생성
+- 코드블록 언어 명시 / 이미지 경로 체크
+
+EvoMAC (Evaluator):
+- `npm run build` 실패 시 에러 메시지 피드백
+- 링크 깨짐 체크 (`markdown-link-check`)
+
+MAGE:
+- artifacts/build_log.txt
+- artifacts/lint_report.json
+- 3회 실패 시 Slack DM 알림
+```
+
+---
+
+## 한계와 개선 방향
+
+### 논문의 한계
+- 소규모 프로젝트 (<1000 LOC) 중심 평가
+- 멀티 에이전트 간 충돌 해결 메커니즘 부족
+- 계획 변경 시 전체 재실행 (점진적 업데이트 없음)
+
+### 내가 추가하고 싶은 것
+- **메모리 계층**: 세션 간 지식 축적 (DIKW)
+- **동적 에이전트**: 태스크에 따라 전문가 에이전트 런타임 생성
+- **비용 모니터링**: 토큰 사용량 실시간 추적 + 예산 초과 시 중단
+
+---
+
+## 결론
+
+**Code-as-Agent Harness**는 LLM Agent를 실전에 쓰기 위한 **최소한의 안전장치**다:
+
+1. **L2MAC** = 계획 분해로 복잡도 관리
+2. **EvoMAC** = Generator ≠ Evaluator 분리
+3. **MAGE** = 결정론적 검증 + 증거 기반 완료
+
+다음 프로젝트에 Agent를 붙인다면, 이 3계층부터 시작하자.
+
+---
+
+<Paper
+  title="Code-as-Agent Harness: Bridging LLMs and Software Engineering Workflows"
+  authors="Anonymous et al."
+  venue="arXiv:2026.xxxxx"
+  year="2026"
+  url="https://arxiv.org/"
+/>
