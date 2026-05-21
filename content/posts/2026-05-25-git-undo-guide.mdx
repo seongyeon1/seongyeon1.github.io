@@ -1,0 +1,335 @@
+---
+title: "되돌리기 총정리 — reset · revert · restore · reflog · stash"
+date: "2026-05-25T09:00:00+09:00"
+category: "study"
+tags: ["git", "reset", "revert", "restore", "reflog", "stash"]
+summary: "Git의 다섯 가지 되돌리기 명령 — reset, revert, restore, reflog, stash — 을 '세 개의 트리' 관점에서 정확히 이해하고, 실수 상황별 복구 레시피를 익힌다."
+series: "Git 시리즈"
+seriesOrder: 6
+---
+
+## 들어가며
+
+Git을 쓰다 실수하면 패닉에 빠진다. "방금 커밋 잘못했는데?", "파일 날렸는데?", "rebase 망쳤는데?" — 그럴 때마다 `git reset`, `git revert`, `git restore`, `git reflog`, `git stash` 중 *어떤 명령을 써야 하는지* 헷갈린다.
+
+이 다섯 명령은 각자 **다른 타임라인**을 되돌린다. `reset`은 커밋 히스토리, `revert`는 새 커밋으로 반대 작업, `restore`는 파일 상태, `reflog`는 HEAD 이동 기록, `stash`는 임시 백업이다. **세 개의 트리**(Working Directory, Staging Area, Repository)를 기준으로 이해하면 명확해진다.
+
+이번 편에서는 다섯 명령의 정확한 동작과, "방금 망쳤을 때" 쓸 수 있는 실전 레시피를 정리한다.
+
+## 1. 세 개의 트리 — 되돌리기의 지도
+
+Git은 세 개의 영역(트리)으로 작동한다.
+
+```
+[Working Directory] ← 실제 파일들 (edit)
+        ↓ (git add)
+[Staging Area] ← 다음 커밋에 들어갈 스냅샷 (index)
+        ↓ (git commit)
+[Repository] ← 커밋 히스토리 (HEAD, branches)
+```
+
+되돌리기 명령은 **어떤 트리를 건드리느냐**로 구분된다:
+- `git reset` → 세 트리 모두 조작 가능 (옵션별)
+- `git revert` → Repository만 (새 커밋 추가)
+- `git restore` → Working Directory 또는 Staging Area
+- `git reflog` → Repository (HEAD 이동 기록 조회)
+- `git stash` → 세 트리 백업 후 초기화
+
+## 2. `git reset` — 브랜치 포인터를 되돌린다
+
+`git reset`은 **HEAD가 가리키는 브랜치를 과거 커밋으로 옮긴다.** 세 가지 모드가 있다.
+
+### `--soft`: Repository만 되돌림 (커밋만 취소)
+
+```bash
+$ git reset --soft HEAD~1
+```
+- HEAD를 한 커밋 뒤로 이동
+- Staging Area / Working Directory는 그대로
+- **효과**: 커밋만 취소, 변경사항은 staged 상태 유지 → 바로 재커밋 가능
+
+**사용 시점**: 커밋 메시지만 수정하고 싶을 때, 여러 커밋을 하나로 합칠 때.
+
+### `--mixed` (기본값): Repository + Staging Area 되돌림
+
+```bash
+$ git reset HEAD~1  # --mixed 생략 가능
+```
+- HEAD 이동 + Staging Area 초기화
+- Working Directory는 그대로
+- **효과**: 커밋 취소 + unstaged 상태로 변경사항 보존
+
+**사용 시점**: 커밋을 취소하고 변경사항을 다시 선택적으로 add 하고 싶을 때.
+
+### `--hard`: 세 트리 모두 되돌림 (완전 초기화)
+
+```bash
+$ git reset --hard HEAD~1
+```
+- HEAD 이동 + Staging Area + Working Directory 모두 해당 커밋 상태로 초기화
+- **효과**: 변경사항 완전 삭제 (위험)
+
+**사용 시점**: 최근 작업을 완전히 버리고 싶을 때. ⚠️ **reflog로 복구 가능하니 너무 겁먹지 말 것**.
+
+### 표로 정리
+
+| 모드 | Repository | Staging Area | Working Directory | 사용 시점 |
+|------|-----------|--------------|-------------------|---------|
+| `--soft` | ✓ 되돌림 | 유지 | 유지 | 커밋만 취소, 재커밋 준비 |
+| `--mixed` | ✓ 되돌림 | ✓ 되돌림 | 유지 | unstage 하고 재작업 |
+| `--hard` | ✓ 되돌림 | ✓ 되돌림 | ✓ 되돌림 | 완전 초기화 (복구: reflog) |
+
+## 3. `git revert` — 반대 작업으로 새 커밋을 만든다
+
+`git revert`는 **기존 커밋을 건드리지 않고**, 그 커밋의 *반대 작업*을 새 커밋으로 추가한다.
+
+```bash
+$ git revert abc123
+```
+- `abc123` 커밋이 한 변경을 *반대로* 적용한 새 커밋 생성
+- 히스토리에 두 커밋 모두 남음
+- **충돌 가능** — `abc123` 이후 파일이 변경됐으면 수동 해결 필요
+
+### `reset` vs `revert` — 언제 뭘 쓸까?
+
+| 상황 | 명령 | 이유 |
+|------|------|------|
+| 로컬에서만 작업 중, push 안 함 | `git reset` | 히스토리 깔끔하게 수정 가능 |
+| 이미 push 한 커밋 | `git revert` | 원격 히스토리 변경 금지 (협업) |
+| 공개 브랜치(`main`, `develop`) | `git revert` | force push 금지 |
+| 개인 feature 브랜치 | `git reset` | 자유롭게 히스토리 정리 |
+
+**황금률**: **push 한 커밋은 `revert`, 안 한 건 `reset`**.
+
+## 4. `git restore` — 파일 상태만 되돌린다
+
+Git 2.23+에서 도입된 명령. 이전엔 `git checkout -- <file>` 과 `git reset HEAD <file>` 로 나뉘었던 기능을 명확히 분리했다.
+
+### Working Directory 복구 (변경 취소)
+
+```bash
+$ git restore <file>
+```
+- 파일을 **Staging Area 상태**로 되돌림 (staged면 staged 버전, 아니면 HEAD 버전)
+- **효과**: 작업 중 변경사항 폐기
+
+```bash
+# 예: src/main.py 편집 중 망침 → 최근 커밋 상태로 복구
+$ git restore src/main.py
+```
+
+### Staging Area 복구 (unstage)
+
+```bash
+$ git restore --staged <file>
+```
+- 파일을 Staging Area에서 제거, Working Directory는 유지
+- **효과**: `git add` 취소
+
+```bash
+# 실수로 add 한 파일 unstage
+$ git restore --staged secret.txt
+```
+
+### 특정 커밋에서 복구
+
+```bash
+$ git restore --source=HEAD~2 <file>
+```
+- 2커밋 전 상태로 파일 복구
+
+## 5. `git reflog` — HEAD 이동 기록을 본다
+
+`reflog`는 **내가 HEAD를 옮긴 모든 기록**(커밋, reset, rebase, checkout 등)을 시간순으로 보여준다. **Git의 블랙박스**.
+
+```bash
+$ git reflog
+abc123 HEAD@{0}: reset: moving to HEAD~1
+def456 HEAD@{1}: commit: Add feature X
+ghi789 HEAD@{2}: checkout: moving from main to feat
+```
+
+### `reset --hard` 후 복구
+
+```bash
+# 실수로 커밋 2개 날림
+$ git reset --hard HEAD~2
+# 후회... reflog로 확인
+$ git reflog
+abc123 HEAD@{0}: reset: moving to HEAD~2  # 지금
+def456 HEAD@{1}: commit: 중요한 작업     # 날아간 커밋!
+# 복구
+$ git reset --hard def456
+```
+
+**핵심**: `reflog`는 *로컬에만* 있고, 기본 90일 보관. **거의 모든 실수는 reflog로 복구 가능**.
+
+## 6. `git stash` — 임시 저장
+
+작업 중에 급하게 다른 브랜치로 이동해야 할 때, **커밋은 안 하고 변경사항만 백업**.
+
+```bash
+# 현재 변경사항 stash에 저장
+$ git stash
+# 또는 메시지 추가
+$ git stash push -m "WIP: refactoring auth"
+
+# stash 목록 확인
+$ git stash list
+stash@{0}: WIP: refactoring auth
+stash@{1}: On main: temp work
+
+# 복구 (stash 유지)
+$ git stash apply
+
+# 복구 + stash 삭제
+$ git stash pop
+
+# 특정 stash 복구
+$ git stash apply stash@{1}
+
+# stash 삭제
+$ git stash drop stash@{0}
+```
+
+### Staged 포함 stash
+
+```bash
+# Staging Area 상태까지 보존
+$ git stash push --keep-index
+# 또는 untracked 파일도 포함
+$ git stash -u
+```
+
+## 실전 레시피 — 상황별 복구법
+
+### 1. 방금 한 커밋 메시지 수정
+
+```bash
+$ git commit --amend
+```
+⚠️ push 했으면 `--amend` 금지 → `git revert` + 새 커밋.
+
+### 2. 커밋 3개를 1개로 합치기
+
+```bash
+$ git reset --soft HEAD~3
+$ git commit -m "Refactor: combined 3 commits"
+```
+
+### 3. 작업 중 파일 하나만 되돌리기
+
+```bash
+$ git restore <file>
+```
+
+### 4. add 한 거 취소 (unstage)
+
+```bash
+$ git restore --staged <file>
+```
+
+### 5. push 한 커밋 취소
+
+```bash
+$ git revert <commit-hash>
+$ git push
+```
+
+### 6. rebase 망침 → 복구
+
+```bash
+$ git reflog
+# rebase 시작 전 HEAD 찾기 (HEAD@{5} 예시)
+$ git reset --hard HEAD@{5}
+```
+
+### 7. 브랜치 잘못 삭제 → 복구
+
+```bash
+$ git reflog
+# 삭제된 브랜치의 마지막 커밋 찾기
+$ git checkout -b recovered-branch <commit-hash>
+```
+
+### 8. 급하게 브랜치 이동해야 할 때
+
+```bash
+$ git stash
+$ git checkout other-branch
+# 작업 후 돌아와서
+$ git stash pop
+```
+
+## 실무에서 — 알아두면 좋은 것들
+
+### `git reset` 대신 `git restore`
+
+Git 2.23+ 에서는 파일 복구에 `git restore`를 쓰는 게 명확하다:
+```bash
+# 옛날 방식 (헷갈림)
+$ git checkout -- <file>       # Working Directory 복구
+$ git reset HEAD <file>        # unstage
+
+# 새 방식 (명확)
+$ git restore <file>           # Working Directory 복구
+$ git restore --staged <file>  # unstage
+```
+
+### `git reflog` 유효기간
+
+기본 90일. 늘리려면:
+```bash
+$ git config gc.reflogExpire 365.days
+```
+
+### `git stash` 브랜치로 변환
+
+stash를 새 브랜چ로 바로 만들기:
+```bash
+$ git stash branch new-feature stash@{0}
+```
+
+### `git reset` 특정 파일만
+
+```bash
+$ git reset HEAD~1 -- <file>
+```
+해당 파일만 HEAD~1 상태로 unstage. (커밋은 안 건드림)
+
+### Interactive Rebase로 커밋 수정
+
+여러 커밋 중 하나만 수정:
+```bash
+$ git rebase -i HEAD~5
+# 에디터에서 수정할 커밋을 `edit`으로 변경 → 저장
+# 수정 후
+$ git commit --amend
+$ git rebase --continue
+```
+
+## 정리 — 다섯 명령 한눈에
+
+| 명령 | 타겟 | 효과 | 사용 시점 | 위험도 |
+|------|------|------|---------|-------|
+| `git reset` | Repository (+ SA/WD) | 브랜치 포인터 이동 | 커밋 취소, 히스토리 수정 | 중 (reflog 복구 가능) |
+| `git revert` | Repository | 반대 작업 커밋 추가 | push 한 커밋 취소 | 낮 |
+| `git restore` | WD / SA | 파일 상태 복구 | 변경 취소, unstage | 중 (WD 변경 복구 불가) |
+| `git reflog` | (조회) | HEAD 이동 기록 확인 | 실수 복구 | 없음 (읽기 전용) |
+| `git stash` | WD + SA | 임시 백업 | 브랜치 이동 전 저장 | 낮 |
+
+**핵심**: `reset`은 히스토리 수정, `revert`는 안전하게 취소, `restore`는 파일 복구, `reflog`는 복구의 시작점, `stash`는 임시 백업.
+
+## 다음 편 예고
+
+다음 편에서는 **GitHub 활용 — fork · PR · issue · Actions 맛보기**를 다룬다. 협업의 기본 워크플로와, 이 블로그의 `deploy.yml`을 예시로 GitHub Actions의 핵심 구조를 파헤친다.
+
+Git 시리즈는 여기서 협업 도구로 넘어간다. 실무에서 쓰는 GitHub의 핵심 기능들을 하나씩 익히자.
+
+## 참고
+
+- [Pro Git Book - Chapter 2.4: Undoing Things](https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things)
+- [Pro Git Book - Chapter 7.3: Git Tools - Stashing and Cleaning](https://git-scm.com/book/en/v2/Git-Tools-Stashing-and-Cleaning)
+- [Pro Git Book - Chapter 7.7: Reset Demystified](https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified)
+- [Git Documentation - git-restore](https://git-scm.com/docs/git-restore)
+- [Git Documentation - git-reflog](https://git-scm.com/docs/git-reflog)
