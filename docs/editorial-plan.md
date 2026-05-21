@@ -44,6 +44,7 @@
 | 아이디어 | 2026-05-28 (목) | Git 내부 — `.git` 디렉토리를 열어보면 | study | Git 시리즈 | 8 | 옵션·마지막 / Pro Git ch.10 / 7편 발행 시 포함 여부 최종 결정 |
 | 아이디어 | 2026-05-29 (금) | Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키 | project | | | `harness/braincrew-wiki` — Karpathy LLM-wiki 패턴 팀 확장. raw → routine → 정제 PR |
 | 아이디어 | 2026-06-05 (금) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
+| 발행완료 | 2026-05-21 (목) | [논문 리뷰] Code as Agent Harness — 에이전트의 계획·실행·검증 루프 설계 | paper-review | 논문 리뷰 | | `2026-05-21-code-as-agent-harness-review.mdx` |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 
@@ -93,7 +94,7 @@
 ### RAG 논문 리뷰 시리즈 — 진행 중 (2편)
 - 발행: Seismic(sparse retrieval), Enterprise RAG Bench.
 - 다음 후보 논문 큐:
-  - 
+  - Code as Agent Harness (Meta·Stanford·UIUC, 2026) — 에이전트 3계층 설계, L2MAC/EvoMAC/MAGE
   - 
 
 ### 프롬프트 최적화 시리즈 — 일단락 (3편: MetaSPO / GEPA / 비교)
