@@ -1,195 +1,137 @@
 ---
-title: "[논문 리뷰] Code-as-Agent Harness — LLM을 실전 엔지니어링 워크플로에 연결하는 법"
+title: "[논문 리뷰] Code as Agent Harness — LLM 에이전트의 계획·실행·검증 루프"
 date: "2026-05-21"
 category: "paper-review"
-tags: ["llm", "agent", "software-engineering", "harness", "workflow"]
-summary: "LLM Agent를 실무 개발 워크플로에 안전하게 통합하려면? 3계층 하네스 아키텍처(L2MAC/EvoMAC/MAGE)와 실제 성과를 정리한다."
----
-
-<Callout type="note">
-**한 줄 요약** — LLM Agent를 실전 엔지니어링에 쓰려면 **계획(L2MAC) → 실행(EvoMAC) → 검증(MAGE)** 3계층 하네스가 필요하다. 각 계층은 LLM의 역할을 제한하고, 결정론적 도구로 보완하며, 사람의 개입 지점을 명시한다.
-</Callout>
-
-## 왜 이 논문인가
-
-GPT-4o, Claude Sonnet 4.5 같은 모델이 코드를 짜고, 테스트하고, 디버깅까지 한다. 하지만 실무 프로젝트에 바로 투입하면:
-
-- 환경 설정 실패
-- 테스트 통과했다고 거짓말
-- 보안 민감 정보 노출
-- 무한 루프 (plan → fail → replan → fail)
-
-**Code-as-Agent Harness**는 이런 문제를 3계층 아키텍처로 해결한다.
-
----
-
-## 3계층 하네스 아키텍처
-
-| 계층 | 역할 | 프레임워크 | LLM 책임 범위 |
-|------|------|-----------|--------------|
-| **L2MAC** | 계획 분해 | Planning | 태스크 → 서브태스크 분해 |
-| **EvoMAC** | 실행 관리 | Execution | 코드 생성 + 도구 호출 |
-| **MAGE** | 검증 게이트 | Verification | 테스트 실행 + 증거 수집 |
-
-### L2MAC (Learn to Plan, Plan to Learn)
-
-**문제**: LLM이 한 번에 모든 걸 하려다 실패한다.
-
-**해법**: 태스크를 서브태스크로 분해하고, 각 서브태스크에 **입출력 인터페이스**를 명시한다.
-
-```python
-# 예시: "유저 인증 API 추가"
-subtasks = [
-    {"id": "auth-1", "desc": "JWT 라이브러리 설치", "inputs": [], "outputs": ["requirements.txt"]},
-    {"id": "auth-2", "desc": "인증 미들웨어 작성", "inputs": ["auth-1"], "outputs": ["middleware/auth.py"]},
-    {"id": "auth-3", "desc": "엔드포인트에 적용", "inputs": ["auth-2"], "outputs": ["api/routes.py"]}
-]
-```
-
-**핵심**:
-- 서브태스크 간 의존성 명시
-- 각 태스크의 **완료 조건** 명확화
-- 실패 시 재계획 대신 **특정 서브태스크만 재실행**
-
-### EvoMAC (Evolutionary Multi-Agent Collaboration)
-
-**문제**: 코드 생성 → 테스트 → 수정이 무한 루프에 빠진다.
-
-**해법**: **Generator**와 **Evaluator**를 분리하고, Evaluator는 결정론적 도구(pytest, linter)만 쓴다.
-
-```
-Generator (LLM)  →  코드 생성
-       ↓
-Evaluator (도구) →  pytest 실행 + coverage 체크
-       ↓
-       [통과] → 다음 태스크
-       [실패] → Reflexion 주입 후 Generator 재시도 (최대 3회)
-```
-
-**핵심**:
-- Evaluator는 **LLM 판단 금지** (주관 배제)
-- 실패 원인을 **구조화된 피드백**으로 Generator에 전달
-- 3회 실패 시 사람 개입
-
-### MAGE (Multi-Agent Verification Engine)
-
-**문제**: "테스트 통과했어요" 라고 주장만 하고 증거가 없다.
-
-**해법**: 모든 검증 단계를 **artifact**로 남긴다.
-
-```bash
-artifacts/
-├── test_output.txt       # pytest 전체 출력
-├── coverage.xml          # Coverage 80% 이상 강제
-├── lint_report.json      # ruff/mypy 결과
-└── security_scan.json    # Bandit 보안 스캔
-```
-
-**핵심**:
-- LLM이 "완료"를 주장하려면 artifact 경로를 제시해야 함
-- 사람이 나중에 artifact를 검토 가능
-- CI/CD와 통합 가능 (artifact를 CD 트리거 조건으로)
-
----
-
-## 실제 성과
-
-| 메트릭 | 기존 Agent | 3계층 Harness |
-|--------|-----------|--------------|
-| 태스크 완료율 | 42% | 87% |
-| 평균 재시도 횟수 | 5.2회 | 1.8회 |
-| 보안 이슈 | 23% | 3% |
-| 사람 개입 시점 | 불명확 | 명확 (3회 실패 후) |
-
-**케이스 스터디**:
-- 200 LOC Python 프로젝트에 새 기능 추가 → 3회 시도 내 완료 (기존: 7회)
-- TypeScript 리팩토링 → 보안 스캔 통과 + 100% 타입 커버리지
-- Django API → JWT 인증 추가 → 테스트 포함 자동 커밋
-
----
-
-## 핵심 인사이트
-
-### LLM 역할의 명확한 경계
-
-| 계층 | LLM 쓰는 곳 | LLM 안 쓰는 곳 |
-|------|-----------|--------------| 
-| L2MAC | 태스크 분해 | 의존성 검증 (static analysis) |
-| EvoMAC | 코드 생성 | 테스트 실행 (pytest) |
-| MAGE | — | 모든 검증 (결정론적 도구만) |
-
-### 사람 개입 지점을 설계의 일부로
-
-```
-[자동] 1회 실패 → Reflexion 피드백
-[자동] 2회 실패 → 컨텍스트 확장 재시도
-[수동] 3회 실패 → Slack 알림 + 사람 개입
-```
-
-### 증거 기반 완료 주장 (Iron Law)
-
-> "I finished the task" (X)  
-> "Tests passed. See `artifacts/test_output.txt`" (O)
-
----
-
-## 실전 적용 — 내 블로그에 도입한다면?
-
-```
-태스크: "블로그 포스트 작성 자동화"
-
-L2MAC:
-1. editorial-plan.md 읽어서 다음 발행 글 선정
-2. 아웃라인 생성 (제목 · 섹션 · 키워드)
-3. MDX 본문 작성
-4. frontmatter 검증
-
-EvoMAC (Generator):
-- GPT-4o가 MDX 생성
-- 코드블록 언어 명시 / 이미지 경로 체크
-
-EvoMAC (Evaluator):
-- `npm run build` 실패 시 에러 메시지 피드백
-- 링크 깨짐 체크 (`markdown-link-check`)
-
-MAGE:
-- artifacts/build_log.txt
-- artifacts/lint_report.json
-- 3회 실패 시 Slack DM 알림
-```
-
----
-
-## 한계와 개선 방향
-
-### 논문의 한계
-- 소규모 프로젝트 (&lt;1000 LOC) 중심 평가
-- 멀티 에이전트 간 충돌 해결 메커니즘 부족
-- 계획 변경 시 전체 재실행 (점진적 업데이트 없음)
-
-### 내가 추가하고 싶은 것
-- **메모리 계층**: 세션 간 지식 축적 (DIKW)
-- **동적 에이전트**: 태스크에 따라 전문가 에이전트 런타임 생성
-- **비용 모니터링**: 토큰 사용량 실시간 추적 + 예산 초과 시 중단
-
----
-
-## 결론
-
-**Code-as-Agent Harness**는 LLM Agent를 실전에 쓰기 위한 **최소한의 안전장치**다:
-
-1. **L2MAC** = 계획 분해로 복잡도 관리
-2. **EvoMAC** = Generator ≠ Evaluator 분리
-3. **MAGE** = 결정론적 검증 + 증거 기반 완료
-
-다음 프로젝트에 Agent를 붙인다면, 이 3계층부터 시작하자.
-
+tags: ["agent", "harness", "llm", "code-execution", "reliability"]
+summary: "Meta·Stanford·UIUC 40명 연구진이 제안한 에이전트 하네스 아키텍처. LLM을 '천재적 이야기꾼이지만 끔찍한 몽상가'로 보고, 3계층 구조로 계획-실행-검증 루프를 강제해 신뢰성을 확보한다."
+math: true
 ---
 
 <Paper
-  title="Code-as-Agent Harness: Bridging LLMs and Software Engineering Workflows"
-  authors="Anonymous et al."
-  venue="arXiv:2026.xxxxx"
-  year="2026"
-  url="https://arxiv.org/"
+  title="Code as Agent Harness: A Framework for Executing Agentic Tasks with LLM-Generated Code"
+  authors="Meta Fundamental AI Research, Stanford University, University of Illinois Urbana-Champaign"
+  year={2026}
+  venue="arXiv preprint"
+  arxiv="2602.xxxxx"
 />
+
+## 문제: LLM의 환각과 신뢰성
+
+LLM은 언어 생성에는 탁월하지만, 복잡한 작업 실행에는 문제가 있습니다. 연구진은 이를 다음과 같이 표현합니다:
+
+> **"천재적인 이야기꾼이지만 끔찍한 몽상가(brilliant storyteller but terrible hallucinator)"**
+
+LLM이 생성한 코드나 계획을 그대로 신뢰할 수 없다는 뜻입니다. 소프트웨어 에이전트의 신뢰성을 높이려면, LLM의 강점(계획·추론)과 한계(신뢰성)를 명확히 구분하고, 실행·검증 단계를 강제해야 합니다.
+
+## 솔루션: 3계층 에이전트 하네스
+
+논문이 제시하는 **에이전트 하네스**는 3계층으로 구성됩니다:
+
+### 1. 인터페이스 계층 (Interface Layer)
+
+에이전트가 상호작용하는 외부 환경을 정의합니다. 이 계층이 없으면 LLM은 무한정 환상적인 반응을 생성할 수 있습니다.
+
+**예시:**
+- 코드 실행 샌드박스 (격리된 환경에서만 코드 실행)
+- 도구 API (Bash, Python, SQL 등 제한된 도구만 노출)
+- 파일시스템 접근 제한 (읽기/쓰기 권한 제어)
+
+### 2. 메커니즘 계층 (Mechanism Layer)
+
+에이전트의 실행 순환(루프)을 정의합니다.
+
+**구조:**
+```
+[계획] → [샌드박스 실행] → [검증 및 피드백] → [반복]
+```
+
+각 단계:
+- **계획**: LLM이 다음 액션을 결정 (코드 생성, 도구 선택)
+- **샌드박스 실행**: 계획을 격리된 환경에서 실행
+- **검증**: 실행 결과가 의도한 대로 작동하는지 확인
+- **피드백**: 검증 결과를 LLM에 전달하여 다음 계획에 반영
+
+이 루프를 강제함으로써, LLM이 "생각만 하고 끝내는" 문제를 해결합니다.
+
+### 3. 확장성 계층 (Extensibility Layer)
+
+미래 기술(메모리, 협업 등)을 플러그인 방식으로 추가할 수 있도록 설계합니다.
+
+**지원 기술들:**
+- **L2MAC**: 장기 메모리를 통해 복잡한 작업 상태 유지
+- **EvoMAC**: 런타임에 에이전트 구조 자동 개선
+- **MAGE**: 초정밀 디버깅 피드백으로 신뢰성 강화
+
+## 실제 성과
+
+논문은 이 하네스를 실제 애플리케이션에 적용한 결과를 보고합니다:
+
+### 1. 알리바바 소프트웨어 에이전트
+- **작업**: 프로덕션 이슈 자동 해결
+- **결과**: **16.9%의 이슈를 완전 자동으로 해결** (사람 개입 없음)
+- 의미: 전체 이슈 대응의 1/6을 에이전트가 처리
+
+### 2. 버클리 자율 실험실
+- **작업**: 신규 화합물 합성 실험
+- **성과**: **17일간 41개의 신규 화합물 합성**
+- 의미: 실험실 자동화의 가능성 입증
+
+## 미래 기술: L2MAC, EvoMAC, MAGE
+
+<Callout type="note">
+**한 줄 요약** — 에이전트 하네스는 LLM의 강점(계획·창의성)과 약점(신뢰성)을 분리하는 구조를 통해, 신뢰할 수 있는 소프트웨어 에이전트를 만든다.
+</Callout>
+
+### L2MAC: 공유 메모리를 통한 장기 상태 유지
+
+복잡한 작업은 여러 단계를 거칩니다. LLM의 컨텍스트 윈도우는 한정되어 있으므로, 이전 단계의 정보를 잊기 쉽습니다.
+
+**L2MAC의 해결책:**
+- 공유 메모리 공간에 작업 상태(progress, decisions, discoveries) 저장
+- 각 에이전트 단계에서 필요한 정보만 컨텍스트에 로드
+- 매우 복잡한 작업도 단계적으로 완수 가능
+
+### EvoMAC: 런타임 협업 구조 자동 개선
+
+단일 에이전트로는 처리 불가능한 복잡한 작업도 있습니다. EvoMAC는 에이전트들 간의 협업 구조를 동적으로 최적화합니다:
+
+- 작업 복잡도에 따라 에이전트 수 조정
+- 에이전트 간 정보 흐름 자동 최적화
+- 실행 중 병목 지점 자동 감지 및 개선
+
+### MAGE: 초정밀 디버깅 피드백
+
+에이전트가 실패했을 때, 단순히 "실패"라고 알려주면 충분하지 않습니다. MAGE는 실패 원인을 정밀하게 분석하여 피드백합니다:
+
+- 에러의 정확한 원인 (문법 오류? 로직 오류? 외부 API 실패?)
+- 실패 지점의 맥락 정보
+- 다음 시도를 위한 구체적 개선 방향
+
+## 핵심 인사이트: 데이터와 설계의 중요성
+
+논문의 결론은 흥미롭습니다:
+
+> **"모델이 할 수 있는 것과 에이전트가 할 수 있는 것을 구분하라"**
+
+더 구체적으로:
+- **고품질 데이터: 90%**
+- **하네스 설계: 9%**
+- **모델 자체: 1%**
+
+즉, 더 큰 모델을 만드는 것보다 **더 나은 하네스와 데이터**가 중요합니다. 이는 현재의 "모델 스케일링 경쟁"과 다른 방향을 제시합니다.
+
+## 개인 관점: Harness 설계의 가치
+
+성연이 `harness` 프로젝트를 진행 중인 것과 매우 관련이 깊습니다. 본 논문이 강조하는 몇 가지 핵심은:
+
+1. **강제된 루프의 중요성**: 계획→실행→검증을 강제하는 구조 자체가 신뢰성을 만든다
+2. **인터페이스의 명확성**: 에이전트가 접근할 수 있는 도구·리소스를 명확히 제한하는 것
+3. **피드백 루프**: 단순한 에러 메시지가 아닌, 맥락 있는 상세한 피드백
+
+이는 Claude Code의 skills, agents, hooks 아키텍처와도 일맥상통합니다.
+
+## 결론
+
+"Code as Agent Harness"는 단순한 기술 논문이 아닙니다. LLM 기반 에이전트를 **신뢰할 수 있게** 만들기 위한 근본적인 설계 철학을 제시합니다.
+
+향후 AI 에이전트의 성공 여부는 더 큰 모델이 아니라, **더 나은 하네스**를 만드는 능력에 달려 있을 것입니다.
