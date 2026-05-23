@@ -94,15 +94,21 @@
 - ✅ Q·K·V → 3 attentions → positional encoding → layernorm/residual → FFN 까지 옴.
 - ✅ [논문 리뷰] DeepSeek-V4로 마무리 — Hybrid Attention · KV Cache 최적화
 
-### AI 엔지니어 필독 10개 논문 시리즈 — 예약 (3편)
+### 논문 리뷰 시리즈 — 진행/예약 중
+**Part 1: AI 엔지니어 필독 10개 논문** (3편 예약)
 1. ⬜ 기초 아키텍처: Attention, VAE, GANs — `2026-06-05-ai-essential-papers-1-foundations`
 2. ⬜ NLP 혁명과 멀티모달: BERT, GPT, ViT, DDPM — `2026-06-06-ai-essential-papers-2-nlp-multimodal`
 3. ⬜ 실무 적용과 학술 생태계: RAG, LoRA, PEFT — `2026-06-07-ai-essential-papers-3-practical-applications`
-- 핵심 인사이트: Nature/Science 아닌 **arXiv → 산업 적용** 생태계
+- 핵심: Nature/Science 아닌 **arXiv → 산업 적용** 생태계
 
-### RAG 논문 리뷰 시리즈 — 진행 중 (2편)
-- 발행: Seismic(sparse retrieval), Enterprise RAG Bench, Code as Agent Harness.
-- 다음 후보 논문 큐:
+**Part 2: RAG 깊이 있게** (3편 진행)
+- ✅ Seismic (sparse retrieval)
+- ✅ Enterprise RAG Benchmark
+- ⬜ Code as Agent Harness (에이전트 설계) — `2026-05-21-code-as-agent-harness-review`
+
+**Part 3: 기타 최신 논문**
+- ✅ DeepSeek-V4 (Hybrid Attention·KV Cache 최적화)
+- 다음 후보:
   - 
 
 ### 프롬프트 최적화 시리즈 — 일단락 (3편: MetaSPO / GEPA / 비교)
