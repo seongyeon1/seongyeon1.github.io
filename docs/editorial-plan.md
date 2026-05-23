@@ -43,7 +43,10 @@
 | 아이디어 | 2026-05-27 (수) | Harness 만들기 2편 — 듀얼 메모리 + `sy` 글로벌 CLI 워크플로 | project | Harness 만들기 | 2 | global `~/.sy/memory/` ↔ project `.sy-memory/`, `sy` 가 `claude --plugin-dir` 로 부팅 |
 | 아이디어 | 2026-05-28 (목) | Git 내부 — `.git` 디렉토리를 열어보면 | study | Git 시리즈 | 8 | 옵션·마지막 / Pro Git ch.10 / 7편 발행 시 포함 여부 최종 결정 |
 | 아이디어 | 2026-05-29 (금) | Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키 | project | | | `harness/braincrew-wiki` — Karpathy LLM-wiki 패턴 팀 확장. raw → routine → 정제 PR |
-| 아이디어 | 2026-06-05 (금) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
+| 예약 | 2026-06-05 (목) | AI 엔지니어 필독 논문 10개 — ① 기초 아키텍처 (Attention, VAE, GANs) | paper-review | AI 필독 10개 논문 | 1 | `2026-06-05-ai-essential-papers-1-foundations.mdx` — LinkedIn 글 정리 (이시용 정리) |
+| 예약 | 2026-06-06 (금) | AI 엔지니어 필독 논문 10개 — ② NLP 혁명과 멀티모달 (BERT, GPT, ViT, DDPM) | paper-review | AI 필독 10개 논문 | 2 | `2026-06-06-ai-essential-papers-2-nlp-multimodal.mdx` |
+| 예약 | 2026-06-07 (토) | AI 엔지니어 필독 논문 10개 — ③ 실무 적용과 학술의 속도 (RAG, LoRA, PEFT) | paper-review | AI 필독 10개 논문 | 3 | `2026-06-07-ai-essential-papers-3-practical-applications.mdx` — arXiv vs Nature 생태계 변화 |
+| 아이디어 | 2026-06-10 (화) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
 | 발행완료 | 2026-05-21 (목) | [논문 리뷰] Code as Agent Harness — 에이전트의 계획·실행·검증 루프 설계 | paper-review | 논문 리뷰 | | `2026-05-21-code-as-agent-harness-review.mdx` |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
@@ -91,10 +94,15 @@
 - ✅ Q·K·V → 3 attentions → positional encoding → layernorm/residual → FFN 까지 옴.
 - ✅ [논문 리뷰] DeepSeek-V4로 마무리 — Hybrid Attention · KV Cache 최적화
 
+### AI 엔지니어 필독 10개 논문 시리즈 — 예약 (3편)
+1. ⬜ 기초 아키텍처: Attention, VAE, GANs — `2026-06-05-ai-essential-papers-1-foundations`
+2. ⬜ NLP 혁명과 멀티모달: BERT, GPT, ViT, DDPM — `2026-06-06-ai-essential-papers-2-nlp-multimodal`
+3. ⬜ 실무 적용과 학술 생태계: RAG, LoRA, PEFT — `2026-06-07-ai-essential-papers-3-practical-applications`
+- 핵심 인사이트: Nature/Science 아닌 **arXiv → 산업 적용** 생태계
+
 ### RAG 논문 리뷰 시리즈 — 진행 중 (2편)
-- 발행: Seismic(sparse retrieval), Enterprise RAG Bench.
+- 발행: Seismic(sparse retrieval), Enterprise RAG Bench, Code as Agent Harness.
 - 다음 후보 논문 큐:
-  - Code as Agent Harness (Meta·Stanford·UIUC, 2026) — 에이전트 3계층 설계, L2MAC/EvoMAC/MAGE
   - 
 
 ### 프롬프트 최적화 시리즈 — 일단락 (3편: MetaSPO / GEPA / 비교)
