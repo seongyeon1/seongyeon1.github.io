@@ -1,0 +1,315 @@
+---
+title: "AI 엔지니어 필독 논문 10개 — ① 기초 아키텍처 (Attention, VAE, GANs)"
+date: "2026-06-05"
+category: "paper-review"
+tags: ["ai", "transformer", "generative-model", "attention", "vae", "gan", "interview"]
+summary: "AI 면접 단골 논문 10개를 정리한 시리즈 첫 편. Attention Is All You Need, VAE, GANs가 어떻게 현대 AI의 기초를 다졌는지 이해한다."
+series: "AI 엔지니어 필독 10개 논문"
+seriesOrder: 1
+---
+
+<Callout type="note">
+**한 줄 요약** — 요즘 AI 대기업 면접에 자주 나오는 논문들을 찾아보니, Nature나 Science 저널 논문은 단 한 편도 없었다. 대신 arXiv에 먼저 공개되어 산업에 빠르게 적용된 논문들이었다.
+</Callout>
+
+## 배경: AI 필독 논문 10개 리스트
+
+이시용 CFA가 정리한 "AI 엔지니어 면접에 단골로 등장하는 논문 10개"가 화제다. 흥미로운 발견은 이것들이 **Nature나 Science 같은 권위 있는 학술지에 게재된 논문이 아니**라는 것. 대신:
+
+- 거의 모두 **arXiv에 먼저 공개**
+- **컨퍼런스(NeurIPS, ICCV, ACL)에서 발표**
+- **2~3년 내 실제 제품으로 변환**
+
+이는 전통 학술 체계와 **완전히 다른 생태계**를 보여준다.
+
+## 논문 분류
+
+```
+기초 아키텍처 (Foundations)
+├─ Attention Is All You Need (2017)
+├─ VAE: Auto-Encoding Variational Bayes (2013)
+└─ GANs: Generative Adversarial Networks (2014)
+
+자연어 처리 (NLP)
+├─ BERT: Pre-training of Deep Bidirectional Transformers (2018)
+└─ GPT: Improving Language Understanding by Generative Pre-Training (2018)
+
+멀티모달과 생성 (Multimodal & Generation)
+├─ ViT: An Image is Worth 16x16 Words (2020)
+└─ DDPM: Denoising Diffusion Probabilistic Models (2020)
+
+실무 적용 (Practical Applications)
+├─ RAG: Retrieval-Augmented Generation (2020)
+├─ LoRA: Low-Rank Adaptation of Large Language Models (2021)
+└─ PEFT: Parameter-Efficient Fine-Tuning (2023)
+```
+
+오늘은 **기초 아키텍처** 세 편을 깊이 있게 살펴본다.
+
+---
+
+## 1. Attention Is All You Need (2017)
+
+<Paper
+  title="Attention is All You Need"
+  authors="Vaswani et al., Google Brain, University of Toronto"
+  year="2017"
+  venue="NeurIPS"
+  arxiv="1706.03762"
+/>
+
+### 문제: RNN의 한계
+
+2017년까지 자연어처리는 **RNN(Recurrent Neural Network)**과 **LSTM**의 세상이었다. 하지만 RNN에는 근본적인 문제가 있었다:
+
+**순차 처리의 비효율성**
+```
+입력: [토큰1, 토큰2, 토큰3, 토큰4, 토큰5]
+
+RNN 처리 (순차적):
+Step 1: 토큰1 입력 → 상태1 생성
+Step 2: 토큰2 + 상태1 입력 → 상태2 생성
+Step 3: 토큰3 + 상태2 입력 → 상태3 생성
+...
+(5개 토큰 처리하려면 5 스텝 필요)
+
+GPU 병렬화 불가능 ❌
+```
+
+**장거리 의존성 문제**
+- 문장의 끝에 있는 단어가 처음의 문맥을 '기억'해야 하는데, 정보가 점진적으로 손실된다.
+- 예: "The bank executive who had a long history of..." — "bank"가 금융기관인지 강둑인지는 훨씬 뒤에서 결정되지만, RNN은 이를 놓친다.
+
+### 혁신: Attention 메커니즘
+
+논문의 핵심 아이디어는 간단하지만 강력하다:
+
+> **"모든 토큰이 동시에 다른 모든 토큰과 '관계'를 계산할 수 있다면?"**
+
+**Attention의 구조:**
+```
+Query (Q): "내가 지금 주목하는 것"
+Key (K):   "다른 것들의 특성"
+Value (V): "다른 것들의 정보"
+
+Attention(Q, K, V) = softmax(Q·K^T / √d_k) · V
+```
+
+**직관적 예시:**
+
+문장: "은행 임원이 협상을 주도했다"
+
+각 단어의 Query가 문장 전체를 동시에 스캔:
+```
+은행   → [은행, 임원, 협상, 주도] 중 어디에 주목할까? 
+        → "임원" 50%, "협상" 30%, "주도" 20%
+
+임원   → [은행, 임원, 협상, 주도] 중 어디에 주목할까?
+        → "협상" 60%, "주도" 30%, "은행" 10%
+```
+
+이를 **Multi-Head Attention**으로 확장 (8개 이상의 "관점" 동시 계산):
+```
+Head 1: 문법 관계 학습
+Head 2: 의미 관계 학습
+Head 3: 지시대명사 추적
+...
+Head 8: 맥락 추적
+```
+
+### Transformer 아키텍처
+
+Attention만으로는 부족. 논문은 **Transformer** 전체 구조를 제시:
+
+```
+Encoder (이해)
+├─ Self-Attention (각 단어가 다른 단어들과의 관계 학습)
+├─ Feed-Forward (개별 특징 강화)
+└─ Layer Norm + Residual (안정성)
+
+     ↓ (Context Vector)
+
+Decoder (생성)
+├─ Masked Self-Attention (미래 단어 보지 않기)
+├─ Cross-Attention (Encoder 결과 활용)
+├─ Feed-Forward
+└─ Layer Norm + Residual
+```
+
+### 임팩트
+
+- **병렬화 가능**: 모든 토큰을 동시에 처리 → 훨씬 빠른 학습
+- **장거리 의존성**: 직접 연결로 "거리"의 개념이 없음
+- **확장성**: 토큰 수를 늘려도 구조는 동일
+
+결과: 이 논문 이후 **RNN은 죽고 Transformer가 표준**이 됨.
+
+---
+
+## 2. VAE: Auto-Encoding Variational Bayes (2013)
+
+<Paper
+  title="Auto-Encoding Variational Bayes"
+  authors="Kingma & Welling, University of Amsterdam"
+  year="2013"
+  venue="ICLR"
+  arxiv="1312.6114"
+/>
+
+### 문제: 생성 모델의 어려움
+
+"사람 얼굴을 생성하는 AI"를 만들려면?
+
+**전통 접근법의 한계:**
+```
+Encoder (압축):
+고해상도 얼굴 이미지 → [128 특성] → 압축된 표현
+
+Decoder (복원):
+[128 특성] → 원래 얼굴 복원
+
+문제: 
+- 중간 벡터가 뭔지 알 수 없음
+- "새로운" 얼굴을 만들 수 없음 (학습한 얼굴만 복원)
+```
+
+### 아이디어: Variational (변분)
+
+VAE의 혁신은 **중간 벡터를 "분포"로 본다**는 것:
+
+```
+기존 Autoencoder:
+얼굴 → 확정적 벡터 [0.5, 0.2, 1.3, ...] → 같은 얼굴
+
+VAE:
+얼굴 → 분포 (평균, 표준편차) → 같은 분포에서 샘플링
+      → 다양한 얼굴 생성 가능 ✓
+```
+
+**수학적으로:**
+
+```
+1. Encoder: 얼굴 → μ(평균), σ(표준편차) 학습
+2. Sampling: z ~ N(μ, σ) 에서 샘플
+3. Decoder: z → 새로운 얼굴 생성
+```
+
+**핵심은 두 가지 손실:**
+```
+Loss = Reconstruction Loss + KL Divergence
+
+- Reconstruction Loss: 원본과 복원본이 비슷한가?
+- KL Divergence: 분포가 표준 정규분포 N(0,1)에 가까운가?
+                 (너무 멋대로 학습되지 않도록 제약)
+```
+
+### 임팩트
+
+- **생성 모델의 이론적 기초** — 확률적 접근
+- **잠재 공간(Latent Space)의 발견** — 중간 벡터가 의미 있는 구조를 가짐
+- **모든 생성 모델의 시조** — VAE는 DDPM, Diffusion의 아버지
+
+예: 잠재 공간에서 "웃는 얼굴" 벡터를 찾으면, 어떤 얼굴에 더하면 그 얼굴이 웃는 표정으로 변한다.
+
+---
+
+## 3. GANs: Generative Adversarial Networks (2014)
+
+<Paper
+  title="Generative Adversarial Networks"
+  authors="Goodfellow et al., University of Montreal, Google"
+  year="2014"
+  venue="NeurIPS"
+  arxiv="1406.2661"
+/>
+
+### 문제: VAE는 흐릿하다
+
+VAE로 생성한 이미지를 보면:
+
+```
+VAE 생성 이미지: 부드럽고 흐릿함 (여러 가능성의 평균)
+실제 사람 얼굴: 선명하고 디테일함
+```
+
+왜? VAE는 모든 가능성을 평균내기 때문. "웃는 얼굴" 500개를 평균내면 애매한 표정이 된다.
+
+### 혁신: 경쟁 (Adversarial)
+
+Goodfellow의 아이디어는 **경찰과 위조범**:
+
+```
+Generator (위조범):
+노이즈 z → 가짜 이미지 생성
+목표: Discriminator를 속이기
+
+     ↓ ↑
+
+Discriminator (경찰):
+이미지 → "진짜?" 또는 "가짜?" 판별
+목표: 진짜와 가짜 구분
+
+결과: 양쪽이 계속 진화 → 결국 가짜도 진짜처럼!
+```
+
+**게임 이론적으로:**
+```
+Generator 입장: "Discriminator를 속이려면?"
+Discriminator 입장: "Generator의 가짜를 더 잘 감지하려면?"
+
+무한 경쟁 → 동형(Nash Equilibrium)에 도달
+→ Generator가 매우 사실적인 이미지 생성
+```
+
+### 수식:
+
+```
+min_G max_D [ log D(x) + log(1 - D(G(z))) ]
+          (실제를 '진짜'로)  (가짜를 '가짜'로)
+
+Generator가 손실을 최소화
+Discriminator가 손실을 최대화
+```
+
+### 임팩트
+
+- **선명한 이미지 생성** — VAE보다 훨씬 더 사실적
+- **StyleGAN, BigGAN 등의 발전** — 현재 AI 이미지 생성의 기초
+- **경쟁 학습의 새로운 패러다임** — 협력이 아닌 경쟁으로 학습
+
+**단점:** 학습이 불안정하고, 모드 붕괴(Mode Collapse) 문제 — 다양한 이미지를 못 생성.
+(이후 Wasserstein GAN 등으로 개선)
+
+---
+
+## 세 논문의 관계도
+
+```
+2013: VAE
+      └─ "생성 모델 = 확률 분포"의 개념 제시
+
+2014: GANs
+      └─ "경쟁을 통한 생성"의 개념 제시
+
+2017: Transformer (Attention)
+      └─ "효율적 처리 + 장거리 의존성"의 해결
+
+이 세 기초 위에서:
+├─ BERT, GPT (NLP 혁명)
+├─ ViT, DDPM (멀티모달 확장)
+└─ RAG, LoRA (실무 적용)
+```
+
+---
+
+## 정리
+
+기초 아키텍처 3편의 핵심:
+
+| 논문 | 핵심 아이디어 | 해결한 문제 | 영향 |
+|------|-------------|----------|-----|
+| **Attention** | 병렬화 가능한 관계 학습 | RNN의 순차처리 비효율 | Transformer 탄생 → 모든 LLM |
+| **VAE** | 확률 분포로의 생성 | 확정적 압축의 한계 | 생성 모델의 이론적 기초 |
+| **GANs** | 경쟁을 통한 개선 | VAE의 흐릿한 결과 | 선명한 이미지 생성 |
+
+다음 편에서는 이들을 바탕으로 **자연어 처리 혁명(BERT, GPT)**을 깊이 있게 다룬다.
