@@ -1,0 +1,170 @@
+---
+title: GitHub 활용 — fork · PR · issue · Actions 맛보기
+date: 2026-05-26T09:00:00+09:00
+category: study
+tags: ["GitHub", "협업", "오픈소스", "CI/CD"]
+summary: Git 커맨드는 익혔지만 GitHub의 협업 기능이 낯선 개발자를 위한 가이드. fork, PR, issue, Actions를 실전 워크플로와 함께 배운다.
+series: Git 시리즈
+seriesOrder: 7
+---
+
+## 들어가며
+
+Git을 혼자 쓸 때는 커맨드 몇 개만으로 충분하다. 하지만 GitHub를 통해 팀과 협업하거나 오픈소스에 기여하는 순간, **fork, Pull Request, Issue, Actions** 같은 개념들이 눈앞에 나타난다.
+
+"그냥 `git push` 하면 되지 않나?"라고 물을 수도 있지만, GitHub의 협업 기능은 단순한 저장소 호스팅을 넘어 **리뷰, 토론, 자동화, 권한 관리**를 포함하는 에코시스템이다. 이번 편에서는 이들 기능을 Pro Git ch.6 기반으로, 이 블로그의 `deploy.yml`을 실제 예시로 삼아 알아본다.
+
+## 1. Fork: 남의 프로젝트를 나의 저장소로
+
+오픈소스에 기여하려면 먼저 프로젝트를 **fork**해야 한다. GitHub의 "Fork" 버튼을 누르면 원본 저장소가 내 계정 아래에 복사된다.
+
+```
+원본 저장소 (anthropics/claude-code)
+    ↓ Fork
+내 저장소 (seongyeon1/claude-code)
+```
+
+이제 내 저장소를 로컬로 clone하고 자유롭게 수정할 수 있다:
+
+```bash
+git clone https://github.com/seongyeon1/claude-code
+git checkout -b fix/my-feature
+# ... 수정 ...
+git push origin fix/my-feature
+```
+
+원본 저장소는 건드리지 않고, 내 fork에서 독립적으로 작업한다.
+
+## 2. Pull Request: 코드 리뷰를 거친 병합
+
+로컬에서 작업을 마치고 `git push`로 내 fork에 올리면, GitHub이 "원본에 병합하시겠습니까?"라고 묻는 버튼을 띄운다. 이것이 **Pull Request**(PR)다.
+
+PR의 목적:
+- **코드 리뷰**: 팀이 변경 사항을 검토
+- **토론**: 왜 이렇게 했는지, 더 나은 방법이 있는지 댓글로 논의
+- **자동화**: CI(테스트, 린트)를 통과해야만 merge 가능
+
+이 블로그도 PR이 필수다. 글을 작성하면 먼저 PR을 열어 검토를 받은 후, 승인되면 main 브랜치에 merge된다.
+
+```bash
+# 로컬에서 PR을 만드는 gh CLI 방법
+gh pr create --title "Add git article #7" --body "GitHub essentials"
+```
+
+## 3. Issue: 버그 추적과 기능 요청
+
+**Issue**는 단순 댓글이 아니라, 프로젝트 관리 도구다.
+
+- **버그 보고**: "이 부분에서 에러 나요" + 재현 단계 + 스크린샷
+- **기능 요청**: "이런 기능 있으면 좋을 것 같은데"
+- **토론**: "이거 어떻게 생각해?" 형태의 논의
+
+Issue에는:
+- 라벨 (`bug`, `feature`, `documentation`)
+- 담당자 할당
+- Milestone (릴리스 계획과 연동)
+- PR 자동 연결 (`Fix #123` 형태로 PR 설명에 쓰면, merge 시 issue 자동 종료)
+
+```markdown
+PR 설명에:
+Fixes #123
+```
+그러면 이 PR이 merge될 때 issue #123이 자동으로 closed가 된다.
+
+## 4. GitHub Actions: CI/CD 자동화
+
+이 블로그의 `.github/workflows/deploy.yml`을 예로 들면:
+
+```yaml
+name: Deploy to Vercel
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci && npm run build
+      - run: npx vercel --prod
+```
+
+**어떤 일을 하나:**
+1. main 브랜치에 push될 때마다 자동으로 실행
+2. Node.js 환경에서 `npm run build` 실행 (테스트, 린트 포함)
+3. 빌드 성공 시 Vercel에 배포
+
+이제 커밋을 push하면:
+- 테스트 자동 실행
+- 빌드 실패하면 PR에 빨간 X 표시 (merge 불가)
+- 빌드 성공하면 초록색 체크 (merge 가능)
+- 최종 merge 시 자동으로 배포
+
+## 5. 전형적인 협업 워크플로
+
+```
+1. Issue 생성 / Issue에서 PR 시작
+   $ gh issue view 123 → PR 열기
+   
+2. Fork & Clone (오픈소스인 경우)
+   $ git clone <내fork>
+   $ git remote add upstream <원본>
+   
+3. 브랜치 생성 & 작업
+   $ git checkout -b fix/issue-123
+   
+4. Commit & Push
+   $ git add . && git commit -m "Fix #123: ..."
+   $ git push origin fix/issue-123
+   
+5. PR 생성 & Review 요청
+   $ gh pr create
+   
+6. Review 반영 & 재commit
+   
+7. Approve 후 Merge
+   $ gh pr merge --squash (또는 rebase)
+   
+8. 로컬 정리
+   $ git checkout main
+   $ git fetch upstream  (원본에서 최신 받기)
+   $ git merge upstream/main
+```
+
+## 6. 실무에서 알아두면 좋은 것들
+
+**gh CLI 활용:**
+```bash
+gh issue list --label bug
+gh pr view 123
+gh pr merge 123 --squash
+```
+
+**Conventional Commits + PR 제목 규칙:**
+```
+[feat] 새 기능
+[fix] 버그 수정
+[docs] 문서
+[style] 포맷 (기능 변경 없음)
+[refactor] 코드 정리
+```
+
+**Protected Branch:**
+원본 저장소는 보통 main 브랜치를 보호한다:
+- 리뷰 없이 직접 push 불가
+- PR 승인 필수
+- CI 통과 필수
+
+이렇게 설정하면 버그가 production에 들어가는 걸 미리 막을 수 있다.
+
+## 7. 다음 편 예고
+
+Git 시리즈의 마지막 편(옵션)에서는 `.git` 디렉토리를 뜯어본다. 객체 저장소, ref, index 파일의 구조를 이해하면, 위에서 배운 모든 Git 명령어가 왜 그렇게 작동하는지 깨닫게 될 것이다.
+
+## 참고
+
+- [Pro Git - GitHub](https://git-scm.com/book/ko/v2/GitHub) (ch.6)
+- [GitHub Guides](https://guides.github.com)
+- [gh CLI Documentation](https://cli.github.com)
+- 이 블로그의 [deploy.yml](https://github.com/seongyeon1/blog/blob/main/.github/workflows/deploy.yml)
