@@ -1,0 +1,137 @@
+---
+title: "Harness 만들기 2편 — 듀얼 메모리 + sy 글로벌 CLI 워크플로"
+date: 2026-05-27T09:00:00+09:00
+category: "project"
+tags: ["harness", "claude-code", "cli", "memory", "agent-orchestration"]
+summary: "Claude Code의 multi-agent orchestration harness를 구축하며 마주친 가장 큰 설계 도전: 프로젝트별 메모리와 글로벌 메모리의 분리. sy 명령어로 세계관을 통일하는 단일 진입점 설계를 소개합니다."
+series: "Harness 만들기"
+seriesOrder: 2
+---
+
+[1편](https://seongyeon.dev/blog/2026-05-24-harness-build-intro)에서 Harness 아키텍처(skills · agents · hooks)를 살펴봤습니다. 이번엔 가장 실질적인 난제인 **메모리 관리**에 집중하겠습니다.
+
+## 메모리가 세상이다
+
+Claude Code는 주인(사용자)의 삶 전체를 다룹니다. 프로젝트마다 다른 문맥, 다른 팀, 다른 요구사항. 하지만 동시에 글로벌하게 일관된 조언도 필요합니다. "성연이는 한국 시간대를 쓴다", "한국 관련 질문은 웹검색보다 k-skill 먼저", "이 프로젝트는 microservices로 가고 있다" 같은 맥락 말이죠.
+
+**1편의 고민:** skills와 agents가 계층화되면, 어느 레벨에서 이 정보들을 관리할 거죠?
+
+## 듀얼 메모리 설계
+
+```
+~/.sy/memory/          # 글로벌 메모리 (user·tech·lesson·feedback)
+  └─ user.md
+  └─ tech-preferences.md
+  └─ feedback-testing.md
+  └─ lesson-docker-migration.md
+
+project-root/.sy-memory/  # 프로젝트 메모리 (arch·decision·context)
+  └─ architecture.md
+  └─ decision-monorepo.md
+  └─ team-context.md
+```
+
+**왜 나눴나?**
+
+1. **글로벌 메모리**는 세션을 넘어 사용자의 선호도·경험·패턴을 보존합니다. 어느 프로젝트에서든 참고할 수 있어야 하죠.
+2. **프로젝트 메모리**는 그 프로젝트의 아키텍처 결정, 팀 구성, 현재 진행 상황 같은 휘발성 맥락을 담습니다. 프로젝트끼리 섞이면 안 돼요.
+
+이게 없으면 매 세션마다 "아, 성연이는 Seoul 타임존이고..." 같은 것들을 다시 설명해야 합니다. 낭비죠.
+
+## sy 명령어: 한 줄의 진입점
+
+```bash
+$ sy work harness-blog
+# → ~/.openclaw/workspace 로 이동 후 Claude Code 부팅
+# → .sy-memory/ 에서 프로젝트 메모리 로드
+# → ~/.sy/memory/ 에서 글로벌 메모리 로드
+# → claude --plugin-dir ~/.openclaw/workspace/plugins 실행
+```
+
+핵심은 **`sy` 하나**가 모든 부팅 로직을 감춘다는 것입니다.
+
+```bash
+#!/bin/zsh
+# ~/.local/bin/sy
+
+PROJ_NAME=$1
+PROJ_PATH="$HOME/.sy/projects/$PROJ_NAME"
+
+if [[ ! -d "$PROJ_PATH" ]]; then
+  echo "Project not found: $PROJ_NAME"
+  echo "Available: $(ls ~/.sy/projects/)"
+  exit 1
+fi
+
+cd "$PROJ_PATH"
+
+# 프로젝트 메모리 + 글로벌 메모리를 MEMORY_CONTEXT 환경변수로 이어붙임
+export MEMORY_CONTEXT="$(cat .sy-memory/*.md 2>/dev/null) $(cat ~/.sy/memory/*.md 2>/dev/null)"
+
+# Claude Code 부팅, plugin-dir 명시
+claude --plugin-dir "$PROJ_PATH/plugins" 
+```
+
+이러면 `sy harness-blog` 한 줄로:
+- 올바른 디렉토리로 이동
+- 두 메모리 계층을 모두 로드
+- plugins 경로를 설정
+- Claude Code 시작
+
+모두가 자동입니다.
+
+## 메모리 내용물
+
+**글로벌(`~/.sy/memory/`)**
+```markdown
+---
+name: user-role
+type: user
+---
+## 성연(Kim Sung-yeon)
+- Frontend → Backend → AI/DevOps로 진화 중
+- 한국(Seoul) 기반, Asia/Seoul 시간대
+- 깊이 있는 기술 이해도, 빠른 학습
+```
+
+**프로젝트(`project/.sy-memory/`)**
+```markdown
+---
+name: harness-arch
+type: project
+---
+## Harness 아키텍처
+- multi-agent orchestration for Claude Code
+- skills(~50) + agents(24) + hooks(21) 역할 분리
+- 핵심 설계: skill description은 매 turn 주입 vs path-gated rule의 boundary
+```
+
+각 메모리는 자신의 역할만 합니다. 노이즈 없이.
+
+## 메모리 갱신 루프
+
+```
+Daily heartbeat
+  ↓
+memory/*.md 검토 (raw log)
+  ↓
+정제·축약 → MEMORY.md (long-term)
+  ↓
+프로젝트 결정이 나면 → .sy-memory/ 에 추가
+```
+
+메모리는 세션 초에 로드되고, 대화 중 업데이트되고, 세션 말에 디스크로 persist됩니다. 1편의 skills와 agents가 **기능**을 담당한다면, 메모리는 **맥락**을 담당하는 거죠.
+
+## 다음 편: 실전
+
+지금까지:
+- 1편: skills · agents · hooks 구조 (기능)
+- 2편: 듀얼 메모리 + sy CLI (맥락)
+
+3편에선 실제로 이 harness가 어떻게 일일 업무를 자동화하는지—예를 들어 블로그 자동 발행, PR 리뷰, 일정 추가 같은 workflow를 보여드리겠습니다.
+
+## 참고
+
+- [1편: Harness 만들기 — 왜 만들고 어떻게 짰나](https://seongyeon.dev/blog/2026-05-24-harness-build-intro)
+- [Claude Code 공식 문서](https://claude.com/claude-code)
+- [Memory 설계 노트](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) (Karpathy LLM-wiki 패턴에 영감)
