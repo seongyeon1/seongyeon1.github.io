@@ -1,0 +1,184 @@
+---
+title: Git 내부 — `.git` 디렉토리를 열어보면
+date: 2026-05-28T09:00:00+09:00
+category: study
+tags: ["Git", "저장소", "객체 저장소", "내부 구조"]
+summary: Git이 파일을 어떻게 저장하고 관리하는지 `.git` 폴더 안을 열어본다. Pro Git ch.10 기반 Git 시리즈 최종편.
+series: Git 시리즈
+seriesOrder: 8
+---
+
+## 들어가며 — Git의 내부를 열어보자
+
+지금까지 7편에 걸쳐 Git의 명령어와 워크플로를 배웠다. 하지만 한 가지 의문이 남아 있을 수 있다.
+
+**Git은 정말로 파일을 어디에 저장하고 있는가?**
+
+`git commit`을 누르면 무슨 일이 일어나나? `git branch`의 정체는 무엇인가? 이번 편에서는 Git의 **검은 상자를 열어본다**. `.git` 디렉토리 안을 헤치며, Git이 어떻게 데이터를 저장하고 추적하는지 이해하면, 명령어가 단순한 마법이 아니라 **견고한 구조 위의 도구**임을 깨닫게 될 것이다. Pro Git ch.10을 기반으로, 필요한 부분만 추려 설명한다.
+
+## `.git` 디렉토리의 구조
+
+```
+.git/
+├── HEAD                 # 현재 커밋을 가리키는 포인터
+├── config              # 저장소 설정 (사용자, remote 등)
+├── objects/            # 모든 Git 객체 저장소 (blob, tree, commit, tag)
+├── refs/               # 브랜치, 태그 정보
+│   ├── heads/          # 로컬 브랜치
+│   └── tags/           # 태그
+├── hooks/              # Git 훅
+└── index               # Staging Area (준비 영역)
+```
+
+간단해 보이지만, 각각이 Git의 핵심 기능을 담당한다.
+
+## 객체 저장소 (Object Database)
+
+Git의 영혼은 **objects/** 디렉토리다. 모든 파일, 커밋, 브랜치 정보가 여기 저장된다.
+
+### 4가지 객체 타입
+
+1. **Blob** — 파일 내용 자체
+   ```bash
+   # 파일을 blob으로 저장
+   git hash-object myfile.txt
+   ```
+   Git은 파일의 내용을 SHA-1 해시로 변환해 저장한다. 같은 내용을 가진 파일은 같은 해시를 갖는다 (중복 제거).
+
+2. **Tree** — 디렉토리 구조와 파일 목록
+   ```
+   tree 040000 (permission)
+   ├── blob abc123 (file1.txt)
+   └── blob def456 (file2.txt)
+   ```
+
+3. **Commit** — 메타데이터와 스냅샷
+   ```
+   commit abc123
+   tree: xyz789         # 그 시점의 전체 디렉토리 구조
+   parent: def456       # 부모 커밋
+   author: Sung Kim
+   date: 2026-05-28
+   message: "Initial commit"
+   ```
+
+4. **Tag** — 특정 커밋에 붙은 레이블
+
+### 객체 저장소 구조
+
+```bash
+.git/objects/
+├── ab/           # SHA-1 앞 2글자 폴더
+│   ├── c123d... (blob 또는 tree 또는 commit)
+│   ├── de456...
+└── cd/           # 다른 SHA-1 시작
+    └── f789g...
+```
+
+객체는 ZLIB으로 압축되어 저장되므로 직접 읽을 수 없지만, `git cat-file`로 확인할 수 있다:
+
+```bash
+git cat-file -p abc123  # 객체 내용 표시
+git cat-file -t abc123  # 객체 타입 확인 (blob/tree/commit)
+```
+
+## Refs: 브랜치와 태그의 정체
+
+명령어로 `git checkout main`을 하면, Git은 실제로는 **refs/heads/main** 파일을 읽는다.
+
+```bash
+cat .git/refs/heads/main
+# 출력: abc123def456... (현재 main이 가리키는 커밋 해시)
+```
+
+브랜치는 **단순한 텍스트 파일**이다. 안에는 40자(또는 64자) 해시 하나만 들어 있다. 그것뿐이다.
+
+```bash
+# 새 브랜치를 만들면
+git checkout -b feature
+# .git/refs/heads/feature가 생기고, 현재 커밋을 가리킨다.
+
+# 브랜치를 이동하면
+git checkout main
+# HEAD가 refs/heads/main으로 변경된다.
+```
+
+이제 "브랜치는 저렴하다"는 말의 의미가 명확하다. **파일 하나만 추가하는 것**이기 때문이다.
+
+## HEAD와 현재 위치
+
+`.git/HEAD` 파일을 열어보자:
+
+```bash
+cat .git/HEAD
+# 출력: ref: refs/heads/main
+```
+
+HEAD는 **참조의 참조**다. "지금 어느 브랜치에 있는가"를 가리킨다.
+
+- 보통: `ref: refs/heads/main`
+- Detached HEAD: `abc123def456...` (직접 커밋을 가리킴)
+
+## 인덱스와 Staging Area
+
+`.git/index` 파일은 **바이너리 형식**으로 Staging Area의 상태를 저장한다.
+
+```bash
+git add myfile.txt
+# → index가 업데이트됨 (myfile.txt가 staging됨을 기록)
+
+git status
+# → index를 읽어 "무엇이 준비됐는가"를 표시
+```
+
+## 실무에서 유용한 팁들
+
+### 1. 손상된 저장소 복구
+```bash
+# 모든 객체 검증
+git fsck --full
+
+# Dangling 커밋 찾기 (고아 커밋)
+git fsck --lost-found
+```
+
+### 2. 깊은 히스토리 이해
+```bash
+# 특정 객체의 크기 확인
+git cat-file -s abc123
+
+# 모든 객체 나열
+git rev-list --all --objects
+```
+
+### 3. `.git/config` 활용
+```bash
+# 전역 설정
+git config --global user.name "Sung Kim"
+
+# 저장소별 설정 (`.git/config`에만 저장)
+git config user.name "Team Account"
+```
+
+## Git 시리즈를 마치며
+
+**Git 시리즈 8편을 완주했다.** 
+
+- 1편: Git의 기본 9개 명령어
+- 2편: 혼자 써도 지켜야 할 Convention
+- 3편: 브랜치의 올바른 이해와 전략
+- 4편: merge vs rebase — 히스토리를 그리는 방식
+- 5편: 리모트와 협업
+- 6편: 되돌리기 (reset, revert, restore, stash)
+- 7편: GitHub의 협업 기능 (fork, PR, issue, Actions)
+- **8편: Git의 내부 구조** ← 지금 여기
+
+이제 Git의 **명령어뿐 아니라 원리**를 이해했다. `git add`가 index를 수정하는 것, 브랜치가 단순한 파일 포인터인 것, 커밋이 스냅샷 방식으로 저장되는 것 — 이 모든 것이 `.git` 안에서 일어난다.
+
+다음 번에 Git 명령어를 사용할 때, 그 뒤에서 일어나는 일을 그려볼 수 있을 것이다.
+
+## 참고
+
+- [Pro Git Book — Chapter 10: Git Internals](https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
+- [Git Object Model](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects)
+- Official Git Documentation: [git-cat-file](https://git-scm.com/docs/git-cat-file), [git-hash-object](https://git-scm.com/docs/git-hash-object)
