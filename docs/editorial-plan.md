@@ -43,7 +43,7 @@
 | 발행완료 | 2026-05-27 (수) | Harness 만들기 2편 — 듀얼 메모리 + `sy` 글로벌 CLI 워크플로 | project | Harness 만들기 | 2 | `2026-05-27-harness-build-part2-dual-memory-cli-workflow.mdx` |
 | 발행완료 | 2026-05-28 (목) | Git 내부 — `.git` 디렉토리를 열어보면 | study | Git 시리즈 | 8 | `2026-05-28-git-inside-dot-git-directory.mdx` |
 | 발행완료 | 2026-05-29 (금) | Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키 | project | | | `2026-05-29-braincrew-wiki-team-knowledge-base.mdx` — Karpathy LLM-wiki 패턴 팀 확장. raw → routine → 정제 PR |
-| 예약 | 2026-06-05 (목) | AI 엔지니어 필독 논문 10개 — ① 기초 아키텍처 (Attention, VAE, GANs) | paper-review | AI 필독 10개 논문 | 1 | `2026-06-05-ai-essential-papers-1-foundations.mdx` — LinkedIn 글 정리 (이시용 정리) |
+| 발행완료 | 2026-06-05 (목) | AI 엔지니어 필독 논문 10개 — ① 기초 아키텍처 (Attention, VAE, GANs) | paper-review | AI 필독 10개 논문 | 1 | `2026-05-23-ai-essential-papers-1-foundations.mdx` (frontmatter date: 2026-06-05) |
 | 예약 | 2026-06-06 (금) | AI 엔지니어 필독 논문 10개 — ② NLP 혁명과 멀티모달 (BERT, GPT, ViT, DDPM) | paper-review | AI 필독 10개 논문 | 2 | `2026-06-06-ai-essential-papers-2-nlp-multimodal.mdx` |
 | 예약 | 2026-06-07 (토) | AI 엔지니어 필독 논문 10개 — ③ 실무 적용과 학술의 속도 (RAG, LoRA, PEFT) | paper-review | AI 필독 10개 논문 | 3 | `2026-06-07-ai-essential-papers-3-practical-applications.mdx` — arXiv vs Nature 생태계 변화 |
 | 아이디어 | 2026-06-10 (화) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
