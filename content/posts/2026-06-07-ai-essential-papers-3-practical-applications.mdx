@@ -1,0 +1,299 @@
+---
+title: "AI 엔지니어 필독 논문 10개 — ③ 실무 적용과 학술의 속도 (RAG, LoRA, PEFT)"
+date: "2026-06-07T09:00:00+09:00"
+category: "paper-review"
+tags: ["rag", "lora", "peft", "retrieval-augmented-generation", "parameter-efficient-tuning", "arxiv"]
+summary: "대형 언어 모델 시대, 학술은 이제 Nature가 아닌 arXiv에서 일어난다. RAG와 PEFT가 어떻게 실무 AI 엔지니어의 필수 무기가 되었는지, 논문 3편으로 정리하기."
+series: "논문 리뷰"
+seriesOrder: 3
+---
+
+<Callout type="note">
+**한 줄 요약** — 2024~2025년 AI 업계의 중심은 원래 모델을 더 크게 만드는 것 아니라, **부족한 정보는 검색으로**, **제한된 자원으로는 LoRA로** 상황에 맞게 대응하는 것으로 옮겨갔다. 이게 실무의 정답이다.
+</Callout>
+
+지난 두 편에서 우리는 기초(**Attention, VAE, GAN**)에서 시작해 대형 모델의 시대(**BERT, GPT, ViT, DDPM**)까지 왔다. 그런데 이제 현실의 문제를 봐야 할 차례다.
+
+큰 모델은 좋지만, **데이터가 부족하고, 계산 자원이 제한되고, 최신 정보를 모르는데 어쩌지?** 이 세 가지 문제에 답한 논문들이 2023~2024년 arXiv에 쏟아졌다. 그리고 대부분 **3달 안에 실무에 반영**되었다.
+
+---
+
+## Nature에서 arXiv로: 학술 속도의 대변
+
+학술 저널의 전통:
+```
+논문 제출
+   ↓ (3~6개월 peer review)
+학회 발표 (Nature, ICML)
+   ↓ (6~12개월)
+산업 적용
+```
+
+현재의 arXiv 사이클:
+```
+arXiv 업로드
+   ↓ (24시간 내 1000+ 인용)
+깃허브 구현
+   ↓ (1주일)
+회사 프로덕션
+```
+
+**왜?** 언어 모델의 성능 곡선이 거의 직선이라, "더 크게"보다 **"어떻게 잘 쓸까"**가 더 중요해졌기 때문이다.
+
+---
+
+## 1. RAG: Retrieval-Augmented Generation (2020)
+
+<Paper
+  title="Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"
+  authors="Lewis et al., Facebook AI Research"
+  year="2020"
+  venue="NeurIPS"
+  arxiv="2005.11401"
+/>
+
+### 문제: 모델은 학습 데이터 이후를 모른다
+
+GPT-3.5 (학습 종료: 2023년 4월):
+```
+Q: "2024년 노벨상 수상자는?"
+A: "죄송하지만 2024년 정보는 알 수 없습니다."
+
+→ 최신 정보가 필요하면? 모델을 다시 학습? 불가능.
+```
+
+### 아이디어: 질문 → 관련 문서 찾기 → 그것과 함께 답변 생성
+
+```
+사용자 Q: "2024년 AI 안전 논문의 최신 동향?"
+
+Step 1: 검색 (Retriever)
+   Vectorstore 에서 "AI safety 2024" 유사 문서 5개 뽑기
+   
+Step 2: 맥락과 함께 LLM에 요청
+   "다음 문서들을 보고 답하세요:
+    [Document 1: Anthropic's Constitutional AI...]
+    [Document 2: OpenAI's Alignment Research...]
+    [Document 3: DeepMind's Safety Framework...]
+   Q: 2024년 AI 안전 논문의 최신 동향?"
+   
+Step 3: 생성 (Generator)
+   LLM: "최신 문서들을 보면,
+    1. Constitutional AI는...
+    2. Alignment Research는...
+    3. Safety Framework는..."
+   → 최신이고, 검증되고, 출처가 있다.
+```
+
+### 임팩트
+
+- **할루시네이션(거짓말) 감소** — 모델이 "만든" 답변 아니라, 찾은 문서 기반
+- **최신 정보 실시간 반영** — 문서만 업데이트하면 모델 재학습 불필요
+- **감사 가능** — "이 답변은 이 논문에서" 출처 명시 가능
+
+**2024년 프로덕션 RAG 스택:**
+```
+User Query
+   ↓
+Embedding Model (BGE, Nomic) ← dense retrieval
+   ↓
+Vector DB (Pinecone, Weaviate)
+   ↓
+Reranker (Jina, Cohere) ← 상위 10개 중 정말 좋은 것 3개만
+   ↓
+LLM (GPT-4o, Claude-3.5)
+   ↓
+Final Answer + Citations
+```
+
+RAG가 해결한 것:
+- ✅ 최신 정보
+- ✅ 도메인 특화 (회사 내부 데이터 주입)
+- ✅ 비용 감소 (모델 재학습 안 함)
+
+---
+
+## 2. LoRA: Low-Rank Adaptation (2021)
+
+<Paper
+  title="LoRA: Low-Rank Adaptation of Large Language Models"
+  authors="Hu et al., Microsoft Research"
+  year="2021"
+  venue="ICLR"
+  arxiv="2106.09685"
+/>
+
+### 문제: 큰 모델을 fine-tuning하려면?
+
+GPT-3 (175B 파라미터) 전체 fine-tuning:
+```
+메모리: 700GB+
+계산: A100 GPU 수십 개
+비용: $100,000+
+시간: 수일
+
+→ 사실상 불가능. 대부분의 회사가 할 수 없다.
+```
+
+### 아이디어: "모든 파라미터를 학습할 필요는 없다"
+
+전체 모델:
+```
+W (175B x 175B 행렬)
+
+LoRA의 통찰:
+실제로 필요한 변화의 "차원"은 훨씬 낮다.
+W_new = W_old + ΔW
+
+ΔW = A (175B x r) × B (r x 175B)
+              ↑
+           r = 8 또는 16 (매우 작음)
+```
+
+**구체적으로:**
+```
+기존: 175B 파라미터 모두 학습
+      → 메모리 700GB, A100 비용 $100K
+
+LoRA:
+- W 는 고정 (학습 안 함)
+- A, B 만 학습 (175B × 16 + 16 × 175B = ~5.6B 파라미터)
+- 메모리: 16GB, 비용: $500, 시간: 1시간
+
+그런데 성능은?
+→ full fine-tuning의 99%+ 유지
+```
+
+### 실전 예시
+
+당신이 의료 AI 회사에 있다고 하자:
+```
+Step 1: 기본 GPT-4 다운로드 (일회성)
+
+Step 2: 내 회사의 의료 데이터 1000개로 LoRA 학습
+        (의료 용어, 증상 해석, 처방 추천에 특화)
+
+Step 3: 런타임에서
+        GPT-4 + LoRA_medical 조합해서 사용
+        (모두 합쳐도 몇 GB)
+
+Step 4: 다른 회사는 LoRA_finance, LoRA_legal 써서
+        각자 특화 모델처럼 작동
+```
+
+### 임팩트
+
+- **접근성 민주화** — 스타트업도 자체 특화 모델 만들 수 있음
+- **빠른 배포** — 1시간 학습, 즉시 프로덕션
+- **버전 관리 용이** — LoRA 파일은 몇 MB (전체 모델 재배포 불필요)
+
+---
+
+## 3. PEFT: Parameter-Efficient Fine-Tuning (일반화, 2023)
+
+<Paper
+  title="PEFT: Parameter-Efficient Fine-Tuning of Large Language Models"
+  authors="Hu et al., HuggingFace"
+  year="2023"
+  venue="arXiv (이후 HuggingFace 라이브러리로 통합)"
+  arxiv="2305.14314"
+/>
+
+### 배경: LoRA는 좋지만, 다른 방법도 있다
+
+LoRA 외에도 최근 몇 년간 파라미터 효율적 학습법들이 나타났다:
+
+| 방법 | 학습 대상 | 성능 | 속도 | 복잡도 |
+|------|---------|------|------|--------|
+| LoRA | A, B (임베딩) | 99%+ | 매우 빠름 | 낮음 |
+| Prefix Tuning | 입력 prefix 벡터 | 95~98% | 빠름 | 중간 |
+| Adapter | 모듈 추가 | 98%+ | 중간 | 중간 |
+| QLoRA | LoRA + 양자화 | 95%+ | 가장 빠름 | 높음 |
+| BitFit | bias 항만 | 90~95% | 매우 빠름 | 낮음 |
+
+### 아이디어: 하나의 프레임워크로 모두
+
+```python
+from peft import get_peft_model, LoraConfig, TaskType
+
+config = LoraConfig(
+    r=8,
+    lora_alpha=32,
+    target_modules=["q_proj", "v_proj"],
+    bias="none",
+    task_type=TaskType.CAUSAL_LM
+)
+
+model = get_peft_model(model, config)
+# 이제 model.train() 하면
+# LoRA만 학습되고 원본은 고정됨
+```
+
+**PEFT가 제공하는 것:**
+1. **통합 인터페이스** — LoRA, Prefix Tuning, Adapter 전부 같은 API
+2. **양자화 통합** — LoRA + int8/int4 양자화 함께 사용 가능
+3. **다중 작업 지원** — 같은 모델, 다른 LoRA 조합으로 여러 작업 동시 처리
+
+### 실전 스택 (2024년 표준)
+
+```
+큰 모델을 써야 하지만 제약이 있을 때:
+
+1️⃣ 모델 양자화 (int8 또는 int4)
+   GPT-3 175B → 메모리 ~16GB 절감
+   
+2️⃣ PEFT로 LoRA/Adapter 추가
+   학습 파라미터 1% 이하로 제한
+   
+3️⃣ 실제로 학습
+   메모리: 12~16GB (하나의 GPU)
+   시간: 수시간
+   비용: $10~100
+   
+결과: 99%의 성능, 1%의 비용
+```
+
+### 임팩트
+
+- **리소스 민주화** — 400억 파라미터 모델도 단일 GPU에서 fine-tuning 가능
+- **표준화** — HuggingFace 통합으로 모든 회사가 같은 방식 사용
+- **합성곱 학습** — 여러 작업용 LoRA를 섞어서 "멀티태스크 전문가" 만들기
+
+---
+
+## arXiv → 프로덕션: 속도의 비밀
+
+위 세 논문은 모두 **2020~2023년에 arXiv에 올라왔지만**:
+- 2023년: RAG 스타트업 폭증 (Perplexity, Mistral)
+- 2024년: LoRA/PEFT가 모든 fine-tuning의 90% 차지
+- 2025년: RAG+LoRA 조합이 표준 패턴
+
+**왜 이렇게 빨리 적용될까?**
+
+1. **복잡도가 낮다** — Transformer 처음부터 배우는 것보다 쉬움
+2. **직접적인 이득** — 비용 80% 절감, 속도 10배
+3. **Open Source** — HuggingFace, LangChain이 이미 구현해둠
+4. **논문과 코드가 동시** — "이 논문은 arxiv 버전입니다"
+
+---
+
+## 다음은?
+
+RAG + LoRA 이후의 프론티어는 **에이전트 설계**다. 다음 시리즈에서 다룰 예정:
+
+- **Agent Harness**: 계획 → 도구 호출 → 검증 → 반복
+- **Tool Use 최적화**: 어떤 도구를 언제 불러야 하나?
+- **Memory & Context**: 장기 기억과 계획을 어떻게 저장하나?
+
+현재의 "AI 엔지니어" = **RAG로 정보 주입** + **LoRA로 스타일 미조정** + **프롬프트로 제어**.
+
+3편의 논문으로 그 모든 것이 정리된다.
+
+---
+
+## 참고
+
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) (NeurIPS 2020)
+- [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685) (ICLR 2021)
+- [PEFT: State-of-the-art Parameter-Efficient Fine-Tuning Methods](https://arxiv.org/abs/2305.14314) (arXiv 2023)
+- [HuggingFace PEFT 라이브러리](https://github.com/huggingface/peft)

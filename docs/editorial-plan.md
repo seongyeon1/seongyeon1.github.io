@@ -45,7 +45,7 @@
 | 발행완료 | 2026-05-29 (금) | Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키 | project | | | `2026-05-29-braincrew-wiki-team-knowledge-base.mdx` — Karpathy LLM-wiki 패턴 팀 확장. raw → routine → 정제 PR |
 | 발행완료 | 2026-06-05 (목) | AI 엔지니어 필독 논문 10개 — ① 기초 아키텍처 (Attention, VAE, GANs) | paper-review | AI 필독 10개 논문 | 1 | `2026-05-23-ai-essential-papers-1-foundations.mdx` (frontmatter date: 2026-06-05) |
 | 발행완료 | 2026-06-06 (금) | AI 엔지니어 필독 논문 10개 — ② NLP 혁명과 멀티모달 (BERT, GPT, ViT, DDPM) | paper-review | AI 필독 10개 논문 | 2 | `2026-06-06-ai-essential-papers-2-nlp-multimodal.mdx` |
-| 예약 | 2026-06-07 (토) | AI 엔지니어 필독 논문 10개 — ③ 실무 적용과 학술의 속도 (RAG, LoRA, PEFT) | paper-review | AI 필독 10개 논문 | 3 | `2026-06-07-ai-essential-papers-3-practical-applications.mdx` — arXiv vs Nature 생태계 변화 |
+| 발행완료 | 2026-06-07 (토) | AI 엔지니어 필독 논문 10개 — ③ 실무 적용과 학술의 속도 (RAG, LoRA, PEFT) | paper-review | AI 필독 10개 논문 | 3 | `2026-06-07-ai-essential-papers-3-practical-applications.mdx` |
 | 아이디어 | 2026-06-10 (화) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | 3편 끝나고. (Actions 기초는 Git 7편에서 다룸) |
 | 발행완료 | 2026-05-21 (목) | [논문 리뷰] Code as Agent Harness — 에이전트의 계획·실행·검증 루프 설계 | paper-review | 논문 리뷰 | | `2026-05-21-code-as-agent-harness-review.mdx` |
 
