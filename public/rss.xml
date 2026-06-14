@@ -6,7 +6,249 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 17 May 2026 16:36:23 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 13 Jun 2026 02:35:41 GMT</lastBuildDate>
+    <item>
+      <title>취향이 경쟁력이다: AI 시대 엔지니어의 3가지 능력</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-13-taste-driven-ai-engineer/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-13-taste-driven-ai-engineer/</guid>
+      <description>AI가 코드 생성을 자동화하는 시대, 엔지니어의 진정한 경쟁력은 &apos;무엇을 만들지&apos; 판단하는 &apos;취향&apos;으로 이동했다. 인식, 나침반, 비전의 3가지 능력을 키워 30배의 엔지니어가 되는 법.</description>
+      <pubDate>Sat, 13 Jun 2026 02:35:00 GMT</pubDate>
+      <category>study</category>
+      <category>ai-engineering</category>
+      <category>engineering-philosophy</category>
+      <category>taste</category>
+      <category>productivity</category>
+      <category>skill-development</category>
+    </item>
+    <item>
+      <title>AI에게 기억을 주다: 장기기억 메모리 시스템의 진화</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-13-ai-long-term-memory-systems/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-13-ai-long-term-memory-systems/</guid>
+      <description>AI 모델의 문맥 길이 한계를 극복하는 3가지 메모리 솔루션 — Supermemory, Mem0, Turbo-graph의 설계 철학과 실무 적용 방법.</description>
+      <pubDate>Sat, 13 Jun 2026 02:30:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>long-term-memory</category>
+      <category>ai-personalization</category>
+      <category>memory-systems</category>
+      <category>context-management</category>
+      <category>rag</category>
+      <category>arxiv</category>
+    </item>
+    <item>
+      <title>블로그 만들기 4편 — 배포 자동화 (빌드 캐시 · PR 프리뷰)</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-10-blog-deployment-automation-build-cache-preview/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-10-blog-deployment-automation-build-cache-preview/</guid>
+      <description>3편까지 글 쓰고 발행하는 콘텐츠 파트는 끝냈다. 이제 배포 인프라다 — GitHub Actions로 빌드 캐시를 활용해 배포 속도를 10배 줄이고, PR마다 자동 프리뷰 URL을 만들자.</description>
+      <pubDate>Wed, 10 Jun 2026 00:00:00 GMT</pubDate>
+      <category>tutorial</category>
+      <category>blog</category>
+      <category>github-actions</category>
+      <category>nextjs</category>
+      <category>ci-cd</category>
+      <category>cache</category>
+      <category>preview-deployment</category>
+      <category>vercel</category>
+    </item>
+    <item>
+      <title>거대 비전-언어 모델은 단 3개의 Attention Head로 충분하다</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-09-vision-language-attention-heads/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-09-vision-language-attention-heads/</guid>
+      <description>Your Large Vision-Language Model Only Needs A Few Attention Heads For Visual Grounding — 텍스트로 지시한 물체를 이미지에서 찾는 작업, 수천 개의 Attention Head 중 단 3개만으로 가능하다는 놀라운 발견.</description>
+      <pubDate>Tue, 09 Jun 2026 03:50:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>vision-language-model</category>
+      <category>attention-mechanism</category>
+      <category>visual-grounding</category>
+      <category>multimodal</category>
+      <category>efficiency</category>
+      <category>arxiv</category>
+    </item>
+    <item>
+      <title>AI 엔지니어 필독 논문 10개 — ③ 실무 적용과 학술의 속도 (RAG, LoRA, PEFT)</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-07-ai-essential-papers-3-practical-applications/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-07-ai-essential-papers-3-practical-applications/</guid>
+      <description>대형 언어 모델 시대, 학술은 이제 Nature가 아닌 arXiv에서 일어난다. RAG와 PEFT가 어떻게 실무 AI 엔지니어의 필수 무기가 되었는지, 논문 3편으로 정리하기.</description>
+      <pubDate>Sun, 07 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>rag</category>
+      <category>lora</category>
+      <category>peft</category>
+      <category>retrieval-augmented-generation</category>
+      <category>parameter-efficient-tuning</category>
+      <category>arxiv</category>
+    </item>
+    <item>
+      <title>AI 엔지니어 필독 논문 10개 — ② NLP 혁명과 멀티모달 (BERT, GPT, ViT, DDPM)</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-06-ai-essential-papers-2-nlp-multimodal/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-06-ai-essential-papers-2-nlp-multimodal/</guid>
+      <description>BERT와 GPT로 시작된 언어 모델 시대. 그리고 Transformer를 이미지와 생성 모델로 확장한 ViT와 DDPM이 어떻게 AI 업계를 바꿨는지.</description>
+      <pubDate>Sat, 06 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>nlp</category>
+      <category>bert</category>
+      <category>gpt</category>
+      <category>vision-transformer</category>
+      <category>diffusion</category>
+      <category>multimodal</category>
+      <category>interview</category>
+    </item>
+    <item>
+      <title>AI 엔지니어 필독 논문 10개 — ① 기초 아키텍처 (Attention, VAE, GANs)</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-23-ai-essential-papers-1-foundations/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-23-ai-essential-papers-1-foundations/</guid>
+      <description>AI 면접 단골 논문 10개를 정리한 시리즈 첫 편. Attention Is All You Need, VAE, GANs가 어떻게 현대 AI의 기초를 다졌는지 이해한다.</description>
+      <pubDate>Fri, 05 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>ai</category>
+      <category>transformer</category>
+      <category>generative-model</category>
+      <category>attention</category>
+      <category>vae</category>
+      <category>gan</category>
+      <category>interview</category>
+    </item>
+    <item>
+      <title>자가 진화하는 LLM 에이전트의 비밀: 업데이트 생성과 활용의 간극</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-03-self-evolving-llm-agents/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-03-self-evolving-llm-agents/</guid>
+      <description>LLM 에이전트가 스스로 성능을 개선할 때 &apos;업데이트 생성&apos;과 &apos;업데이트 활용&apos;이 완전히 다른 능력이라는 논문 리뷰. 소형 모델도 좋은 개선안을 만들지만, 그걸 활용하는 건 중간 규모 모델이 최고.</description>
+      <pubDate>Wed, 03 Jun 2026 02:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>self-evolving</category>
+      <category>agents</category>
+      <category>prompt-engineering</category>
+      <category>LLM-capability</category>
+      <category>agent-architecture</category>
+    </item>
+    <item>
+      <title>Braincrew Wiki — Obsidian으로 쓰고 AI Routine이 정제하는 팀 위키</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-29-braincrew-wiki-team-knowledge-base/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-29-braincrew-wiki-team-knowledge-base/</guid>
+      <description>팀 지식을 raw notes에서 정제된 위키 페이지로 변환하는 자동화 시스템. Obsidian raw 메모 → GitHub Action → AI가 정제한 PR → 발행 완료까지 인간과 AI의 git author 분리로 운영합니다.</description>
+      <pubDate>Fri, 29 May 2026 00:00:00 GMT</pubDate>
+      <category>project</category>
+      <category>wiki</category>
+      <category>knowledge-base</category>
+      <category>ai-routine</category>
+      <category>obsidian</category>
+      <category>team-collaboration</category>
+    </item>
+    <item>
+      <title>브랜치, 제대로 — 만들고 옮기고 합치고 지우기</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-25-git-branching/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-25-git-branching/</guid>
+      <description>브랜치가 왜 41바이트짜리 포인터인지부터 — switch로 만들고 옮겨다니기, fast-forward와 3-way merge의 차이, 머지된 브랜치 정리, topic 브랜치 워크플로, 그리고 실무 팁까지. Git 시리즈 3편.</description>
+      <pubDate>Mon, 25 May 2026 11:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>git</category>
+      <category>branch</category>
+      <category>merge</category>
+    </item>
+    <item>
+      <title>되돌리기 총정리 — reset · revert · restore · reflog · stash</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-25-git-undo-guide/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-25-git-undo-guide/</guid>
+      <description>Git의 다섯 가지 되돌리기 명령 — reset, revert, restore, reflog, stash — 을 &apos;세 개의 트리&apos; 관점에서 정확히 이해하고, 실수 상황별 복구 레시피를 익힌다.</description>
+      <pubDate>Mon, 25 May 2026 00:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>git</category>
+      <category>reset</category>
+      <category>revert</category>
+      <category>restore</category>
+      <category>reflog</category>
+      <category>stash</category>
+    </item>
+    <item>
+      <title>RPG 포트폴리오 만들기 — Kaboom.js 픽셀 RPG 단일 페이지</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-25-rpg-portfolio-making/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-25-rpg-portfolio-making/</guid>
+      <description>Kaboom.js로 픽셀 RPG 형식의 인터랙티브 이력서를 만들고, NDA를 보호하며 공개하는 프로젝트 만들기</description>
+      <pubDate>Mon, 25 May 2026 00:00:00 GMT</pubDate>
+      <category>project</category>
+      <category>portfolio</category>
+      <category>kaboom.js</category>
+      <category>interactive</category>
+      <category>pixel-art</category>
+      <category>rpg</category>
+    </item>
+    <item>
+      <title>AI 엔지니어 필독 논문 10개 — ③ 실무 적용과 학술의 속도 (RAG, LoRA, PEFT)</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-25-ai-essential-papers-3-practical-applications/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-25-ai-essential-papers-3-practical-applications/</guid>
+      <description>큰 모델을 효율적으로 운영하고, 환각을 줄이고, 제한된 리소스에서 학습하는 3가지 실무 기술. 그리고 AI 논문이 Nature/Science를 무시하고 arXiv에서 업계로 직결되는 이유.</description>
+      <pubDate>Mon, 25 May 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>rag</category>
+      <category>lora</category>
+      <category>peft</category>
+      <category>practical-ai</category>
+      <category>fine-tuning</category>
+      <category>deployment</category>
+      <category>interview</category>
+    </item>
+    <item>
+      <title>Harness 만들기 1편 — 왜 만들고 어떻게 짰나</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-24-harness-build-intro/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-24-harness-build-intro/</guid>
+      <description>Claude Code를 위한 multi-agent orchestration harness인 `harness/braincrew`를 왜 만들었고, 25개 skills, 24개 agents, 36개 규칙, 21개 hooks, 15개 명령어를 어떻게 설계했는지 설명한다.</description>
+      <pubDate>Sun, 24 May 2026 00:00:00 GMT</pubDate>
+      <category>project</category>
+      <category>harness</category>
+      <category>claude</category>
+      <category>agents</category>
+      <category>architecture</category>
+      <category>multi-agent</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] DeepSeek-V4 — 1M Context에서 KV Cache 10% 수준으로 압축한 Hybrid Attention</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-22-deepseek-v4-paper-review/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-22-deepseek-v4-paper-review/</guid>
+      <description>DeepSeek-V4는 기존 Multi-Head Attention의 개념을 바탕으로, Compressed Sparse Attention(CSA)와 Heavily Compressed Attention(HCA)을 결합한 Hybrid Attention으로 1M token context를 지원하면서도 KV cache를 90% 감축했다. 이전 Attention 이해하기 시리즈의 Q/K/V와 Multi-Head Attention 개념을 이어 DeepSeek-V4가 어떻게 구현했는지 살펴본다.</description>
+      <pubDate>Fri, 22 May 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>deepseek</category>
+      <category>attention</category>
+      <category>moe</category>
+      <category>kv-cache</category>
+      <category>hybrid-attention</category>
+      <category>large-language-model</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] Code as Agent Harness — LLM 에이전트의 계획·실행·검증 루프</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-21-code-as-agent-harness-review/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-21-code-as-agent-harness-review/</guid>
+      <description>Meta·Stanford·UIUC 40명 연구진이 제안한 에이전트 하네스 아키텍처. LLM을 &apos;천재적 이야기꾼이지만 끔찍한 몽상가&apos;로 보고, 3계층 구조로 계획-실행-검증 루프를 강제해 신뢰성을 확보한다.</description>
+      <pubDate>Thu, 21 May 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>harness</category>
+      <category>llm</category>
+      <category>code-execution</category>
+      <category>reliability</category>
+    </item>
+    <item>
+      <title>merge냐 rebase냐 — 히스토리를 어떻게 그릴 것인가</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-20-git-merge-vs-rebase/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-20-git-merge-vs-rebase/</guid>
+      <description>merge는 기록, rebase는 재서술. 두 명령의 동작과 황금률(공유 브랜치 rebase 금지), 그리고 팀 규약 패턴 세 가지를 정리한다.</description>
+      <pubDate>Wed, 20 May 2026 00:00:00 GMT</pubDate>
+      <category>study</category>
+      <category>git</category>
+      <category>merge</category>
+      <category>rebase</category>
+      <category>workflow</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] A-RAG: Agentic RAG가 2026년의 기본기가 된 이유</title>
+      <link>https://seongyeon1.github.io/blog/2026-05-19-agentic-rag-review/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-19-agentic-rag-review/</guid>
+      <description>단일 retriever→generator 파이프라인이 한계를 보이는 가운데, 질의 분해·병렬 검색·검증·합성을 에이전트가 분담하는 A-RAG의 계층적 검색 인터페이스를 살펴본다.</description>
+      <pubDate>Tue, 19 May 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>RAG</category>
+      <category>agentic-rag</category>
+      <category>retrieval</category>
+    </item>
     <item>
       <title>정적 블로그 SEO 마감하기 — OG 이미지 · RSS · JSON-LD (마감 편)</title>
       <link>https://seongyeon1.github.io/blog/2026-05-18-blog-seo-og-rss-jsonld/</link>

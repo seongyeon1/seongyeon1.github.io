@@ -36,3 +36,22 @@ next-env.d.ts
 .superpowers/
 
 reference/
+# OpenClaw/Hermes workspace artifacts — not part of public blog
+AGENTS.md
+BOOTSTRAP.md
+HEARTBEAT.md
+IDENTITY.md
+MEMORY.md
+NOTION_SETUP.md
+SOUL.md
+TOOLS.md
+USER.md
+BLOG_PLAN.md
+MEMORY_RESEARCH_SUMMARY.md
+memory/
+state/
+skills/
+skills-lock.json
+notion_skt_docs_setup.py
+docs/*.blog-repo-*-snapshot.md
+content/drafts/
