@@ -71,7 +71,7 @@ thumbnail: "/images/rag-chatbot.png"
 <Paper
   title="Attention Is All You Need"
   authors="Vaswani et al."
-  year={2017}
+  year="2017"
   venue="NeurIPS"
   arxiv="1706.03762"
 />
