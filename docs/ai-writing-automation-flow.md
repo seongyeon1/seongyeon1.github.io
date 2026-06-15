@@ -51,7 +51,8 @@ flowchart LR
 - confidence: 1~5
 - suggested-category: paper-review | study | tutorial | project
 - suggested-tags: [...]
-- status: idea
+- status: idea | drafting | drafted | skipped
+- draft: content/posts/YYYY-MM-DD-slug.mdx  # drafted일 때만
 ```
 
 ### 2) Topic Scoring — 쓸 만한 후보 선별
@@ -159,15 +160,27 @@ flowchart LR
 | `ai-blog-draft-writer` | 화/목/토 09:30 KST | 후보 1개를 MDX 초안으로 생성 | 없음, `draft: true` |
 | `ai-blog-draft-review` | 일 20:00 KST | 생성 초안 리뷰 + 발행 후보 보고 | 없음 |
 
-## 4. 운영 규칙
+## 4. 운영 현황
+
+2026-06-15 기준 smoke test 결과:
+
+- `ai-blog-trend-radar`: `docs/ai-writing-inbox.md`에 AI 글감 후보 큐 생성/확장 완료
+- `ai-blog-draft-writer`: 아래 초안 2개 생성 완료
+  - `content/posts/2026-06-15-hypertool-agent-tool-call-granularity.mdx` (`draft: true`, 검토 대기)
+  - `content/posts/2026-06-15-github-agentic-workflows-repo-native-agents.mdx` (`draft: true`, 검토 대기)
+- `docs/editorial-plan.md`: 생성 초안은 `검토`, 후속 후보는 `아이디어` 상태로 반영
+- 검증 기준: frontmatter check + `npm run typecheck` + `npm run build`
+
+## 5. 운영 규칙
 
 - 자동화는 “쓰기 시작 비용”을 줄이는 용도다. 최종 발행은 성연 승인 후 진행한다.
 - 트렌드 글은 오래된 자료보다 최신 원문 우선.
 - 논문 글은 abstract만 읽고 쓰지 말고, 방법론/실험/한계까지 최소 확인한다.
 - 글의 기본 톤은 “개념 설명 + 왜 중요한지 + 실무에서 어떻게 볼지”.
 - 생성한 초안은 Slack에 파일명, 주제, 핵심 링크, 다음 액션을 짧게 보고한다.
+- `draft: true` 초안 검증을 위해 `npm run build`를 실행하면 `public/rss.xml`이 갱신될 수 있다. draft-only 변경이면 커밋 전 RSS 변경분은 되돌린다.
 
-## 5. 수동 명령으로 쓸 때의 프롬프트
+## 6. 수동 명령으로 쓸 때의 프롬프트
 
 ```text
 ~/ai-blog에서 docs/ai-writing-automation-flow.md와 docs/content-guide.md를 기준으로,
