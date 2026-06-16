@@ -6,7 +6,47 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 13 Jun 2026 02:35:41 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 16 Jun 2026 05:51:19 GMT</lastBuildDate>
+    <item>
+      <title>agentdir — Agent에게 작업하기 좋은 파일 구조를 따로 만들어주기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-16-agentdir-agent-file-layout/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-16-agentdir-agent-file-layout/</guid>
+      <description>정리되지 않은 원본 폴더는 그대로 두고, Agent에게는 작업 목적에 맞는 가상 파일 트리를 제공하는 agentdir의 문제의식과 사용법을 정리한다.</description>
+      <pubDate>Tue, 16 Jun 2026 00:00:00 GMT</pubDate>
+      <category>project</category>
+      <category>agent</category>
+      <category>filesystem</category>
+      <category>context-engineering</category>
+      <category>rust</category>
+      <category>automation</category>
+    </item>
+    <item>
+      <title>MinSync — 파일이 바뀐 만큼만 다시 인덱싱하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-16-minsync-incremental-indexing/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-16-minsync-incremental-indexing/</guid>
+      <description>MinSync는 git 없이 파일 변경을 추적하고, 바뀐 텍스트만 다시 chunking·embedding해서 로컬 vector index를 최신 상태로 유지한다.</description>
+      <pubDate>Tue, 16 Jun 2026 00:00:00 GMT</pubDate>
+      <category>project</category>
+      <category>agent</category>
+      <category>rag</category>
+      <category>vector-db</category>
+      <category>indexing</category>
+      <category>rust</category>
+      <category>lancedb</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] Scaling Laws for Agent Harnesses — 피드백 계산으로 에이전트 성능 확장하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-14-scaling-laws-agent-harness-feedback/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-14-scaling-laws-agent-harness-feedback/</guid>
+      <description>Zhang et al. 연구팀이 제시한 에이전트 하네스의 스케일링 법칙. 더 큰 모델보다 &apos;효과적인 피드백 계산&apos;이 에이전트 성능을 지수적으로 향상시킨다는 것을 실증한다.</description>
+      <pubDate>Sun, 14 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>harness</category>
+      <category>scaling-laws</category>
+      <category>feedback</category>
+      <category>compute</category>
+    </item>
     <item>
       <title>취향이 경쟁력이다: AI 시대 엔지니어의 3가지 능력</title>
       <link>https://seongyeon1.github.io/blog/2026-06-13-taste-driven-ai-engineer/</link>

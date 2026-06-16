@@ -1,0 +1,197 @@
+---
+title: "agentdir — Agent에게 작업하기 좋은 파일 구조를 따로 만들어주기"
+date: "2026-06-16"
+category: "project"
+tags: ["agent", "filesystem", "context-engineering", "rust", "automation"]
+summary: "정리되지 않은 원본 폴더는 그대로 두고, Agent에게는 작업 목적에 맞는 가상 파일 트리를 제공하는 agentdir의 문제의식과 사용법을 정리한다."
+thumbnail: "/images/blog/agentdir-agent-file-layout/agentdir-github.png"
+math: false
+---
+
+![agentdir GitHub repository screenshot](/images/blog/agentdir-agent-file-layout/agentdir-github.png)
+
+AI Agent를 사용할 때 자주 마주치는 문제가 있다. 파일은 많은데 정리가 되어 있지 않고, 폴더 구조는 사람이 과거에 일하던 방식 그대로 남아 있다. 그런데 우리는 그 상태 그대로 Agent에게 “이 문서들 보고 정리해줘”, “이 자료 기반으로 분석해줘”, “관련 파일 찾아서 작업해줘”라고 요청한다.
+
+문제는 Agent가 똑똑하더라도, **작업 공간이 엉켜 있으면 컨텍스트를 제대로 잡기 어렵다**는 점이다. 파일명이 제각각이고, 비슷한 자료가 여러 위치에 흩어져 있고, 프로젝트 목적과 무관한 파일까지 섞여 있으면 Agent는 탐색에 많은 토큰과 시간을 쓰게 된다.
+
+이때 사용할 수 있는 도구가 [`agentdir`](https://github.com/NomaDamas/agentdir)이다.
+
+`agentdir`는 원본 파일은 그대로 둔 채, Agent가 보기 좋은 별도의 파일 트리를 만들어주는 도구다. 쉽게 말하면, **사람이 쓰는 폴더 구조와 Agent가 쓰는 폴더 구조를 분리하는 인프라**다.
+
+## agentdir가 하는 일
+
+`agentdir`는 기존 파일을 실제로 옮기지 않고, 특정 작업에 맞는 가상의 폴더 구조를 만들어준다.
+
+```text
+team-files/
+  2023/
+  2024/
+  screenshots/
+  회의록_최종진짜최종.md
+  report_v2.pdf
+  고객사자료/
+  temp/
+```
+
+사람 입장에서는 익숙한 구조일 수 있다. 하지만 Agent에게는 “무엇이 중요한 파일인지”, “분석 대상은 어디인지”, “보고서와 회의록은 어떻게 연결되는지”를 파악하기 어렵다.
+
+`agentdir`를 쓰면 같은 파일들을 Agent 작업 목적에 맞춰 이렇게 노출할 수 있다.
+
+```text
+workspace/
+  reports/
+    q1-report.pdf
+  meeting-notes/
+    customer-meeting.md
+  customer-materials/
+    proposal.pdf
+  references/
+    screenshots/
+```
+
+중요한 점은 **원본 파일은 움직이지 않는다**는 것이다. Agent가 보는 구조만 새로 만들어진다.
+
+즉, `agentdir`는 다음과 같은 일을 한다.
+
+- 원본 디렉토리를 가상 파일 트리에 매핑한다.
+- Agent가 읽기 좋은 구조로 파일을 재배치한다.
+- 원본 파일은 그대로 유지한다.
+- 변경 사항을 감지해 workspace에 반영한다.
+- macOS, Linux, Windows에서 동작한다.
+- APFS, Btrfs, XFS 같은 CoW 지원 파일시스템에서는 대용량 파일도 중복 복사 비용 없이 다룰 수 있다.
+
+## 왜 필요한가
+
+Agent를 쓸 때 많은 사람들이 모델 성능에만 집중한다. 하지만 실제 작업 품질은 모델만으로 결정되지 않는다.
+
+Agent가 어떤 파일을 보고, 어떤 순서로 탐색하고, 어떤 구조 안에서 판단하는지가 결과에 큰 영향을 준다.
+
+정리되지 않은 폴더를 그대로 Agent에게 주면 다음 문제가 생긴다.
+
+1. **탐색 비용이 커진다** — Agent가 관련 파일을 찾기 위해 불필요한 디렉토리를 뒤진다.
+2. **중요 파일을 놓치기 쉽다** — 파일명이나 위치가 애매하면 Agent가 핵심 자료를 발견하지 못할 수 있다.
+3. **컨텍스트가 흐려진다** — 작업과 무관한 파일까지 섞이면 Agent가 목표를 잘못 이해할 수 있다.
+4. **사람용 폴더 구조와 Agent용 구조가 다르다** — 사람은 날짜, 부서, 고객사 기준으로 정리하고 싶을 수 있지만 Agent에게는 “분석 대상”, “참고자료”, “출력물”, “검토 대상”처럼 작업 중심 구조가 더 유리하다.
+
+`agentdir`의 핵심 가치는 여기에 있다.
+
+> 원본 파일 구조는 유지하면서, Agent에게는 작업 목적에 맞는 깨끗한 파일 구조를 제공한다.
+
+이 접근은 특히 문서, 리서치 자료, 고객사 파일, PDF, 이미지, 데이터셋처럼 코드가 아닌 파일을 다룰 때 유용하다.
+
+## 어떻게 사용할 수 있나
+
+기본 사용 흐름은 간단하다.
+
+먼저 CLI를 설치한다.
+
+```bash
+cargo install agentdir-cli
+```
+
+Python 패키지나 Node.js 패키지로도 사용할 수 있다.
+
+```bash
+pip install agentdir
+npm install @nomadamas/agentdir
+```
+
+그다음 workspace를 만든다.
+
+```bash
+agentdir init ./workspace
+```
+
+원본 디렉토리를 가상 트리에 매핑한다.
+
+```bash
+agentdir -w ./workspace map ./team-files /files
+```
+
+이제 Agent는 `./team-files` 원본을 직접 뒤지는 대신, `./workspace` 안의 정리된 구조를 기준으로 작업할 수 있다.
+
+파일을 Agent용 구조로 옮기고 싶다면 virtual namespace 안에서 이동하면 된다.
+
+```bash
+agentdir -w ./workspace mv /files/q1-report.pdf /reports/q1-report.pdf
+```
+
+여기서 중요한 점은 이 명령이 원본 파일을 실제로 옮기는 것이 아니라는 점이다. Agent가 보는 가상 구조만 바뀐다.
+
+원본 파일 변경 사항을 반영하려면 refresh를 실행한다.
+
+```bash
+agentdir -w ./workspace refresh
+```
+
+계속 동기화하고 싶다면 watcher를 실행할 수 있다.
+
+```bash
+agentdir -w ./workspace watch --interval 60
+```
+
+이렇게 하면 원본 디렉토리의 변경 사항이 workspace에 반영된다.
+
+## 어떤 상황에 적합한가
+
+`agentdir`는 다음과 같은 상황에서 특히 유용하다.
+
+### 1. Agent에게 문서 묶음을 넘겨야 할 때
+
+회의록, PDF, 발표자료, 스프레드시트, 이미지가 한 폴더에 섞여 있다면 Agent가 보기 좋은 구조로 재배치할 수 있다.
+
+```text
+/inputs
+/references
+/reports
+/customer-materials
+/outputs
+```
+
+이런 식으로 정리하면 Agent가 작업 목적을 훨씬 빨리 이해한다.
+
+### 2. 원본 폴더를 건드리면 안 될 때
+
+회사 공유 드라이브, 고객사 자료, 기존 프로젝트 폴더는 임의로 구조를 바꾸기 어렵다. 하지만 Agent 작업을 위해서는 구조를 바꾸고 싶다.
+
+`agentdir`는 이 둘을 분리한다.
+
+- 사람과 조직은 기존 폴더 구조를 계속 사용한다.
+- Agent는 별도의 정리된 workspace를 사용한다.
+
+### 3. 여러 Agent에게 서로 다른 관점을 제공하고 싶을 때
+
+같은 파일 묶음이라도 Agent 역할에 따라 필요한 구조가 다를 수 있다.
+
+예를 들어:
+
+- 분석 Agent: `/data`, `/reports`, `/notes`
+- 작성 Agent: `/source-materials`, `/drafts`, `/references`
+- 검토 Agent: `/outputs`, `/evidence`, `/checklist`
+
+`agentdir`를 사용하면 같은 원본 파일을 여러 작업 관점으로 재구성할 수 있다.
+
+## agentdir가 하지 않는 것
+
+`agentdir`는 파일을 “이해”하거나 “자동 분류”하는 AI 도구는 아니다. README에서도 명확히 밝히듯이, 이 도구의 목표는 다음이 아니다.
+
+- LLM 통합
+- 의미 기반 파일 분류
+- 전문 검색
+- 파일 포맷 변환
+- 문서 내용 파싱
+- Agent가 어떤 구조로 정리해야 하는지 판단하는 일
+
+즉, `agentdir`는 지능형 분류기가 아니라 **Agent-ready file layout을 만들기 위한 파일 시스템 인프라**다.
+
+그래서 오히려 역할이 명확하다. Agent나 사람이 “어떤 구조가 좋은지” 결정하고, `agentdir`는 그 구조를 안전하게 materialize한다.
+
+## 정리
+
+Agent를 잘 쓰려면 좋은 프롬프트만으로는 부족하다. Agent가 접근하는 파일 구조 자체가 좋아야 한다.
+
+`agentdir`는 기존 파일을 건드리지 않으면서 Agent에게 더 좋은 작업 공간을 제공한다. 정리되지 않은 폴더를 그대로 Agent에게 던지는 대신, 목적에 맞는 가상 폴더 구조를 만들어주는 방식이다.
+
+앞으로 Agent 기반 워크플로우가 늘어날수록 중요한 것은 “무엇을 물어볼 것인가”뿐 아니라 “Agent에게 어떤 작업 환경을 줄 것인가”가 될 가능성이 높다.
+
+그 관점에서 `agentdir`는 단순한 파일 정리 도구가 아니라, **Agent를 위한 작업 공간 설계 도구**에 가깝다.

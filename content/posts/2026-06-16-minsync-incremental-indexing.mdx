@@ -1,0 +1,358 @@
+---
+title: "MinSync — 파일이 바뀐 만큼만 다시 인덱싱하기"
+date: "2026-06-16"
+category: "project"
+tags: ["agent", "rag", "vector-db", "indexing", "rust", "lancedb"]
+summary: "MinSync는 git 없이 파일 변경을 추적하고, 바뀐 텍스트만 다시 chunking·embedding해서 로컬 vector index를 최신 상태로 유지한다."
+thumbnail: "/images/blog/minsync-incremental-indexing/minsync-github.png"
+math: false
+---
+
+![MinSync GitHub repository screenshot](/images/blog/minsync-incremental-indexing/minsync-github.png)
+
+AI Agent나 RAG 시스템을 만들다 보면 반복해서 마주치는 문제가 있다.
+
+처음에는 문서를 벡터 DB에 넣는 일이 어렵지 않다. 폴더를 읽고, 텍스트를 chunk로 나누고, embedding을 만들고, vector store에 저장하면 된다.
+
+문제는 그다음이다.
+
+파일이 하나 바뀌었을 때 어떻게 할 것인가?
+
+전체를 다시 인덱싱하면 간단하지만 비효율적이다. 파일이 많아질수록 비용도 커지고, 시간도 오래 걸린다. 반대로 바뀐 파일만 처리하려면 변경 감지, stale chunk 삭제, manifest 관리, cursor 관리 같은 귀찮은 문제가 생긴다.
+
+[`MinSync`](https://github.com/NomaDamas/MinSync)는 이 문제를 해결하기 위한 도구다.
+
+MinSync는 텍스트 파일을 대상으로 하는 **manifest 기반 증분 vector indexing CLI**다. 쉽게 말하면, 디렉토리 안의 파일 변화를 추적하고, 바뀐 파일만 다시 chunking·embedding해서 로컬 LanceDB 인덱스를 최신 상태로 유지해준다.
+
+## MinSync가 하는 일
+
+MinSync는 특정 디렉토리를 스캔하면서 파일의 상태를 기록한다.
+
+기록하는 정보는 대략 다음과 같다.
+
+- 파일 경로
+- 수정 시간 `mtime`
+- 파일 크기
+- SHA-256 content hash
+- chunk 상태
+- 처리 cursor
+
+이 정보는 `.minsync/` 디렉토리에 저장된다.
+
+```text
+.minsync/
+  config.toml
+  manifest.json
+  cursor.json
+  txn.json
+  lock
+```
+
+이후 `minsync sync`를 실행하면 MinSync는 이전 상태와 현재 상태를 비교한다.
+
+- 변경되지 않은 파일은 다시 처리하지 않는다.
+- 바뀐 파일만 다시 chunking한다.
+- 바뀐 chunk만 다시 embedding한다.
+- 삭제된 파일의 stale vector는 제거한다.
+- 최종적으로 local LanceDB 인덱스를 최신 상태로 유지한다.
+
+즉, MinSync의 핵심은 이것이다.
+
+> 전체를 매번 다시 인덱싱하지 않고, 바뀐 만큼만 다시 처리한다.
+
+## 왜 필요한가
+
+RAG나 Agent memory 시스템에서 “인덱스 최신성”은 생각보다 중요하다.
+
+문서가 바뀌었는데 vector DB가 예전 내용을 들고 있으면 Agent는 낡은 정보를 기반으로 답한다. 문서를 삭제했는데 stale chunk가 남아 있으면 이미 사라진 내용을 계속 검색할 수 있다. 파일 일부만 수정했는데 전체를 다시 embedding하면 비용과 시간이 낭비된다.
+
+특히 Agent 워크스페이스에서는 파일 변화가 자주 일어난다.
+
+- 문서가 계속 추가된다.
+- Agent가 중간 산출물을 만든다.
+- 로그나 요약 파일이 갱신된다.
+- 사용자가 README, 메모, 스펙 문서를 수정한다.
+- 생성된 workspace는 git으로 관리되지 않을 수도 있다.
+
+이때 git diff에 의존하지 않고도 파일 변경을 추적할 수 있어야 한다.
+
+MinSync는 이 지점에 집중한다.
+
+- git이 없어도 동작한다.
+- 파일 시스템 기준으로 변경을 감지한다.
+- 변경된 chunk만 다시 embedding한다.
+- 실패한 sync는 cursor를 전진시키지 않아 안전하게 재시도할 수 있다.
+- local LanceDB를 사용해 바로 semantic search할 수 있다.
+
+## 어떻게 사용할 수 있나
+
+설치는 install script를 사용하는 방식이 권장된다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/NomaDamas/MinSync/main/scripts/install.sh | sh
+```
+
+Cargo로 직접 설치할 수도 있다.
+
+```bash
+cargo install minsync
+```
+
+OpenAI embedding을 사용할 경우 API key를 설정한다.
+
+```bash
+export OPENAI_API_KEY="..."
+```
+
+이제 인덱싱할 디렉토리에서 초기화한다.
+
+```bash
+minsync init
+```
+
+변경된 파일을 인덱싱한다.
+
+```bash
+minsync sync
+```
+
+처음부터 전체를 다시 만들고 싶다면 full sync를 실행한다.
+
+```bash
+minsync sync --full
+```
+
+검색은 다음처럼 한다.
+
+```bash
+minsync query "검색하고 싶은 내용" --k 5
+```
+
+파일 변경을 계속 감지하고 싶다면 watch 모드를 사용할 수 있다.
+
+```bash
+minsync watch
+```
+
+상태 확인도 가능하다.
+
+```bash
+minsync status
+```
+
+일관성 검증과 복구는 다음 명령으로 한다.
+
+```bash
+minsync verify --fix
+```
+
+## MinSync의 핵심 특징
+
+### 1. Git 없이 변경 감지
+
+많은 개발 도구는 git diff를 기준으로 변경 여부를 판단한다. 하지만 Agent workspace, generated directory, 임시 문서 폴더는 git으로 관리되지 않는 경우가 많다.
+
+MinSync는 git이 없어도 동작한다. 파일의 `mtime`, size, SHA-256 hash를 사용해 변경을 감지한다.
+
+이 덕분에 일반 문서 폴더, Agent sandbox, 생성형 워크스페이스에서도 사용할 수 있다.
+
+### 2. 증분 embedding
+
+Embedding은 비용이 든다. 특히 파일 수가 많아질수록 전체 재인덱싱은 부담이 된다.
+
+MinSync는 변경되지 않은 텍스트를 다시 chunking하거나 embedding하지 않는다. 바뀐 파일과 chunk만 처리한다.
+
+이 구조는 다음 상황에서 효과적이다.
+
+- 문서 수가 많다.
+- 일부 파일만 자주 바뀐다.
+- Agent가 지속적으로 workspace를 업데이트한다.
+- 로컬 인덱스를 항상 최신 상태로 유지해야 한다.
+
+### 3. stale chunk 정리
+
+파일이 삭제되거나 내용이 바뀌면 기존 vector DB에 남아 있던 chunk가 문제가 될 수 있다.
+
+예를 들어 문서에서 특정 정책 내용이 삭제되었는데, vector DB에 예전 chunk가 남아 있다면 Agent는 삭제된 정책을 계속 참조할 수 있다.
+
+MinSync는 mark-and-sweep 방식으로 stale chunk를 제거한다. 즉, 최신 파일 상태와 맞지 않는 vector를 정리해 검색 결과의 신뢰도를 높인다.
+
+### 4. crash-safe state
+
+인덱싱 도중 실패할 수 있다.
+
+- embedding API 오류
+- 네트워크 timeout
+- rate limit
+- 프로세스 종료
+- 로컬 DB 오류
+
+MinSync는 처리가 완료된 뒤에 cursor와 manifest를 업데이트한다. 따라서 실패한 sync가 상태를 어중간하게 망가뜨리지 않는다.
+
+실패하면 다음 `minsync sync`에서 안전하게 다시 처리할 수 있다.
+
+### 5. chunker 선택
+
+MinSync는 여러 chunking 전략을 지원한다.
+
+기본값은 `recursive` chunker다.
+
+```bash
+minsync init
+```
+
+content-defined chunking을 사용하려면 다음처럼 초기화할 수 있다.
+
+```bash
+minsync init --chunker cdc
+```
+
+CDC 방식은 작은 수정이 생겼을 때 전체 chunk boundary가 크게 밀리는 문제를 줄이는 데 유리하다. 즉, 파일 앞부분에 작은 수정이 생겨도 뒤쪽 chunk들이 전부 새 chunk로 인식되는 상황을 완화할 수 있다.
+
+## 로컬 embedding도 가능하다
+
+OpenAI embedding을 사용할 수도 있지만, 로컬 embedding 서버를 붙일 수도 있다.
+
+예를 들어 Hugging Face Text Embeddings Inference, TEI를 사용할 수 있다.
+
+```bash
+brew install text-embeddings-inference
+text-embeddings-router --model-id intfloat/multilingual-e5-small --port 8080 --dtype float32
+```
+
+서버 상태를 확인한다.
+
+```bash
+curl http://localhost:8080/health
+```
+
+MinSync를 TEI embedder로 초기화한다.
+
+```bash
+minsync init --embedder tei:intfloat/multilingual-e5-small
+```
+
+설정 파일에서 dimension과 prefix를 맞춘다.
+
+```toml
+[embedder]
+id = "tei:intfloat/multilingual-e5-small"
+base_url = "http://localhost:8080"
+query_prefix = "query: "
+passage_prefix = "passage: "
+
+[vectorstore.options]
+dimension = 384
+```
+
+이후 전체 sync와 query를 실행한다.
+
+```bash
+minsync sync --full
+minsync query "검색어" --k 5
+```
+
+## CocoIndex와 비교하면?
+
+![CocoIndex GitHub repository screenshot](/images/blog/minsync-incremental-indexing/cocoindex-github.png)
+
+비슷한 문제의식으로 볼 수 있는 도구로 [`CocoIndex`](https://www.zdoc.app/ko/cocoindex-io/cocoindex)가 있다.
+
+CocoIndex는 AI Agent와 RAG 시스템을 위한 incremental indexing framework다. 코드베이스, 문서, Slack, PDF, 영상 등 다양한 source를 대상으로 Python 기반 declarative pipeline을 구성하고, 변경된 delta만 처리하는 방향을 지향한다.
+
+CocoIndex의 강점은 더 넓은 범위에 있다.
+
+- 다양한 데이터 source
+- Python 기반 선언형 pipeline
+- transform function 단위의 incremental recomputation
+- RAG, knowledge graph, production agent context에 가까운 큰 프레임워크
+
+반면 MinSync는 더 좁고 단순하다.
+
+- 로컬 디렉토리의 UTF-8 텍스트 파일 중심
+- CLI 중심
+- git 없이 파일 변경 추적
+- chunking, embedding, LanceDB 저장까지 한 번에 처리
+- Agent workspace나 문서 폴더를 빠르게 semantic search 가능하게 만드는 데 집중
+
+정리하면 이렇게 볼 수 있다.
+
+| 구분 | MinSync | CocoIndex |
+|---|---|---|
+| 성격 | 로컬 CLI 기반 증분 vector indexing | Python 기반 incremental indexing framework |
+| 대상 | UTF-8 텍스트 파일 | 코드, 문서, Slack, PDF 등 더 넓은 데이터 |
+| 사용 방식 | `minsync init`, `sync`, `query`, `watch` | Python으로 pipeline 선언 |
+| 저장소 | 로컬 LanceDB 기본 | 다양한 target 구성 가능 |
+| 장점 | 단순함, 빠른 도입, git-free 파일 추적 | 확장성, production pipeline, 다양한 source |
+| 적합한 경우 | Agent workspace, 로컬 문서 검색, 빠른 semantic index | 복잡한 RAG pipeline, enterprise context indexing |
+
+따라서 MinSync는 CocoIndex의 대체재라기보다는, 더 작고 구체적인 문제를 해결하는 도구로 보는 것이 좋다.
+
+> CocoIndex가 “AI용 데이터 파이프라인 프레임워크”에 가깝다면, MinSync는 “로컬 텍스트 폴더를 항상 최신 vector index로 유지하는 CLI”에 가깝다.
+
+## 어떤 상황에 적합한가
+
+MinSync는 다음 상황에 잘 맞는다.
+
+### 1. Agent workspace를 검색 가능하게 만들고 싶을 때
+
+Agent가 생성한 문서, 로그, 요약, 스펙 파일을 계속 검색 가능하게 유지할 수 있다.
+
+```bash
+minsync watch
+```
+
+를 켜두면 파일 변경에 따라 인덱스가 갱신된다.
+
+### 2. git 없는 폴더를 추적하고 싶을 때
+
+문서 폴더나 sandbox는 git repository가 아닐 수 있다. MinSync는 `.minsync/` manifest만으로 변경을 추적한다.
+
+### 3. 전체 재인덱싱 비용을 줄이고 싶을 때
+
+문서가 많지만 매번 일부만 바뀐다면 incremental indexing이 효과적이다. 바뀐 부분만 embedding하므로 비용과 시간을 줄일 수 있다.
+
+### 4. 로컬 semantic search가 필요할 때
+
+MinSync는 LanceDB를 로컬 vector store로 사용한다. 따라서 별도의 큰 인프라 없이 로컬에서 query까지 할 수 있다.
+
+```bash
+minsync query "이 프로젝트에서 인증 관련 결정은 뭐였지?" --k 5
+```
+
+이런 식으로 Agent나 개발자가 로컬 문서 묶음을 바로 검색할 수 있다.
+
+## 주의할 점
+
+MinSync는 텍스트 파일 중심 도구다. PDF, DOCX, XLSX, 이미지 같은 바이너리 파일에서 내용을 추출하지 않는다.
+
+이런 파일들은 `.minsyncignore`에 넣는 것이 좋다.
+
+```gitignore
+target/
+*.png
+*.pdf
+*.docx
+*.xlsx
+```
+
+만약 PDF나 DOCX까지 검색하고 싶다면 별도의 extraction pipeline으로 텍스트를 먼저 뽑고, 그 결과물을 MinSync가 인덱싱하도록 구성하는 편이 맞다.
+
+## 정리
+
+AI Agent가 좋은 답을 하려면 최신 컨텍스트가 필요하다. 하지만 파일은 계속 바뀌고, vector DB는 쉽게 stale해진다.
+
+MinSync는 이 문제를 단순한 방식으로 해결한다.
+
+- 파일 변경을 manifest로 추적한다.
+- 바뀐 텍스트만 다시 chunking한다.
+- 바뀐 chunk만 다시 embedding한다.
+- stale vector를 정리한다.
+- local LanceDB 인덱스를 최신 상태로 유지한다.
+- git 없이도 동작한다.
+
+복잡한 production RAG pipeline이 필요하다면 CocoIndex 같은 프레임워크가 더 적합할 수 있다. 하지만 로컬 문서 폴더, Agent workspace, 텍스트 기반 지식 저장소를 빠르게 semantic search 가능하게 만들고 싶다면 MinSync는 훨씬 가볍고 직접적인 선택지다.
+
+결국 MinSync의 가치는 단순하다.
+
+> 파일이 바뀐 만큼만 다시 인덱싱해서, Agent가 항상 최신 컨텍스트를 검색할 수 있게 만든다.
