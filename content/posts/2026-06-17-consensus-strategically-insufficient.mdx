@@ -1,0 +1,362 @@
+---
+title: "[논문 리뷰] Consensus is Strategically Insufficient — 합의보다 중요한 것은 불일치의 구조다"
+date: "2026-06-17"
+category: "paper-review"
+tags: ["multi-agent", "consensus", "reasoning-trace", "knowledge-representation", "content-moderation"]
+summary: "LLM 멀티에이전트 시스템에서 disagreement를 제거할 노이즈가 아니라 routing signal로 다루자는 논문. reasoning trace와 결론의 일치 여부를 조합해 네 가지 symbolic state를 만들고, 자동 결정·설명 보존·추가 맥락 요청·사람 escalation으로 연결한다."
+series: "논문 리뷰"
+seriesOrder: 10
+math: false
+---
+
+<Paper
+  title="Consensus is Strategically Insufficient: Reasoning-Trace Disagreement as a Knowledge-Representation Signal"
+  authors="Michał Wawer, Jarosław A. Chudziak"
+  year="2026"
+  venue="arXiv preprint"
+  arxiv="2606.04223"
+/>
+
+멀티에이전트 LLM 시스템을 만들면 자연스럽게 이런 설계를 하게 된다.
+
+여러 에이전트에게 같은 문제를 던지고, 서로 토론시키고, 마지막에는 투표나 consensus로 하나의 답을 뽑는다. 다수결, debate, round-table, Byzantine-tolerant aggregation 같은 방식은 모두 같은 방향을 본다.
+
+> 에이전트들이 disagree하면, 그 불일치를 줄여서 하나의 결론으로 수렴시키자.
+
+이 논문은 그 목표 자체가 부족하다고 말한다. 특히 content moderation, 법률 판단, 의료 triage, 정책 판단처럼 가치가 개입되는 문제에서는 disagreement가 단순 오류가 아닐 수 있다. 오히려 그 불일치 자체가 중요한 신호일 수 있다.
+
+핵심 주장은 간단하다.
+
+> 합의 여부만 보지 말고, **왜 다르게 판단했는지**를 구조화해서 다음 action을 결정하자.
+
+## 문제: consensus는 무엇을 지워버리는가
+
+일반적인 multi-agent system은 disagreement를 줄이도록 설계된다.
+
+- 여러 agent가 답한다.
+- majority vote를 한다.
+- 토론을 한 번 더 시킨다.
+- confidence가 높은 쪽을 고른다.
+- 최종 답 하나를 낸다.
+
+수학 문제나 코드 실행 결과처럼 정답이 비교적 명확한 task에서는 이 접근이 합리적이다. disagree한다는 것은 대체로 누군가가 잘못 이해했거나, reasoning에 실패했거나, hallucination을 냈다는 뜻일 가능성이 높다.
+
+하지만 content moderation 같은 task는 다르다.
+
+예를 들어 어떤 게시물이 정치적 비판인지, 혐오 발언인지, 맥락상 허용 가능한 풍자인지 판단해야 한다고 하자. 이때 disagreement는 단순 노이즈가 아닐 수 있다.
+
+- 한 agent는 harm minimization을 중시한다.
+- 다른 agent는 free expression을 중시한다.
+- 또 다른 agent는 community norm을 중시한다.
+- 법률 관점 agent는 legal threshold를 본다.
+
+이들이 같은 텍스트를 보고도 다른 결론을 낸다면, 다수결로 밀어버리는 순간 중요한 정보가 사라진다. 시스템은 “어느 쪽이 이겼는가”만 알게 되고, “왜 이 케이스가 논쟁적인가”는 잃어버린다.
+
+논문은 이 지점을 파고든다. disagreement를 없애야 할 결함이 아니라, multi-agent system의 epistemic state로 표현하자는 것이다.
+
+## 핵심 아이디어: reasoning trace와 decision을 분리해서 본다
+
+논문은 각 agent의 출력을 다음 네 가지로 본다.
+
+```text
+agent output = reasoning trace + decision + value profile + confidence
+```
+
+여기서 중요한 것은 두 가지다.
+
+1. reasoning trace: agent가 어떤 이유로 판단했는가
+2. decision: 최종적으로 KEEP/REMOVE 중 무엇을 골랐는가
+
+기존 aggregation은 보통 decision만 본다. 하지만 이 논문은 reasoning trace의 유사도와 decision agreement를 함께 본다.
+
+두 축은 다음과 같다.
+
+| 축 | 질문 |
+|---|---|
+| Reasoning similarity | agent들이 비슷한 이유를 들고 있는가? |
+| Conclusion agreement | agent들이 같은 결론을 냈는가? |
+
+이 두 축을 조합하면 네 가지 symbolic state가 나온다.
+
+| 상태 | reasoning | decision | 의미 | 기본 routing |
+|---|---|---|---|---|
+| CA, Convergent Agreement | 비슷함 | 같음 | 같은 이유로 같은 결론 | Auto |
+| DA, Divergent Agreement | 다름 | 같음 | 다른 이유지만 같은 결론 | AutoExplain |
+| DD, Divergent Disagreement | 다름 | 다름 | 케이스 해석 자체가 흔들림 | SeekContext |
+| CD, Convergent Disagreement | 비슷함 | 다름 | 같은 상황 인식, 다른 가치 판단 | Escalate |
+
+이 taxonomy에서 가장 흥미로운 상태는 CD, Convergent Disagreement다.
+
+agent들이 비슷한 reasoning trace를 갖고 있다면, 적어도 케이스를 완전히 다르게 읽은 것은 아니다. 그런데 결론이 갈린다. 그러면 문제는 사실 인식보다 가치 weighting일 가능성이 높다.
+
+즉, “무엇이 일어났는가”에는 동의하지만 “그래서 어떻게 해야 하는가”에서 갈리는 상황이다.
+
+이건 consensus로 눌러버리면 안 된다. 오히려 사람에게 올려야 하는 후보 신호다.
+
+## 네 가지 routing rule
+
+논문은 symbolic state를 바로 final label로 바꾸지 않는다. 대신 meta-action으로 연결한다.
+
+여기서 meta-action은 “무엇을 결정할 것인가”가 아니라 “이 케이스를 어떻게 처리할 것인가”다.
+
+### 1. CA: 자동 결정
+
+CA는 reasoning도 비슷하고 decision도 같다.
+
+이 경우는 자동화하기 가장 쉽다. 여러 agent가 같은 이유로 같은 결론에 도달했으므로, 시스템은 가장 지지받는 decision을 채택할 수 있다.
+
+```text
+CA -> Auto(decision)
+```
+
+### 2. DA: 자동 결정하되 설명 다양성 보존
+
+DA는 reasoning은 다르지만 decision은 같다.
+
+겉으로 보면 “어차피 같은 결론이니 자동 결정하면 되지 않나?”라고 생각할 수 있다. 하지만 논문은 explanation diversity를 보존해야 한다고 본다.
+
+다른 이해관계자에게는 다른 설명이 필요할 수 있기 때문이다.
+
+- 법무팀에는 legal rationale이 중요하다.
+- 커뮤니티 운영팀에는 community norm 설명이 중요하다.
+- 사용자에게는 harm/context 중심 설명이 더 납득될 수 있다.
+
+따라서 DA는 자동 결정하되, 다양한 설명을 함께 보존한다.
+
+```text
+DA -> AutoExplain(decision)
+```
+
+### 3. DD: 추가 맥락 요청
+
+DD는 reasoning도 다르고 decision도 다르다.
+
+이 경우는 agent들이 케이스 자체를 다르게 해석하고 있을 가능성이 크다. 누군가는 풍자로 보고, 누군가는 공격으로 보고, 누군가는 맥락 부족으로 본다.
+
+이때 바로 사람에게 escalate하는 것이 항상 최선은 아니다. 먼저 부족한 맥락을 더 모으는 편이 낫다.
+
+```text
+DD -> SeekContext
+```
+
+예를 들면 다음을 추가로 확인할 수 있다.
+
+- 이전 대화 맥락
+- 커뮤니티 규칙
+- 대상 집단 여부
+- 발화자의 의도와 관계성
+- 유사 케이스 precedent
+
+### 4. CD: 사람에게 escalation
+
+CD는 reasoning은 비슷하지만 decision이 갈리는 상태다.
+
+논문이 가장 강조하는 상태다. agent들이 같은 사실관계와 비슷한 이유를 공유하는데도 결론이 다르다면, 이는 가치 충돌일 수 있다.
+
+이런 케이스를 자동화로 밀어버리면 시스템은 normative conflict를 숨긴다.
+
+```text
+CD -> Escalate
+```
+
+여기서 escalation은 자동화 실패가 아니다. 오히려 시스템이 자기 한계를 정확히 인식하고, 사람이 판단해야 할 케이스를 구분한 것이다.
+
+## 중요한 포인트: rule은 defeasible하다
+
+논문의 routing rule은 절대 규칙이 아니다. defeasible rule, 즉 기본값이지만 더 강한 domain rule이 있으면 override될 수 있는 규칙이다.
+
+예를 들어 CA라고 해도 다음 조건이면 자동화하면 안 된다.
+
+- 법적 민감도가 높다.
+- 위해 가능성이 크다.
+- policy상 human review가 필수다.
+
+반대로 CD라고 해도 다음 조건이면 무조건 escalate하지 않을 수 있다.
+
+- risk가 낮다.
+- escalation 비용이 너무 크다.
+- 운영 정책상 설명 가능한 자동 처리가 허용된다.
+
+이 부분이 마음에 든다. 논문은 “네 칸 taxonomy를 만들었으니 그대로 쓰라”고 주장하지 않는다. disagreement state는 signal이고, 최종 action은 domain policy와 cost model까지 합쳐 결정해야 한다.
+
+실제 서비스에 넣으려면 이 설계가 맞다. moderation queue는 항상 capacity constraint가 있고, 모든 애매한 케이스를 사람에게 보낼 수 없다. 중요한 것은 escalation budget을 어디에 쓸지다. 이 논문은 그 budget allocation에 쓸 수 있는 구조적 신호를 제공한다.
+
+## 실험: content moderation에서 이 상태들이 실제로 의미가 있는가
+
+논문은 content moderation setting에서 sanity check를 한다.
+
+설정은 다음과 같다.
+
+- 같은 base model에서 다섯 개 agent를 만든다.
+- agent들은 서로 다른 moderation perspective를 가진다.
+  - harm-focused
+  - context-sensitive
+  - community-norms
+  - free-expression
+  - legal-framework
+- Measuring Hate Speech corpus에서 600개 item을 샘플링한다.
+- reasoning trace를 embedding해서 pairwise similarity를 계산한다.
+- decision distribution으로 agreement를 계산한다.
+- 각 케이스를 CA, DA, DD, CD 중 하나로 분류한다.
+
+결과는 꽤 직관적이다.
+
+| 상태 | 케이스 수 | 평균 human annotator disagreement |
+|---|---:|---:|
+| DA | 118 | 0.351 |
+| CA | 24 | 0.638 |
+| DD | 382 | 0.751 |
+| CD | 76 | 0.782 |
+
+논문이 예측한 순서는 다음이다.
+
+```text
+DA < CA < DD < CD
+```
+
+실험에서도 이 순서가 유지된다. 특히 CD가 human disagreement와 가장 강하게 맞물린다.
+
+또 하나 중요한 비교가 있다. 단순히 reasoning divergence, 즉 `1 - similarity`만 보는 baseline보다, 네 가지 category 기반 routing이 high human disagreement를 더 잘 잡는다.
+
+| predictor | precision | recall | F1 |
+|---|---:|---:|---:|
+| Category-based escalation | 0.401 | 0.845 | 0.548 |
+| Divergence only | 0.347 | 0.915 | 0.503 |
+| Random baseline | 0.333 | 0.505 | 0.401 |
+
+Divergence only는 recall은 높지만 precision이 낮다. 이유는 간단하다. reasoning이 다르다는 사실만으로는 “사람도 disagree할 가치 판단 문제”인지 알 수 없다. 서로 다른 이유로 같은 결론에 도달하는 DA도 있기 때문이다.
+
+결국 중요한 것은 disagreement의 양이 아니라 구조다.
+
+## 에이전트 시스템 설계 관점에서의 의미
+
+이 논문은 content moderation 논문처럼 보이지만, 나는 multi-agent orchestration 설계 논문으로 읽는 편이 더 유용하다고 본다.
+
+많은 agent framework가 “여러 agent를 돌려서 더 좋은 답 하나를 얻는 방법”에 집중한다. 그런데 실제 운영에서는 최종 답보다 더 중요한 질문이 있다.
+
+> 이 케이스를 자동으로 처리해도 되는가?
+
+예를 들어 코드 리뷰 agent 여러 개를 돌렸다고 하자.
+
+- 모두 같은 문제를 지적하고 같은 수정 방향을 제시한다면 자동 patch 후보가 된다.
+- 서로 다른 관점에서 봤지만 같은 결론이면, merge confidence는 높되 rationale을 보존하면 된다.
+- 서로 다른 문제를 보고 서로 다른 결론을 내면, 더 많은 test/context가 필요하다.
+- 같은 코드 smell을 봤는데 어떤 agent는 “critical”이라 하고 다른 agent는 “acceptable trade-off”라면, 이건 engineering judgment 문제다. 사람에게 올리는 게 맞다.
+
+즉 이 논문의 구조는 moderation 밖에서도 쓸 수 있다.
+
+- legal review
+- medical triage
+- hiring evaluation
+- security risk classification
+- architecture decision review
+- PR review escalation
+- AI agent self-evaluation
+
+공통점은 하나다. 정답 하나로 압축하기 전에, disagreement가 어떤 종류인지 봐야 한다.
+
+## 내 생각: reasoning trace를 버리지 말아야 한다
+
+요즘 agent system을 만들 때 자주 하는 실수는 최종 output만 저장하는 것이다.
+
+```text
+agent A: approve
+agent B: reject
+agent C: approve
+=> approve
+```
+
+이렇게만 남기면 시스템은 아무것도 배우지 못한다. 왜 approve했는지, reject한 agent가 어떤 가치를 더 크게 봤는지, 같은 문제를 본 것인지 다른 문제를 본 것인지 알 수 없다.
+
+이 논문은 reasoning trace를 “설명용 부산물”이 아니라 controller가 읽어야 할 state로 격상시킨다. 이 관점이 중요하다.
+
+LLM reasoning trace가 formal proof는 아니다. embedding similarity가 논리적 동치성을 보장하지도 않는다. 논문도 이 한계를 명확히 인정한다. 하지만 운영 시스템에서는 완벽한 formalism보다 쓸 만한 routing signal이 더 중요할 때가 많다.
+
+특히 multi-agent system에서 모든 disagreement를 debate round로 해결하려는 습관은 위험하다. 어떤 disagreement는 더 토론하면 해결되는 ambiguity이고, 어떤 disagreement는 더 토론해도 남는 value conflict다.
+
+이 둘을 구분하지 못하면 시스템은 둘 중 하나로 망가진다.
+
+- 애매한 케이스를 너무 빨리 사람에게 넘겨서 human queue를 터뜨린다.
+- 가치 충돌 케이스를 자동 consensus로 눌러서 책임 있는 판단을 회피한다.
+
+이 논문이 제안하는 CA/DA/DD/CD taxonomy는 단순하지만 바로 구현 가능한 중간층이다.
+
+## 구현한다면 이렇게 만들 것 같다
+
+실제 agent harness에 넣는다면 controller는 대략 이런 식으로 동작할 수 있다.
+
+```python
+from enum import Enum
+
+class State(Enum):
+    CA = "convergent_agreement"
+    DA = "divergent_agreement"
+    DD = "divergent_disagreement"
+    CD = "convergent_disagreement"
+
+
+def route(reasoning_similarity: float, agreement_ratio: float, risk: str) -> str:
+    high_sim = reasoning_similarity >= 0.72
+    agree = agreement_ratio >= 0.80
+
+    if high_sim and agree:
+        state = State.CA
+    elif not high_sim and agree:
+        state = State.DA
+    elif not high_sim and not agree:
+        state = State.DD
+    else:
+        state = State.CD
+
+    if risk == "legal_required_review":
+        return "escalate"
+
+    if state == State.CA:
+        return "auto"
+    if state == State.DA:
+        return "auto_with_explanations"
+    if state == State.DD:
+        return "seek_more_context"
+    if state == State.CD:
+        return "escalate"
+```
+
+핵심은 threshold 자체가 아니다. threshold는 domain마다 tuning해야 한다. 중요한 것은 controller가 final answer만 보지 않고, agent들의 reasoning geometry를 본다는 점이다.
+
+## 한계
+
+논문에도 한계가 있다.
+
+첫째, agent 다양성이 prompt 기반이다. 같은 base model에 다른 perspective prompt를 준 것이므로, 독립적인 agent population이라고 보기에는 약하다.
+
+둘째, reasoning similarity를 embedding cosine similarity로 측정한다. 실용적이지만 coarse하다. 두 trace가 비슷한 단어를 쓰지만 실제 논증 구조는 다를 수 있고, 반대로 표현은 달라도 같은 논증일 수 있다.
+
+셋째, routing rule은 hand-designed default다. 실제 배포에서는 domain risk, escalation cost, false positive/negative cost를 포함한 policy learning이나 formal verification이 필요하다.
+
+넷째, 실험 domain이 content moderation 하나다. medical triage나 legal assistance 같은 domain에서도 같은 ordering이 유지되는지 봐야 한다.
+
+그래도 아이디어의 가치가 줄어들지는 않는다. 이 논문은 완성된 system이라기보다, multi-agent controller를 설계할 때 넣어야 할 missing layer를 잘 짚는다.
+
+## 정리
+
+이 논문의 메시지는 한 문장으로 요약된다.
+
+> Multi-agent system에서 disagreement는 제거할 noise가 아니라, routing해야 할 knowledge representation signal이다.
+
+기존 consensus 중심 설계는 “어떻게 하나의 답으로 합칠 것인가”를 묻는다. 이 논문은 질문을 바꾼다.
+
+- 언제 자동 결정할 것인가?
+- 언제 다양한 설명을 보존할 것인가?
+- 언제 더 많은 맥락을 요구할 것인가?
+- 언제 사람에게 넘길 것인가?
+
+이 질문이 더 운영적이고, 더 책임 있는 agent system 설계에 가깝다.
+
+특히 가치가 개입되는 task에서는 “합의가 안 됐다”보다 “어떤 방식으로 합의가 안 됐는가”가 더 중요하다. CA/DA/DD/CD라는 네 칸짜리 단순한 taxonomy가 유용한 이유다.
+
+Consensus는 여전히 필요하다. 하지만 충분하지 않다. 좋은 multi-agent system은 disagreement를 없애는 시스템이 아니라, disagreement의 구조를 읽고 다음 action을 고르는 시스템이어야 한다.
+
+## 참고
+
+- arXiv: [Consensus is Strategically Insufficient: Reasoning-Trace Disagreement as a Knowledge-Representation Signal](https://arxiv.org/abs/2606.04223)
+- PDF: [https://arxiv.org/pdf/2606.04223](https://arxiv.org/pdf/2606.04223)

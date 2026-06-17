@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 16 Jun 2026 05:51:19 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 17 Jun 2026 00:18:11 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Consensus is Strategically Insufficient — 합의보다 중요한 것은 불일치의 구조다</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-17-consensus-strategically-insufficient/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-17-consensus-strategically-insufficient/</guid>
+      <description>LLM 멀티에이전트 시스템에서 disagreement를 제거할 노이즈가 아니라 routing signal로 다루자는 논문. reasoning trace와 결론의 일치 여부를 조합해 네 가지 symbolic state를 만들고, 자동 결정·설명 보존·추가 맥락 요청·사람 escalation으로 연결한다.</description>
+      <pubDate>Wed, 17 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>multi-agent</category>
+      <category>consensus</category>
+      <category>reasoning-trace</category>
+      <category>knowledge-representation</category>
+      <category>content-moderation</category>
+    </item>
     <item>
       <title>agentdir — Agent에게 작업하기 좋은 파일 구조를 따로 만들어주기</title>
       <link>https://seongyeon1.github.io/blog/2026-06-16-agentdir-agent-file-layout/</link>
