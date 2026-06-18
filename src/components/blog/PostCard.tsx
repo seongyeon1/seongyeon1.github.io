@@ -5,10 +5,11 @@ import TagBadge from "./TagBadge";
 import CategoryBadge from "./CategoryBadge";
 
 const categoryGradients: Record<Category, string> = {
-  study: "from-blue-500/20 to-indigo-500/20 dark:from-blue-500/10 dark:to-indigo-500/10",
+  concept: "from-blue-500/20 to-indigo-500/20 dark:from-blue-500/10 dark:to-indigo-500/10",
+  guide: "from-orange-500/20 to-amber-500/20 dark:from-orange-500/10 dark:to-amber-500/10",
   "paper-review": "from-purple-500/20 to-pink-500/20 dark:from-purple-500/10 dark:to-pink-500/10",
   project: "from-emerald-500/20 to-teal-500/20 dark:from-emerald-500/10 dark:to-teal-500/10",
-  tutorial: "from-orange-500/20 to-amber-500/20 dark:from-orange-500/10 dark:to-amber-500/10",
+  tool: "from-rose-500/20 to-red-500/20 dark:from-rose-500/10 dark:to-red-500/10",
 };
 
 const PostCard = ({ post }: { post: Post }) => {

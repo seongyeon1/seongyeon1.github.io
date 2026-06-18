@@ -10,11 +10,17 @@ import { formatDateShort, formatDateTime } from "@/lib/date";
 import type { Category } from "@/types/post";
 
 const categoryMeta: Record<Category, { label: string; icon: string; tone: string; stripe: string }> = {
-  study: {
-    label: "Study",
+  concept: {
+    label: "Concept",
     icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
     tone: "from-blue-500/15 to-blue-500/0 text-blue-600 dark:text-blue-400",
     stripe: "from-blue-500/40 via-indigo-500/40 to-blue-500/40",
+  },
+  guide: {
+    label: "Guide",
+    icon: "M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342",
+    tone: "from-amber-500/15 to-amber-500/0 text-amber-600 dark:text-amber-400",
+    stripe: "from-amber-500/40 via-orange-500/40 to-amber-500/40",
   },
   "paper-review": {
     label: "Paper Review",
@@ -28,11 +34,11 @@ const categoryMeta: Record<Category, { label: string; icon: string; tone: string
     tone: "from-emerald-500/15 to-emerald-500/0 text-emerald-600 dark:text-emerald-400",
     stripe: "from-emerald-500/40 via-teal-500/40 to-emerald-500/40",
   },
-  tutorial: {
-    label: "Tutorial",
-    icon: "M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342",
-    tone: "from-amber-500/15 to-amber-500/0 text-amber-600 dark:text-amber-400",
-    stripe: "from-amber-500/40 via-orange-500/40 to-amber-500/40",
+  tool: {
+    label: "Tool",
+    icon: "M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9",
+    tone: "from-rose-500/15 to-rose-500/0 text-rose-600 dark:text-rose-400",
+    stripe: "from-rose-500/40 via-red-500/40 to-rose-500/40",
   },
 };
 

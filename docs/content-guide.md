@@ -9,12 +9,12 @@ content/posts/YYYY-MM-DD-slug.mdx
 
 ## Frontmatter 템플릿
 
-### 공부 기록 / 튜토리얼
+### 개념 학습 (concept)
 ```yaml
 ---
 title: "트랜스포머 어텐션 메커니즘 완전 정복"
 date: "2025-04-01"
-category: "study"
+category: "concept"
 tags: ["transformer", "attention", "NLP"]
 summary: "Self-Attention이 왜 작동하는지, Q·K·V 행렬의 의미를 처음부터 이해한다."
 series: "트랜스포머 공부기"
@@ -23,6 +23,19 @@ math: true
 thumbnail: "/images/transformer-attention.png"
 ---
 ```
+
+### 가이드 / 튜토리얼 (guide)
+```yaml
+---
+title: "리눅스 네트워크 디버깅 — ss, curl, dig, tcpdump 실전 정리"
+date: "2025-04-05"
+category: "guide"
+tags: ["linux", "network", "debugging"]
+summary: "네트워크 문제를 만났을 때 바로 꺼내 쓰는 명령어를 실전 시나리오로 정리한다."
+---
+```
+
+> `concept`은 이론·원리 학습, `guide`는 도구·명령·인프라 how-to/레퍼런스. 직접 만든 것은 `project`(제작기), 오픈소스 도구·repo 소개는 `tool`.
 
 ### 논문 리뷰
 ```yaml
