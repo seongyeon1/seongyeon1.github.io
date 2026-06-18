@@ -1,0 +1,156 @@
+---
+title: "GitHub Pages에서 Cloudflare Pages로 — 블로그 배포 갈아타기"
+date: "2026-06-18T21:00:00+09:00"
+category: "tutorial"
+tags: ["cloudflare", "cloudflare-pages", "github-pages", "deployment", "docusaurus", "custom-domain", "ci-cd"]
+summary: "서브경로(/brain-cache/)에 묶여 있던 팀 블로그를 Cloudflare Pages로 옮기고 커스텀 서브도메인을 붙였다. baseUrl 변경, GitHub Actions 워크플로우 제거, DNS 연결까지 — 실제로 갈아타며 밟은 단계와 삽질을 정리한다."
+math: false
+---
+
+## 왜 옮겼나
+
+팀 기술 블로그(Docusaurus 기반)는 그동안 **GitHub Pages**로 배포하고 있었다. 동작은 했지만 두 가지가 계속 걸렸다.
+
+- **서브경로에 묶임** — URL이 `braincrew-lab.github.io/brain-cache/` 였다. `org.github.io` 아래 프로젝트 페이지라 `baseUrl`이 `/brain-cache/`로 고정됐고, 모든 링크·에셋 경로에 이 prefix가 따라붙었다.
+- **커스텀 도메인 + CDN을 제대로 쓰고 싶었다** — `blog.brain-crew.com`으로 깔끔하게 노출하고, 캐시·DNS를 한곳에서 관리하고 싶었다.
+
+마침 도메인을 Cloudflare에서 관리하고 있어서, **Cloudflare Pages(Git 연동)** 로 옮기면 빌드·배포·도메인·CDN이 한 대시보드로 정리된다. "repo를 연결하면 push마다 알아서 빌드·배포"라는 모델이 GitHub Actions 워크플로우를 직접 관리하는 것보다 단순했다.
+
+<Callout type="note">
+이 글은 Docusaurus 기준이지만, 핵심 흐름(빌드 산출물 디렉토리를 정적 호스팅에 연결 + 커스텀 도메인 + 기존 배포 정리)은 Next.js·Vite·Astro 등 정적/SSG 사이트 어디든 거의 동일하다.
+</Callout>
+
+## 배포 방식 3가지 — 뭘 고를까
+
+Cloudflare로 옮긴다고 할 때 선택지가 갈린다.
+
+| 방식 | 빌드 위치 | 적합한 경우 |
+| --- | --- | --- |
+| **Cloudflare Pages (Git 연동)** | Cloudflare | repo만 연결하면 끝. 표준 빌드면 가장 단순 ✅ |
+| Cloudflare Pages (Actions 업로드) | GitHub Actions | 빌드 환경을 세밀히 제어해야 할 때 |
+| DNS/CDN만 Cloudflare | GitHub Pages 유지 | 배포는 그대로 두고 도메인만 얹을 때 |
+
+나는 **Git 연동**을 골랐다. 빌드가 표준 `npm run build`라 Cloudflare에 맡기면 되고, PR마다 프리뷰 URL이 자동으로 붙는 게 컸다. "DNS만 Cloudflare"는 GitHub Pages를 계속 쓰는 거라 "repo를 Cloudflare에 연결" 목적과 안 맞았다.
+
+## 1. 코드 변경 — `baseUrl`이 핵심
+
+가장 중요한 변경은 **서브경로 탈출**이다. 커스텀 서브도메인 루트(`blog.brain-crew.com/`)에 배포하므로 `baseUrl`을 `/brain-cache/`에서 `/`로 바꿔야 한다.
+
+```ts title="docusaurus.config.ts"
+const config: Config = {
+  // 변경 전
+  // url: 'https://braincrew-lab.github.io',
+  // baseUrl: '/brain-cache/',
+
+  // 변경 후
+  url: 'https://blog.brain-crew.com',
+  baseUrl: '/',
+  // ...
+};
+```
+
+이게 전부가 아니다. **하드코딩된 옛 URL**이 곳곳에 숨어 있다. 나는 grep으로 훑어서 같이 고쳤다.
+
+```bash
+# 옛 도메인/서브경로 잔재 찾기
+grep -rnE "github\.io|/brain-cache/" --include="*.ts" --include="*.txt" src static *.ts
+```
+
+걸린 곳:
+
+- **footer의 RSS 링크** — `…github.io/brain-cache/blog/rss.xml` → `https://blog.brain-crew.com/blog/rss.xml`
+- **`static/robots.txt`의 sitemap 경로** — sitemap URL도 새 도메인으로
+
+```txt title="static/robots.txt"
+User-agent: *
+Allow: /
+
+Sitemap: https://blog.brain-crew.com/sitemap.xml
+```
+
+<Callout type="tip">
+도메인 식별자처럼 보여도 **건드리면 안 되는 것**이 있다. giscus 댓글의 `repo="org/repo"`나 Docusaurus의 `organizationName`/`projectName`은 **GitHub 저장소 식별자**지 사이트 URL이 아니다. 도메인을 바꿔도 그대로 둬야 한다.
+</Callout>
+
+## 2. 기존 GitHub Pages 워크플로우 제거
+
+Cloudflare Pages가 빌드·배포를 담당하므로, 기존 GitHub Actions의 Pages 배포 워크플로우는 **지운다**. 안 지우면 push마다 두 곳(`github.io`와 Cloudflare)으로 **이중 배포**가 돌면서 혼란스럽고 리소스만 낭비된다.
+
+```bash
+git rm .github/workflows/deploy.yml
+```
+
+<Callout type="warning">
+순서가 중요하다. 워크플로우를 지운 변경을 **Cloudflare 연결 전에** main에 머지하면, 그 사이엔 어디에도 새로 배포되지 않는 공백이 생긴다. **Cloudflare Pages 프로젝트를 먼저 만들어 연결**해 두면, 머지되는 시점에 첫 자동 빌드가 돈다.
+</Callout>
+
+## 3. 빌드 검증 — 머지 전에 로컬에서
+
+설정을 바꿨으면 **머지 전에 로컬 빌드로 확인**하는 게 안전하다. 특히 `baseUrl` 변경은 산출물 전체의 경로에 영향을 준다.
+
+```bash
+npm run build
+
+# 옛 서브경로가 산출물에 남아 있지 않은지 확인 (빈 결과여야 정상)
+grep -rl "/brain-cache/" build/index.html build/sitemap.xml
+
+# sitemap 호스트가 새 도메인 루트로 생성됐는지 확인
+grep -oE "https://[^<]+" build/sitemap.xml | head -3
+# → https://blog.brain-crew.com/about ...
+```
+
+`/brain-cache/` 잔재가 없고 sitemap이 새 도메인 루트로 나오면 코드 쪽은 끝이다.
+
+## 4. Cloudflare Pages 프로젝트 연결 (대시보드)
+
+여기부터는 코드가 아니라 Cloudflare 대시보드 작업이다.
+
+1. **Workers & Pages → Create → Pages → Connect to Git**
+2. 대상 저장소 선택 (`braincrew-lab/brain-cache`)
+3. 빌드 설정
+   - **Production branch**: `main`
+   - **Framework preset**: Docusaurus (없으면 None)
+   - **Build command**: `npm run build`
+   - **Build output directory**: `build`
+   - Node 버전 고정이 필요하면 환경변수 `NODE_VERSION=20`
+4. **Save and Deploy** → 우선 `*.pages.dev` 임시 URL로 빌드가 성공하는지 확인
+
+<Callout type="tip">
+Next.js라면 output dir은 `out`(static export) 또는 Vercel/어댑터 설정에 따라 달라지고, Vite는 `dist`다. "빌드 산출물이 떨어지는 폴더"를 정확히 지정하는 게 포인트다.
+</Callout>
+
+## 5. 커스텀 도메인 + DNS
+
+임시 URL에서 빌드가 확인됐으면 도메인을 붙인다.
+
+- Pages 프로젝트 → **Custom domains → Set up a custom domain** → `blog.brain-crew.com`
+- 루트 도메인(`brain-crew.com`)이 **이미 Cloudflare에서 DNS 관리 중**이면 → `blog` CNAME이 `<project>.pages.dev`로 **자동 생성**된다. 가장 편한 경로다.
+- Cloudflare가 DNS를 관리하지 않으면 → 도메인 등록기관/네임서버 쪽에 `blog` CNAME을 `<project>.pages.dev`로 직접 추가해야 한다.
+
+SSL 인증서는 Cloudflare가 자동 발급하므로, 전파(보통 수 분)만 기다리면 `https://blog.brain-crew.com`이 뜬다.
+
+## 6. 마무리 — 옛 배포 정리
+
+- 기존 GitHub Pages는 **Settings → Pages**에서 끈다. 검색 유입 보존이 필요하면 옛 URL → 새 URL **리다이렉트**를 고려한다.
+- 검색엔진에는 새 sitemap(`blog.brain-crew.com/sitemap.xml`)을 다시 제출한다.
+
+## 삽질 기록
+
+전환하면서 실제로 걸렸던 것들.
+
+- **baseUrl 잔재** — config의 `baseUrl`만 바꾸면 끝일 것 같지만, footer 링크·robots.txt·문서 내 하드코딩 링크가 옛 경로를 물고 있었다. **grep으로 전수 확인**이 답.
+- **이중 배포** — GitHub Actions 워크플로우를 안 지우면 두 곳에 배포된다. 옮기는 순간 정리.
+- **한글 파일명 NFD/NFC** — macOS에서 git pull 후 한글 파일명이 `??`(untracked)로 보이는 현상. macOS는 파일명을 NFD(자모 분리)로 저장하는데 git이 NFC로 추적해 생기는 표시 이슈다. `git config core.precomposeunicode true`로 완화된다. 이번 전환과 직접 관련은 없지만 같이 마주쳤다.
+- **PR로 안전하게** — 설정 변경을 main에 직접 밀지 않고 PR로 올리면, 빌드 검증 결과를 본문에 적어두고 리뷰·롤백이 쉽다.
+
+## 정리
+
+| 단계 | 했던 일 |
+| --- | --- |
+| 코드 | `url`/`baseUrl` 변경, RSS·robots sitemap 갱신, 하드코딩 URL 정리 |
+| CI | GitHub Pages 워크플로우 제거 (이중 배포 방지) |
+| 검증 | 로컬 `npm run build` + 산출물 grep |
+| Cloudflare | Pages 프로젝트 Git 연동, build/output 설정 |
+| 도메인 | 커스텀 서브도메인 + CNAME, SSL 자동 |
+
+핵심은 **"서브경로 탈출(baseUrl) + 빌드 위임 + 도메인 연결"** 세 가지다. Cloudflare Pages의 Git 연동은 워크플로우를 직접 들고 있지 않아도 push만으로 배포가 돌고, PR 프리뷰가 공짜로 붙는 게 가장 편했다. 다음엔 옛 URL 리다이렉트와 Cloudflare 캐시 규칙을 손볼 차례다.
