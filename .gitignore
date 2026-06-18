@@ -31,7 +31,8 @@ next-env.d.ts
 .vercel
 
 # claude / sy
-# .claude
+CLAUDE.md
+.claude/
 .sy-memory
 .superpowers/
 
@@ -46,8 +47,6 @@ NOTION_SETUP.md
 SOUL.md
 TOOLS.md
 USER.md
-BLOG_PLAN.md
-MEMORY_RESEARCH_SUMMARY.md
 memory/
 state/
 skills/
