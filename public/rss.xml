@@ -6,7 +6,36 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 17 Jun 2026 00:18:11 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 20 Jun 2026 02:18:54 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] HarnessX — 에이전트 하네스를 실행 트레이스로 진화시키기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-20-harnessx-agent-harness-foundry/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-20-harnessx-agent-harness-foundry/</guid>
+      <description>Xiaomi 연구진의 HarnessX 논문을 바탕으로, 프롬프트·도구·메모리·제어 흐름으로 구성된 에이전트 하네스를 1급 객체로 만들고 실행 트레이스로 자동 진화시키는 방법을 정리한다.</description>
+      <pubDate>Sat, 20 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>harness</category>
+      <category>self-evolving-agents</category>
+      <category>trace</category>
+      <category>reinforcement-learning</category>
+      <category>Xiaomi</category>
+    </item>
+    <item>
+      <title>GitHub Pages에서 Cloudflare Pages로 — 블로그 배포 갈아타기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-18-github-pages-to-cloudflare-pages-migration/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-18-github-pages-to-cloudflare-pages-migration/</guid>
+      <description>서브경로(/brain-cache/)에 묶여 있던 팀 블로그를 Cloudflare Pages로 옮기고 커스텀 서브도메인을 붙였다. baseUrl 변경, GitHub Actions 워크플로우 제거, DNS 연결까지 — 실제로 갈아타며 밟은 단계와 삽질을 정리한다.</description>
+      <pubDate>Thu, 18 Jun 2026 12:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>cloudflare</category>
+      <category>cloudflare-pages</category>
+      <category>github-pages</category>
+      <category>deployment</category>
+      <category>docusaurus</category>
+      <category>custom-domain</category>
+      <category>ci-cd</category>
+    </item>
     <item>
       <title>[논문 리뷰] Consensus is Strategically Insufficient — 합의보다 중요한 것은 불일치의 구조다</title>
       <link>https://seongyeon1.github.io/blog/2026-06-17-consensus-strategically-insufficient/</link>
@@ -26,7 +55,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-16-agentdir-agent-file-layout/</guid>
       <description>정리되지 않은 원본 폴더는 그대로 두고, Agent에게는 작업 목적에 맞는 가상 파일 트리를 제공하는 agentdir의 문제의식과 사용법을 정리한다.</description>
       <pubDate>Tue, 16 Jun 2026 00:00:00 GMT</pubDate>
-      <category>project</category>
+      <category>tool</category>
       <category>agent</category>
       <category>filesystem</category>
       <category>context-engineering</category>
@@ -39,7 +68,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-16-minsync-incremental-indexing/</guid>
       <description>MinSync는 git 없이 파일 변경을 추적하고, 바뀐 텍스트만 다시 chunking·embedding해서 로컬 vector index를 최신 상태로 유지한다.</description>
       <pubDate>Tue, 16 Jun 2026 00:00:00 GMT</pubDate>
-      <category>project</category>
+      <category>tool</category>
       <category>agent</category>
       <category>rag</category>
       <category>vector-db</category>
@@ -66,7 +95,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-13-taste-driven-ai-engineer/</guid>
       <description>AI가 코드 생성을 자동화하는 시대, 엔지니어의 진정한 경쟁력은 &apos;무엇을 만들지&apos; 판단하는 &apos;취향&apos;으로 이동했다. 인식, 나침반, 비전의 3가지 능력을 키워 30배의 엔지니어가 되는 법.</description>
       <pubDate>Sat, 13 Jun 2026 02:35:00 GMT</pubDate>
-      <category>study</category>
+      <category>concept</category>
       <category>ai-engineering</category>
       <category>engineering-philosophy</category>
       <category>taste</category>
@@ -93,7 +122,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-10-blog-deployment-automation-build-cache-preview/</guid>
       <description>3편까지 글 쓰고 발행하는 콘텐츠 파트는 끝냈다. 이제 배포 인프라다 — GitHub Actions로 빌드 캐시를 활용해 배포 속도를 10배 줄이고, PR마다 자동 프리뷰 URL을 만들자.</description>
       <pubDate>Wed, 10 Jun 2026 00:00:00 GMT</pubDate>
-      <category>tutorial</category>
+      <category>guide</category>
       <category>blog</category>
       <category>github-actions</category>
       <category>nextjs</category>
@@ -166,7 +195,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-03-self-evolving-llm-agents/</guid>
       <description>LLM 에이전트가 스스로 성능을 개선할 때 &apos;업데이트 생성&apos;과 &apos;업데이트 활용&apos;이 완전히 다른 능력이라는 논문 리뷰. 소형 모델도 좋은 개선안을 만들지만, 그걸 활용하는 건 중간 규모 모델이 최고.</description>
       <pubDate>Wed, 03 Jun 2026 02:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>concept</category>
       <category>self-evolving</category>
       <category>agents</category>
       <category>prompt-engineering</category>
@@ -192,7 +221,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-25-git-branching/</guid>
       <description>브랜치가 왜 41바이트짜리 포인터인지부터 — switch로 만들고 옮겨다니기, fast-forward와 3-way merge의 차이, 머지된 브랜치 정리, topic 브랜치 워크플로, 그리고 실무 팁까지. Git 시리즈 3편.</description>
       <pubDate>Mon, 25 May 2026 11:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>git</category>
       <category>branch</category>
       <category>merge</category>
@@ -203,7 +232,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-25-git-undo-guide/</guid>
       <description>Git의 다섯 가지 되돌리기 명령 — reset, revert, restore, reflog, stash — 을 &apos;세 개의 트리&apos; 관점에서 정확히 이해하고, 실수 상황별 복구 레시피를 익힌다.</description>
       <pubDate>Mon, 25 May 2026 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>git</category>
       <category>reset</category>
       <category>revert</category>
@@ -285,7 +314,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-20-git-merge-vs-rebase/</guid>
       <description>merge는 기록, rebase는 재서술. 두 명령의 동작과 황금률(공유 브랜치 rebase 금지), 그리고 팀 규약 패턴 세 가지를 정리한다.</description>
       <pubDate>Wed, 20 May 2026 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>git</category>
       <category>merge</category>
       <category>rebase</category>
@@ -308,7 +337,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-18-blog-seo-og-rss-jsonld/</guid>
       <description>2편에서 검색 노출까지 했으니 이번엔 마감 — OG 이미지 자동 생성으로 공유 링크 살리고, /rss.xml로 구독자를 받고, Article JSON-LD로 검색 결과를 풍부하게.</description>
       <pubDate>Mon, 18 May 2026 00:00:00 GMT</pubDate>
-      <category>tutorial</category>
+      <category>guide</category>
       <category>seo</category>
       <category>open-graph</category>
       <category>rss</category>
@@ -323,7 +352,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-04-monitoring-logging/</guid>
       <description>배포 완료 후 &apos;지금 서버는 잘 돌고 있나?&apos; 하고 싶으면? 모니터링과 로깅이 필요하다. 메트릭 수집(Prometheus) → 시각화(Grafana) → 알람 설정, 그리고 로그 수집(ELK)으로 운영 환경의 모든 신호를 포착하자.</description>
       <pubDate>Sun, 17 May 2026 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>monitoring</category>
       <category>logging</category>
       <category>prometheus</category>
@@ -337,7 +366,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-03-gitops-cicd/</guid>
       <description>지금까지 Docker, Kubernetes, AWS, 배포 전략을 배웠다. 이제 마지막 퍼즐: 자동화. 코드를 push하는 순간 테스트·빌드·배포가 자동으로 일어난다면? GitHub Actions로 CI/CD 파이프라인을 구성하고, GitOps 원칙으로 선언형 배포를 관리하자.</description>
       <pubDate>Sat, 16 May 2026 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>gitops</category>
       <category>ci-cd</category>
       <category>github-actions</category>
@@ -350,7 +379,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-02-deployment-strategies/</guid>
       <description>새 버전을 배포할 때 서비스를 멈출 수 없다. 사용자는 계속 접속 중이다. 따라서 배포 방식이 중요하다. Blue-Green, Canary, Rolling 배포 전략을 비교하고, 각 상황에서 언제 어떤 전략을 쓸지 정리한다.</description>
       <pubDate>Fri, 15 May 2026 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>deployment</category>
       <category>devops</category>
       <category>zero-downtime</category>
@@ -364,7 +393,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-01-aws-core-services/</guid>
       <description>Docker와 Kubernetes는 애플리케이션 배포 도구다. 그 애플리케이션이 실제로 돌아갈 서버(인프라)는? AWS는 On-demand 방식으로 필요한 컴퓨팅, 스토리지, 데이터베이스를 빌려주는 클라우드 플랫폼이다. EC2·S3·RDS·VPC의 역할과 실무 사용법을 정리한다.</description>
       <pubDate>Thu, 14 May 2026 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>aws</category>
       <category>cloud</category>
       <category>ec2</category>
@@ -379,7 +408,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-31-kubernetes-fundamentals/</guid>
       <description>Docker로 Container를 만들었다면, 이제 수십~수백 개의 Container를 어떻게 관리할까? Kubernetes(k8s)는 Container 자동 배포, 스케일링, 네트워킹을 담당한다. Pod·Service·Deployment의 핵심 개념과 워크플로우를 정리한다.</description>
       <pubDate>Wed, 13 May 2026 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>kubernetes</category>
       <category>k8s</category>
       <category>container-orchestration</category>
@@ -393,7 +422,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-30-docker-container-basics/</guid>
       <description>&quot;내 PC에서는 잘 되는데 서버에서는 안 돼&quot;라는 문제를 근본적으로 해결하는 Container와 Docker의 개념, 구조(이미지·컨테이너·레지스트리), 기본 명령어, 그리고 VM과의 차이를 정리한다.</description>
       <pubDate>Tue, 12 May 2026 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>docker</category>
       <category>container</category>
       <category>deployment</category>
@@ -406,7 +435,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-11-google-search-console-github-pages/</guid>
       <description>정적 블로그를 배포만 해선 구글에 안 뜬다 — Search Console 속성 등록, 소유권 확인, sitemap.xml 제출, URL 색인 요청까지 GitHub Pages + Next.js 기준으로 정리.</description>
       <pubDate>Mon, 11 May 2026 00:00:00 GMT</pubDate>
-      <category>tutorial</category>
+      <category>guide</category>
       <category>google-search-console</category>
       <category>seo</category>
       <category>github-pages</category>
@@ -433,7 +462,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-10-giscus-comments-setup/</guid>
       <description>Next.js 정적 블로그에 GitHub Discussions 기반 Giscus 댓글을 붙이기 위한 사전 설정 — Discussions 활성화부터 카테고리 생성, Giscus 앱 설치, 설정값 수집까지.</description>
       <pubDate>Sun, 10 May 2026 00:00:00 GMT</pubDate>
-      <category>tutorial</category>
+      <category>guide</category>
       <category>giscus</category>
       <category>github-discussions</category>
       <category>comments</category>
@@ -446,7 +475,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-05-08-python-convention-ruff/</guid>
       <description>AI가 코드를 짜는 시대, 사람의 리뷰 속도는 더 이상 따라가지 못한다. 누가 썼든 같은 기준으로 정규화되도록 시스템을 짜야 한다. Ruff·Pre-commit부터 mypy·pytest, CLAUDE.md까지의 5-layer 스택을 정리한다.</description>
       <pubDate>Fri, 08 May 2026 13:15:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>python</category>
       <category>ruff</category>
       <category>linter</category>
@@ -482,7 +511,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-28-linux-text-processing/</guid>
       <description>파이프로 연결되는 7~8개의 작은 도구가 곧 데이터 처리 언어다. 한 줄짜리 명령으로 로그를 분석하고 CSV를 다듬는 실전 패턴 위주로 정리.</description>
       <pubDate>Tue, 28 Apr 2026 14:05:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>linux</category>
       <category>cli</category>
       <category>text-processing</category>
@@ -493,7 +522,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-22-linux-ssh-scp-rsync/</guid>
       <description>원격 서버 접속, 키 인증, ~/.ssh/config로 별명 만들기, 포트 포워딩, 그리고 파일 옮기는 scp/rsync까지. 실전에서 매일 쓰는 패턴 위주로 정리.</description>
       <pubDate>Wed, 22 Apr 2026 12:40:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>linux</category>
       <category>cli</category>
       <category>ssh</category>
@@ -505,7 +534,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-15-linux-network-debugging/</guid>
       <description>포트가 열려있는지, 도메인이 어디로 가는지, 연결이 어디서 끊기는지 — 네트워크 문제를 좁혀가는 CLI 도구 한 묶음. ss · curl · dig · ping · traceroute · tcpdump.</description>
       <pubDate>Wed, 15 Apr 2026 11:35:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>linux</category>
       <category>cli</category>
       <category>network</category>
@@ -516,7 +545,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-09-linux-permissions/</guid>
       <description>ls -l의 그 알 수 없는 &apos;drwxr-xr-x&apos;를 읽는 법부터, chmod의 숫자/기호 두 가지 표기, chown으로 소유권 옮기기, sudo의 올바른 쓰임, 그리고 setuid·sticky bit까지.</description>
       <pubDate>Thu, 09 Apr 2026 13:25:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>linux</category>
       <category>cli</category>
       <category>permissions</category>
@@ -527,7 +556,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-04-02-linux-process-monitoring/</guid>
       <description>CPU·메모리·디스크가 어떻게 쓰이고 있는지 빠르게 확인하는 명령어들. top·htop·btop으로 한눈에, ps로 프로세스 콕 집기, free·df·du·iostat까지 흐름 순서로 정리.</description>
       <pubDate>Thu, 02 Apr 2026 12:50:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>linux</category>
       <category>cli</category>
       <category>monitoring</category>
@@ -538,7 +567,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-03-26-linux-log-commands/</guid>
       <description>서버에서 장애 조사할 때 가장 먼저 손이 가는 도구들. tail로 따라가기, less로 탐색, journalctl로 systemd 로그 보기, lnav 같은 현대적 대안까지 정리.</description>
       <pubDate>Thu, 26 Mar 2026 14:10:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>linux</category>
       <category>cli</category>
       <category>logging</category>
@@ -549,7 +578,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-03-19-file-search-commands/</guid>
       <description>터미널에서 &apos;그 파일 어디 있더라&apos;와 &apos;이 단어 어느 파일에 있더라&apos;를 빠르게 해결하는 네 가지 도구 — find, grep, fd, ripgrep을 한 번에 정리한다.</description>
       <pubDate>Thu, 19 Mar 2026 13:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>linux</category>
       <category>cli</category>
     </item>
@@ -559,7 +588,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-03-12-tldr-linux-commands/</guid>
       <description>man 페이지를 끝까지 읽지 않고도 자주 쓰는 옵션 한두 개만 빠르게 확인하고 싶을 때, tldr이 가장 편하다. 설치부터 실전 활용까지 정리.</description>
       <pubDate>Thu, 12 Mar 2026 10:45:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>linux</category>
       <category>cli</category>
     </item>
@@ -569,7 +598,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-03-05-git-convention/</guid>
       <description>Conventional Commits, 브랜치 네이밍, PR 템플릿 — 협업 없이 혼자 쓰는 프로젝트라도 컨벤션을 정해두면 미래의 내가 고마워한다.</description>
       <pubDate>Thu, 05 Mar 2026 12:30:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>git</category>
       <category>convention</category>
       <category>workflow</category>
@@ -580,7 +609,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-26-git-basics/</guid>
       <description>Git을 처음 만지는 사람이 첫 commit부터 push까지 걸어가는 데 필요한 9개 명령어를 흐름 순서대로 정리한다. config / init / status / add / commit / remote / push / clone / pull.</description>
       <pubDate>Thu, 26 Feb 2026 11:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>git</category>
       <category>github</category>
     </item>
@@ -590,7 +619,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-19-markdown-extended/</guid>
       <description>Markdown 시리즈 3편(완). GitHub Flavored Markdown(체크박스, 각주, 자동 링크 등)부터 MDX의 React 컴포넌트 임베딩까지, 표준을 넘어서는 확장 문법을 정리한다.</description>
       <pubDate>Thu, 19 Feb 2026 13:40:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>markdown</category>
       <category>GFM</category>
       <category>MDX</category>
@@ -601,7 +630,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-12-markdown-code-tables-images/</guid>
       <description>Markdown 시리즈 2편. 자주 쓰지만 자주 깨지는 영역 — 코드 블록(언어 지정, 라인 강조), 표(정렬), 이미지(크기·캡션)를 정리한다.</description>
       <pubDate>Thu, 12 Feb 2026 12:15:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>markdown</category>
       <category>writing</category>
     </item>
@@ -611,7 +640,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-05-markdown-basics/</guid>
       <description>Markdown 시리즈 1편. 헤딩, 강조, 리스트, 링크, 인용 등 어떤 환경에서도 통하는 기본 문법을 한 번에 정리한다.</description>
       <pubDate>Thu, 05 Feb 2026 05:30:00 GMT</pubDate>
-      <category>study</category>
+      <category>guide</category>
       <category>markdown</category>
       <category>writing</category>
     </item>
@@ -621,7 +650,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-02-02-prompt-optimization-comparison/</guid>
       <description>자동 프롬프트 최적화의 4대 접근(APE / ProTeGi / MetaSPO / GEPA)을 한 자리에 두고, 알고리즘 패러다임·샘플 효율·전이 가능성·해석 가능성으로 비교한다. 마지막으로 실무에서 어떤 조합으로 묶어 쓰면 좋은지 정리.</description>
       <pubDate>Mon, 02 Feb 2026 06:40:00 GMT</pubDate>
-      <category>study</category>
+      <category>concept</category>
       <category>prompt-optimization</category>
       <category>survey</category>
       <category>DSPy</category>
@@ -655,7 +684,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-08-15-transformer-feed-forward-network/</guid>
       <description>Attention이 토큰끼리 섞는 일을 한다면, FFN은 각 토큰을 변환하는 역할을 한다. 단순한 2층 MLP이지만 모델 전체 파라미터의 약 2/3를 차지하는 이 컴포넌트의 구조, 활성 함수 변천(ReLU → GELU → SwiGLU), key-value memory 해석, MoE까지 정리한다.</description>
       <pubDate>Thu, 15 Aug 2024 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>concept</category>
       <category>transformer</category>
       <category>FFN</category>
       <category>feed-forward</category>
@@ -670,7 +699,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-08-01-transformer-layernorm-residual/</guid>
       <description>Transformer가 12층, 24층, 96층까지 깊게 쌓일 수 있는 이유는 Residual Connection과 Layer Normalization 두 컴포넌트 덕분이다. 각각의 역할, BatchNorm과의 차이, 그리고 Pre-LN vs Post-LN 트레이드오프를 정리한다.</description>
       <pubDate>Thu, 01 Aug 2024 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>concept</category>
       <category>transformer</category>
       <category>layer-norm</category>
       <category>residual-connection</category>
@@ -685,7 +714,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-07-15-transformer-positional-encoding/</guid>
       <description>Self-Attention은 토큰 순서를 모르기 때문에 위치 정보를 따로 주입해야 한다. Transformer가 사용한 sin/cos Positional Encoding의 수식, 왜 이런 형태인지, 학습 가능한 임베딩과의 차이를 정리한다.</description>
       <pubDate>Mon, 15 Jul 2024 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>concept</category>
       <category>transformer</category>
       <category>positional-encoding</category>
       <category>sin-cos</category>
@@ -699,7 +728,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-07-01-transformer-3-attentions-deep-dive/</guid>
       <description>이전 글에서 등장한 Transformer의 3가지 Attention(Encoder Self-Attention, Decoder Masked Self-Attention, Encoder-Decoder Attention)이 각각 어떻게 동작하는지, 그리고 Multi-Head Attention이 왜 필요한지 정리한다.</description>
       <pubDate>Mon, 01 Jul 2024 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>concept</category>
       <category>transformer</category>
       <category>attention</category>
       <category>self-attention</category>
@@ -715,7 +744,7 @@
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2024-06-24-nlp-attention-query-key-value-transformer-attention-3/</guid>
       <description>Transformer를 이해하기 위한 첫걸음으로 Attention의 직관, Q·K·V의 역할, Scaled Dot-Product Attention 수식, 그리고 Transformer 내부에 등장하는 3가지 Attention 종류를 정리한다.</description>
       <pubDate>Mon, 24 Jun 2024 00:00:00 GMT</pubDate>
-      <category>study</category>
+      <category>concept</category>
       <category>transformer</category>
       <category>attention</category>
       <category>NLP</category>
