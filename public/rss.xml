@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 20 Jun 2026 02:18:54 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 20 Jun 2026 02:24:40 GMT</lastBuildDate>
     <item>
       <title>[논문 리뷰] HarnessX — 에이전트 하네스를 실행 트레이스로 진화시키기</title>
       <link>https://seongyeon1.github.io/blog/2026-06-20-harnessx-agent-harness-foundry/</link>
@@ -20,6 +20,21 @@
       <category>trace</category>
       <category>reinforcement-learning</category>
       <category>Xiaomi</category>
+    </item>
+    <item>
+      <title>루프 엔지니어링 — 프롬프트가 아니라 검증 루프를 설계하는 일</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-20-loop-engineering-agent-feedback-systems/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-20-loop-engineering-agent-feedback-systems/</guid>
+      <description>Loop Engineering은 에이전트에게 한 번 더 좋은 프롬프트를 쓰는 일이 아니라, 발견·계획·실행·검증·반복 사이클을 시스템으로 설계하는 일이다.</description>
+      <pubDate>Sat, 20 Jun 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>agent</category>
+      <category>loop-engineering</category>
+      <category>automation</category>
+      <category>workflow</category>
+      <category>subagents</category>
+      <category>memory</category>
+      <category>ai-engineering</category>
     </item>
     <item>
       <title>GitHub Pages에서 Cloudflare Pages로 — 블로그 배포 갈아타기</title>
