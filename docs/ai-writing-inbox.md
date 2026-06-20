@@ -218,3 +218,187 @@
 - suggested-tags: [tensorrt, quantization, fp8, inference]
 - status: idea
 
+### 2026-06-15 — Recursive Agent Harnesses: subagent를 코드처럼 재귀 호출하는 패턴
+- type: paper
+- source: http://arxiv.org/abs/2606.13643v1
+- why-now: Anthropic/GitHub류 코딩 에이전트가 단일 루프를 넘어 subagent를 동적으로 생성·위임하는 방향으로 가면서, “에이전트 하네스 자체를 어떻게 설계할 것인가”가 실무 주제로 올라왔다.
+- angle: BrainCrew/Hermes 관점에서 recursive call, context 격리, delegation boundary, 검증 루프를 에이전트 런타임 설계 패턴으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, harness, subagent, orchestration]
+- status: idea
+
+### 2026-06-15 — GitHub Copilot CLI delegation: 에이전트가 언제 직접 하고 언제 위임해야 하나
+- type: tech
+- source: https://github.blog/ai-and-ml/how-we-made-github-copilot-cli-more-selective-about-delegation/
+- why-now: GitHub가 Copilot CLI의 delegation 정책을 공개하면서, agent workflow에서 “무조건 agent에게 맡기기”가 아니라 작업 분류·신뢰도·비용 기반 라우팅이 중요해졌다.
+- angle: CLI agent가 shell/tool/LSP/subagent 사이에서 어떤 기준으로 실행 경로를 고르는지, 개발자 도구 UX와 latency trade-off 중심으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [copilot-cli, agent, delegation, developer-tools]
+- status: idea
+
+### 2026-06-15 — Copilot CLI + Language Server: 코드 에이전트에 진짜 코드 지능 붙이기
+- type: tech
+- source: https://github.blog/ai-and-ml/github-copilot/give-github-copilot-cli-real-code-intelligence-with-language-servers/
+- why-now: 코드 에이전트가 grep/텍스트 검색만으로 repo를 이해하는 한계를 넘어, LSP의 symbol, diagnostics, references를 tool로 쓰는 방향이 구체화됐다.
+- angle: “LLM 코드 에이전트의 RAG는 벡터 검색만이 아니라 language server API”라는 관점으로 repo 이해, refactor safety, CI 실패 분석 예제를 설계.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: tutorial
+- suggested-tags: [lsp, code-agent, copilot-cli, developer-tools]
+- status: drafted
+- draft: content/posts/2026-06-16-copilot-cli-lsp-code-intelligence.mdx
+
+### 2026-06-15 — Security validation for third-party coding agents: 외부 코딩 에이전트 보안 게이트
+- type: tech
+- source: https://github.blog/changelog/2026-06-09-security-validation-for-third-party-coding-agents
+- why-now: 여러 코딩 에이전트를 GitHub workflow에 연결하는 흐름이 커지면서, 권한·secret·PR 변경 범위를 검증하는 보안 게이트가 필수가 되고 있다.
+- angle: “에이전트 도입 체크리스트는 모델 비교가 아니라 권한 모델과 변경 검증부터” — third-party agent onboarding, least privilege, audit log 관점.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, security, github, devsecops]
+- status: drafted
+- draft: content/posts/2026-06-18-third-party-coding-agent-security-gate.mdx
+
+### 2026-06-15 — NVIDIA FLARE Auto-FL: federated learning 실험을 에이전트로 자동화하기
+- type: tech
+- source: https://developer.nvidia.com/blog/accelerating-federated-learning-research-with-ai-agents-and-nvidia-flare-auto-fl/
+- why-now: 개인정보/분산 데이터 이슈로 federated learning은 계속 중요하지만 실험 설정이 복잡한데, NVIDIA가 agent 기반 Auto-FL 흐름을 공개했다.
+- angle: 데이터가 한곳에 모이지 않는 상황에서 experiment planning, config generation, metric comparison을 agent가 어떻게 줄여주는지 MLOps 관점으로 설명.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: study
+- suggested-tags: [federated-learning, nvidia-flare, agent, mlops]
+- status: idea
+
+### 2026-06-15 — Operadic consistency: 정답 없이 LLM reasoning failure 감지하기
+- type: paper
+- source: http://arxiv.org/abs/2606.13649v1
+- why-now: self-consistency, semantic entropy 같은 confidence 기법이 한계에 부딪히면서, ground truth 없이 추론 분해/합성의 일관성을 보는 평가 신호가 제안됐다.
+- angle: “LLM-as-a-judge 없이 reasoning trace를 어떻게 검증할까” — compositional reasoning, decomposition consistency, agent QA gate로 연결.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, eval, consistency, llm]
+- status: idea
+
+### 2026-06-20 — Execution-State Capsules: 온디바이스 에이전트를 위한 KV cache 너머의 상태 재사용
+- type: paper
+- source: http://arxiv.org/abs/2606.20537v1
+- why-now: interactive LLM agent, speech, robotics처럼 small-batch/low-latency serving이 중요한 환경에서는 prefix KV cache만으로 실행 상태 재사용이 부족해진다.
+- angle: “에이전트 inference 최적화는 토큰 캐시가 아니라 실행 상태 체크포인트 문제”라는 관점으로 latency, restore boundary, on-device serving을 정리.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [inference, agent, kv-cache, on-device]
+- status: idea
+
+### 2026-06-20 — SafeClawBench: tool-using agent 보안 실패를 세 단계로 분리해 보기
+- type: paper
+- source: http://arxiv.org/abs/2606.18356v1
+- why-now: 도구 사용 에이전트는 unsafe text보다 더 위험한 persistent memory write, 메시지 전송, DB 변경, 코드 실행 같은 실제 side effect를 만들 수 있다.
+- angle: “에이전트 보안 평가는 모델이 동의했나가 아니라 sandbox harm까지 갔나를 봐야 한다” — semantic/audit-evidence/sandbox harm 분리 프레임으로 실무 QA 게이트를 설계.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-security, tool-use, benchmark, sandbox]
+- status: idea
+
+### 2026-06-20 — MemTrace: LLM memory system의 오류가 어디서 생겼는지 추적하기
+- type: paper
+- source: http://arxiv.org/abs/2605.28732v1
+- why-now: 장기 대화·에이전트 워크플로에서 memory가 핵심 컴포넌트가 됐지만, 잘못 저장·전파·요약된 정보의 원인을 추적하는 도구는 부족하다.
+- angle: “메모리는 feature가 아니라 debugging surface” — memory evolution trace, attribution, regression test를 개인 비서/팀 에이전트 운영 관점으로 설명.
+- difficulty: high
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [memory, agent, debugging, attribution]
+- status: idea
+
+### 2026-06-20 — HieraRAG: RAG benchmark는 얼마나 fine-grained해야 하나
+- type: paper
+- source: http://arxiv.org/abs/2606.12789v1
+- why-now: RAG 평가는 단일 점수보다 질문 유형·근거 granularity·실패 모드가 중요해졌고, synthetic benchmark 설계 원칙이 실무 이슈가 되고 있다.
+- angle: “좋은 RAG 벤치마크는 많은 질문이 아니라 구분력 있는 질문을 만든다” — hierarchical question generation과 discriminative power를 평가 설계 튜토리얼로 풀기.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, benchmark, eval, synthetic-data]
+- status: idea
+
+### 2026-06-20 — AutoPass: compiler performance tuning을 multi-agent evidence loop로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2606.20373v1
+- why-now: 코드 생성 에이전트가 “컴파일되는 코드”를 넘어 runtime metric과 compiler evidence를 읽고 최적화 결정을 반복하는 방향으로 확장되고 있다.
+- angle: “LLM 코드 에이전트의 다음 단계는 benchmark evidence를 읽는 optimizer” — pass selection, runtime noise, validation loop를 개발자 자동화 관점으로 정리.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [code-agent, compiler, optimization, multi-agent]
+- status: idea
+
+### 2026-06-20 — Omnigent: 여러 코딩 에이전트를 갈아 끼우는 meta-harness 설계
+- type: tech
+- source: https://github.com/omnigent-ai/omnigent
+- why-now: Claude Code, Codex, Cursor 같은 코딩 에이전트가 늘어나면서 팀은 특정 agent API보다 policy, sandbox, collaboration layer를 독립적으로 관리하고 싶어 한다.
+- angle: “에이전트를 고르는 문제가 아니라 harness abstraction을 설계하는 문제” — adapter, policy enforcement, sandbox, multi-device collaboration을 repo architecture 중심으로 소개.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, harness, orchestration, open-source]
+- status: idea
+
+### 2026-06-20 — XcodeBuildMCP: iOS/macOS 빌드 시스템을 MCP tool로 노출하기
+- type: tech
+- source: https://github.com/getsentry/XcodeBuildMCP
+- why-now: MCP가 일반 API 호출을 넘어 platform-specific build/test/debug workflow를 에이전트 도구로 감싸는 패턴이 빠르게 퍼지고 있다.
+- angle: “좋은 MCP 서버는 wrapper가 아니라 agent-safe developer workflow” — xcodebuild, simulator, test result parsing, 권한 경계를 Apple 개발 환경 예제로 설명.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, ios, developer-tools, agent]
+- status: idea
+
+### 2026-06-20 — langgraph4j: Java/Spring 생태계에서 agent graph를 운영하는 법
+- type: tech
+- source: https://github.com/langgraph4j/langgraph4j
+- why-now: LangGraph류 stateful agent graph가 Python 실험을 넘어 Java/Spring 기반 엔터프라이즈 서비스에도 들어가면서 운영·타입·트랜잭션 경계가 중요해졌다.
+- angle: “agent orchestration을 JVM 서비스로 가져오면 무엇이 달라지나” — graph state, checkpoint, streaming, Spring integration을 백엔드 개발자 관점으로 정리.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [langgraph, java, agent-framework, backend]
+- status: idea
+
