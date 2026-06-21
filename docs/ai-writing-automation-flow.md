@@ -1,7 +1,7 @@
 # AI 글쓰기 자동화 Flow
 
-> 목적: AI 트렌드, 신기술 소개, 논문 리뷰, 실무 적용 아이디어를 자동으로 발굴하고 블로그 초안까지 생성한다.  
-> 원칙: **자동 생성은 `draft: true`까지만**, 공개 발행/푸시는 사람이 승인한다.
+> 목적: AI 트렌드, 신기술 소개, 논문 리뷰, 실무 적용 아이디어를 자동으로 발굴하고 블로그 초안 생성부터 공개 발행까지 연결한다.  
+> 원칙: 기본 생성 단계는 `draft: true`로 안전하게 만들고, `ai-blog-auto-publisher`가 검증된 초안을 하루 1편씩 공개 발행한다.
 
 ## 0. 산출물 위치
 
@@ -29,10 +29,23 @@ flowchart LR
 
 수집 범위:
 
-- 최신 AI 논문: arXiv, Papers with Code, 주요 랩 블로그
-- AI 트렌드: OpenAI/Anthropic/Google DeepMind/Meta/Mistral 등 릴리즈
-- 개발자 관점 신기술: agent framework, eval, memory, RAG, inference, deployment
+- **AI/LLM 관련 논문 중심**: arXiv, OpenReview, Papers with Code, 주요 랩 논문/블로그
+  - 우선 주제: agent, RAG, eval, memory, inference, architecture, tool-use, reasoning, alignment, benchmark
+- **Agent 관련 프레임워크/시스템**: LangGraph, CrewAI, AutoGen, MCP, agent SDK, eval harness, workflow orchestration, sandbox/tool-use, memory system
+- **GitHub repo 소개**: AI/LLM/agent 관련으로 기술적 substance가 있고, 아키텍처·개발 워크플로·실무 적용 포인트를 설명할 수 있는 repo
 - 성연 블로그에 맞는 실무형 주제: “기술 원리 + 실제 써먹는 방법 + 내 의견”이 가능한 것
+
+추천 비율:
+
+- 논문: 50~70%
+- agent framework/system: 20~30%
+- GitHub repo 소개: 10~20%
+
+제외:
+
+- 단순 AI 뉴스/투자/비즈니스 기사
+- 기술 깊이 없는 제품 출시 요약
+- 원문 링크나 코드/논문 근거가 약한 hype 글감
 
 산출물:
 
@@ -152,12 +165,14 @@ flowchart LR
 
 ## 3. Cron 자동화 구성
 
-현재 권장 구성은 3개다.
+현재 권장 구성은 5개다.
 
 | Job | Schedule | 역할 | 공개 발행 여부 |
 | --- | --- | --- | --- |
+| `ai-blog-queue-refill` | 매일 08:45 KST | `posting-plan`/`editorial-plan`/`ai-writing-inbox` 재고 확인 후 부족하면 자료조사로 큐 보충 | 없음 |
 | `ai-blog-trend-radar` | 매주 월 09:10 KST | 최신 주제 수집 + inbox 업데이트 | 없음 |
 | `ai-blog-draft-writer` | 화/목/토 09:30 KST | 후보 1개를 MDX 초안으로 생성 | 없음, `draft: true` |
+| `ai-blog-auto-publisher` | 매일 10:10 KST | `draft: true` 초안 중 검증 가능한 글 1편을 골라 `draft` 제거, build, commit, push, CI/URL 확인 | 있음, 하루 최대 1편 |
 | `ai-blog-draft-review` | 일 20:00 KST | 생성 초안 리뷰 + 발행 후보 보고 | 없음 |
 
 ## 4. 운영 현황
@@ -173,7 +188,8 @@ flowchart LR
 
 ## 5. 운영 규칙
 
-- 자동화는 “쓰기 시작 비용”을 줄이는 용도다. 최종 발행은 성연 승인 후 진행한다.
+- 자동 발행은 하루 최대 1편만 수행한다. 여러 초안이 있어도 가장 오래 대기한 검증 가능 초안 1개만 공개한다.
+- `ai-blog-auto-publisher`는 공개 side effect를 만든다: `draft: true` 제거 → `npm run typecheck` → `npm run build` → commit/push → GitHub Actions 성공 확인 → 공개 URL 200 확인.
 - 트렌드 글은 오래된 자료보다 최신 원문 우선.
 - 논문 글은 abstract만 읽고 쓰지 말고, 방법론/실험/한계까지 최소 확인한다.
 - 글의 기본 톤은 “개념 설명 + 왜 중요한지 + 실무에서 어떻게 볼지”.
