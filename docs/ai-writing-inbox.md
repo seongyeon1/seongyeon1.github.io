@@ -322,7 +322,8 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent-security, tool-use, benchmark, sandbox]
-- status: idea
+- status: drafted
+- draft: content/posts/2026-06-20-safeclawbench-agent-security-benchmark.mdx
 
 ### 2026-06-20 — MemTrace: LLM memory system의 오류가 어디서 생겼는지 추적하기
 - type: paper
@@ -400,5 +401,109 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [langgraph, java, agent-framework, backend]
+- status: idea
+
+### 2026-06-21 — LedgerAgent: tool-calling agent에 명시적 상태 원장을 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2606.20529v1
+- why-now: 고객지원·운영 자동화 에이전트가 여러 turn과 tool result를 오가며 정책을 지켜야 하는데, 현재 task state를 prompt에 암묵적으로 묻어두는 방식은 stale/missing state 실패를 만들기 쉽다.
+- angle: “에이전트 메모리는 대화 요약이 아니라 정책 검증 가능한 ledger여야 한다” — state schema, tool precondition, policy-adherent action gate를 실무 설계로 풀기.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent, tool-use, state-management, policy]
+- status: idea
+
+### 2026-06-21 — Probe-and-Refine: AGENTS.md를 벤치마크로 튜닝하는 법
+- type: paper
+- source: http://arxiv.org/abs/2606.20512v1
+- why-now: 코딩 에이전트가 repo별 운영 지식에 의존하면서 AGENTS.md 같은 guidance 파일이 중요해졌지만, 좋은 guidance를 어떻게 만들고 검증할지에 대한 방법론은 아직 부족하다.
+- angle: “AGENTS.md도 문서가 아니라 성능에 영향을 주는 configuration artifact” — synthetic bug-fix probe, 실패 진단, guidance patch loop를 개발 워크플로로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, agents-md, repo-guidance, swe-bench]
+- status: idea
+
+### 2026-06-21 — ToolChain-CRC: RAG+tool agent의 전체 trajectory 위험을 제어하기
+- type: paper
+- source: http://arxiv.org/abs/2606.18467v1
+- why-now: agentic RAG는 최종 답변만 보면 괜찮아 보여도 중간 retrieval, tool output, evidence step에서 이미 위험이 누적될 수 있어 trajectory 단위의 risk control이 필요하다.
+- angle: “에이전트 QA는 final answer grading이 아니라 실행 궤적의 accept-or-intervene rule” — step-level risk score, conformal calibration, anytime alarm을 운영 게이트로 설명.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, tool-use, risk-control, eval]
+- status: idea
+
+### 2026-06-21 — Streaming Tool Use: 사용자가 말하는 동안 검색을 시작해도 되는 순간
+- type: paper
+- source: http://arxiv.org/abs/2606.20113v1
+- why-now: 음성/채팅 agent UX에서 latency를 줄이기 위해 streaming RAG가 쓰이지만, speculative tool call이 실제로 이득인지는 query intent가 언제 안정화되는지에 달려 있다.
+- angle: “빠른 에이전트는 무조건 먼저 호출하는 게 아니라 tool-intent stabilization을 측정한다” — latency hiding bound, speculative retrieval, 취소/재시도 정책을 설계 관점으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [streaming-rag, tool-use, latency, agent-ux]
+- status: idea
+
+### 2026-06-21 — SproutRAG: long-document RAG를 attention-guided tree search로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2606.18381v1
+- why-now: 긴 문서 RAG에서 chunk granularity와 coherence trade-off가 계속 문제인데, LLM 호출 기반 chunking이나 fixed expansion 없이 계층 구조를 학습하는 접근이 나왔다.
+- angle: “RAG chunking은 몇 글자로 자를지가 아니라 검색 시 어떤 문맥 단위로 자라날지의 문제” — sentence tree, progressive embeddings, retrieval granularity를 튜토리얼식으로 풀기.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, long-context, retrieval, chunking]
+- status: idea
+
+### 2026-06-21 — Google ADK: code-first agent 개발·평가·배포 툴킷 훑어보기
+- type: tech
+- source: https://github.com/google/adk-python
+- why-now: Google ADK가 활발히 업데이트되며 agent를 prompt demo가 아니라 code-first app, evaluation, deployment 단위로 다루는 흐름을 보여준다.
+- angle: “agent framework를 고를 때 봐야 할 것은 model wrapper가 아니라 eval, session state, tool boundary, deployment path” — ADK repo 구조와 개발 루프를 기준으로 체크리스트화.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [google-adk, agent-framework, eval, deployment]
+- status: idea
+
+### 2026-06-21 — OpenAI Agents SDK: handoff와 guardrail로 multi-agent workflow 구성하기
+- type: tech
+- source: https://github.com/openai/openai-agents-python
+- why-now: lightweight multi-agent framework가 handoff, guardrail, tracing 같은 공통 런타임 패턴을 SDK 레벨로 제공하면서 agent workflow 설계 기준이 구체화되고 있다.
+- angle: “multi-agent는 roleplay가 아니라 handoff contract와 guardrail instrumentation의 문제” — agent graph, tool schema, tracing, failure handling을 코드 예제로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [openai-agents-sdk, multi-agent, guardrails, tracing]
+- status: idea
+
+### 2026-06-21 — NLWeb: 웹사이트를 자연어 agent endpoint로 바꾸는 reference implementation
+- type: tech
+- source: https://github.com/nlweb-ai/NLWeb
+- why-now: 웹 콘텐츠를 단순 검색창이 아니라 자연어 질의와 agent-friendly endpoint로 노출하려는 패턴이 늘고 있고, NLWeb은 이를 reference implementation 형태로 보여준다.
+- angle: “검색 UX를 붙이는 게 아니라 site-native RAG/API surface를 설계하는 문제” — schema, retrieval, response grounding, 기존 웹사이트 통합 포인트를 repo 중심으로 소개.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [nlweb, rag, web-agent, open-source]
 - status: idea
 
