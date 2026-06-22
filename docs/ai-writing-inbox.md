@@ -611,3 +611,107 @@
 - suggested-tags: [agent-eval, benchmark, harness, open-source]
 - status: idea
 
+### 2026-06-22 — AtomMem: LLM agent memory를 atomic fact 단위로 디버깅하기
+- type: paper
+- source: http://arxiv.org/abs/2606.19847v1
+- why-now: 장기 에이전트 메모리가 “요약 텍스트”에서 검색·갱신·삭제 가능한 사실 단위 저장소로 바뀌는 흐름이 강해지고 있다.
+- angle: “메모리 품질은 벡터 DB 선택보다 fact extraction/update policy에서 갈린다” — atomic fact schema, conflict handling, memory regression test 관점으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, atomic-facts, retrieval, debugging]
+- status: idea
+
+### 2026-06-22 — ScholarQuest: agentic paper search benchmark로 연구 에이전트 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2606.20235v1
+- why-now: 논문 검색 에이전트가 단순 키워드 검색을 넘어 taxonomy-guided exploration, evidence selection, citation trail 추적을 해야 하는 요구가 커졌다.
+- angle: “연구 에이전트 평가는 답 하나가 아니라 탐색 경로와 근거 품질을 봐야 한다” — task taxonomy, open literature environment, verifier 설계를 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, paper-search, benchmark, eval]
+- status: idea
+
+### 2026-06-22 — When Lower Privileges Suffice: tool agent의 과권한 선택을 줄이는 법
+- type: paper
+- source: http://arxiv.org/abs/2606.20023v1
+- why-now: tool-using agent가 같은 목표를 더 낮은 권한의 도구로 달성할 수 있는데도 과권한 tool을 고르는 문제는 실제 운영 보안 리스크로 이어진다.
+- angle: “에이전트 보안은 허용/차단보다 최소권한 tool routing이 먼저” — tool capability modeling, privilege-aware selection, audit log 설계를 실무 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-security, tool-use, least-privilege, eval]
+- status: idea
+
+### 2026-06-22 — PACMS: LLM agent context selection을 submodular optimization으로 보기
+- type: paper
+- source: http://arxiv.org/abs/2606.20047v1
+- why-now: long-context 모델을 써도 agent memory와 tool output을 전부 넣을 수 없고, 어떤 context를 선택하느냐가 비용·성능·안전성을 좌우한다.
+- angle: “컨텍스트 엔지니어링을 감이 아니라 최적화 문제로 다루자” — diversity/coverage trade-off, pluggable context engine, agent memory 압축 전략으로 설명.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [context-engineering, agent, memory, optimization]
+- status: idea
+
+### 2026-06-22 — ADaPT: large reasoning model의 토큰 단위 decoupling으로 추론 비용 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2606.19919v1
+- why-now: reasoning model이 길게 생각할수록 비용과 latency가 늘어나면서, reasoning token을 어디서 줄이고 어디서 유지할지에 대한 구조적 접근이 필요해졌다.
+- angle: “추론 최적화는 답변 토큰 압축이 아니라 reasoning path budget 설계” — token-level decoupling, budget-aware inference, serving QA 관점으로 정리.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, inference, token-budget, optimization]
+- status: idea
+
+### 2026-06-22 — Hugging Face Agentic Resource Discovery: agent가 Hub 리소스를 직접 찾게 만들기
+- type: tech
+- source: https://huggingface.co/blog/agentic-resource-discovery-launch
+- why-now: 모델·데이터셋·Spaces가 폭증하면서 사람이 링크를 골라주는 대신 agent가 리소스 탐색과 선택을 수행하는 UX가 중요해지고 있다.
+- angle: “검색창 최적화가 아니라 agent-facing resource API를 설계하는 문제” — metadata, ranking, tool interface, MCP와 연결 가능한 discovery surface를 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [huggingface, agent, resource-discovery, mcp]
+- status: idea
+
+### 2026-06-22 — hf CLI for agents: 사람이 쓰던 CLI를 agent-optimized interface로 바꾸기
+- type: tech
+- source: https://huggingface.co/blog/hf-cli-for-agents
+- why-now: 개발자 에이전트가 Hub, Jobs, Spaces 같은 외부 시스템을 조작하면서 CLI 출력 형식, idempotency, error semantics가 agent UX의 핵심이 됐다.
+- angle: “좋은 CLI는 사람 친화적일 뿐 아니라 agent가 파싱하고 복구하기 쉬워야 한다” — structured output, dry-run, auth boundary, retry-safe command 디자인을 정리.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [cli, agent-tools, huggingface, developer-experience]
+- status: idea
+
+### 2026-06-22 — Serge: GitHub-native AI code review를 repo workflow 안에 넣기
+- type: tech
+- source: https://huggingface.co/blog/huggingface/serge
+- why-now: 코드 리뷰 에이전트가 별도 SaaS 챗봇이 아니라 PR, diff, CI, reviewer policy 안에서 동작하는 패턴으로 수렴하고 있다.
+- angle: “AI 코드 리뷰어의 품질은 모델보다 repo-native context와 review contract가 좌우한다” — diff scope, comment policy, false-positive 관리, CI 연동을 repo 소개 형식으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [code-review-agent, github, open-source, developer-workflow]
+- status: idea
+

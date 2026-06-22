@@ -72,6 +72,10 @@
 | 아이디어 | 미정 | [논문 리뷰] H-RePlan — cross-device agent failure를 device-local recovery로 나누기 | paper-review | 논문 리뷰 | | arXiv 2606.20487 — multi-device computer-use agent의 local/global replanning boundary와 실패 복구 전략 |
 | 아이디어 | 미정 | hol-guard: coding agent와 MCP tool 실행 전 보안 게이트 세우기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — Codex/Claude Code/Cursor/Gemini CLI의 MCP·plugin·skill 호출 전 policy enforcement 패턴 |
 | 아이디어 | 미정 | Claw-Eval: LLM-as-agent 평가를 human-verified task harness로 만들기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — task curation, human verification, verifier 설계를 agent QA 운영법으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] When Lower Privileges Suffice — tool agent의 과권한 선택을 줄이는 법 | paper-review | 논문 리뷰 | | arXiv 2606.20023 — 최소권한 tool routing, capability modeling, audit log 기반 agent 보안 설계 |
+| 아이디어 | 미정 | [논문 리뷰] AtomMem — LLM agent memory를 atomic fact 단위로 디버깅하기 | paper-review | 논문 리뷰 | | arXiv 2606.19847 — fact extraction/update policy, conflict handling, memory regression test 관점 |
+| 아이디어 | 미정 | [논문 리뷰] ScholarQuest — agentic paper search benchmark로 연구 에이전트 평가하기 | paper-review | AI 평가/운영 | | arXiv 2606.20235 — taxonomy-guided paper search, evidence trail, verifier 설계 |
+| 아이디어 | 미정 | hf CLI for agents: 사람이 쓰던 CLI를 agent-optimized interface로 바꾸기 | tutorial | Agent/MCP 실전 | | Hugging Face 글 기반 — structured output, dry-run, auth boundary, retry-safe command 디자인 |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 
