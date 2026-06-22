@@ -715,3 +715,107 @@
 - suggested-tags: [code-review-agent, github, open-source, developer-workflow]
 - status: idea
 
+### 2026-06-23 — [논문 리뷰] Probabilistic Verification: 불확실한 tool agent 정책을 어떻게 검증할까
+- type: paper
+- source: http://arxiv.org/abs/2606.20510v1
+- why-now: tool-using agent가 실제 디지털 환경에서 권한·상태·사용자 의도를 확률적으로 해석해야 하는데, 기존 runtime policy enforcement는 deterministic policy에 치우쳐 있다.
+- angle: “agent 보안 게이트를 if문 모음이 아니라 probabilistic policy verifier로 만들 수 있을까” — Datalog식 정책, 확률 predicate/state transition, runtime monitor 설계로 풀어본다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, verification, tool-use, runtime-monitoring]
+- status: idea
+
+### 2026-06-23 — [논문 리뷰] Contagion Networks: multi-agent 평가에서 bias가 전염되는 방식
+- type: paper
+- source: http://arxiv.org/abs/2606.20493v1
+- why-now: LLM-as-judge와 multi-agent debate/evaluation이 널리 쓰이지만, evaluator bias가 agent network 안에서 어떻게 증폭되는지는 아직 운영 체크리스트에 잘 들어오지 않는다.
+- angle: “평가 에이전트를 여러 개 붙이면 객관성이 자동으로 생길까?” — bias propagation matrix, judge diversity, evidence-based 평가 루프 설계를 실무 QA 관점으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, llm-as-judge, eval, bias]
+- status: idea
+
+### 2026-06-23 — [논문 리뷰] Mixed Compliance Demonstrations: few-shot 예제가 safety alignment를 흔드는 법
+- type: paper
+- source: http://arxiv.org/abs/2606.20508v1
+- why-now: agent prompt와 workflow 예제에 benign/harmful compliance가 섞이면 모델이 어떤 규칙을 학습하는지 이해해야 안전한 instruction template을 만들 수 있다.
+- angle: “프롬프트 예제는 테스트 데이터가 아니라 임시 fine-tuning 데이터처럼 행동한다” — demonstration composition, jailbreak surface, agent system prompt QA를 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [alignment, safety, prompting, jailbreak]
+- status: idea
+
+### 2026-06-23 — [논문 리뷰] Calibrated MoE: distribution shift에서 expert router를 믿어도 될까
+- type: paper
+- source: http://arxiv.org/abs/2606.20544v1
+- why-now: MoE 모델과 router 기반 serving이 커지는 가운데, 배포 환경이 학습 분포와 달라질 때 uncertainty calibration이 성능과 신뢰도에 어떤 영향을 주는지 중요해졌다.
+- angle: “MoE 최적화는 throughput만 볼 게 아니라 calibration까지 봐야 한다” — expert confidence, distribution shift, serving 모니터링 지표로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 3
+- suggested-category: paper-review
+- suggested-tags: [moe, calibration, distribution-shift, inference]
+- status: idea
+
+### 2026-06-23 — [논문 리뷰] Current World Models Lack a Persistent State Core: agent memory와 world model의 접점
+- type: paper
+- source: http://arxiv.org/abs/2606.20545v1
+- why-now: computer-use/robotics agent가 장기 작업을 하려면 순간 관찰보다 지속 상태를 유지하는 world model이 필요하다는 문제가 반복적으로 드러난다.
+- angle: “agent memory는 대화 로그 저장소가 아니라 persistent state core여야 한다” — 상태 업데이트, drift, recovery, benchmark 설계를 연결해 본다.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 3
+- suggested-category: paper-review
+- suggested-tags: [world-model, agent-memory, persistent-state, eval]
+- status: idea
+
+### 2026-06-23 — OpenAI Agents Python: handoff·guardrail·trace를 갖춘 lightweight agent framework
+- type: tech
+- source: https://github.com/openai/openai-agents-python
+- why-now: OpenAI Agents SDK가 빠른 release cadence를 보이며 multi-agent handoff, guardrail, tracing을 기본 구성요소로 제시하고 있어 프레임워크 선택 기준으로 볼 만하다.
+- angle: “agent framework의 최소 코어는 무엇인가” — agent/handoff/tool/guardrail/trace abstraction을 LangGraph·ADK와 비교 가능한 체크리스트로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [openai-agents, agent-framework, guardrails, tracing]
+- status: idea
+
+### 2026-06-23 — LangGraph 1.x: durable execution으로 장기 실행 agent를 만드는 법
+- type: tech
+- source: https://github.com/langchain-ai/langgraph
+- why-now: agent가 단발성 chat completion을 넘어 long-running workflow, human-in-the-loop, checkpoint/retry를 요구하면서 graph 기반 durable execution이 실무 기본기로 올라오고 있다.
+- angle: “에이전트는 함수 호출이 아니라 상태 그래프다” — state, checkpoint, interrupt, replay, observability를 production agent 운영 관점으로 설명.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [langgraph, durable-execution, agent-workflow, orchestration]
+- status: idea
+
+### 2026-06-23 — mcp-agent: MCP server들을 workflow pattern으로 묶는 repo 살펴보기
+- type: tech
+- source: https://github.com/lastmile-ai/mcp-agent
+- why-now: MCP 도구가 늘어나면서 “도구 목록을 붙이는 것”보다 server lifecycle, context passing, parallel/orchestrator pattern을 어떻게 표준화할지가 중요해졌다.
+- angle: “MCP를 agent runtime의 plugin bus로 쓸 때 필요한 구조” — workflow pattern, tool registry, config, observability를 repo introduction 형식으로 정리.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-framework, workflow, github-repo]
+- status: idea
+

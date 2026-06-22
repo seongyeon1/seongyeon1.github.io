@@ -76,6 +76,10 @@
 | 아이디어 | 미정 | [논문 리뷰] AtomMem — LLM agent memory를 atomic fact 단위로 디버깅하기 | paper-review | 논문 리뷰 | | arXiv 2606.19847 — fact extraction/update policy, conflict handling, memory regression test 관점 |
 | 아이디어 | 미정 | [논문 리뷰] ScholarQuest — agentic paper search benchmark로 연구 에이전트 평가하기 | paper-review | AI 평가/운영 | | arXiv 2606.20235 — taxonomy-guided paper search, evidence trail, verifier 설계 |
 | 아이디어 | 미정 | hf CLI for agents: 사람이 쓰던 CLI를 agent-optimized interface로 바꾸기 | tutorial | Agent/MCP 실전 | | Hugging Face 글 기반 — structured output, dry-run, auth boundary, retry-safe command 디자인 |
+| 아이디어 | 미정 | [논문 리뷰] Probabilistic Verification — 불확실한 tool agent 정책 검증 | paper-review | 논문 리뷰 | | arXiv 2606.20510 — probabilistic predicate/state transition, Datalog식 runtime policy monitor, agent 보안 게이트 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Contagion Networks — multi-agent 평가 bias 전염 | paper-review | AI 평가/운영 | | arXiv 2606.20493 — LLM-as-judge bias propagation, judge diversity, evidence-based 평가 루프 |
+| 아이디어 | 미정 | OpenAI Agents Python: handoff·guardrail·trace를 갖춘 lightweight agent framework | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — agent/handoff/tool/guardrail/trace abstraction을 프레임워크 선택 체크리스트로 정리 |
+| 아이디어 | 미정 | LangGraph 1.x: durable execution으로 장기 실행 agent를 만드는 법 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — state, checkpoint, interrupt, replay, observability 중심 production agent 운영 |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 
