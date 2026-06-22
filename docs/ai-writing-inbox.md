@@ -45,7 +45,7 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent, tool-use, automation, latency]
-- status: drafted
+- status: published
 - draft: content/posts/2026-06-15-hypertool-agent-tool-call-granularity.mdx
 
 ### 2026-06-15 — Agents-K1: 연구 에이전트에 필요한 knowledge orchestration

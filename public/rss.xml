@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 21 Jun 2026 15:17:23 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 22 Jun 2026 01:44:42 GMT</lastBuildDate>
     <item>
       <title>DeepEval: LLM 앱을 pytest처럼 평가하기</title>
       <link>https://seongyeon1.github.io/blog/2026-06-22-deepeval-llm-evaluation-framework/</link>
@@ -104,6 +104,19 @@
       <category>indexing</category>
       <category>rust</category>
       <category>lancedb</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] HyperTool — 에이전트의 도구 호출 단위를 다시 설계하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-15-hypertool-agent-tool-call-granularity/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-15-hypertool-agent-tool-call-granularity/</guid>
+      <description>HyperTool은 반복적인 step-wise tool call을 하나의 실행 가능한 도구 단위로 묶어 에이전트의 정확도와 효율을 높인다.</description>
+      <pubDate>Mon, 15 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>tool-use</category>
+      <category>mcp</category>
+      <category>automation</category>
+      <category>latency</category>
     </item>
     <item>
       <title>[논문 리뷰] Scaling Laws for Agent Harnesses — 피드백 계산으로 에이전트 성능 확장하기</title>
