@@ -507,3 +507,107 @@
 - suggested-tags: [nlweb, rag, web-agent, open-source]
 - status: idea
 
+### 2026-06-22 — Sovereign Execution Brokers: agentic control plane에서 mutation 권한을 분리하기
+- type: paper
+- source: http://arxiv.org/abs/2606.20520v1
+- why-now: 에이전트가 cloud, deployment, data-control workflow에 직접 연결되면서 “모델이 판단한 action”과 “실제 mutation 권한”을 런타임에서 분리하는 보안 경계가 중요해지고 있다.
+- angle: “비결정적 reasoning process 안에 production mutation 권한을 넣지 말자” — certificate-bound authority, assurance boundary, execution broker를 에이전트 운영 아키텍처로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, control-plane, authorization, infrastructure]
+- status: idea
+
+### 2026-06-22 — H-RePlan: cross-device agent failure를 device-local recovery로 나누기
+- type: paper
+- source: http://arxiv.org/abs/2606.20487v1
+- why-now: computer-use agent가 여러 앱과 기기를 넘나드는 작업을 하면서 실패 시 전체 plan을 갈아엎는 방식만으로는 복구 비용과 latency가 커지고 있다.
+- angle: “에이전트 replanning은 global plan 수정 전에 device-local strategy space를 먼저 봐야 한다” — multi-device task decomposition, failure taxonomy, local/global recovery boundary를 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, replanning, multi-device, recovery]
+- status: idea
+
+### 2026-06-22 — DiffusionGemma transparency: diffusion LLM의 reasoning은 얼마나 보이나
+- type: paper
+- source: http://arxiv.org/abs/2606.20560v1
+- why-now: diffusion-style LLM이 discrete autoregressive trace와 다른 계산 경로를 쓰면서, reasoning transparency와 debugging 가능성이 새 쟁점이 되고 있다.
+- angle: “chain-of-thought가 보인다고 투명한가, latent computation은 어떻게 관찰할까” — variable transparency와 algorithmic transparency를 모델 디버깅 관점으로 설명.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [diffusion-llm, transparency, reasoning, interpretability]
+- status: idea
+
+### 2026-06-22 — Mixed Compliance Demonstrations: few-shot 예제가 safety-aligned LLM을 흔드는 방식
+- type: paper
+- source: http://arxiv.org/abs/2606.20508v1
+- why-now: 실제 프롬프트·agent memory에는 benign/harmful compliance 예제가 섞일 수 있고, preference optimization 이후 모델이 이를 어떻게 일반화하는지가 안전성 이슈로 올라왔다.
+- angle: “jailbreak는 금지어 문제가 아니라 demonstration distribution 문제” — benign/harmful compliance mix, preference optimization, agent memory hygiene 체크리스트로 연결.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [alignment, safety, in-context-learning, jailbreak]
+- status: idea
+
+### 2026-06-22 — Calibrated MoE under distribution shift: router와 expert confidence를 따로 봐야 하는 이유
+- type: paper
+- source: http://arxiv.org/abs/2606.20544v1
+- why-now: MoE 모델과 ensemble inference가 늘어나지만, domain shift에서 router 선택과 expert calibration이 섞이면 confidence score를 그대로 믿기 어렵다.
+- angle: “MoE의 확률값은 expert만 맞추면 끝인가?” — distribution shift, router behavior, expert-level calibration을 모델 평가/서빙 QA 관점으로 정리.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [moe, calibration, distribution-shift, eval]
+- status: idea
+
+### 2026-06-22 — PantheonOS: data science agent를 위한 distributed harness 설계
+- type: tech
+- source: https://github.com/aristoteleo/PantheonOS
+- why-now: 데이터 과학 업무는 notebook, dataset, 실험, 시각화가 섞여 있어 단일 chat agent보다 분산 실행·진화 가능한 harness가 필요하다는 요구가 커지고 있다.
+- angle: “데이터 과학 에이전트는 모델 wrapper가 아니라 작업 OS에 가깝다” — agent runtime, distributed execution, experiment state, human-in-the-loop boundary를 repo 구조 중심으로 소개.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [data-science-agent, agent-framework, distributed-systems, open-source]
+- status: idea
+
+### 2026-06-22 — hol-guard: coding agent와 MCP tool 실행 전 보안 게이트 세우기
+- type: tech
+- source: https://github.com/hashgraph-online/hol-guard
+- why-now: Codex, Claude Code, Cursor, Gemini CLI 같은 개발자 에이전트가 MCP/플러그인/skills를 호출하면서 tool 실행 전 prompt injection과 권한 오남용을 막는 경량 보안층이 필요해졌다.
+- angle: “AI antivirus라는 표현보다 중요한 건 pre-tool-call policy enforcement” — MCP server, plugin, skill 호출을 실행 전 검증하는 developer-agent 보안 패턴으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, security, tool-use]
+- status: idea
+
+### 2026-06-22 — Claw-Eval: LLM-as-agent 평가를 human-verified task harness로 만들기
+- type: tech
+- source: https://github.com/claw-eval/claw-eval
+- why-now: agent benchmark는 자동 채점 편의성만 강조하면 실제 작업 난이도와 검증 가능성이 어긋나기 쉬운데, human-verified task 기반 harness가 대안으로 떠오르고 있다.
+- angle: “에이전트 평가는 리더보드보다 task curation과 verifier 설계가 핵심” — task schema, human verification, failure analysis를 agent QA 운영법으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, benchmark, harness, open-source]
+- status: idea
+
