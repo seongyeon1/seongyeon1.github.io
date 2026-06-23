@@ -49,7 +49,7 @@
 | 발행완료 | 2026-06-10 (화) | 블로그 만들기 4편 — 배포 자동화 (빌드 캐시 / 프리뷰) | tutorial | 블로그 만들기 | 4 | `2026-06-10-blog-deployment-automation-build-cache-preview.mdx` |
 | 발행완료 | 2026-05-21 (목) | [논문 리뷰] Code as Agent Harness — 에이전트의 계획·실행·검증 루프 설계 | paper-review | 논문 리뷰 | | `2026-05-21-code-as-agent-harness-review.mdx` |
 | 발행완료 | 2026-06-22 | [논문 리뷰] HyperTool — 에이전트의 도구 호출 단위를 다시 설계하기 | paper-review | 논문 리뷰 | 9 | `2026-06-15-hypertool-agent-tool-call-granularity.mdx` — 자동 발행 완료 |
-| 검토 | 미정 | GitHub Agentic Workflows: 에이전트를 repo 안으로 넣으면 달라지는 것 | tutorial | 개발자 AI 워크플로 | 1 | `2026-06-15-github-agentic-workflows-repo-native-agents.mdx` — draft true, typecheck/build 통과, 발행 전 최종 리뷰 필요 |
+| 발행완료 | 2026-06-23 | GitHub Agentic Workflows: 에이전트를 repo 안으로 넣으면 달라지는 것 | tutorial | 개발자 AI 워크플로 | 1 | `2026-06-15-github-agentic-workflows-repo-native-agents.mdx` — 자동 발행 완료 |
 | 아이디어 | 미정 | olmo-eval: 모델 개발 루프를 위한 평가 워크벤치 | tutorial | AI 평가/운영 | | HF/AllenAI 글 기반 — benchmark selection, regression tracking, release QA를 개발 루프에 넣는 법 |
 | 아이디어 | 미정 | PyTorch profiling: nn.Linear에서 fused MLP까지 병목을 줄이는 법 | tutorial | AI 추론 최적화 | | HF 글 기반 — profiler trace, operator breakdown, fused MLP 실전 튜토리얼 |
 | 아이디어 | 미정 | Copilot code review controls: AI 리뷰어를 팀 규칙에 맞추는 방법 | tutorial | 개발자 AI 워크플로 | 2 | GitHub changelog 기반 — review scope, content exclusion, custom instruction 체크리스트 |

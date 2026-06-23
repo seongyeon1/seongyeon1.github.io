@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 22 Jun 2026 01:44:42 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 23 Jun 2026 02:01:52 GMT</lastBuildDate>
     <item>
       <title>DeepEval: LLM 앱을 pytest처럼 평가하기</title>
       <link>https://seongyeon1.github.io/blog/2026-06-22-deepeval-llm-evaluation-framework/</link>
@@ -104,6 +104,19 @@
       <category>indexing</category>
       <category>rust</category>
       <category>lancedb</category>
+    </item>
+    <item>
+      <title>GitHub Agentic Workflows: 에이전트를 repo 안으로 넣으면 달라지는 것</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-15-github-agentic-workflows-repo-native-agents/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-15-github-agentic-workflows-repo-native-agents/</guid>
+      <description>GitHub Agentic Workflows public preview를 계기로, 에이전트를 별도 챗봇이 아니라 repo-native workflow로 설계할 때의 차이를 정리한다.</description>
+      <pubDate>Mon, 15 Jun 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>github</category>
+      <category>agentic-workflow</category>
+      <category>ci</category>
+      <category>developer-experience</category>
+      <category>automation</category>
     </item>
     <item>
       <title>[논문 리뷰] HyperTool — 에이전트의 도구 호출 단위를 다시 설계하기</title>

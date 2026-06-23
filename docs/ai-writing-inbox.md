@@ -189,7 +189,7 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [github, agentic-workflow, ci, developer-experience]
-- status: drafted
+- status: published
 - draft: content/posts/2026-06-15-github-agentic-workflows-repo-native-agents.mdx
 
 ### 2026-06-15 — Copilot code review controls: AI 리뷰어를 팀 규칙에 맞추는 방법
