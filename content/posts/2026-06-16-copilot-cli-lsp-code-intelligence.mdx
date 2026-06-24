@@ -1,0 +1,270 @@
+---
+title: "Copilot CLI + LSP: 코드 에이전트에 진짜 코드 지능 붙이기"
+date: "2026-06-16"
+category: "guide"
+tags: ["lsp", "code-agent", "copilot-cli", "developer-tools", "github"]
+summary: "GitHub Copilot CLI의 LSP 설정 글을 바탕으로, 코드 에이전트가 grep이 아니라 Language Server API를 써야 하는 이유를 정리한다."
+---
+
+## 한 줄 요약
+
+GitHub가 Copilot CLI에서 Language Server Protocol(LSP)을 설정하는 방법을 소개했다. 겉으로는 “CLI에도 IDE 기능을 붙인다” 정도로 보이지만, 코드 에이전트 관점에서는 더 중요한 변화다.
+
+코드 에이전트가 repository를 이해하는 방식이 `grep`, `find`, `cat`, dependency 파일 뒤지기에서 **go-to-definition, find references, type resolution 같은 구조화된 코드 질의**로 이동한다.
+
+내 생각은 단순하다. 코드 에이전트에게 LSP는 선택 기능이 아니라 기본 인프라가 되어야 한다. 벡터 검색만 붙인다고 repo 이해가 해결되지는 않는다. 타입, 심볼, 참조 관계는 이미 IDE와 Language Server가 훨씬 잘 알고 있다.
+
+## 문제: 에이전트는 너무 자주 텍스트 검색으로 코드를 이해한다
+
+GitHub 원문은 LSP가 없는 Copilot CLI가 Java dependency를 이해하려고 JAR을 풀고 `.class` 파일을 뒤지는 예를 든다.
+
+```bash
+find ~/.m2/repository -name "*httpclient*.jar"
+mkdir /tmp/httpclient && cd /tmp/httpclient
+jar xf ~/.m2/repository/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.jar
+grep -r "execute" --include="*.class" .
+```
+
+이런 방식은 나쁘다기보다 **마지막 수단**에 가깝다. 사람이 IDE에서 `Cmd+Click` 한 번으로 확인하는 정보를 에이전트가 수십 번의 shell command로 재구성하고 있다.
+
+비슷한 문제는 언어별로 반복된다.
+
+```text
+Java       -> JAR / class 파일 / Maven cache 뒤지기
+TypeScript -> node_modules와 d.ts 파일 grep
+Python     -> site-packages 파일 cat
+Rust       -> crate source와 generated metadata 추적
+Go         -> module cache와 interface 구현체 탐색
+```
+
+간단한 함수 이름 검색은 이 방식으로도 된다. 하지만 실무 코드에서는 바로 한계가 온다.
+
+- overload / generic / interface 구현 관계를 놓친다.
+- 같은 이름의 심볼을 잘못 집는다.
+- re-export, alias, barrel file 때문에 정의 위치를 헷갈린다.
+- dependency 내부 타입을 텍스트 조각으로만 본다.
+- “이 함수가 실제로 어디서 호출되는가”를 부정확하게 추정한다.
+
+즉, 에이전트가 틀리는 이유가 추론 능력 부족이 아니라 **코드 관찰 인터페이스가 너무 원시적이라서**인 경우가 많다.
+
+## LSP가 주는 것은 검색이 아니라 코드 질의 API다
+
+Language Server Protocol은 VS Code 같은 에디터에서 go-to-definition, hover, diagnostics, references를 제공하는 표준 프로토콜이다. 중요한 점은 LSP가 “검색 엔진”이 아니라는 것이다.
+
+에이전트가 어떤 심볼에 대해 `textDocument/definition` 요청을 보내면 language server는 파싱된 AST, 타입 체커, 프로젝트 설정, dependency graph를 바탕으로 정의 위치를 돌려준다.
+
+```text
+에이전트 질문:
+"이 위치의 HttpClient.execute는 정확히 어떤 메서드인가?"
+
+텍스트 검색 답변:
+"execute라는 문자열이 포함된 파일 목록"
+
+LSP 답변:
+"이 symbol의 definition URI, range, resolved signature"
+```
+
+차이가 크다. 첫 번째는 후보를 던져주고, 두 번째는 코드 의미를 알려준다.
+
+코드 에이전트에 특히 유용한 LSP 기능은 다음 네 가지다.
+
+### 1. Definition: 수정 전에 원본 계약 확인
+
+에이전트가 API를 잘못 호출하는 흔한 이유는 함수 시그니처를 대충 추정하기 때문이다. definition 요청은 “이 함수가 어디에 정의되어 있고 어떤 타입을 받는지”를 정확히 확인하게 해준다.
+
+```text
+textDocument/definition
+-> source location
+-> function/class/interface declaration
+-> dependency 내부 정의 위치
+```
+
+특히 third-party library를 다룰 때 효과가 크다. README 예제와 실제 설치된 버전의 API가 다를 수 있기 때문이다.
+
+### 2. References: 변경 영향 범위 확인
+
+리팩터링에서 위험한 부분은 코드 한 줄을 바꾸는 게 아니라 영향 범위를 놓치는 것이다.
+
+```text
+textDocument/references
+-> 이 symbol을 참조하는 모든 위치
+-> test에서의 사용
+-> 다른 package/module에서의 사용
+```
+
+에이전트가 references를 볼 수 있으면 “수정 후보 파일”을 감으로 넓히지 않아도 된다. 변경 전후 검증 계획도 더 현실적으로 세울 수 있다.
+
+### 3. Hover / Signature help: 문서와 타입을 가까이 두기
+
+LLM은 dependency API를 기억하고 있는 것처럼 보이지만, 버전이 다르면 쉽게 틀린다. hover와 signature help는 현재 checkout된 코드 기준의 문서를 제공한다.
+
+```text
+textDocument/hover
+textDocument/signatureHelp
+```
+
+이건 “모델이 알고 있는 일반 지식”보다 강하다. 지금 이 repository에서 실제로 설치된 타입 정보를 보기 때문이다.
+
+### 4. Diagnostics: 실행 전 정적 오류 확인
+
+에이전트가 파일을 수정한 뒤 곧바로 테스트 전체를 돌리는 것도 좋지만, 그 전에 language server diagnostics를 보는 편이 싸다.
+
+```text
+textDocument/publishDiagnostics
+-> type error
+-> unresolved import
+-> unused variable
+-> syntax error
+```
+
+테스트는 늦게 실패한다. diagnostics는 빨리 실패한다. 코드 에이전트 루프에서는 이 차이가 latency와 비용으로 바로 이어진다.
+
+## Copilot CLI의 LSP Setup skill 구조
+
+GitHub 글은 Copilot CLI에 LSP를 설정하는 skill 흐름을 설명한다. 핵심 단계는 대략 이렇다.
+
+```text
+1. 대상 언어 선택
+2. OS 감지
+3. 언어별 LSP 서버 선택
+4. user-level 또는 repo-level config 범위 결정
+5. LSP 서버 설치
+6. 설정 파일 작성/병합
+7. binary와 JSON config 검증
+```
+
+설정 파일은 `lspServers` 객체를 사용한다. 예시는 다음 형태다.
+
+```json
+{
+  "lspServers": {
+    "java": {
+      "command": "jdtls",
+      "args": [],
+      "fileExtensions": {
+        ".java": "java"
+      }
+    }
+  }
+}
+```
+
+여기서 중요한 운영 규칙은 세 가지다.
+
+- `command`는 `$PATH`에 있거나 absolute path여야 한다.
+- 기존 설정을 덮어쓰지 말고 merge해야 한다.
+- repository-level config가 user-level config보다 우선해야 한다.
+
+이건 작은 디테일처럼 보이지만 실제 팀 도입에서는 꽤 중요하다. 개인별 전역 설정만 있으면 재현성이 떨어지고, repo 설정만 있으면 개발자 환경 차이를 흡수하기 어렵다. 둘 다 필요하다.
+
+## 코드 에이전트 설계 관점에서 보는 LSP
+
+나는 LSP를 “Copilot CLI 편의 기능”보다 **코드 에이전트 런타임의 tool layer**로 보는 편이 맞다고 생각한다.
+
+좋은 코드 에이전트는 최소한 아래 도구들을 구분해서 써야 한다.
+
+```text
+텍스트 검색       -> 빠른 후보 탐색
+파일 읽기         -> 실제 구현 확인
+LSP definition    -> 심볼의 정확한 원천 확인
+LSP references    -> 변경 영향 범위 확인
+LSP diagnostics   -> 빠른 정적 검증
+테스트 실행       -> 동작 검증
+빌드/typecheck    -> 통합 검증
+```
+
+전부 LSP로 대체하자는 말이 아니다. `ripgrep`은 여전히 빠르고 좋다. 다만 텍스트 검색은 “어디를 볼지” 찾는 도구고, LSP는 “그 코드가 무엇을 의미하는지” 확인하는 도구다. 둘을 섞어야 한다.
+
+## 실무 적용 패턴
+
+바로 써먹을 수 있는 패턴은 세 가지다.
+
+### 패턴 1. 큰 수정 전에 symbol map 만들기
+
+에이전트에게 곧바로 “이 기능 고쳐줘”라고 시키기보다 먼저 변경 대상의 심볼 지도를 만들게 한다.
+
+```text
+1. 관련 entry point 검색
+2. 핵심 symbol definition 확인
+3. public API references 확인
+4. test references 확인
+5. 수정 계획 작성
+```
+
+이 과정을 거치면 에이전트가 파일 몇 개를 랜덤 워크하듯 읽는 일이 줄어든다.
+
+### 패턴 2. dependency API는 반드시 LSP로 확인
+
+외부 라이브러리 호출을 추가하거나 바꿀 때는 모델 기억을 믿지 않는 게 낫다.
+
+```text
+- installed version 기준 type definition 확인
+- overload 후보 확인
+- optional/nullability 확인
+- 반환 타입 확인
+```
+
+특히 TypeScript, Java, Rust처럼 타입 정보가 강한 언어에서는 효과가 크다.
+
+### 패턴 3. 수정 후 테스트 전에 diagnostics 먼저 보기
+
+에이전트 루프를 다음처럼 짜는 게 합리적이다.
+
+```text
+edit
+-> LSP diagnostics
+-> targeted test
+-> full typecheck/build
+```
+
+작은 타입 오류 때문에 전체 테스트를 반복해서 돌리는 건 낭비다. diagnostics로 빠르게 잘라내고, 테스트는 행동 검증에 쓰는 편이 낫다.
+
+## 주의할 점
+
+LSP를 붙인다고 코드 에이전트가 갑자기 완벽해지지는 않는다.
+
+첫째, language server도 프로젝트 설정에 의존한다. `tsconfig`, `pyproject.toml`, `go.mod`, `Cargo.toml`, Java build config가 망가져 있으면 LSP 결과도 흔들린다.
+
+둘째, generated code나 polyglot repo에서는 서버 여러 개가 필요하다. “이 repo는 TypeScript니까 tsserver만 있으면 된다”가 아닐 수 있다.
+
+셋째, LSP 결과는 의미 있는 근거지만 최종 검증은 아니다. references가 적게 나왔다고 영향 범위가 작다고 단정하면 안 된다. dynamic dispatch, reflection, string-based routing, framework convention은 여전히 별도 확인이 필요하다.
+
+그래서 LSP는 테스트를 대체하는 도구가 아니라, 테스트 전에 더 정확한 수정을 하게 해주는 도구로 봐야 한다.
+
+## 내가 에이전트 하네스에 넣고 싶은 기본 정책
+
+코드 에이전트를 설계한다면 나는 다음 정책을 기본값으로 두고 싶다.
+
+```text
+1. 함수/클래스/타입을 수정하기 전 definition 확인
+2. public API를 바꾸기 전 references 확인
+3. dependency API를 호출하기 전 signature 확인
+4. 파일 수정 직후 diagnostics 확인
+5. diagnostics가 깨진 상태에서 큰 작업 계속 진행 금지
+6. LSP가 실패하면 실패 이유를 보고하고 grep fallback 사용
+```
+
+핵심은 에이전트가 “똑똑하게 추측”하는 시간을 줄이고, 이미 존재하는 개발 도구의 구조화된 지식을 쓰게 만드는 것이다.
+
+## 정리
+
+Copilot CLI에 LSP를 붙이는 기능은 단순한 편의 개선이 아니다. 코드 에이전트가 repository를 이해하는 방식을 바꾸는 신호다.
+
+- grep은 빠르지만 의미를 모른다.
+- 벡터 검색은 관련 문맥을 찾지만 타입 시스템을 모른다.
+- LSP는 현재 프로젝트 기준의 심볼, 타입, 참조 관계를 안다.
+
+코드 에이전트가 실무에서 안정적으로 일하려면 세 가지가 같이 필요하다.
+
+```text
+검색: 후보를 찾는다.
+LSP: 의미를 확인한다.
+테스트/빌드: 동작을 검증한다.
+```
+
+이 중 하나만 붙여놓고 “repo를 이해한다”고 말하는 건 과장이다. 특히 코드 수정 에이전트라면 LSP는 이제 꽤 기본기에 가까워졌다.
+
+## 참고 자료
+
+- GitHub Blog, [Give GitHub Copilot CLI real code intelligence with language servers](https://github.blog/ai-and-ml/github-copilot/give-github-copilot-cli-real-code-intelligence-with-language-servers/)
+- Microsoft, [Language Server Protocol Specification](https://microsoft.github.io/language-server-protocol/)

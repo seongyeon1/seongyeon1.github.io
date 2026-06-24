@@ -255,7 +255,7 @@
 - confidence: 5
 - suggested-category: tutorial
 - suggested-tags: [lsp, code-agent, copilot-cli, developer-tools]
-- status: drafted
+- status: published
 - draft: content/posts/2026-06-16-copilot-cli-lsp-code-intelligence.mdx
 
 ### 2026-06-15 — Security validation for third-party coding agents: 외부 코딩 에이전트 보안 게이트

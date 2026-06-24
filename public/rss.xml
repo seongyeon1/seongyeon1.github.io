@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 23 Jun 2026 02:01:52 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 24 Jun 2026 02:04:29 GMT</lastBuildDate>
     <item>
       <title>DeepEval: LLM 앱을 pytest처럼 평가하기</title>
       <link>https://seongyeon1.github.io/blog/2026-06-22-deepeval-llm-evaluation-framework/</link>
@@ -90,6 +90,19 @@
       <category>context-engineering</category>
       <category>rust</category>
       <category>automation</category>
+    </item>
+    <item>
+      <title>Copilot CLI + LSP: 코드 에이전트에 진짜 코드 지능 붙이기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-16-copilot-cli-lsp-code-intelligence/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-16-copilot-cli-lsp-code-intelligence/</guid>
+      <description>GitHub Copilot CLI의 LSP 설정 글을 바탕으로, 코드 에이전트가 grep이 아니라 Language Server API를 써야 하는 이유를 정리한다.</description>
+      <pubDate>Tue, 16 Jun 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>lsp</category>
+      <category>code-agent</category>
+      <category>copilot-cli</category>
+      <category>developer-tools</category>
+      <category>github</category>
     </item>
     <item>
       <title>MinSync — 파일이 바뀐 만큼만 다시 인덱싱하기</title>
