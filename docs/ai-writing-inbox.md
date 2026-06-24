@@ -791,7 +791,8 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [openai-agents, agent-framework, guardrails, tracing]
-- status: idea
+- status: drafted
+- draft: content/posts/2026-06-23-openai-agents-python-handoff-guardrail-tracing.mdx
 
 ### 2026-06-23 — LangGraph 1.x: durable execution으로 장기 실행 agent를 만드는 법
 - type: tech
@@ -817,5 +818,109 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [mcp, agent-framework, workflow, github-repo]
+- status: idea
+
+### 2026-06-24 — [논문 리뷰] EnterpriseClawBench: 실제 업무 세션으로 agent를 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2606.23654v1
+- why-now: browser/desktop agent 벤치마크가 synthetic task에 치우치기 쉬운 가운데, 실제 workplace session 기반 평가가 agent 품질 측정의 다음 기준으로 떠오르고 있다.
+- angle: “agent benchmark는 장난감 task가 아니라 업무 로그에서 온 verifier를 가져야 한다” — task extraction, privacy filtering, success criterion, regression suite 설계를 실무 QA 관점으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, benchmark, workplace-agent, verifier]
+- status: idea
+
+### 2026-06-24 — [논문 리뷰] Self-Compacting Language Model Agents: context를 스스로 압축하는 agent
+- type: paper
+- source: http://arxiv.org/abs/2606.23525v1
+- why-now: 장기 실행 agent에서 context window와 비용이 병목이 되면서, 외부 요약기가 아니라 agent가 실행 중 스스로 state를 compact하는 방식이 중요해지고 있다.
+- angle: “long-running agent의 핵심 루프는 계획-실행만이 아니라 압축-복원이다” — self-compaction trigger, 정보 손실, tool trace 보존, 재현 가능한 resume 전략을 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, context-engineering, memory, long-running]
+- status: idea
+
+### 2026-06-24 — [논문 리뷰] Managing Procedural Memory in LLM Agents
+- type: paper
+- source: http://arxiv.org/abs/2606.23127v1
+- why-now: agent memory가 사실 저장을 넘어 “어떻게 일하는가”라는 procedure와 skill을 축적하는 방향으로 확장되고 있다.
+- angle: “에이전트 메모리는 facts와 procedures를 분리해야 한다” — skill update, adaptation control, evaluation loop를 개인 비서·개발자 agent 운영 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, procedural-memory, skill-learning, eval]
+- status: idea
+
+### 2026-06-24 — [논문 리뷰] Plans Don't Persist: LLM agent에서 context management가 load-bearing인 이유
+- type: paper
+- source: http://arxiv.org/abs/2606.22953v1
+- why-now: multi-step agent가 plan을 세워도 context 전환과 tool 결과 누적으로 원래 의도가 흐려지는 문제가 실제 운영 실패로 반복된다.
+- angle: “계획 품질보다 계획을 잃지 않는 runtime이 더 중요하다” — plan persistence, context partitioning, checkpoint, deviation detector를 agent harness 설계 패턴으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent, planning, context-management, harness]
+- status: idea
+
+### 2026-06-24 — [논문 리뷰] Intent-Governed Tool Authorization: tool agent 권한을 사용자 의도와 묶기
+- type: paper
+- source: http://arxiv.org/abs/2606.22916v1
+- why-now: tool-using agent 보안은 “이 도구를 호출해도 되는가”를 넘어서, 현재 사용자 의도와 권한 부여가 일치하는지 검증해야 하는 단계로 가고 있다.
+- angle: “agent 권한은 static allowlist가 아니라 intent-bound capability여야 한다” — intent extraction, authorization token, audit log, least privilege gate를 실무 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-security, tool-use, authorization, least-privilege]
+- status: idea
+
+### 2026-06-24 — [논문 리뷰] Grounded Delta Planning: multi-step RAG에서 모르는 것만 묻기
+- type: paper
+- source: http://arxiv.org/abs/2606.22681v1
+- why-now: agentic RAG가 매 단계 전체 검색을 반복하면 비용과 hallucination surface가 커지므로, 이미 아는 것과 새로 필요한 근거의 delta를 구분하는 planning이 필요하다.
+- angle: “좋은 RAG agent는 더 많이 검색하는 게 아니라 질문의 delta를 좁힌다” — grounded state, unknown set, retrieval budget, multi-hop evidence chain을 튜토리얼로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, planning, retrieval, grounding]
+- status: idea
+
+### 2026-06-24 — Mastra: TypeScript agent framework에서 workflow·memory·eval을 한 번에 보기
+- type: tech
+- source: https://github.com/mastra-ai/mastra
+- why-now: TypeScript 기반 AI app/agent framework가 빠르게 성숙하면서, Python 중심 agent stack과 다른 배포·observability·workflow 설계가 필요해졌다.
+- angle: “프론트엔드/백엔드 TS 팀이 agent framework를 고를 때 봐야 할 체크리스트” — workflow, tool, memory, eval, deployment surface를 repo 구조 중심으로 소개.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, typescript, workflow, github-repo]
+- status: idea
+
+### 2026-06-24 — SDL-MCP: coding agent를 위한 symbol-aware context budget layer
+- type: tech
+- source: https://github.com/GlitterKill/sdl-mcp
+- why-now: 코딩 에이전트가 큰 repo에서 토큰을 낭비하지 않으려면 단순 grep/RAG보다 symbol graph 기반 context selection과 MCP tool boundary가 중요해지고 있다.
+- angle: “context engineering을 repo symbol graph와 policy layer로 분리하기” — symbol delta ledger, precision tool, budgeted context, coding agent 안전성을 repo introduction 형식으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, coding-agent, context-engineering, github-repo]
 - status: idea
 
