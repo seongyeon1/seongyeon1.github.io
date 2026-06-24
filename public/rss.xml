@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 24 Jun 2026 02:04:29 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 24 Jun 2026 14:21:31 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Do Language Models Need Sleep? — 긴 컨텍스트를 잠자는 동안 정리하는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-24-do-language-models-need-sleep/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-24-do-language-models-need-sleep/</guid>
+      <description>LLM이 긴 컨텍스트를 계속 들고 있는 대신, 오프라인 recurrent pass로 fast weights에 기억을 정리하면 온라인 추론 지연을 늘리지 않고 깊은 reasoning 성능을 높일 수 있다는 논문을 정리한다.</description>
+      <pubDate>Wed, 24 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>language-model</category>
+      <category>long-context</category>
+      <category>ssm</category>
+      <category>memory</category>
+      <category>reasoning</category>
+    </item>
     <item>
       <title>DeepEval: LLM 앱을 pytest처럼 평가하기</title>
       <link>https://seongyeon1.github.io/blog/2026-06-22-deepeval-llm-evaluation-framework/</link>
