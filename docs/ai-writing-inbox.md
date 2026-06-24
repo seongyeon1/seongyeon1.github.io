@@ -924,3 +924,94 @@
 - suggested-tags: [mcp, coding-agent, context-engineering, github-repo]
 - status: idea
 
+### 2026-06-25 — [논문 리뷰] OpenThoughts-Agent: agentic model 학습 데이터 recipe를 공개 벤치마크로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2606.24855v1
+- why-now: agentic language model 성능은 모델 크기만큼이나 tool-use, reasoning, task trajectory 데이터 구성에 좌우되지만 공개적으로 재현 가능한 데이터 recipe는 아직 부족하다.
+- angle: “agent 학습 데이터셋은 문제-정답 쌍이 아니라 실행 궤적·도구 결과·실패 복구를 설계하는 일” — SWE-Smith/SERA/Nemotron류 데이터 생성 흐름과 비교해 학습 파이프라인 체크리스트로 정리.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, training-data, tool-use, open-data]
+- status: idea
+
+### 2026-06-25 — [논문 리뷰] World Models in Pieces: general agent를 구조적으로 인증할 수 있을까
+- type: paper
+- source: http://arxiv.org/abs/2606.24842v1
+- why-now: 범용 에이전트 평가가 단일 평균 점수로 흐르기 쉬운데, 실제 배포에서는 어떤 world-model 조각을 이해하고 어떤 영역은 모르는지 구조적으로 구분해야 한다.
+- angle: “agent certification은 전체 능력 보증이 아니라 capability map을 만드는 문제” — specialization, coverage gap, 구조적 보증을 agent eval/운영 게이트 관점으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, world-model, certification, reliability]
+- status: idea
+
+### 2026-06-25 — [논문 리뷰] Grading the Grader: agentic data analysis system 평가는 왜 어려운가
+- type: paper
+- source: http://arxiv.org/abs/2606.24839v1
+- why-now: 데이터 분석 에이전트는 코드, 수치 결과, 차트 해석, 자연어 진단을 함께 내놓기 때문에 단일 LLM-as-judge 점수로 평가하기 어렵다.
+- angle: “분석 에이전트의 verifier는 정답 문자열이 아니라 실행 가능한 notebook QA에 가깝다” — code execution, numerical validation, verbal diagnostics를 분리한 평가 harness 설계로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [data-analysis-agent, eval, llm-as-judge, verifier]
+- status: idea
+
+### 2026-06-25 — [논문 리뷰] InSight: VLA agent가 스스로 manipulation skill을 발견하는 법
+- type: paper
+- source: http://arxiv.org/abs/2606.24884v1
+- why-now: vision-language-action 모델이 데모 데이터에 있는 스킬만 반복하는 한계를 넘어, 환경 상호작용으로 새 조작 스킬을 자가 획득하는 연구가 늘고 있다.
+- angle: “robot agent의 self-improvement loop는 reward보다 skill discovery interface가 중요하다” — steerable VLA, autonomous exploration, skill library 업데이트를 embodied agent 관점으로 설명.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [vla, robotics-agent, skill-acquisition, self-improvement]
+- status: idea
+
+### 2026-06-25 — [논문 리뷰] IV-CoT: 이미지 생성 모델의 암묵적 visual chain-of-thought
+- type: paper
+- source: http://arxiv.org/abs/2606.24849v1
+- why-now: text-to-image 모델이 객체 수, 공간 관계, 속성 binding을 틀리는 문제가 계속되면서, 구조 인식을 위한 중간 reasoning representation이 중요해지고 있다.
+- angle: “멀티모달 CoT는 텍스트 설명만이 아니라 latent visual planning일 수 있다” — structure-aware prompt following, implicit reasoning, evaluation 사례를 멀티모달 디버깅 글로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multimodal, text-to-image, reasoning, visual-cot]
+- status: idea
+
+### 2026-06-25 — Harbor: agent eval과 RL environment를 한 프레임워크에서 돌리기
+- type: tech
+- source: https://github.com/harbor-framework/harbor
+- why-now: agentic RL과 eval이 가까워지면서, 벤치마크 task를 평가용으로만 쓰지 않고 학습 환경·회귀 테스트·실험 추적으로 재사용하는 프레임워크가 필요해지고 있다.
+- angle: “에이전트 평가는 리포트가 아니라 환경 API와 실험 루프다” — environment abstraction, evaluator, rollout log, reward/metric 관리를 repo 구조 중심으로 소개.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, reinforcement-learning, environment, github-repo]
+- status: idea
+
+### 2026-06-25 — Composio: agent tool auth와 sandboxed workbench를 제품 코드에 붙이는 법
+- type: tech
+- source: https://github.com/ComposioHQ/composio
+- why-now: 에이전트가 1000개 이상의 외부 도구와 SaaS API를 호출하는 흐름에서 tool discovery, 인증, context management, sandbox 실행을 각각 따로 만들기 어렵다.
+- angle: “agent tool layer의 핵심은 함수 목록이 아니라 auth·permission·sandbox·observability 묶음” — toolkit registry, OAuth/auth boundary, 실행 격리, intent-to-action 흐름을 repo introduction으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-tools, tool-use, auth, github-repo]
+- status: idea
+

@@ -84,6 +84,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Plans Don't Persist — context management가 agent runtime의 load-bearing인 이유 | paper-review | 논문 리뷰 | | arXiv 2606.22953 — plan persistence, context partitioning, checkpoint, deviation detector를 agent harness 패턴으로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] Intent-Governed Tool Authorization — tool agent 권한을 사용자 의도와 묶기 | paper-review | 논문 리뷰 | | arXiv 2606.22916 — intent-bound capability, authorization token, audit log, least privilege gate 설계 |
 | 아이디어 | 미정 | Mastra: TypeScript agent framework에서 workflow·memory·eval을 한 번에 보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — TS 팀을 위한 workflow, tool, memory, eval, deployment surface 체크리스트 |
+| 아이디어 | 미정 | [논문 리뷰] OpenThoughts-Agent — agentic model 학습 데이터 recipe | paper-review | 논문 리뷰 | | arXiv 2606.24855 — tool-use/reasoning/task trajectory 데이터 생성과 공개 agent 학습 파이프라인 체크리스트 |
+| 아이디어 | 미정 | [논문 리뷰] Grading the Grader — agentic data analysis system 평가법 | paper-review | AI 평가/운영 | | arXiv 2606.24839 — 코드 실행, 수치 검증, 자연어 진단을 분리한 data analysis agent verifier 설계 |
+| 아이디어 | 미정 | [논문 리뷰] World Models in Pieces — general agent capability map 인증 | paper-review | AI 평가/운영 | | arXiv 2606.24842 — 평균 점수 대신 world-model 조각별 coverage gap과 구조적 보증을 보는 agent certification |
+| 아이디어 | 미정 | Harbor: agent eval과 RL environment를 한 프레임워크에서 돌리기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — environment abstraction, evaluator, rollout log, reward/metric 관리 |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 
