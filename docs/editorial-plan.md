@@ -58,7 +58,7 @@
 | 아이디어 | 미정 | [논문 리뷰] Recursive Agent Harnesses — subagent를 코드처럼 재귀 호출하는 패턴 | paper-review | 논문 리뷰 | | arXiv 2606.13643 — recursive call, context 격리, delegation boundary, 검증 루프 |
 | 발행완료 | 2026-06-24 | Copilot CLI + Language Server: 코드 에이전트에 진짜 코드 지능 붙이기 | tutorial | 개발자 AI 워크플로 | 3 | `2026-06-16-copilot-cli-lsp-code-intelligence.mdx` — 자동 발행 완료, GitHub AI 글 기반 — LSP symbol/diagnostics/references를 agent tool로 쓰는 법 |
 | 아이디어 | 미정 | GitHub Copilot CLI delegation: 에이전트가 언제 직접 하고 언제 위임해야 하나 | tutorial | 개발자 AI 워크플로 | 4 | GitHub AI 글 기반 — 작업 분류, delegation policy, latency/신뢰도 trade-off |
-| 작성중 | 미정 | 외부 코딩 에이전트를 붙이기 전에 보안 게이트부터 설계하자 | tutorial | 개발자 AI 워크플로 | 5 | `2026-06-18-third-party-coding-agent-security-gate.mdx` — draft true, GitHub changelog 기반 — third-party coding agent 권한·CodeQL·dependency review·secret scanning 게이트 설계 |
+| 발행완료 | 2026-06-25 | 외부 코딩 에이전트를 붙이기 전에 보안 게이트부터 설계하자 | tutorial | 개발자 AI 워크플로 | 5 | `2026-06-18-third-party-coding-agent-security-gate.mdx` — 자동 발행 완료, GitHub changelog 기반 — third-party coding agent 권한·CodeQL·dependency review·secret scanning 게이트 설계 |
 | 작성중 | 미정 | [논문 리뷰] SafeClawBench — tool-using agent 보안 실패를 세 단계로 분리하기 | paper-review | 논문 리뷰 | | `2026-06-20-safeclawbench-agent-security-benchmark.mdx` — draft true, arXiv 2606.18356 — semantic/audit-evidence/sandbox harm 분리, agent QA·sandbox gate 설계 |
 | 아이디어 | 미정 | [논문 리뷰] MemTrace — LLM memory system 디버깅과 오류 attribution | paper-review | 논문 리뷰 | | arXiv 2605.28732 — memory evolution trace, 장기 대화/에이전트 memory regression test 관점 |
 | 아이디어 | 미정 | [논문 리뷰] HieraRAG — RAG benchmark granularity를 어떻게 설계할까 | paper-review | RAG 논문 리뷰 시리즈 | | arXiv 2606.12789 — synthetic question hierarchy, discriminative power, evaluation set 설계 |
@@ -81,7 +81,7 @@
 | 작성중 | 미정 | OpenAI Agents Python: handoff·guardrail·trace를 갖춘 lightweight agent framework | guide | Agent/MCP 실전 | | `2026-06-23-openai-agents-python-handoff-guardrail-tracing.mdx` — draft true, GitHub repo 기반 — agent/handoff/tool/guardrail/trace abstraction을 프레임워크 선택 체크리스트로 정리 |
 | 아이디어 | 미정 | LangGraph 1.x: durable execution으로 장기 실행 agent를 만드는 법 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — state, checkpoint, interrupt, replay, observability 중심 production agent 운영 |
 | 아이디어 | 미정 | [논문 리뷰] EnterpriseClawBench — 실제 업무 세션으로 agent를 평가하기 | paper-review | AI 평가/운영 | | arXiv 2606.23654 — workplace session 기반 task extraction, verifier, privacy filtering, regression suite 설계 |
-| 아이디어 | 미정 | [논문 리뷰] Plans Don't Persist — context management가 agent runtime의 load-bearing인 이유 | paper-review | 논문 리뷰 | | arXiv 2606.22953 — plan persistence, context partitioning, checkpoint, deviation detector를 agent harness 패턴으로 정리 |
+| 작성중 | 미정 | [논문 리뷰] Plans Don't Persist — context management가 agent runtime의 load-bearing인 이유 | paper-review | 논문 리뷰 | | `2026-06-25-plans-dont-persist-context-management-agents.mdx` — draft true, arXiv 2606.22953 — plan persistence, context partitioning, checkpoint, deviation detector를 agent harness 패턴으로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] Intent-Governed Tool Authorization — tool agent 권한을 사용자 의도와 묶기 | paper-review | 논문 리뷰 | | arXiv 2606.22916 — intent-bound capability, authorization token, audit log, least privilege gate 설계 |
 | 아이디어 | 미정 | Mastra: TypeScript agent framework에서 workflow·memory·eval을 한 번에 보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — TS 팀을 위한 workflow, tool, memory, eval, deployment surface 체크리스트 |
 | 아이디어 | 미정 | [논문 리뷰] OpenThoughts-Agent — agentic model 학습 데이터 recipe | paper-review | 논문 리뷰 | | arXiv 2606.24855 — tool-use/reasoning/task trajectory 데이터 생성과 공개 agent 학습 파이프라인 체크리스트 |

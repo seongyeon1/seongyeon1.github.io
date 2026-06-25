@@ -269,7 +269,7 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, security, github, devsecops]
-- status: drafted
+- status: published
 - draft: content/posts/2026-06-18-third-party-coding-agent-security-gate.mdx
 
 ### 2026-06-15 — NVIDIA FLARE Auto-FL: federated learning 실험을 에이전트로 자동화하기
@@ -870,7 +870,8 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent, planning, context-management, harness]
-- status: idea
+- status: drafted
+- draft: content/posts/2026-06-25-plans-dont-persist-context-management-agents.mdx
 
 ### 2026-06-24 — [논문 리뷰] Intent-Governed Tool Authorization: tool agent 권한을 사용자 의도와 묶기
 - type: paper

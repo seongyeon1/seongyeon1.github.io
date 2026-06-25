@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 24 Jun 2026 14:21:31 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 25 Jun 2026 02:05:40 GMT</lastBuildDate>
     <item>
       <title>[논문 리뷰] Do Language Models Need Sleep? — 긴 컨텍스트를 잠자는 동안 정리하는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-06-24-do-language-models-need-sleep/</link>
@@ -77,6 +77,19 @@
       <category>docusaurus</category>
       <category>custom-domain</category>
       <category>ci-cd</category>
+    </item>
+    <item>
+      <title>외부 코딩 에이전트를 붙이기 전에 보안 게이트부터 설계하자</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-18-third-party-coding-agent-security-gate/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-18-third-party-coding-agent-security-gate/</guid>
+      <description>GitHub의 third-party coding agent 보안 검증을 계기로, 코딩 에이전트 도입 전 필요한 권한·검증·감사 게이트를 정리한다.</description>
+      <pubDate>Thu, 18 Jun 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>coding-agent</category>
+      <category>security</category>
+      <category>github</category>
+      <category>devsecops</category>
+      <category>codeql</category>
     </item>
     <item>
       <title>[논문 리뷰] Consensus is Strategically Insufficient — 합의보다 중요한 것은 불일치의 구조다</title>
