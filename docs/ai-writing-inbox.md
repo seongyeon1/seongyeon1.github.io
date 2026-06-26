@@ -1016,3 +1016,107 @@
 - suggested-tags: [agent-tools, tool-use, auth, github-repo]
 - status: idea
 
+### 2026-06-26 — [논문 리뷰] Progress Advantage: agent post-training에서 공짜 신호를 뽑아내기
+- type: paper
+- source: http://arxiv.org/abs/2606.26080v1
+- why-now: 장기 horizon agent는 step-level reward annotation과 Monte Carlo 추정 비용이 커서 process reward model을 만들기 어렵다는 병목이 있다.
+- angle: “agent RL의 핵심은 최종 성공보다 중간 진행 신호를 어떻게 안정적으로 추출하느냐” — progress advantage를 reward shaping, rollout logging, eval harness 설계와 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, post-training, reinforcement-learning, reward-model]
+- status: idea
+
+### 2026-06-26 — [논문 리뷰] Unfireable Safety Kernel: 에이전트 런타임 밖에 안전 경계를 두기
+- type: paper
+- source: http://arxiv.org/abs/2606.26057v1
+- why-now: tool/API 권한을 가진 agent에서 prompt guardrail이나 agent 내부 필터는 입력에 의해 우회될 수 있어 실행 시간의 외부 안전 커널이 필요하다는 주장이 강해지고 있다.
+- angle: “safety를 agent 프로세스 안에 넣지 말고 escapable system 밖의 reference monitor로 빼자” — syscall gate, tool broker, policy kernel을 개발자 agent 보안 아키텍처로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, runtime-policy, tool-use, alignment]
+- status: idea
+
+### 2026-06-26 — [논문 리뷰] Is GraphRAG Needed?: Basic RAG에서 Agentic RAG까지 선택 기준 만들기
+- type: paper
+- source: http://arxiv.org/abs/2606.25656v1
+- why-now: GraphRAG와 Agentic RAG가 유행하지만 모든 지식베이스에 복잡한 그래프/에이전트가 필요한지 판단하는 실험 기준은 부족하다.
+- angle: “RAG 아키텍처 선택을 hype가 아니라 scenario matrix로 하자” — basic/modular/graph/agentic RAG를 지식 구조, query 유형, context optimization 비용으로 비교한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, graphrag, agentic-rag, architecture]
+- status: idea
+
+### 2026-06-26 — [논문 리뷰] TRACE: poisoned RAG corpus에서 답변 조작 토큰을 추적하기
+- type: paper
+- source: http://arxiv.org/abs/2606.25721v1
+- why-now: RAG 운영에서 corpus poisoning은 검색 결과가 정상 문서처럼 보여도 특정 target answer를 유도할 수 있어 lightweight attribution 기반 방어가 중요하다.
+- angle: “RAG 보안은 악성 문서 분류보다 답변에 영향을 준 토큰 경로를 추적하는 문제” — token influence attribution, audit trail, ingestion QA gate로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag-security, poisoning, attribution, retrieval]
+- status: idea
+
+### 2026-06-26 — [논문 리뷰] Quantization Inflates Reasoning: low-bit 모델이 더 오래 생각하는 숨은 비용
+- type: paper
+- source: http://arxiv.org/abs/2606.25519v1
+- why-now: reasoning model을 양자화할 때 accuracy와 token latency만 보면, 체인 길이가 늘어 총 추론 비용이 다시 증가하는 현상을 놓칠 수 있다.
+- angle: “양자화 평가는 per-token 속도가 아니라 answer까지의 total reasoning budget으로 봐야 한다” — CoT token inflation, serving cost, eval metric 설계를 inference 최적화 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [quantization, reasoning, inference, llm-serving]
+- status: idea
+
+### 2026-06-26 — Microsoft Agent Framework: Python/.NET multi-agent workflow를 한 런타임으로 보기
+- type: tech
+- source: https://github.com/microsoft/agent-framework
+- why-now: Microsoft가 Python과 .NET을 함께 지원하는 agent framework를 활발히 업데이트하면서 엔터프라이즈 팀의 언어·배포 경계를 넘는 agent orchestration 기준점이 생기고 있다.
+- angle: “agent framework 선택에서 중요한 건 데모 API가 아니라 orchestration, deployment, observability, enterprise runtime integration” — Python/.NET 양쪽 팀이 공유할 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, microsoft, multi-agent, dotnet]
+- status: idea
+
+### 2026-06-26 — PraisonAI: self-improving multi-agent workflow를 5줄 데모 너머로 보기
+- type: tech
+- source: https://github.com/MervinPraison/PraisonAI
+- why-now: multi-agent 프레임워크가 role-play 데모에서 memory, RAG, tool execution, 여러 LLM backend를 묶은 실무형 워크플로로 빠르게 진화하고 있다.
+- angle: “간단한 agent 선언 뒤에 필요한 운영 요소는 무엇인가” — task decomposition, memory/RAG, tool boundary, 반복 실행 안정성을 repo 구조 중심으로 점검한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, agent-framework, rag, github-repo]
+- status: idea
+
+### 2026-06-26 — Future AGI: agent eval·tracing·simulation을 한 플랫폼으로 묶기
+- type: tech
+- source: https://github.com/future-agi/future-agi
+- why-now: agent 앱은 prompt 한 번의 품질보다 trace, dataset, simulation, guardrail, gateway를 묶은 지속 평가 루프가 운영 품질을 좌우한다.
+- angle: “agent evaluation stack은 별도 스크립트가 아니라 product runtime의 관측·개선 루프” — self-hosted eval/observability 플랫폼을 repo introduction과 운영 체크리스트로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, observability, tracing, github-repo]
+- status: idea
+

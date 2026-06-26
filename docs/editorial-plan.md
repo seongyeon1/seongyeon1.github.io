@@ -88,6 +88,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Grading the Grader — agentic data analysis system 평가법 | paper-review | AI 평가/운영 | | arXiv 2606.24839 — 코드 실행, 수치 검증, 자연어 진단을 분리한 data analysis agent verifier 설계 |
 | 아이디어 | 미정 | [논문 리뷰] World Models in Pieces — general agent capability map 인증 | paper-review | AI 평가/운영 | | arXiv 2606.24842 — 평균 점수 대신 world-model 조각별 coverage gap과 구조적 보증을 보는 agent certification |
 | 아이디어 | 미정 | Harbor: agent eval과 RL environment를 한 프레임워크에서 돌리기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — environment abstraction, evaluator, rollout log, reward/metric 관리 |
+| 아이디어 | 미정 | [논문 리뷰] Unfireable Safety Kernel — 에이전트 런타임 밖에 안전 경계를 두기 | paper-review | 논문 리뷰 | | arXiv 2606.26057 — agent 내부 guardrail 대신 외부 reference monitor/tool broker로 실행 시간 안전 경계를 설계하는 법 |
+| 아이디어 | 미정 | [논문 리뷰] Is GraphRAG Needed? — Basic RAG에서 Agentic RAG까지 선택 기준 | paper-review | Agentic RAG | | arXiv 2606.25656 — basic/modular/graph/agentic RAG를 scenario matrix와 context optimization 비용으로 비교 |
+| 아이디어 | 미정 | [논문 리뷰] Quantization Inflates Reasoning — low-bit 모델의 숨은 reasoning 비용 | paper-review | AI 추론 최적화 | | arXiv 2606.25519 — 양자화 후 CoT token inflation, total reasoning budget, serving cost 평가법 |
+| 아이디어 | 미정 | Microsoft Agent Framework: Python/.NET multi-agent workflow를 한 런타임으로 보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — orchestration, deployment, observability, enterprise runtime integration 체크리스트 |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 
