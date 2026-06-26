@@ -92,6 +92,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Is GraphRAG Needed? — Basic RAG에서 Agentic RAG까지 선택 기준 | paper-review | Agentic RAG | | arXiv 2606.25656 — basic/modular/graph/agentic RAG를 scenario matrix와 context optimization 비용으로 비교 |
 | 아이디어 | 미정 | [논문 리뷰] Quantization Inflates Reasoning — low-bit 모델의 숨은 reasoning 비용 | paper-review | AI 추론 최적화 | | arXiv 2606.25519 — 양자화 후 CoT token inflation, total reasoning budget, serving cost 평가법 |
 | 아이디어 | 미정 | Microsoft Agent Framework: Python/.NET multi-agent workflow를 한 런타임으로 보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — orchestration, deployment, observability, enterprise runtime integration 체크리스트 |
+| 아이디어 | 미정 | [논문 리뷰] GUI Agents with Hindsight — 실패 경험을 계획 데이터로 바꾸기 | paper-review | 논문 리뷰 | | arXiv 2606.27330 — autonomous exploration, hindsight experience, task decomposition을 browser/GUI agent 운영 관점으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Co-Failure Ceiling — mixture-of-agents 성능 상한선 | paper-review | AI 평가/운영 | | arXiv 2606.27288 — 67개 frontier model co-failure 구조로 routing/voting/mixture-of-agents 설계 기준 만들기 |
+| 아이디어 | 미정 | [논문 리뷰] BINEVAL — LLM 평가를 이진 질문 묶음으로 만들기 | paper-review | AI 평가/운영 | | arXiv 2606.27226 — opaque judge score 대신 binary question decomposition과 self-improvement loop 설계 |
+| 아이디어 | 미정 | [논문 리뷰] RiVER — 정답 없는 문제에서도 LLM 강화학습하기 | paper-review | 논문 리뷰 | | arXiv 2606.27369 — ranking-induced verifiable reward로 agent 업무 post-training 신호를 만드는 법 |
+| 아이디어 | 미정 | Headroom: tool output과 RAG chunk를 LLM 앞에서 압축하는 context layer | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — output compression, MCP server/proxy, token budget과 answer preservation 체크리스트 |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 

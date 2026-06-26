@@ -1120,3 +1120,107 @@
 - suggested-tags: [agent-eval, observability, tracing, github-repo]
 - status: idea
 
+### 2026-06-27 — [논문 리뷰] GUI Agents with Hindsight: 웹 에이전트가 실패 경험을 계획 데이터로 바꾸는 법
+- type: paper
+- source: http://arxiv.org/abs/2606.27330v1
+- why-now: multimodal web/GUI agent가 반복 업무를 수행하려면 단순 데모 imitation을 넘어 실패한 탐색 경험에서 task planning 신호를 뽑아야 한다는 문제가 커지고 있다.
+- angle: “GUI agent memory는 성공 trajectory 저장소가 아니라 실패-복구 경험을 재사용하는 planner” — autonomous exploration, hindsight experience, task decomposition을 browser agent 운영 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [gui-agent, web-agent, planning, experience-replay]
+- status: idea
+
+### 2026-06-27 — [논문 리뷰] Co-Failure Ceiling: mixture-of-agents가 좋아질 수 있는 상한선
+- type: paper
+- source: http://arxiv.org/abs/2606.27288v1
+- why-now: routing, voting, cascades, mixture-of-agents가 “여러 모델을 섞으면 더 좋아진다”는 식으로 쓰이지만, 모델들이 같이 틀리는 영역이 성능 상한을 만든다는 분석이 필요하다.
+- angle: “multi-model orchestration의 병목은 라우터가 아니라 co-failure 구조” — 67개 frontier model 실험을 바탕으로 ensemble 설계, judge diversity, fallback policy 체크리스트를 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mixture-of-agents, routing, eval, ensemble]
+- status: idea
+
+### 2026-06-27 — [논문 리뷰] BINEVAL: LLM 평가를 점수 하나가 아니라 이진 질문 묶음으로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2606.27226v1
+- why-now: LLM-as-judge의 opaque score는 디버깅과 개선 액션으로 이어지기 어렵고, open-ended generation 평가를 해석 가능한 질문 단위로 쪼개려는 수요가 커지고 있다.
+- angle: “평가자는 판사가 아니라 체크리스트 질문 생성기여야 한다” — binary question decomposition, self-improvement loop, agent QA report 설계를 실무 평가 harness로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-eval, llm-as-judge, interpretability, qa]
+- status: idea
+
+### 2026-06-27 — [논문 리뷰] CARVE: linear attention의 memory-blind gating을 고치는 법
+- type: paper
+- source: http://arxiv.org/abs/2606.27229v1
+- why-now: recurrent/linear attention 계열이 long-context와 inference 효율 대안으로 주목받지만, 무엇을 잊을지 결정하는 gate가 현재 memory 내용을 보지 않는 한계가 드러나고 있다.
+- angle: “효율적 attention의 핵심은 빠른 계산만이 아니라 무엇을 지울지 아는 memory policy” — content-aware recurrence, value efficiency, chunk-parallel serving 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [linear-attention, memory, architecture, inference]
+- status: idea
+
+### 2026-06-27 — [논문 리뷰] RiVER: 정답 없는 문제에서도 LLM을 강화학습시키는 방법
+- type: paper
+- source: http://arxiv.org/abs/2606.27369v1
+- why-now: RLVR은 ground-truth answer가 있는 수학·코딩 문제에 강하지만, 실제 agent 업무는 검증 가능한 정답이 없는 경우가 많아 ranking-induced reward가 중요한 대안으로 떠오른다.
+- angle: “verifiable reward가 없는 업무를 어떻게 post-training 데이터로 만들까” — ranking-induced verification, pairwise preference, agent task success proxy 설계를 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reinforcement-learning, rlvr, post-training, reasoning]
+- status: idea
+
+### 2026-06-27 — IBM AssetOpsBench: 산업 자산 운영 agent를 평가하는 domain-specific harness
+- type: tech
+- source: https://github.com/IBM/AssetOpsBench
+- why-now: 범용 agent benchmark만으로는 설비 운영·정비·모니터링 같은 산업 현장 업무의 절차, 도메인 제약, 안전 요구를 평가하기 어렵다.
+- angle: “agent benchmark는 범용 리더보드보다 domain workflow와 verifier가 중요하다” — task schema, orchestration, domain-specific evaluation을 Industry 4.0 사례로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-benchmark, domain-agent, industry40, github-repo]
+- status: idea
+
+### 2026-06-27 — Headroom: tool output과 RAG chunk를 LLM 앞에서 압축하는 context layer
+- type: tech
+- source: https://github.com/headroomlabs-ai/headroom
+- why-now: agent가 로그, 파일, tool output, RAG chunk를 많이 다룰수록 context window보다 입력 전 압축·선별 계층의 품질이 비용과 정확도를 좌우한다.
+- angle: “context engineering은 prompt 안이 아니라 LLM 앞단 proxy/MCP server에서 시작된다” — output compression, token budget, answer preservation, observability를 repo 소개로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [context-engineering, mcp, rag, github-repo]
+- status: idea
+
+### 2026-06-27 — MCP Gateway Registry: enterprise agent tool discovery와 OAuth 경계를 중앙화하기
+- type: tech
+- source: https://github.com/agentic-community/mcp-gateway-registry
+- why-now: MCP server가 늘어날수록 각 agent에 개별 tool endpoint와 credential을 붙이는 방식은 discovery, 권한, 감사 추적에서 금방 한계가 온다.
+- angle: “MCP 운영의 다음 병목은 server 구현이 아니라 gateway와 registry” — dynamic tool discovery, OAuth, central access control, enterprise audit를 agent platform 패턴으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-tools, oauth, enterprise-ai]
+- status: idea
+
