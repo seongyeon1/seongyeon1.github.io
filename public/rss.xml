@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 25 Jun 2026 02:05:40 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 26 Jun 2026 02:00:24 GMT</lastBuildDate>
     <item>
       <title>[논문 리뷰] Do Language Models Need Sleep? — 긴 컨텍스트를 잠자는 동안 정리하는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-06-24-do-language-models-need-sleep/</link>
@@ -62,6 +62,19 @@
       <category>subagents</category>
       <category>memory</category>
       <category>ai-engineering</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] SafeClawBench — 도구 사용 에이전트의 보안 실패를 세 단계로 보기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-20-safeclawbench-agent-security-benchmark/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-20-safeclawbench-agent-security-benchmark/</guid>
+      <description>SafeClawBench는 도구 사용 에이전트의 보안 실패를 텍스트 동의, 감사 증거, 실제 sandbox harm으로 분리해 평가한다.</description>
+      <pubDate>Sat, 20 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-security</category>
+      <category>tool-use</category>
+      <category>benchmark</category>
+      <category>sandbox</category>
+      <category>prompt-injection</category>
     </item>
     <item>
       <title>GitHub Pages에서 Cloudflare Pages로 — 블로그 배포 갈아타기</title>

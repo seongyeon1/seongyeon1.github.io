@@ -59,7 +59,7 @@
 | 발행완료 | 2026-06-24 | Copilot CLI + Language Server: 코드 에이전트에 진짜 코드 지능 붙이기 | tutorial | 개발자 AI 워크플로 | 3 | `2026-06-16-copilot-cli-lsp-code-intelligence.mdx` — 자동 발행 완료, GitHub AI 글 기반 — LSP symbol/diagnostics/references를 agent tool로 쓰는 법 |
 | 아이디어 | 미정 | GitHub Copilot CLI delegation: 에이전트가 언제 직접 하고 언제 위임해야 하나 | tutorial | 개발자 AI 워크플로 | 4 | GitHub AI 글 기반 — 작업 분류, delegation policy, latency/신뢰도 trade-off |
 | 발행완료 | 2026-06-25 | 외부 코딩 에이전트를 붙이기 전에 보안 게이트부터 설계하자 | tutorial | 개발자 AI 워크플로 | 5 | `2026-06-18-third-party-coding-agent-security-gate.mdx` — 자동 발행 완료, GitHub changelog 기반 — third-party coding agent 권한·CodeQL·dependency review·secret scanning 게이트 설계 |
-| 작성중 | 미정 | [논문 리뷰] SafeClawBench — tool-using agent 보안 실패를 세 단계로 분리하기 | paper-review | 논문 리뷰 | | `2026-06-20-safeclawbench-agent-security-benchmark.mdx` — draft true, arXiv 2606.18356 — semantic/audit-evidence/sandbox harm 분리, agent QA·sandbox gate 설계 |
+| 발행완료 | 2026-06-26 | [논문 리뷰] SafeClawBench — tool-using agent 보안 실패를 세 단계로 분리하기 | paper-review | 논문 리뷰 | | `2026-06-20-safeclawbench-agent-security-benchmark.mdx` — 자동 발행 완료, arXiv 2606.18356 — semantic/audit-evidence/sandbox harm 분리, agent QA·sandbox gate 설계 |
 | 아이디어 | 미정 | [논문 리뷰] MemTrace — LLM memory system 디버깅과 오류 attribution | paper-review | 논문 리뷰 | | arXiv 2605.28732 — memory evolution trace, 장기 대화/에이전트 memory regression test 관점 |
 | 아이디어 | 미정 | [논문 리뷰] HieraRAG — RAG benchmark granularity를 어떻게 설계할까 | paper-review | RAG 논문 리뷰 시리즈 | | arXiv 2606.12789 — synthetic question hierarchy, discriminative power, evaluation set 설계 |
 | 아이디어 | 미정 | Omnigent: 여러 코딩 에이전트를 갈아 끼우는 meta-harness 설계 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — adapter, policy, sandbox, collaboration layer를 agent-neutral하게 설계하는 법 |

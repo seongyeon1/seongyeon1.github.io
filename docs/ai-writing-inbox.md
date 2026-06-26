@@ -322,7 +322,7 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent-security, tool-use, benchmark, sandbox]
-- status: drafted
+- status: published
 - draft: content/posts/2026-06-20-safeclawbench-agent-security-benchmark.mdx
 
 ### 2026-06-20 — MemTrace: LLM memory system의 오류가 어디서 생겼는지 추적하기
