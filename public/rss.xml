@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 26 Jun 2026 05:27:13 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 27 Jun 2026 02:03:12 GMT</lastBuildDate>
     <item>
       <title>[논문 리뷰] K-BrowseComp — 한국어 웹 브라우징 에이전트는 왜 어려운가</title>
       <link>https://seongyeon1.github.io/blog/2026-06-26-kbrowsecomp-korean-agentic-benchmark/</link>
@@ -32,6 +32,18 @@
       <category>ssm</category>
       <category>memory</category>
       <category>reasoning</category>
+    </item>
+    <item>
+      <title>OpenAI Agents Python: handoff·guardrail·trace로 에이전트 워크플로 설계하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-23-openai-agents-python-handoff-guardrail-tracing/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-23-openai-agents-python-handoff-guardrail-tracing/</guid>
+      <description>OpenAI Agents Python SDK의 핵심 추상화인 Agent, handoff, guardrail, tracing을 실무 워크플로 설계 관점에서 정리한다.</description>
+      <pubDate>Tue, 23 Jun 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>openai-agents</category>
+      <category>agent-framework</category>
+      <category>guardrails</category>
+      <category>tracing</category>
     </item>
     <item>
       <title>DeepEval: LLM 앱을 pytest처럼 평가하기</title>

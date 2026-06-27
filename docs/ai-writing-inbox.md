@@ -791,7 +791,7 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [openai-agents, agent-framework, guardrails, tracing]
-- status: drafted
+- status: published
 - draft: content/posts/2026-06-23-openai-agents-python-handoff-guardrail-tracing.mdx
 
 ### 2026-06-23 — LangGraph 1.x: durable execution으로 장기 실행 agent를 만드는 법
