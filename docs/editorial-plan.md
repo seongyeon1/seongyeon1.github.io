@@ -97,6 +97,11 @@
 | 아이디어 | 미정 | [논문 리뷰] BINEVAL — LLM 평가를 이진 질문 묶음으로 만들기 | paper-review | AI 평가/운영 | | arXiv 2606.27226 — opaque judge score 대신 binary question decomposition과 self-improvement loop 설계 |
 | 아이디어 | 미정 | [논문 리뷰] RiVER — 정답 없는 문제에서도 LLM 강화학습하기 | paper-review | 논문 리뷰 | | arXiv 2606.27369 — ranking-induced verifiable reward로 agent 업무 post-training 신호를 만드는 법 |
 | 아이디어 | 미정 | Headroom: tool output과 RAG chunk를 LLM 앞에서 압축하는 context layer | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — output compression, MCP server/proxy, token budget과 answer preservation 체크리스트 |
+| 아이디어 | 미정 | [논문 리뷰] Temporal Validity in Retrieval Memory — stale fact를 agent RAG에서 제거하기 | paper-review | Agentic RAG | | arXiv 2606.26511 — temporal validity, stale/current conflict resolution, retrieval memory hygiene 설계 |
+| 아이디어 | 미정 | [논문 리뷰] MIRROR — agentic RAG를 novelty-constrained MCTS로 red-team하기 | paper-review | Agentic RAG | | arXiv 2606.26793 — multimodal agentic RAG 공격면, memory-guided MCTS, novelty-constrained red-team harness |
+| 아이디어 | 미정 | [논문 리뷰] Semantic Early-Stopping — multi-agent loop를 언제 멈춰야 할까 | paper-review | AI 평가/운영 | | arXiv 2606.27009 — semantic convergence와 utility plateau 기반 반복 agent 비용·품질 제어 |
+| 아이디어 | 미정 | gortex: code agent를 위한 local graph 기반 code-intelligence engine | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — multi-repo symbol graph, MCP/API, token budget 절감형 coding agent context layer |
+
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 

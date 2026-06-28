@@ -1224,3 +1224,106 @@
 - suggested-tags: [mcp, agent-tools, oauth, enterprise-ai]
 - status: idea
 
+### 2026-06-28 — [논문 리뷰] Temporal Validity in Retrieval Memory: stale fact를 agent RAG에서 제거하기
+- type: paper
+- source: http://arxiv.org/abs/2606.26511v1
+- why-now: RAG 기반 agent가 오래된 API명, 정책, 문서 버전을 현재 사실과 함께 검색하면서 stale-fact 오류가 운영 리스크로 커지고 있다.
+- angle: “agent memory에는 내용뿐 아니라 유효 기간과 대체 관계가 필요하다” — temporal validity, stale/current conflict resolution, retrieval memory hygiene를 실무 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, agent-memory, temporal-validity, retrieval]
+- status: idea
+
+### 2026-06-28 — [논문 리뷰] MIRROR: agentic RAG를 novelty-constrained MCTS로 red-team하기
+- type: paper
+- source: http://arxiv.org/abs/2606.26793v1
+- why-now: multimodal agentic RAG는 prompt injection뿐 아니라 이미지 주입, corpus poisoning, orchestrator tool manipulation까지 공격면이 넓어졌다.
+- angle: “RAG red-team은 같은 jailbreak 반복이 아니라 새로운 공격 경로를 탐색하는 search problem” — memory-guided MCTS, novelty constraint, attack taxonomy를 보안 QA harness로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, red-teaming, security, mcts]
+- status: idea
+
+### 2026-06-28 — [논문 리뷰] OpenRCA 2.0: root cause agent 평가를 causal process supervision으로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2606.27154v1
+- why-now: 운영 장애 분석 agent는 최종 원인 라벨만 맞추는 것보다 로그 탐색, tool use, 가설 검증 과정이 재현 가능해야 한다.
+- angle: “RCA agent 평가는 정답 맞히기가 아니라 원인 추적 과정의 검증” — outcome label 한계, causal process supervision, trace-level verifier를 SRE 자동화 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [root-cause-analysis, agent-eval, observability, tool-use]
+- status: idea
+
+### 2026-06-28 — [논문 리뷰] Semantic Early-Stopping: multi-agent loop를 언제 멈춰야 할까
+- type: paper
+- source: http://arxiv.org/abs/2606.27009v1
+- why-now: Writer-Critic 같은 반복 agent loop가 고정 iteration cap에 의존하면 비용은 늘고 품질 개선은 멈춘 뒤에도 계속 돈다.
+- angle: “에이전트 루프 종료 조건은 토큰·횟수 제한이 아니라 의미적 수렴 신호여야 한다” — semantic convergence, utility plateau, eval gate를 agent runtime 정책으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, eval, runtime-policy, cost-optimization]
+- status: idea
+
+### 2026-06-28 — [논문 리뷰] Spec Growth Engine: AI coding agent의 spec drift를 막는 구조
+- type: paper
+- source: http://arxiv.org/abs/2606.27045v1
+- why-now: AI coding agent가 구현 속도를 높일수록 spec과 코드가 분리되어 drift가 누적되는 문제가 실제 개발 워크플로 병목으로 떠오르고 있다.
+- angle: “coding agent 시대의 문서는 README가 아니라 drift-enforced architecture artifact” — spec anchoring, code coupling, deterministic validation을 repo 운영 패턴으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, spec-driven-development, architecture, validation]
+- status: idea
+
+### 2026-06-28 — [논문 리뷰] ShareLock: MCP 생태계의 multi-tool threshold poisoning 공격
+- type: paper
+- source: http://arxiv.org/abs/2606.27027v1
+- why-now: MCP가 agent tool 표준으로 빠르게 퍼지면서 단일 악성 tool보다 여러 tool이 임계값을 넘을 때 작동하는 은닉형 공격 모델이 중요해졌다.
+- angle: “MCP 보안은 server 하나의 신뢰 문제가 아니라 tool set 조합의 emergent risk” — threshold poisoning, tool registry audit, least-privilege composition을 보안 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, agent-security, tool-use, poisoning]
+- status: idea
+
+### 2026-06-28 — gortex: code agent를 위한 local graph 기반 code-intelligence engine
+- type: tech
+- source: https://github.com/zzet/gortex
+- why-now: 코딩 에이전트가 대형 repo에서 grep과 벡터 검색만으로 구조를 이해하기 어려워지면서 local symbol graph, MCP/API, token budget 절감 계층이 필요해지고 있다.
+- angle: “coding agent의 context layer는 검색창이 아니라 graph query engine” — multi-repo indexing, symbol relationship, MCP server, 100% local workflow를 repo 소개로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, code-intelligence, mcp, github-repo]
+- status: idea
+
+### 2026-06-28 — SonarQube MCP Server: 코드 품질·보안 신호를 agent tool로 노출하기
+- type: tech
+- source: https://github.com/SonarSource/sonarqube-mcp-server
+- why-now: 개발자 agent가 PR 수정과 리팩터링을 수행할수록 정적 분석, 보안 hotspot, quality gate 결과를 tool context로 직접 읽는 패턴이 중요해지고 있다.
+- angle: “AI 코드 리뷰의 grounding은 diff뿐 아니라 정적 분석 시스템에서 온다” — SonarQube 이슈, quality gate, MCP tool boundary를 repo workflow에 붙이는 법을 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, code-quality, security, developer-tools]
+- status: idea
