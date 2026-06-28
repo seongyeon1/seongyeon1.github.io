@@ -1209,7 +1209,8 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [context-engineering, mcp, rag, github-repo]
-- status: idea
+- status: drafted
+- draft: content/posts/2026-06-27-headroom-context-compression-layer.mdx
 
 ### 2026-06-27 — MCP Gateway Registry: enterprise agent tool discovery와 OAuth 경계를 중앙화하기
 - type: tech

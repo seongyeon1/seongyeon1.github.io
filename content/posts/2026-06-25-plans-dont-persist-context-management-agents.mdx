@@ -1,0 +1,196 @@
+---
+title: "[논문 리뷰] Plans Don't Persist — 에이전트의 계획은 생각보다 오래 남지 않는다"
+date: "2026-06-25"
+category: "paper-review"
+tags: ["agent", "planning", "context-management", "harness", "eval"]
+summary: "Plans Don't Persist는 장기 실행 에이전트에서 계획이 모델 내부 상태로 유지되지 않고 context에 의존한다는 점을 측정한다."
+draft: true
+---
+
+<Paper
+  title="Plans Don't Persist: Why Context Management Is Load Bearing for LLM Agents"
+  authors="Aman Mehta, Anupam Datta"
+  year="2026"
+  venue="arXiv preprint"
+  arxiv="2606.22953"
+/>
+
+## 한 줄 요약
+
+이 논문의 메시지는 꽤 불편하다. 장기 실행 LLM agent가 초반에 세운 계획을 “이해해서 계속 들고 간다”고 믿기 쉽지만, 실제로는 계획이 context 안에 남아 있을 때만 잘 작동할 수 있다는 것이다.
+
+`Plans Don't Persist`는 long-horizon agent에서 plan이 내부 hidden state에 얼마나 남는지 측정하는 진단법을 제안하고, plan eviction이 실제 task success에 어떤 손실을 만드는지 스트레스 테스트한다. 초안 단계에서 조심스럽게 요약하면, 이 논문은 “좋은 planner”보다 “계획을 잃지 않는 runtime”이 더 중요할 수 있다는 쪽에 힘을 싣는다.
+
+## 왜 지금 중요한가
+
+요즘 agent stack은 거의 다 context management를 한다.
+
+- 오래된 tool trace를 요약한다.
+- 이전 대화 일부를 evict한다.
+- task state를 별도 memory에 저장한다.
+- 비용을 줄이기 위해 history를 압축한다.
+- long-running workflow에서는 checkpoint와 resume을 붙인다.
+
+문제는 이 압축이 안전하려면 “버린 정보가 더 이상 필요 없거나, 모델/메모리/상태에 이미 반영됐다”는 전제가 필요하다는 점이다. 계획은 이 전제를 가장 세게 시험한다. 계획은 보통 초반에 작성되고, 이후 많은 step 동안 참조되어야 하며, context가 길어지면 가장 먼저 뒤로 밀린다.
+
+개인적으로 이 지점이 실무적으로 중요하다고 본다. agent harness를 만들 때 흔한 실수는 plan을 그냥 첫 응답 텍스트로 남겨두는 것이다. 그렇게 하면 runtime 입장에서는 plan이 **상태**가 아니라 **오래된 채팅 로그**가 된다. 오래된 채팅 로그는 압축 정책 앞에서 약하다.
+
+## 논문이 보는 문제: plan은 persistent state인가
+
+논문은 다음 질문을 던진다.
+
+> agent가 세운 계획은 모델 내부에 지속적으로 남는가, 아니면 context에 보이는 동안만 영향을 주는가?
+
+여기서 핵심은 “모델이 계획을 한 번 읽었으니 기억하고 있겠지”라는 가정을 검증 대상으로 바꾼 점이다. 논문은 replay pairing이라는 진단법을 사용한다. 같은 trajectory를 두 조건으로 다시 실행해 비교한다.
+
+1. 원래 plan이 history에 남아 있는 조건
+2. plan을 history에서 제거한 조건
+
+그리고 두 조건의 hidden state cosine distance를 측정해 plan signal이 얼마나 남는지 본다. 초록 기준으로 Llama-3.1-70B에서는 plan 직후 signal이 0.453까지 올라가지만, 한 번의 action-observation step 뒤에 4.1배 감소했다고 보고한다. HotpotQA에서는 12.4배 감소가 관찰됐다고 한다.
+
+이 수치를 과하게 일반화하면 안 된다. 모델, task, prompt, stripping 방식에 따라 달라질 수 있다. 그래도 운영 관점의 결론은 명확하다. **계획을 한 번 생성했다고 해서, 그 계획이 이후 step의 안정적인 내부 상태가 된다고 보면 위험하다.**
+
+## Replay pairing이 흥미로운 이유
+
+이 논문의 좋은 점은 “agent가 plan을 잘 따르는가”를 최종 성공률 하나로만 보지 않는다는 것이다. plan이 context에 있을 때와 없을 때의 내부 표현 차이를 비교해, plan 정보가 실제 추론 경로에 남아 있는지 보려고 한다.
+
+대략적인 진단 흐름은 이렇게 볼 수 있다.
+
+```text
+초기 plan 생성
+  ↓
+같은 trajectory를 두 조건으로 replay
+  - plan 포함
+  - plan 제거
+  ↓
+hidden state 차이 측정
+  ↓
+step이 진행될수록 plan signal이 유지되는지 확인
+```
+
+물론 hidden state 거리 자체가 “모델이 계획 내용을 이해한다”는 직접 증거는 아니다. 논문도 probe를 diagnostic으로 취급하지, plan content를 완전히 읽어냈다는 식으로 과장하지 않는다. 이 점은 마음에 든다. agent 평가에서 내부 표현 분석은 쉽게 신비화되는데, 여기서는 “운영 실패를 찾는 센서”에 가깝게 둔다.
+
+## Reasoning trace confound: 생각 흔적이 측정을 오염시킨다
+
+논문에서 특히 실무적으로 재미있는 부분은 reasoning model을 다룰 때의 measurement confound다.
+
+reasoning model은 `think`류 trace 안에서 plan 내용을 다시 유도하거나 재작성할 수 있다. 그러면 “plan을 제거한 조건”이라고 생각했는데, 실제로는 이전 reasoning trace에 plan evidence가 남아 있을 수 있다. 논문은 이를 reasoning-trace confound라고 부르고, stripped run에서 prior reasoning block을 더 엄격하게 제거하는 방식으로 보정한다.
+
+이건 agent eval을 만들 때도 그대로 적용된다. 우리는 종종 다음을 제거했다고 착각한다.
+
+- 원래 지시사항
+- tool 결과
+- 민감 정보
+- 계획 초안
+- 이전 판단 근거
+
+하지만 실제 transcript에는 같은 정보가 다른 형태로 다시 남아 있을 수 있다. 특히 chain-of-thought, scratchpad, tool observation summary, self-critique 로그가 섞이면 “무엇을 제거했는가”가 애매해진다.
+
+즉, context ablation 실험을 할 때는 문자열 몇 줄 삭제로 끝내면 안 된다. 정보가 재표현된 흔적까지 같이 봐야 한다.
+
+## 실험 결과를 어떻게 읽을까
+
+초록에 공개된 핵심 결과만 놓고 보면 다음 정도로 정리할 수 있다.
+
+- Llama-3.1-70B에서 plan signal은 plan 직후 강하지만, action-observation step 하나 뒤에 크게 약해진다.
+- HotpotQA에서도 plan signal 감소가 더 크게 관찰된다.
+- reasoning model에서는 기존 stripping 방식이 plan evidence를 남길 수 있어 측정이 왜곡된다.
+- 엄격한 stripping은 reasoning trace confound를 줄이는 데 도움이 된다.
+- DeepSeek-R1-Distill-Llama-70B에서는 Llama-trained probe가 어느 정도 transfer되지만, R1-specific probe가 더 잘 맞는다고 보고한다.
+- compression stress test에서 naive plan eviction은 ALFWorld success를 34.7 percentage point 낮췄다고 한다.
+
+마지막 결과가 가장 실무적이다. 내부 signal 분석은 흥미롭지만, 운영팀이 바로 신경 써야 하는 것은 “계획을 잘못 압축하면 task success가 크게 떨어질 수 있다”는 부분이다.
+
+다만 논문 초록 기준으로도 probe-gated re-surfacing이 ALFWorld 손실을 회복하지 못했다고 되어 있다. 따라서 단순히 “plan signal이 약해지면 plan을 다시 보여주자”만으로 해결된다고 보면 안 된다. plan protection은 필요하지만 충분하지 않을 수 있다.
+
+## 실무 agent harness에 주는 교훈
+
+### 1. Plan을 메시지가 아니라 state로 다뤄라
+
+계획을 첫 응답에만 적어두면 runtime이 그것을 보호할 방법이 없다. 최소한 plan은 별도 structured state로 저장해야 한다.
+
+```json
+{
+  "goal": "사용자 요청의 최종 목표",
+  "plan": [
+    { "step": 1, "intent": "정보 수집", "status": "done" },
+    { "step": 2, "intent": "수정안 작성", "status": "active" },
+    { "step": 3, "intent": "검증", "status": "pending" }
+  ],
+  "constraints": ["파일 삭제 금지", "draft flag 유지"],
+  "last_verified_at": "2026-06-25T09:00:00+09:00"
+}
+```
+
+이렇게 두면 context 압축을 하더라도 plan을 재주입하거나, tool precondition에 연결하거나, deviation detector로 비교할 수 있다.
+
+### 2. Context compaction에는 보호 등급이 필요하다
+
+모든 token을 같은 우선순위로 요약하면 안 된다. agent runtime에는 최소한 다음 구분이 필요하다.
+
+- 사용자 목표
+- 금지 조건과 권한 경계
+- 현재 plan과 active step
+- 이미 검증된 facts
+- tool call 결과 중 재현 가능한 것
+- 단순 대화/설명/중간 잡음
+
+내 의견은 이렇다. context manager는 “짧게 요약하는 모듈”이 아니라 **state retention policy**여야 한다. 무엇을 버릴지보다 무엇을 절대 잃으면 안 되는지를 먼저 정해야 한다.
+
+### 3. Plan drift를 감지해야 한다
+
+장기 실행 agent는 step이 늘어날수록 원래 의도에서 벗어나기 쉽다. 이때 “현재 행동이 원래 plan의 어느 step을 수행하는가”를 매 tool call 전에 확인하는 게 좋다.
+
+```text
+Before tool call:
+- 이 tool call은 active step과 연결되는가?
+- 사용자 목표 또는 제약을 새로 위반하지 않는가?
+- plan에 없는 side effect가 생기는가?
+- plan 변경이 필요하다면 사용자/상위 controller의 승인이 필요한가?
+```
+
+이건 복잡한 연구 시스템이 아니어도 구현할 수 있다. 작은 agent라도 `goal`, `constraints`, `active_step`, `allowed_tools` 정도만 유지해도 drift를 꽤 줄일 수 있다.
+
+### 4. “다시 보여주기”만으로는 부족하다
+
+논문 초록에서 probe-gated re-surfacing이 성공률 손실을 회복하지 못했다는 점은 중요하다. plan을 context에 다시 넣는 것은 기본 조치지만, agent가 그 plan을 실제 행동 선택에 사용하도록 runtime contract를 만들어야 한다.
+
+예를 들면 다음이 필요하다.
+
+- tool call schema에 `plan_step_id` 포함
+- plan 변경 시 diff 기록
+- 완료 조건과 검증 조건 분리
+- 일정 step마다 plan consistency check
+- 실패 시 replan이 아니라 local repair를 먼저 시도
+
+단순히 system prompt에 “계획을 따르세요”를 추가하는 방식은 약하다. 계획 준수는 prompt 예절이 아니라 runtime 검증 문제다.
+
+## 한계와 조심할 점
+
+이 초안은 arXiv 초록과 공개 메타데이터를 기준으로 작성했다. 따라서 세부 실험 설정, task별 분포, probe 학습 방식, ALFWorld stress test 구성은 원문을 더 읽고 보강해야 한다.
+
+또한 hidden state 분석 결과를 특정 모델군 전체에 일반화하면 안 된다. “모든 agent는 계획을 즉시 잊는다”가 아니라, 더 안전한 해석은 이렇다.
+
+> 현재 LLM agent에서 plan persistence는 당연한 성질이 아니다. 따라서 runtime이 plan을 명시적으로 보존하고 검증해야 한다.
+
+이 정도가 실무자가 가져갈 수 있는 단단한 결론이다.
+
+## 내 결론
+
+이 논문은 agent 개발자에게 좋은 경고장이다. 우리는 agent 실패를 종종 “모델이 멍청해서”라고 설명하지만, 실제로는 runtime이 중요한 상태를 그냥 채팅 로그로 취급해서 생기는 실패가 많다.
+
+계획은 특히 그렇다. plan은 예쁜 markdown checklist가 아니라, 장기 실행 agent의 제어 상태다. 제어 상태라면 저장, 갱신, 검증, 복구, 감사가 가능해야 한다.
+
+그래서 이 논문의 실무적 메시지는 간단하다.
+
+- plan을 context에만 두지 말 것
+- compaction policy에서 plan과 constraints를 보호할 것
+- tool call이 plan과 연결되는지 검증할 것
+- re-surfacing만 믿지 말고 runtime contract를 만들 것
+
+agent harness를 만든다면 planner보다 context manager를 먼저 의심해보자. 장기 작업에서 무너지는 건 종종 “생각”이 아니라 “상태 관리”다.
+
+## 참고 자료
+
+- arXiv: [Plans Don't Persist: Why Context Management Is Load Bearing for LLM Agents](https://arxiv.org/abs/2606.22953)
+- PDF: [arXiv PDF 2606.22953v1](https://arxiv.org/pdf/2606.22953v1)

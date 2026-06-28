@@ -13,6 +13,7 @@
 - **시리즈는 끊지 않기**: 시작한 시리즈는 *다음 편 한 칸*을 항상 백로그 상단에 올려둔다.
 - **버퍼 7편**: 매주 일요일 밤 기준, **다음 주 월~일 7편이 전부 `예약` 상태**로 들어가 있을 것. 토·일에 batch 검토·예약하는 게 가장 안전 (= "주말 sprint").
 - **워크플로**: `아이디어` → `/new-post`로 초안(`draft: true`) → `작성중` → `/review-post` → `검토` → `ai-blog-auto-publisher`가 하루 1편 `draft` 제거·검증·push → `발행완료`. (아래 표의 **상태** 컬럼이 그대로 이 단계.)
+- **AI 글쓰기 자동화 보강 룰**: 자동 후보는 primary source가 있는 것만 채택하고, `paper-review`/`tool`/`tutorial`/`trend`를 주 단위로 섞는다. `draft-writer`는 초안 생성까지만, `auto-publisher`만 공개 발행을 수행한다. 실패 시 발행하지 말고 draft를 유지한다.
 - **작성 마일스톤**: 발행일 기준 **D-7** = `/new-post`로 초안 시작 → **D-3** = `/review-post` 검토 → **D-1** = `draft` 제거하고 `예약` → **D** = 발행. 시리즈 1편 작성할 때 다음 편 outline 까지 잡아둘 것 — 매일 cadence 라 별도 outline 시간 없음.
 
 ## 백로그 / 일정
@@ -96,7 +97,7 @@
 | 아이디어 | 미정 | [논문 리뷰] Co-Failure Ceiling — mixture-of-agents 성능 상한선 | paper-review | AI 평가/운영 | | arXiv 2606.27288 — 67개 frontier model co-failure 구조로 routing/voting/mixture-of-agents 설계 기준 만들기 |
 | 아이디어 | 미정 | [논문 리뷰] BINEVAL — LLM 평가를 이진 질문 묶음으로 만들기 | paper-review | AI 평가/운영 | | arXiv 2606.27226 — opaque judge score 대신 binary question decomposition과 self-improvement loop 설계 |
 | 아이디어 | 미정 | [논문 리뷰] RiVER — 정답 없는 문제에서도 LLM 강화학습하기 | paper-review | 논문 리뷰 | | arXiv 2606.27369 — ranking-induced verifiable reward로 agent 업무 post-training 신호를 만드는 법 |
-| 아이디어 | 미정 | Headroom: tool output과 RAG chunk를 LLM 앞에서 압축하는 context layer | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — output compression, MCP server/proxy, token budget과 answer preservation 체크리스트 |
+| 작성중 | 미정 | Headroom: tool output과 RAG chunk를 LLM 앞에서 압축하는 context layer | tool | Agent/MCP 실전 | | `2026-06-27-headroom-context-compression-layer.mdx` — draft true, GitHub repo 기반 — output compression, MCP server/proxy, token budget과 answer preservation 체크리스트 |
 | 아이디어 | 미정 | [논문 리뷰] Temporal Validity in Retrieval Memory — stale fact를 agent RAG에서 제거하기 | paper-review | Agentic RAG | | arXiv 2606.26511 — temporal validity, stale/current conflict resolution, retrieval memory hygiene 설계 |
 | 아이디어 | 미정 | [논문 리뷰] MIRROR — agentic RAG를 novelty-constrained MCTS로 red-team하기 | paper-review | Agentic RAG | | arXiv 2606.26793 — multimodal agentic RAG 공격면, memory-guided MCTS, novelty-constrained red-team harness |
 | 아이디어 | 미정 | [논문 리뷰] Semantic Early-Stopping — multi-agent loop를 언제 멈춰야 할까 | paper-review | AI 평가/운영 | | arXiv 2606.27009 — semantic convergence와 utility plateau 기반 반복 agent 비용·품질 제어 |
