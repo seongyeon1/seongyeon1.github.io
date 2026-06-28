@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 27 Jun 2026 02:03:12 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 28 Jun 2026 23:08:02 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] BINEVAL — LLM 평가를 점수가 아니라 질문으로 쪼개기</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-29-bineval-binary-questions-llm-evaluation/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-29-bineval-binary-questions-llm-evaluation/</guid>
+      <description>BINEVAL은 LLM 평가 기준을 원자적인 yes/no 질문으로 분해해, 불투명한 단일 점수 대신 디버깅 가능한 평가 신호와 prompt 개선 루프를 만든다.</description>
+      <pubDate>Mon, 29 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>llm-evaluation</category>
+      <category>prompt-optimization</category>
+      <category>agent</category>
+      <category>eval</category>
+      <category>interpretability</category>
+    </item>
     <item>
       <title>[논문 리뷰] K-BrowseComp — 한국어 웹 브라우징 에이전트는 왜 어려운가</title>
       <link>https://seongyeon1.github.io/blog/2026-06-26-kbrowsecomp-korean-agentic-benchmark/</link>
