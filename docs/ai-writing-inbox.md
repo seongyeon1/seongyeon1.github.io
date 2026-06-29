@@ -1432,3 +1432,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-eval, regression-test, observability, github-repo]
 - status: idea
+
+### 2026-06-29 — [논문 리뷰] CHIA: agentic hardware/software co-design 연구 프레임워크
+- type: paper
+- source: http://arxiv.org/abs/2606.27350v1
+- why-now: AI 에이전트를 컴파일러·시스템·VLSI co-design 연구에 적용하려는 시도가 demo 수준을 넘어 open-source framework와 benchmark loop로 정리되고 있다.
+- angle: “연구 에이전트는 논문 검색기가 아니라 실험 설계·시뮬레이션·검증 루프를 묶는 co-design runtime”이라는 관점으로 하드웨어/소프트웨어 자동 탐색 구조를 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, hardware-software-codesign, eval, automation]
+- status: idea
+
+### 2026-06-29 — [논문 리뷰] NOVA: 추천 시스템 아키텍처 진화를 검증 가능한 agent harness로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2606.27243v1
+- why-now: 산업 추천 모델은 구조 변경이 성능과 비즈니스 지표에 직접 연결되지만, 아키텍처 탐색을 에이전트에게 맡기려면 검증·rollback·metric attribution이 필수다.
+- angle: “코딩 에이전트가 새 모델 구조를 제안하는 것보다 중요한 건 production metric을 읽는 verification-aware loop” — architecture evolution, recommender eval, 안전한 실험 자동화를 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, recommender-system, architecture-search, verification]
+- status: idea
+
+### 2026-06-29 — [논문 리뷰] When are likely answers right?: LLM sequence probability를 신뢰도 지표로 써도 될까
+- type: paper
+- source: http://arxiv.org/abs/2606.27359v1
+- why-now: decoding, reranking, self-consistency가 모두 “더 그럴듯한 출력이 더 맞다”는 가정에 기대지만, 운영 환경에서는 probability와 correctness의 관계를 별도로 검증해야 한다.
+- angle: “LLM confidence는 logprob 하나로 끝나지 않는다” — sequence probability, correctness calibration, fallback routing, judge-free QA gate를 서빙 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-eval, calibration, decoding, reliability]
+- status: idea
+
+### 2026-06-29 — [논문 리뷰] Hardware-Safety-Gated LLM Control: 실험 장비를 조작하는 agent의 물리 안전 경계
+- type: paper
+- source: http://arxiv.org/abs/2606.27231v1
+- why-now: LLM agent가 실험 제어 코드를 작성·실행하는 자율 실험실 흐름이 커지면서, prompt guardrail이 아니라 hardware-level safety gate가 필요한 사례가 늘고 있다.
+- angle: “tool broker는 API 호출만 막는 게 아니라 물리 장비의 per-operation 안전 조건까지 검증해야 한다” — native control code, hardware interlock, lab automation agent 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [lab-agent, tool-use, safety, hardware-control]
+- status: idea
+
+### 2026-06-29 — [논문 리뷰] Smaller Models, Unexpected Costs: 양자화된 코드수정 agent의 숨은 비용
+- type: paper
+- source: http://arxiv.org/abs/2606.27205v1
+- why-now: automated program repair에 LLM을 붙일 때 작은/양자화 모델이 메모리는 줄이지만 반복 수정, 실패 재시도, 낮은 patch 품질로 전체 비용을 키울 수 있다.
+- angle: “코딩 에이전트 최적화는 VRAM 절약만 보면 안 된다” — quantization, repair success, retry budget, CI 검증 비용을 total workflow cost로 비교한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, quantization, program-repair, inference-cost]
+- status: idea
+
+### 2026-06-29 — LiveKit Agents: realtime voice/video agent를 production runtime으로 다루기
+- type: tech
+- source: https://github.com/livekit/agents
+- why-now: voice agent가 단순 STT-LLM-TTS demo를 넘어 turn detection, streaming tool call, latency budget, media pipeline 운영을 요구하는 production 시스템으로 커지고 있다.
+- angle: “realtime agent framework는 LLM wrapper가 아니라 media session runtime” — room/session, streaming, interruption, tool latency, observability를 개발자 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [voice-agent, realtime-ai, agent-framework, github-repo]
+- status: idea
+
+### 2026-06-29 — OpenLore: LLM hot path 밖에서 deterministic memory와 guardrail 운영하기
+- type: tech
+- source: https://github.com/clay-good/OpenLore
+- why-now: 코딩 에이전트 memory와 policy를 매번 LLM 판단에 맡기면 latency·비용·비결정성이 늘어나고, local-first deterministic layer에 대한 관심이 커지고 있다.
+- angle: “agent memory/guardrail 중 일부는 모델이 아니라 데이터 구조와 규칙 엔진으로 처리해야 한다” — local-first 저장소, deterministic guardrail, coding agent context hygiene를 repo 소개로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, memory, guardrails, github-repo]
+- status: idea
+
+### 2026-06-29 — EverOS: 여러 AI 앱이 공유하는 local-first portable memory layer
+- type: tech
+- source: https://github.com/EverMind-AI/EverOS
+- why-now: 개인/팀 agent가 앱별로 memory를 따로 쌓으면 migration과 권한 관리가 어려워져, Markdown-native·user-owned memory layer가 agent OS의 핵심 컴포넌트로 부상하고 있다.
+- angle: “agent memory는 제품 기능이 아니라 사용자가 소유하는 portable substrate여야 한다” — local-first sync, Markdown-native schema, app boundary, memory governance를 repo architecture로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, local-first, agent-os, github-repo]
+- status: idea

@@ -106,6 +106,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Paved with True Intents — safety classifier에 의도 모델링 넣기 | paper-review | 논문 리뷰 | | arXiv 2606.27210 — intent-aware guardrail, harm label, tool authorization gate 설계 |
 | 아이디어 | 미정 | [논문 리뷰] E-TTS — embodied agent에서 test-time scaling은 어떻게 작동하나 | paper-review | 논문 리뷰 | | arXiv 2606.27268 — 실행 이력·환경 피드백을 policy에 다시 넣는 embodied reasoning scaling |
 | 아이디어 | 미정 | Strands Agents Evals: agent 평가를 프레임워크 독립적으로 운영하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — evaluator abstraction, task dataset, CI regression suite 설계 |
+| 아이디어 | 미정 | [논문 리뷰] NOVA — 추천 시스템 아키텍처 진화를 검증 가능한 agent harness로 만들기 | paper-review | 논문 리뷰 | | arXiv 2606.27243 — verification-aware architecture evolution, production metric loop, 안전한 추천 모델 실험 자동화 |
+| 아이디어 | 미정 | [논문 리뷰] When are likely answers right? — LLM sequence probability와 correctness calibration | paper-review | AI 평가/운영 | | arXiv 2606.27359 — logprob 기반 confidence, fallback routing, judge-free QA gate 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Hardware-Safety-Gated LLM Control — 실험 장비 조작 agent의 물리 안전 경계 | paper-review | 논문 리뷰 | | arXiv 2606.27231 — native control code, hardware interlock, per-operation safety gate를 lab automation agent 설계로 정리 |
+| 아이디어 | 미정 | LiveKit Agents: realtime voice/video agent를 production runtime으로 다루기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — room/session, turn detection, streaming, interruption, tool latency를 voice agent 운영 관점으로 정리 |
 | 아이디어 | 미정 | agent-harness-generator: 팀별 agent harness를 scaffolding하는 meta-tool | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — CLI, MCP server, memory, hooks/rules를 묶는 reusable agent harness scaffold |
 
 
