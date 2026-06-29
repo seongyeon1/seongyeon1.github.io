@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 28 Jun 2026 23:08:02 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 29 Jun 2026 01:55:44 GMT</lastBuildDate>
     <item>
       <title>[논문 리뷰] BINEVAL — LLM 평가를 점수가 아니라 질문으로 쪼개기</title>
       <link>https://seongyeon1.github.io/blog/2026-06-29-bineval-binary-questions-llm-evaluation/</link>
@@ -32,6 +32,19 @@
       <category>korean-llm</category>
       <category>web-browsing</category>
       <category>evaluation</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] Plans Don&apos;t Persist — 에이전트의 계획은 생각보다 오래 남지 않는다</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-25-plans-dont-persist-context-management-agents/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-25-plans-dont-persist-context-management-agents/</guid>
+      <description>Plans Don&apos;t Persist는 장기 실행 에이전트에서 계획이 모델 내부 상태로 유지되지 않고 context에 의존한다는 점을 측정한다.</description>
+      <pubDate>Thu, 25 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>planning</category>
+      <category>context-management</category>
+      <category>harness</category>
+      <category>eval</category>
     </item>
     <item>
       <title>[논문 리뷰] Do Language Models Need Sleep? — 긴 컨텍스트를 잠자는 동안 정리하는 법</title>

@@ -4,7 +4,6 @@ date: "2026-06-25"
 category: "paper-review"
 tags: ["agent", "planning", "context-management", "harness", "eval"]
 summary: "Plans Don't Persist는 장기 실행 에이전트에서 계획이 모델 내부 상태로 유지되지 않고 context에 의존한다는 점을 측정한다."
-draft: true
 ---
 
 <Paper
@@ -19,7 +18,7 @@ draft: true
 
 이 논문의 메시지는 꽤 불편하다. 장기 실행 LLM agent가 초반에 세운 계획을 “이해해서 계속 들고 간다”고 믿기 쉽지만, 실제로는 계획이 context 안에 남아 있을 때만 잘 작동할 수 있다는 것이다.
 
-`Plans Don't Persist`는 long-horizon agent에서 plan이 내부 hidden state에 얼마나 남는지 측정하는 진단법을 제안하고, plan eviction이 실제 task success에 어떤 손실을 만드는지 스트레스 테스트한다. 초안 단계에서 조심스럽게 요약하면, 이 논문은 “좋은 planner”보다 “계획을 잃지 않는 runtime”이 더 중요할 수 있다는 쪽에 힘을 싣는다.
+`Plans Don't Persist`는 long-horizon agent에서 plan이 내부 hidden state에 얼마나 남는지 측정하는 진단법을 제안하고, plan eviction이 실제 task success에 어떤 손실을 만드는지 스트레스 테스트한다. 결론은 “좋은 planner”보다 “계획을 잃지 않는 runtime”이 더 중요할 수 있다는 쪽에 가깝다.
 
 ## 왜 지금 중요한가
 
@@ -167,7 +166,7 @@ Before tool call:
 
 ## 한계와 조심할 점
 
-이 초안은 arXiv 초록과 공개 메타데이터를 기준으로 작성했다. 따라서 세부 실험 설정, task별 분포, probe 학습 방식, ALFWorld stress test 구성은 원문을 더 읽고 보강해야 한다.
+이 논문 자체도 한계를 꽤 명확하게 둔다. replay pairing은 계획이 빠졌을 때 hidden state가 달라지는지를 보는 진단법이지, 모델이 계획 내용을 완전히 “이해했다”는 직접 증거는 아니다. 논문은 plan-content specificity와 position/length/discourse 효과를 더 분리해야 하고, R1 계열의 다른 hidden-state direction이 별도 개념인지 회전된 encoding인지도 추가 검증이 필요하다고 적는다.
 
 또한 hidden state 분석 결과를 특정 모델군 전체에 일반화하면 안 된다. “모든 agent는 계획을 즉시 잊는다”가 아니라, 더 안전한 해석은 이렇다.
 

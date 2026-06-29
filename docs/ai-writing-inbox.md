@@ -870,7 +870,7 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent, planning, context-management, harness]
-- status: drafted
+- status: published
 - draft: content/posts/2026-06-25-plans-dont-persist-context-management-agents.mdx
 
 ### 2026-06-24 — [논문 리뷰] Intent-Governed Tool Authorization: tool agent 권한을 사용자 의도와 묶기
