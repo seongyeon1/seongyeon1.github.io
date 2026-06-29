@@ -102,6 +102,11 @@
 | 아이디어 | 미정 | [논문 리뷰] MIRROR — agentic RAG를 novelty-constrained MCTS로 red-team하기 | paper-review | Agentic RAG | | arXiv 2606.26793 — multimodal agentic RAG 공격면, memory-guided MCTS, novelty-constrained red-team harness |
 | 아이디어 | 미정 | [논문 리뷰] Semantic Early-Stopping — multi-agent loop를 언제 멈춰야 할까 | paper-review | AI 평가/운영 | | arXiv 2606.27009 — semantic convergence와 utility plateau 기반 반복 agent 비용·품질 제어 |
 | 아이디어 | 미정 | gortex: code agent를 위한 local graph 기반 code-intelligence engine | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — multi-repo symbol graph, MCP/API, token budget 절감형 coding agent context layer |
+| 아이디어 | 미정 | [논문 리뷰] Prompt Injection in Résumé Screening — 자동 채용 agent의 injection surface | paper-review | 논문 리뷰 | | arXiv 2606.27287 — 제출 문서를 untrusted data로 다루는 document-ranking agent 보안 체크리스트 |
+| 아이디어 | 미정 | [논문 리뷰] Paved with True Intents — safety classifier에 의도 모델링 넣기 | paper-review | 논문 리뷰 | | arXiv 2606.27210 — intent-aware guardrail, harm label, tool authorization gate 설계 |
+| 아이디어 | 미정 | [논문 리뷰] E-TTS — embodied agent에서 test-time scaling은 어떻게 작동하나 | paper-review | 논문 리뷰 | | arXiv 2606.27268 — 실행 이력·환경 피드백을 policy에 다시 넣는 embodied reasoning scaling |
+| 아이디어 | 미정 | Strands Agents Evals: agent 평가를 프레임워크 독립적으로 운영하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — evaluator abstraction, task dataset, CI regression suite 설계 |
+| 아이디어 | 미정 | agent-harness-generator: 팀별 agent harness를 scaffolding하는 meta-tool | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — CLI, MCP server, memory, hooks/rules를 묶는 reusable agent harness scaffold |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

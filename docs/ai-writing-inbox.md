@@ -1328,3 +1328,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, code-quality, security, developer-tools]
 - status: idea
+
+### 2026-06-29 — [논문 리뷰] E-TTS: embodied agent에서 test-time scaling은 어떻게 작동하나
+- type: paper
+- source: http://arxiv.org/abs/2606.27268v1
+- why-now: 로봇·embodied agent에서도 reasoning과 historical information을 test-time에 더 써서 성능을 올리는 흐름이 나오고 있어, LLM reasoning scaling과 물리 실행 정책의 접점이 중요해졌다.
+- angle: “로봇 agent의 test-time scaling은 생각을 많이 하는 문제가 아니라 실행 이력·환경 피드백을 어떻게 policy에 다시 넣느냐의 문제”로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [embodied-agent, robotics, test-time-scaling, reasoning]
+- status: idea
+
+### 2026-06-29 — [논문 리뷰] Omnimodal Embodied Agents: isolated skill에서 everyday autonomy로 가기
+- type: paper
+- source: http://arxiv.org/abs/2606.27251v1
+- why-now: agent가 API·IoT·로봇 조작·내비게이션을 한 런타임에서 다루려면 단일 skill 데모보다 tool orchestration과 physical failure recovery가 핵심 병목이 된다.
+- angle: “범용 embodied agent는 멀티모달 모델보다 cyber/physical tool orchestration OS에 가깝다” — skill registry, recovery loop, safety boundary를 설계 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [embodied-agent, tool-use, autonomy, recovery]
+- status: idea
+
+### 2026-06-29 — [논문 리뷰] Prompt Injection in Résumé Screening: 자동 채용 agent의 injection surface
+- type: paper
+- source: http://arxiv.org/abs/2606.27287v1
+- why-now: LLM 기반 문서 심사·랭킹 agent가 실제 의사결정 워크플로에 들어가면서, 사용자 제출 문서 안의 간접 prompt injection이 운영 리스크로 커지고 있다.
+- angle: “문서 평가 agent는 candidate text를 instruction이 아니라 untrusted data로 다뤄야 한다” — single/multi-injection, ranking manipulation, 심사 agent sandbox를 보안 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [prompt-injection, agent-security, document-ai, ranking]
+- status: idea
+
+### 2026-06-29 — [논문 리뷰] Paved with True Intents: safety classifier에 의도 모델링을 넣기
+- type: paper
+- source: http://arxiv.org/abs/2606.27210v1
+- why-now: agent guardrail이 surface text만 보고 허용/차단하면 benign dual-use와 실제 악의적 intent를 구분하기 어렵고, intent-aware safety classification이 runtime policy의 핵심 신호가 되고 있다.
+- angle: “agent 안전 필터는 금지어 매칭이 아니라 의도 추론을 별도 중간 표현으로 가져야 한다” — intent label, harm label, tool authorization gate로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [alignment, safety-classifier, intent, guardrails]
+- status: idea
+
+### 2026-06-29 — [논문 리뷰] Multilingual Reasoning Cascades: 번역-추론-번역 파이프라인의 context 손실
+- type: paper
+- source: http://arxiv.org/abs/2606.27306v1
+- why-now: 영어 중심 reasoning model을 다국어 서비스에 붙일 때 translation cascade가 흔한데, 각 단계의 context 손실이 reasoning 품질과 사용자 신뢰도에 직접 영향을 준다.
+- angle: “다국어 agent는 번역기를 앞뒤에 붙이는 게 아니라 context 보존 budget을 설계해야 한다” — cascade failure, intermediate context, eval set 설계를 실무 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multilingual, reasoning, context, eval]
+- status: idea
+
+### 2026-06-29 — taOS: self-hosted agent OS에서 memory와 file boundary를 설계하기
+- type: tech
+- source: https://github.com/jaylfc/taOS
+- why-now: 개인/팀 에이전트가 클라우드 SaaS를 넘어 self-hosted memory, chat, files, agent runtime을 한곳에 묶으려는 요구가 커지고 있다.
+- angle: “agent OS의 핵심은 채팅 UI가 아니라 memory 소유권, offline-first storage, file permission boundary” — self-hosted architecture와 운영 trade-off를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-os, self-hosted, memory, github-repo]
+- status: idea
+
+### 2026-06-29 — agent-harness-generator: 팀별 agent harness를 scaffolding하는 meta-tool
+- type: tech
+- source: https://github.com/ruvnet/agent-harness-generator
+- why-now: Codex/Claude/Gemini 기반 개발자 에이전트가 늘면서, 각 팀이 memory, MCP, hooks, rules, CLI를 반복해서 손으로 조립하는 비용이 커지고 있다.
+- angle: “agent harness는 prompt 모음이 아니라 재사용 가능한 product scaffold” — npx CLI, MCP server, learning loop, witness-signed rules를 harness 설계 패턴으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-harness, mcp, scaffolding, github-repo]
+- status: idea
+
+### 2026-06-29 — Strands Agents Evals: agent 평가를 프레임워크 독립적으로 운영하기
+- type: tech
+- source: https://github.com/strands-agents/evals
+- why-now: agent 앱이 늘수록 특정 프레임워크 데모보다 trace, task, metric, regression suite를 분리해 운영하는 평가 계층이 필요해지고 있다.
+- angle: “agent eval은 SDK 부속 기능이 아니라 별도 품질 시스템이어야 한다” — evaluator abstraction, task dataset, CI regression을 repo 구조 중심으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, regression-test, observability, github-repo]
+- status: idea
