@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 29 Jun 2026 01:55:44 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 29 Jun 2026 11:27:04 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Generative Agents에서 MemGPT, Mem0까지 — 에이전트 메모리는 어떻게 진화했나</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-29-agent-memory-generative-agents-memgpt-mem0/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-29-agent-memory-generative-agents-memgpt-mem0/</guid>
+      <description>Generative Agents, MemGPT, Mem0를 한 흐름으로 읽으면 에이전트 메모리의 진화가 보인다. 시뮬레이션 속 기억에서 시작해, OS식 가상 컨텍스트를 거쳐, 제품용 장기 메모리 레이어로 이동하는 과정이다.</description>
+      <pubDate>Mon, 29 Jun 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>memory</category>
+      <category>generative-agents</category>
+      <category>memgpt</category>
+      <category>mem0</category>
+      <category>context-management</category>
+    </item>
     <item>
       <title>[논문 리뷰] BINEVAL — LLM 평가를 점수가 아니라 질문으로 쪼개기</title>
       <link>https://seongyeon1.github.io/blog/2026-06-29-bineval-binary-questions-llm-evaluation/</link>

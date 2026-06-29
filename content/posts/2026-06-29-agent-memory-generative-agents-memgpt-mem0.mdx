@@ -1,0 +1,304 @@
+---
+title: "[논문 리뷰] Generative Agents에서 MemGPT, Mem0까지 — 에이전트 메모리는 어떻게 진화했나"
+date: "2026-06-29"
+category: "paper-review"
+tags: ["agent", "memory", "generative-agents", "memgpt", "mem0", "context-management"]
+summary: "Generative Agents, MemGPT, Mem0를 한 흐름으로 읽으면 에이전트 메모리의 진화가 보인다. 시뮬레이션 속 기억에서 시작해, OS식 가상 컨텍스트를 거쳐, 제품용 장기 메모리 레이어로 이동하는 과정이다."
+series: "논문 리뷰"
+seriesOrder: 14
+math: false
+---
+
+<Paper
+  title="Generative Agents: Interactive Simulacra of Human Behavior"
+  authors="Joon Sung Park, Joseph C. O'Brien, Carrie J. Cai, Meredith Ringel Morris, Percy Liang, Michael S. Bernstein"
+  year="2023"
+  venue="UIST 2023"
+  arxiv="2304.03442"
+/>
+
+<Paper
+  title="MemGPT: Towards LLMs as Operating Systems"
+  authors="Charles Packer, Sarah Wooders, Kevin Lin, Vivian Fang, Shishir G. Patil, Ion Stoica, Joseph E. Gonzalez"
+  year="2023"
+  venue="arXiv preprint"
+  arxiv="2310.08560"
+/>
+
+<Paper
+  title="Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory"
+  authors="Prateek Chhikara, Dev Khant, Saket Aryan, Taranjeet Singh, Deshraj Yadav"
+  year="2025"
+  venue="arXiv preprint"
+  arxiv="2504.19413"
+/>
+
+## 한 줄 요약
+
+LLM 에이전트의 메모리는 세 단계를 거쳐 진화하고 있다.
+
+```text
+Generative Agents: 기억을 넣으면 사회적 행동이 생긴다
+  → MemGPT: 기억은 context window 밖까지 관리해야 한다
+  → Mem0: 제품에서는 중요한 사실만 추출·갱신·검색해야 한다
+```
+
+세 논문은 모두 “LLM에 장기 기억을 붙인다”는 같은 문제를 다루지만, 관심사가 다르다.
+
+| 논문 | 핵심 질문 | 메모리의 역할 |
+| --- | --- | --- |
+| Generative Agents | 기억, 반성, 계획이 있으면 인간다운 행동이 나오는가? | 행동 생성용 경험 기록 |
+| MemGPT | 제한된 context window를 어떻게 운영체제처럼 확장할 것인가? | 가상 메모리와 paging |
+| Mem0 | 장기 대화 제품에서 비용과 지연을 줄이면서 개인화를 유지할 수 있는가? | 지속적 fact store |
+
+내가 보기엔 이 흐름의 핵심은 “더 긴 컨텍스트”가 아니다. **무엇을 기억으로 승격할지, 언제 꺼낼지, 틀린 기억을 어떻게 고칠지**가 진짜 문제다.
+
+## 1. Generative Agents: 에이전트 메모리의 원형
+
+Generative Agents는 25명의 LLM 기반 캐릭터를 Smallville이라는 샌드박스 마을에 넣고, 이들이 일상 행동, 대화, 관계 형성, 파티 초대 같은 사회적 상호작용을 만들어내는지 관찰한 논문이다.
+
+이 논문의 메모리 구조는 단순하지만 강력하다.
+
+```text
+Memory Stream
+  ├─ 관찰: "Isabella가 카페에 들어왔다"
+  ├─ 대화: "Sam이 시장 출마 이야기를 했다"
+  ├─ 행동: "아침을 먹었다"
+  ├─ 계획: "오늘 오후에는 파티 준비를 한다"
+  └─ 반성: "나는 커뮤니티 활동을 중요하게 여긴다"
+```
+
+에이전트는 매 순간 전체 기억을 다 넣지 않는다. 현재 상황에 맞춰 기억을 검색한다. 검색 점수는 대략 세 축의 조합이다.
+
+- **관련성**: 지금 상황과 의미적으로 가까운가
+- **최근성**: 최근에 일어난 일인가
+- **중요도**: 에이전트의 삶에 중요한 사건인가
+
+여기서 중요한 포인트는 reflection이다. 기억을 단순 로그로만 쌓으면 “어제 카페에서 A를 봤다” 같은 사건은 남지만, “A는 나와 친한 사람이다” 같은 추상화는 생기지 않는다. Generative Agents는 일정 수준 이상의 중요도 점수가 쌓이면 LLM에게 최근 기억들을 보고 더 높은 수준의 반성을 만들게 한다. 그리고 그 반성 자체도 다시 memory stream에 저장한다.
+
+즉, 이 논문에서 메모리는 데이터베이스라기보다 **경험에서 성격과 의도를 만들어내는 장치**다.
+
+실험 결과도 이 방향을 뒷받침한다. 논문은 memory, reflection, planning을 제거한 ablation과 전체 아키텍처를 비교했다. 100명의 평가자가 에이전트 행동의 그럴듯함을 평가했을 때 전체 아키텍처는 TrueSkill 기준 `μ = 29.89`였고, reflection을 제거하면 `μ = 26.88`, reflection과 planning을 함께 제거하면 `μ = 25.64`로 떨어졌다. memory, reflection, planning을 모두 제거한 baseline은 `μ = 21.21`이었다.
+
+Smallville 시뮬레이션에서도 정보가 사회적으로 퍼졌다.
+
+- Sam의 시장 출마 정보를 아는 에이전트: 1명에서 8명
+- Isabella의 발렌타인데이 파티 정보를 아는 에이전트: 1명에서 13명
+- 사회 관계 네트워크 밀도: 0.167에서 0.74
+- 타 에이전트 인지 응답 453개 중 hallucination: 6개, 약 1.3퍼센트
+
+다만 이 방식은 비싸다. 논문은 25명, 2일 시뮬레이션에도 상당한 토큰 비용과 실행 시간이 필요했다고 보고한다. 또 자연어 상태만으로 물리적 세계 규칙을 완전히 전달하기 어렵다. 1인용 화장실을 여러 명이 동시에 쓸 수 있다고 해석하는 식의 오류가 생긴다.
+
+그래도 이 논문의 가치는 크다. LLM 에이전트에서 메모리가 단순 “대화 저장”이 아니라 **행동, 관계, 계획을 만드는 핵심 상태**라는 점을 보여줬기 때문이다.
+
+## 2. MemGPT: 메모리를 OS 문제로 바꾸기
+
+Generative Agents가 “기억이 행동을 만든다”를 보여줬다면, MemGPT는 더 시스템적인 질문을 던진다.
+
+> context window가 제한되어 있다면, LLM도 운영체제처럼 메모리 계층을 관리해야 하지 않을까?
+
+MemGPT의 비유는 명확하다.
+
+| OS | MemGPT |
+| --- | --- |
+| RAM | main context |
+| disk | external context |
+| page fault | memory pressure alert |
+| system call | LLM function call |
+| virtual memory | virtual context |
+
+MemGPT는 LLM prompt 안에 모든 것을 밀어 넣는 대신, context 안팎을 나눈다.
+
+```text
+Main Context
+  ├─ system instruction
+  ├─ working context
+  └─ 최근 메시지 FIFO queue
+
+External Context
+  ├─ Archival Storage: 문서, 지식, 장기 자료
+  └─ Recall Storage: 과거 대화 메시지
+```
+
+LLM은 함수 호출로 external context를 검색하거나, working context를 수정하거나, 오래된 정보를 밖으로 보낼 수 있다. FIFO queue가 차면 memory pressure alert가 발생하고, 모델은 필요한 정보를 요약하거나 저장하거나 검색한다. 이 구조에서 LLM은 단순 생성기가 아니라 **자기 컨텍스트를 관리하는 프로세스**에 가깝다.
+
+MemGPT가 특히 흥미로운 지점은 control flow다. 일반적인 tool calling은 “검색 한 번 하고 답변”에 머무는 경우가 많다. MemGPT는 `request_heartbeat=true` 같은 흐름을 통해 한 사용자 요청 안에서 여러 번 검색하고, 중간 상태를 업데이트하고, 다시 추론하는 루프를 만든다.
+
+결과는 장기 대화 retrieval에서 강하다. Deep Memory Retrieval 실험에서 baseline 모델들은 과거 세션의 깊은 정보를 잘 못 찾았다.
+
+| 모델 | baseline accuracy | MemGPT accuracy |
+| --- | ---: | ---: |
+| GPT-3.5 Turbo | 38.7% | 66.9% |
+| GPT-4 | 32.1% | 92.5% |
+| GPT-4 Turbo | 35.3% | 93.4% |
+
+ROUGE-L도 GPT-4 기준 0.296에서 0.814, GPT-4 Turbo 기준 0.359에서 0.827로 개선됐다.
+
+이건 “긴 컨텍스트 모델을 쓰면 해결”과 다른 주장이다. 긴 컨텍스트가 있어도 필요한 정보를 적절히 찾고, 현재 작업 컨텍스트에 배치하고, 여러 hop을 따라가는 능력은 별도 문제다. MemGPT는 이 문제를 memory operation으로 모델링한다.
+
+하지만 운영 난이도도 있다.
+
+- 성능은 underlying LLM의 function calling 능력에 크게 의존한다.
+- 검색 품질이 embedding retriever에 묶인다.
+- memory policy가 복잡해지면 디버깅이 어렵다.
+- “무한 컨텍스트처럼 보이는 경험”은 실제로 검색, 요약, 저장 정책이 잘 맞을 때만 성립한다.
+
+그래서 MemGPT는 제품용 완성품이라기보다, 에이전트 메모리를 **OS식 자원 관리 문제**로 재정의한 논문으로 읽는 게 좋다.
+
+## 3. Mem0: 제품용 메모리 레이어
+
+Mem0는 좀 더 제품에 가깝다. 질문이 바뀐다.
+
+> 매번 전체 대화를 넣지 않고도, 장기 개인화와 정확도를 유지할 수 있을까?
+
+Mem0의 기본 아이디어는 “대화 전체”가 아니라 “기억할 만한 사실”을 유지하는 것이다. 새 메시지가 들어오면 LLM이 salient memory 후보를 추출하고, 기존 memory와 비교한 뒤 네 가지 operation 중 하나를 고른다.
+
+```text
+새 대화 입력
+  → 중요한 memory 후보 추출
+  → 유사한 기존 memory 검색
+  → ADD / UPDATE / DELETE / NOOP 결정
+  → 다음 응답 때 관련 memory 검색
+```
+
+여기서 핵심은 UPDATE와 DELETE다. 단순 RAG는 새 정보를 계속 쌓는 데는 강하지만, 사용자가 선호를 바꾸거나 이전 정보가 틀렸을 때 정리가 어렵다.
+
+```text
+User: 나는 커피를 좋아해
+Memory: 사용자는 커피를 좋아한다
+
+User: 요즘은 커피보다 차가 더 좋아
+Memory operation: UPDATE
+Memory: 사용자는 차를 더 선호한다
+```
+
+Mem0는 자연어 fact 형태의 dense memory를 쓰고, Mem0g는 entity-relation graph를 추가한다. Mem0g는 사람, 장소, 선호, 시간 관계처럼 구조가 중요한 정보를 graph로 표현한다.
+
+```text
+Mem0
+  - 빠르고 단순한 fact memory
+  - single-hop 개인화에 유리
+
+Mem0g
+  - entity-relation graph memory
+  - temporal, open-domain, relation-heavy 질의에 유리
+```
+
+논문의 핵심 주장은 비용과 지연시간이다. LOCOMO benchmark에서 full-context는 전체 점수 기준으로 여전히 강하다. 하지만 매우 비싸고 느리다. Mem0는 full-context 대비 p95 latency를 91퍼센트 줄이고, token cost를 90퍼센트 이상 줄였다고 보고한다.
+
+Table 2 기준으로 보면 차이가 선명하다.
+
+| 방식 | p50 total latency | p95 total latency | overall judge score |
+| --- | ---: | ---: | ---: |
+| Full-context | 9.870s | 17.117s | 72.90 |
+| Mem0 | 0.708s | 1.440s | 66.88 |
+| Mem0g | 1.091s | 2.590s | 68.44 |
+
+즉 Mem0의 주장은 “full-context보다 항상 더 정확하다”가 아니다. 오히려 솔직하게 말하면 full-context가 overall score는 더 높다. Mem0의 가치는 **대부분의 제품 상황에서 감당 가능한 비용과 지연으로 충분히 좋은 장기 기억을 제공한다**는 데 있다.
+
+질문 유형별로는 Mem0와 Mem0g의 차이가 보인다.
+
+- single-hop: Mem0가 빠르고 강하다.
+- temporal: Mem0g가 더 유리하다.
+- open-domain: graph가 관계 구조를 보존해 도움이 된다.
+- multi-hop: dense memory와 graph memory 모두 검색 품질에 민감하다.
+
+한계도 명확하다. unanswerable question은 평가에서 제외되어 “모른다고 답하기” 능력은 충분히 검증되지 않았다. memory extraction과 update가 LLM 판단에 의존하므로 잘못된 추출이나 병합이 누적될 수 있다. Mem0g는 graph operation 때문에 Mem0보다 느리고 토큰도 더 쓴다.
+
+## 세 논문을 한 장으로 정리하면
+
+세 논문은 서로 대체재라기보다 abstraction level이 다르다.
+
+| 관점 | Generative Agents | MemGPT | Mem0 |
+| --- | --- | --- | --- |
+| 목표 | 그럴듯한 인간 행동 | context window 확장 | 제품용 장기 기억 |
+| 기억 단위 | 관찰, 대화, 행동, 반성 | main/external context block | 추출된 fact, relation |
+| 핵심 operation | retrieve, reflect, plan | search, page, append, replace | add, update, delete, noop |
+| 강점 | 행동과 사회성 | 깊은 과거 검색 | 비용과 지연 최적화 |
+| 약점 | 비용, 시뮬레이션 한계 | 운영 복잡도 | 추출 오류, 평가 범위 |
+
+이 흐름에서 실무자가 배울 점은 세 가지다.
+
+### 1. 모든 로그는 기억이 아니다
+
+대화를 통째로 저장하는 것은 archive일 뿐이다. 에이전트가 실제로 쓰는 기억은 현재 task에 맞게 검색되고, 필요하면 요약되고, 모순이 생기면 수정되어야 한다.
+
+좋은 memory layer는 append-only log가 아니라 **curated state**에 가깝다.
+
+### 2. memory retrieval은 UX가 아니라 correctness 문제다
+
+장기 기억이 잘못 검색되면 답변 품질만 떨어지는 게 아니다. 에이전트는 잘못된 사용자 선호를 적용하고, 오래된 프로젝트 상태를 믿고, 틀린 계획을 세운다.
+
+그래서 memory system에는 최소한 다음 검사가 필요하다.
+
+```text
+- 이 기억은 언제 만들어졌는가?
+- 현재 사용자 발화와 정말 관련 있는가?
+- 더 최신의 모순 기억이 있는가?
+- 이 기억을 답변에 써도 되는 권한과 맥락인가?
+- 답변에 반영된 기억을 추적할 수 있는가?
+```
+
+### 3. 제품에서는 “정확도 최대화”보다 “운영 가능한 기억”이 중요하다
+
+full-context는 강하다. 하지만 매 요청마다 전체 히스토리를 넣는 방식은 지연, 비용, privacy, 디버깅 측면에서 금방 한계가 온다.
+
+실제 제품에서는 다음 타협이 더 중요해진다.
+
+- 단기 작업 상태는 working memory에 둔다.
+- 사용자 선호와 안정적 사실은 long-term memory로 승격한다.
+- 프로젝트 지식은 문서와 repo 기반 RAG로 둔다.
+- 오래된 기억은 decay 또는 review 대상이 되어야 한다.
+- 민감한 기억은 scope와 접근 권한을 분리해야 한다.
+
+이건 단순히 벡터 DB 하나 붙이는 문제가 아니다. 메모리는 에이전트의 상태 관리 시스템이다.
+
+## 내 생각: 다음 에이전트 메모리는 git에 더 가까워질 것이다
+
+세 논문을 읽고 나면 자연스럽게 이런 생각이 든다.
+
+Generative Agents는 memory stream을 만들었다. MemGPT는 context paging을 만들었다. Mem0는 fact-level update/delete를 만들었다. 그런데 제품에서 정말 필요한 것은 여기에 **버전 관리와 검증**이 더해진 형태일 가능성이 높다.
+
+```text
+memory add
+memory update
+memory delete
+memory diff
+memory blame
+memory revert
+memory test
+```
+
+예를 들어 개인 AI 비서가 “성연은 Google Calendar를 조회용으로만 쓰고, 명시 요청 없이는 Task를 Calendar에 쓰지 않는다”는 기억을 갖고 있다면, 이건 단순 fact가 아니다. 행동을 제한하는 운영 정책이다. 잘못 업데이트되면 실제 side effect가 발생할 수 있다.
+
+그래서 앞으로의 memory layer는 다음 기능을 가져야 한다고 본다.
+
+- memory가 생성된 source와 timestamp 추적
+- 중요한 memory 변경에 대한 diff와 approval
+- 모순 감지와 자동 병합
+- task별 memory scope 분리
+- memory를 사용한 답변의 traceability
+- 주기적인 memory evaluation
+
+LLM 에이전트가 길게 살아남으려면 “많이 기억하는 것”보다 “믿을 수 있게 기억을 관리하는 것”이 중요하다.
+
+## 결론
+
+Generative Agents, MemGPT, Mem0는 같은 산의 다른 등산로다.
+
+Generative Agents는 에이전트가 기억, 반성, 계획을 통해 사회적 행동을 만들 수 있음을 보여줬다. MemGPT는 context window 한계를 OS식 메모리 관리 문제로 바꿨다. Mem0는 이 아이디어를 제품 환경의 비용, 지연, 업데이트 문제로 끌고 왔다.
+
+정리하면 이렇다.
+
+> 에이전트 메모리의 본질은 저장이 아니라 상태 관리다.
+
+앞으로 좋은 에이전트는 단순히 긴 대화를 기억하는 모델이 아닐 것이다. 무엇을 기억으로 남길지 판단하고, 필요한 순간에 꺼내고, 틀린 기억을 고치고, 그 기억을 왜 사용했는지 설명할 수 있는 시스템이 될 것이다.
+
+## 참고 자료
+
+- [Generative Agents: Interactive Simulacra of Human Behavior](https://arxiv.org/abs/2304.03442)
+- [Generative Agents project repository](https://github.com/joonspk-research/generative_agents)
+- [MemGPT: Towards LLMs as Operating Systems](https://arxiv.org/abs/2310.08560)
+- [Letta / MemGPT GitHub repository](https://github.com/letta-ai/letta)
+- [Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory](https://arxiv.org/abs/2504.19413)
+- [Mem0 GitHub repository](https://github.com/mem0ai/mem0)
