@@ -111,6 +111,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Hardware-Safety-Gated LLM Control — 실험 장비 조작 agent의 물리 안전 경계 | paper-review | 논문 리뷰 | | arXiv 2606.27231 — native control code, hardware interlock, per-operation safety gate를 lab automation agent 설계로 정리 |
 | 아이디어 | 미정 | LiveKit Agents: realtime voice/video agent를 production runtime으로 다루기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — room/session, turn detection, streaming, interruption, tool latency를 voice agent 운영 관점으로 정리 |
 | 아이디어 | 미정 | agent-harness-generator: 팀별 agent harness를 scaffolding하는 meta-tool | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — CLI, MCP server, memory, hooks/rules를 묶는 reusable agent harness scaffold |
+| 아이디어 | 미정 | [논문 리뷰] Agent-Native Immune System — autonomous agent 시대의 보안 아키텍처 | paper-review | 논문 리뷰 | | arXiv 2606.28270 — memory/tool/multi-agent collaboration attack surface와 runtime defense loop 설계 |
+| 아이디어 | 미정 | [논문 리뷰] ToolPrivacyBench — tool-using LLM agent의 purpose-bound privacy 평가 | paper-review | AI 평가/운영 | | arXiv 2606.28061 — 목적 제한 privacy, tool trace audit, regression suite를 agent governance로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SHIFT — RAG의 parametric-vs-retrieved knowledge conflict 줄이기 | paper-review | Agentic RAG | | arXiv 2606.27786 — gate-modulated activation steering과 지식 충돌 제어를 RAG grounding 정책으로 해석 |
+| 아이디어 | 미정 | Pydantic AI: typed agent framework로 output contract와 tool schema를 강제하기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — typed dependency, structured output, tool schema, eval/test 패턴 |
+| 아이디어 | 미정 | agentgateway: MCP server와 AI agent 앞단의 agentic proxy 설계 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP access control, routing, telemetry, policy enforcement를 gateway 계층으로 분리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

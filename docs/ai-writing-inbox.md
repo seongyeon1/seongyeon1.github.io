@@ -1536,3 +1536,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-memory, local-first, agent-os, github-repo]
 - status: idea
+
+### 2026-06-30 — [논문 리뷰] HORIZON: hardware design을 repository-level code evolution으로 자동화하기
+- type: paper
+- source: http://arxiv.org/abs/2606.28279v1
+- why-now: 코딩 에이전트가 소프트웨어 PR을 넘어 HDL/EDA 프로젝트까지 수정·검증하는 흐름이 나오면서, repository harness와 acceptance predicate 설계가 중요해졌다.
+- angle: “하드웨어 설계 에이전트도 채팅봇이 아니라 git/runtime/evaluator가 결합된 self-evolving repo worker” — Markdown harness, project pack, runnable evaluator, acceptance gate를 개발 워크플로 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, hardware-design, repository-evolution, eval]
+- status: idea
+
+### 2026-06-30 — [논문 리뷰] Agent-Native Immune System: autonomous agent 시대의 보안 아키텍처
+- type: paper
+- source: http://arxiv.org/abs/2606.28270v1
+- why-now: persistent memory, tool-use protocol, multi-agent collaboration이 결합되면서 perimeter security나 학습 시점 guardrail만으로는 agent 런타임 위협을 다루기 어렵다.
+- angle: “agent 보안은 백신처럼 런타임 면역계가 필요하다” — threat taxonomy, memory/tool/collaboration attack surface, detection-response loop를 agent platform 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, runtime-defense, tool-use, memory]
+- status: idea
+
+### 2026-06-30 — [논문 리뷰] Govern the Repository, Not the Agent: AI-native software의 생태계 리스크 측정
+- type: paper
+- source: http://arxiv.org/abs/2606.28235v1
+- why-now: 여러 autonomous coding agent가 같은 repo에서 PR을 만들고 merge하는 상황에서는 개별 agent benchmark보다 repository-level policy와 risk metric이 더 중요해진다.
+- angle: “에이전트 하나를 잘 평가해도 repo 전체는 망가질 수 있다” — branch/PR 권한, CI 신호, dependency drift, ecosystem-level risk를 governance 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, repository-governance, ai-native-software, risk]
+- status: idea
+
+### 2026-06-30 — [논문 리뷰] ToolPrivacyBench: tool-using LLM agent의 purpose-bound privacy 평가
+- type: paper
+- source: http://arxiv.org/abs/2606.28061v1
+- why-now: 에이전트가 외부 도구와 환경에 접근할수록 “작업 완료”보다 목적 제한에 맞게 필요한 개인정보만 쓰는지 검증하는 benchmark가 필요해졌다.
+- angle: “agent privacy는 데이터 접근 허용/차단이 아니라 목적·도구·단계별 최소 사용 문제” — purpose-bound policy, tool trace audit, privacy regression suite를 운영 게이트로 설계한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-privacy, tool-use, benchmark, governance]
+- status: idea
+
+### 2026-06-30 — [논문 리뷰] SHARD: vector store 유출에도 원문을 숨기는 private dense retrieval
+- type: paper
+- source: http://arxiv.org/abs/2606.27976v1
+- why-now: RAG 운영에서 embedding DB 유출이 원문 복원 공격으로 이어질 수 있다는 우려가 커져, 검색 품질과 privacy를 동시에 보는 dense retrieval 설계가 필요하다.
+- angle: “RAG 보안은 문서 DB뿐 아니라 vector store까지 threat model에 넣어야 한다” — embedding inversion, residual splitting, private retrieval trade-off를 실무 보안 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag-security, dense-retrieval, privacy, embeddings]
+- status: idea
+
+### 2026-06-30 — [논문 리뷰] SHIFT: RAG의 parametric-vs-retrieved knowledge conflict 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2606.27786v1
+- why-now: RAG가 외부 근거를 넣어도 모델의 내부 지식과 충돌하면 답변이 흔들리므로, retrieval context를 믿을지 모델 prior를 믿을지 조절하는 메커니즘이 중요해졌다.
+- angle: “RAG 실패는 검색 누락만이 아니라 지식 충돌 제어 문제” — gate-modulated activation steering, conflict detection, 최신 문서 우선 정책을 agentic RAG 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, knowledge-conflict, activation-steering, grounding]
+- status: idea
+
+### 2026-06-30 — Pydantic AI: typed agent framework로 output contract와 tool schema를 강제하기
+- type: tech
+- source: https://github.com/pydantic/pydantic-ai
+- why-now: agent framework가 늘어나면서 빠른 데모보다 typed dependency, structured output, tool schema, testability를 기존 Python 서비스 품질 기준에 맞추는 요구가 커졌다.
+- angle: “agent를 Python application처럼 운영하려면 타입과 validation이 first-class여야 한다” — Pydantic model, dependency injection, tool contract, eval/test 패턴을 framework 소개로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, pydantic, structured-output, python]
+- status: idea
+
+### 2026-06-30 — agentgateway: MCP server와 AI agent 앞단의 agentic proxy 설계
+- type: tech
+- source: https://github.com/agentgateway/agentgateway
+- why-now: agent와 MCP server가 늘수록 tool endpoint, auth, routing, telemetry, policy enforcement를 각 앱에 흩어두지 않고 gateway 계층에서 다루려는 흐름이 강해지고 있다.
+- angle: “MCP 운영의 production boundary는 개별 server가 아니라 proxy/gateway” — agent routing, MCP access control, observability, policy layer를 인프라 패턴으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-gateway, infrastructure, agent-tools]
+- status: idea
