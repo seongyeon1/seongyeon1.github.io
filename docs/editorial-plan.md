@@ -97,7 +97,7 @@
 | 아이디어 | 미정 | [논문 리뷰] Co-Failure Ceiling — mixture-of-agents 성능 상한선 | paper-review | AI 평가/운영 | | arXiv 2606.27288 — 67개 frontier model co-failure 구조로 routing/voting/mixture-of-agents 설계 기준 만들기 |
 | 아이디어 | 미정 | [논문 리뷰] BINEVAL — LLM 평가를 이진 질문 묶음으로 만들기 | paper-review | AI 평가/운영 | | arXiv 2606.27226 — opaque judge score 대신 binary question decomposition과 self-improvement loop 설계 |
 | 아이디어 | 미정 | [논문 리뷰] RiVER — 정답 없는 문제에서도 LLM 강화학습하기 | paper-review | 논문 리뷰 | | arXiv 2606.27369 — ranking-induced verifiable reward로 agent 업무 post-training 신호를 만드는 법 |
-| 작성중 | 미정 | Headroom: tool output과 RAG chunk를 LLM 앞에서 압축하는 context layer | tool | Agent/MCP 실전 | | `2026-06-27-headroom-context-compression-layer.mdx` — draft true, GitHub repo 기반 — output compression, MCP server/proxy, token budget과 answer preservation 체크리스트 |
+| 발행완료 | 2026-06-30 | Headroom: tool output과 RAG chunk를 LLM 앞에서 압축하는 context layer | tool | Agent/MCP 실전 | | `2026-06-27-headroom-context-compression-layer.mdx` — 자동 발행 완료, GitHub repo 기반 — output compression, MCP server/proxy, token budget과 answer preservation 체크리스트 |
 | 아이디어 | 미정 | [논문 리뷰] Temporal Validity in Retrieval Memory — stale fact를 agent RAG에서 제거하기 | paper-review | Agentic RAG | | arXiv 2606.26511 — temporal validity, stale/current conflict resolution, retrieval memory hygiene 설계 |
 | 아이디어 | 미정 | [논문 리뷰] MIRROR — agentic RAG를 novelty-constrained MCTS로 red-team하기 | paper-review | Agentic RAG | | arXiv 2606.26793 — multimodal agentic RAG 공격면, memory-guided MCTS, novelty-constrained red-team harness |
 | 아이디어 | 미정 | [논문 리뷰] Semantic Early-Stopping — multi-agent loop를 언제 멈춰야 할까 | paper-review | AI 평가/운영 | | arXiv 2606.27009 — semantic convergence와 utility plateau 기반 반복 agent 비용·품질 제어 |
