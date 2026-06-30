@@ -115,7 +115,11 @@
 | 아이디어 | 미정 | [논문 리뷰] ToolPrivacyBench — tool-using LLM agent의 purpose-bound privacy 평가 | paper-review | AI 평가/운영 | | arXiv 2606.28061 — 목적 제한 privacy, tool trace audit, regression suite를 agent governance로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] SHIFT — RAG의 parametric-vs-retrieved knowledge conflict 줄이기 | paper-review | Agentic RAG | | arXiv 2606.27786 — gate-modulated activation steering과 지식 충돌 제어를 RAG grounding 정책으로 해석 |
 | 아이디어 | 미정 | Pydantic AI: typed agent framework로 output contract와 tool schema를 강제하기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — typed dependency, structured output, tool schema, eval/test 패턴 |
-| 아이디어 | 미정 | agentgateway: MCP server와 AI agent 앞단의 agentic proxy 설계 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP access control, routing, telemetry, policy enforcement를 gateway 계층으로 분리 |
+| 작성중 | 미정 | agentgateway: MCP server와 AI agent 앞단의 agentic proxy 설계 | tool | Agent/MCP 실전 | | `2026-06-30-agentgateway-agentic-proxy-infrastructure.mdx` — draft true, GitHub repo 기반 — MCP access control, routing, telemetry, policy enforcement를 gateway 계층으로 분리 |
+| 아이디어 | 미정 | [논문 리뷰] Self-Evolving World Models — LLM agent planning의 foresight를 배포 중 갱신하기 | paper-review | 논문 리뷰 | | arXiv 2606.30639 — episodic/semantic memory와 selective foresight로 world model을 실행 중 개선하는 agent planning harness |
+| 아이디어 | 미정 | [논문 리뷰] MESA — multi-agent system에서 가장 위험한 communication edge 찾기 | paper-review | 논문 리뷰 | | arXiv 2606.30602 — multi-agent communication graph의 취약 edge 우선순위와 channel hardening 체크리스트 |
+| 아이디어 | 미정 | [논문 리뷰] Forensic Trajectory Signatures — agent memory poisoning을 실행 궤적으로 탐지하기 | paper-review | 논문 리뷰 | | arXiv 2606.30566 — memory/tool trajectory invariant와 trace feature 기반 runtime monitor 설계 |
+| 아이디어 | 미정 | mcp-use: MCP app과 server를 함께 만드는 fullstack agent framework | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — client integration, server lifecycle, auth/context 전달, 테스트 가능한 MCP app 구조 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

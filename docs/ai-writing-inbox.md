@@ -1639,4 +1639,109 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [mcp, agent-gateway, infrastructure, agent-tools]
+- status: drafted
+- draft: content/posts/2026-06-30-agentgateway-agentic-proxy-infrastructure.mdx
+
+### 2026-07-01 — [논문 리뷰] Self-Evolving World Models: LLM agent planning의 foresight를 배포 중 갱신하기
+- type: paper
+- source: http://arxiv.org/abs/2606.30639v1
+- why-now: long-horizon agent가 실행 전 결과를 예측하는 world model을 쓰더라도, 잘못된 foresight는 무시되거나 오히려 planning을 망칠 수 있어 배포 중 self-correction 메커니즘이 중요해졌다.
+- angle: “agent의 world model은 학습 시점 지식이 아니라 실행 transition에서 계속 갱신되는 운영 컴포넌트” — episodic memory, semantic rule extraction, selective foresight를 agent planning harness 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, world-model, planning, memory]
+- status: idea
+
+### 2026-07-01 — [논문 리뷰] MESA: multi-agent system에서 가장 위험한 communication edge 찾기
+- type: paper
+- source: http://arxiv.org/abs/2606.30602v1
+- why-now: multi-agent workflow가 실제 운영 자동화에 들어가면서 agent 간 메시지 채널 자체가 공격면이 됐고, 제한된 방어 리소스를 어디에 먼저 써야 하는지가 실무 문제가 됐다.
+- angle: “multi-agent 보안은 agent별 권한만이 아니라 communication graph의 취약 edge 우선순위 문제” — label-free risk ranking, compromised edge 영향도, channel hardening 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, agent-security, communication-graph, risk]
+- status: idea
+
+### 2026-07-01 — [논문 리뷰] Forensic Trajectory Signatures: agent memory poisoning을 실행 궤적으로 탐지하기
+- type: paper
+- source: http://arxiv.org/abs/2606.30566v1
+- why-now: persistent memory를 쓰는 agent는 prompt injection보다 은밀한 memory poisoning과 data exfiltration 위험이 커지고 있어, 최종 답변보다 tool trajectory 기반 탐지가 필요해졌다.
+- angle: “agent 보안 로그는 감사 기록이 아니라 탐지 feature다” — memory_recall→email_send 같은 trajectory invariant, rule-based detector, trace feature 기반 runtime monitor를 설계 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-security, memory-poisoning, trajectory, detection]
+- status: idea
+
+### 2026-07-01 — [논문 리뷰] Attractor States: multi-turn LLM 대화가 특정 행동 상태로 수렴하는 이유
+- type: paper
+- source: http://arxiv.org/abs/2606.30571v1
+- why-now: multi-agent debate와 LLM-as-judge를 길게 돌릴수록 독립적인 의견 교환보다 모델별 스타일·stance가 서로를 끌어당기는 장기 동역학이 품질과 편향을 좌우할 수 있다.
+- angle: “multi-agent loop는 반복하면 객관적이 되는 게 아니라 attractor에 빠질 수 있다” — self-play/mixed-play dynamics, judge diversity, stopping rule을 평가 harness 관점으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, llm-eval, conversation-dynamics, bias]
+- status: idea
+
+### 2026-07-01 — [논문 리뷰] GROW²: robot tool use에서 which와 where를 계층적으로 grounding하기
+- type: paper
+- source: http://arxiv.org/abs/2606.30632v1
+- why-now: embodied agent가 정해진 도구만 쓰는 수준을 넘어 대체 물체를 도구로 고르고 어느 부위를 써야 하는지 판단해야 하는 open-world affordance grounding 문제가 중요해졌다.
+- angle: “tool-use agent의 grounding은 도구 선택과 접촉 위치 선택을 분리해야 한다” — VLM commonsense, object-part abstraction, semantic/geometric grounding을 로봇 agent 설계로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [robot-agent, tool-use, grounding, vlm]
+- status: idea
+
+### 2026-07-01 — Activepieces: AI agent와 MCP workflow automation을 한곳에 묶는 오픈소스 플랫폼
+- type: tech
+- source: https://github.com/activepieces/activepieces
+- why-now: agent를 단독 챗봇으로 두는 대신 기존 업무 자동화, trigger/action, 수백 개 MCP server와 연결하려는 요구가 커지고 있고 activepieces는 활발한 업데이트와 큰 사용자 기반을 가진다.
+- angle: “agent platform은 model wrapper가 아니라 workflow automation runtime과 tool marketplace의 결합” — trigger, MCP connector, permission, human approval, 운영 관측 포인트를 repo architecture 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-workflow, mcp, automation, github-repo]
+- status: idea
+
+### 2026-07-01 — mcp-use: MCP app과 server를 함께 만드는 fullstack agent framework
+- type: tech
+- source: https://github.com/mcp-use/mcp-use
+- why-now: MCP server가 늘어나면서 server 구현뿐 아니라 ChatGPT/Claude 같은 client surface와 agent runtime을 함께 설계하는 fullstack MCP 개발 흐름이 필요해지고 있다.
+- angle: “MCP는 tool protocol만이 아니라 app/server boundary를 같이 설계하는 제품 인터페이스” — client integration, server lifecycle, auth/context 전달, 테스트 가능한 MCP app 구조를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-framework, tool-use, github-repo]
+- status: idea
+
+### 2026-07-01 — NVIDIA NeMo Gym: environment 기반으로 model과 agent를 평가·개선하기
+- type: tech
+- source: https://github.com/NVIDIA-NeMo/Gym
+- why-now: agent 평가와 post-training이 prompt/output 비교를 넘어 environment, rollout, reward/metric loop를 공유하는 방향으로 가면서 NVIDIA NeMo 생태계의 Gym이 볼 만한 기준점이 됐다.
+- angle: “agent eval은 테스트셋 파일이 아니라 environment API와 rollout log” — environment abstraction, evaluator, improvement loop, regression suite를 agentic RL/운영 평가 관점으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, environment, reinforcement-learning, github-repo]
 - status: idea
