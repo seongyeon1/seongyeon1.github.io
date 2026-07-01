@@ -1,0 +1,389 @@
+---
+title: "Memora: 에이전트 메모리는 RAG보다 더 섬세해야 한다"
+date: "2026-07-01"
+category: "tool"
+tags: ["agent-memory", "RAG", "Memora", "long-term-memory", "microsoft"]
+summary: "Microsoft Memora를 통해 에이전트 메모리에서 추상화와 구체성을 분리해야 하는 이유를 정리한다."
+---
+
+## 한 줄 요약
+
+[Memora](https://github.com/microsoft/Memora)는 에이전트 메모리를 단순 벡터 검색으로 다루지 않고, **원본 정보, 대표 추상화, 검색 단서**를 분리해서 저장하고 검색하려는 Microsoft의 오픈소스 프로젝트다.
+
+내가 보기엔 이 레포의 핵심은 “또 하나의 memory library”가 아니다. 핵심은 에이전트 메모리를 **RAG 문제**가 아니라 **표현 설계 문제**로 본다는 점이다.
+
+AI 에이전트를 만들다 보면 메모리는 생각보다 빨리 병목이 된다. 처음에는 대화 내용을 벡터DB에 넣고, 질문이 들어오면 비슷한 chunk를 꺼내면 될 것처럼 보인다. 그런데 실제로는 그렇지 않다.
+
+에이전트 메모리는 문서 검색과 다르다. 문서 검색은 관련 문서를 찾으면 된다. 에이전트 메모리는 과거의 사실, 선호, 결정, 에피소드, 절차적 지식을 지금의 행동에 맞게 다시 꺼내야 한다.
+
+이 차이가 꽤 크다.
+
+## GitHub 링크
+
+- GitHub: [microsoft/Memora](https://github.com/microsoft/Memora)
+- Paper: [Memora: A Harmonic Memory Representation Balancing Abstraction and Specificity](https://arxiv.org/abs/2602.03315)
+- License: MIT
+- 주요 스택: Python, ChromaDB, Hydra, OpenAI/Azure OpenAI, Redis, transformers, PEFT, LangGraph/LangMem
+
+공식 README에 따르면 Memora는 논문 구현체이며, LoCoMo와 LongMemEval 같은 장기 메모리 벤치마크 실험 코드도 포함한다. 레포는 아직 초기 공개 버전에 가까워 보이지만, 문제의식은 좋다.
+
+## 왜 기존 RAG 메모리만으로는 부족한가
+
+RAG 기반 메모리의 기본 구조는 대략 이렇다.
+
+```text
+conversation / document
+  -> chunking
+  -> embedding
+  -> vector DB
+  -> similarity search
+  -> prompt injection
+```
+
+작고 단순한 서비스에서는 이 방식이 충분히 잘 동작한다. 문제는 메모리가 계속 커지고, 정보가 업데이트되고, 검색 질문이 저장 당시 표현과 달라질 때다.
+
+예를 들어 이런 메모리가 있다고 하자.
+
+```text
+Alice mentioned she's moving to Seattle next month for a new job at Microsoft.
+She's excited about the role but nervous about the rain.
+```
+
+나중에 사용자가 이렇게 묻는다.
+
+```text
+Alice가 새 직장 때문에 옮기는 도시는 어디였지?
+```
+
+사람에게는 같은 기억이다. 하지만 벡터 검색 입장에서는 표현이 달라졌고, 긴 대화 속에서는 다른 정보와 섞일 수 있다. 질문이 “Microsoft 들어간 사람이 누구였지?”, “비 걱정하던 얘기가 누구였더라?”, “Seattle 관련해서 전에 무슨 얘기했지?”처럼 바뀌면 더 애매해진다.
+
+여기서 딜레마가 생긴다.
+
+- 원본 대화를 그대로 저장하면 디테일은 살아 있지만 검색이 흔들린다.
+- 요약해서 저장하면 검색은 쉬워지지만 디테일이 사라진다.
+- knowledge graph처럼 강하게 구조화하면 정확도는 올라갈 수 있지만 설계와 유지보수가 무거워진다.
+
+Memora는 이 문제를 “추상화와 구체성의 균형”으로 본다.
+
+## Memora의 핵심 구조: value, abstraction, cue
+
+Memora의 메모리 entry는 개념적으로 세 요소로 나뉜다.
+
+```text
+Memory value        = 실제로 보존할 원본 정보
+Primary abstraction = 이 메모리가 무엇에 대한 것인지 나타내는 대표 요약
+Cue anchors         = 이 메모리로 들어오는 여러 의미적 단서
+```
+
+중요한 점은 **원본 정보와 검색용 표현을 분리한다**는 것이다.
+
+기존 RAG에서는 chunk 자체가 저장 단위이면서 검색 단위이고, 동시에 응답 근거가 된다. Memora는 이 셋을 분리한다.
+
+- `Memory value`는 풍부한 정보를 보존한다.
+- `Primary abstraction`은 업데이트와 집계의 기준이 된다.
+- `Cue anchors`는 다양한 표현의 질문이 같은 기억으로 들어오게 만든다.
+
+아까 Alice 예시를 Memora식으로 보면 대략 이렇게 된다.
+
+```text
+Memory value:
+Alice는 다음 달 Microsoft의 새 직장 때문에 Seattle로 이사한다.
+새 역할은 기대하지만 비가 많은 날씨는 걱정하고 있다.
+
+Primary abstraction:
+Alice's relocation to Seattle for Microsoft job
+
+Cue anchors:
+- Alice + relocation
+- Alice + Microsoft job
+- Seattle + moving
+- Alice + weather concern
+- new job + Seattle
+```
+
+여기서 검색 대상은 원본 value 전체가 아니라 primary abstraction과 cue anchor다. value는 답변에 필요한 세부 정보를 보존하는 역할을 한다.
+
+이 방식의 장점은 명확하다. 검색은 더 구조화된 표현 위에서 하고, 답변은 손실이 적은 원본 정보에서 만든다.
+
+## Primary abstraction: 메모리의 대표 이름
+
+Primary abstraction은 메모리의 대표 이름에 가깝다.
+
+예를 들어 “Alice의 Seattle 이사”에 대한 기억이 이미 있는데, 나중에 다음 정보가 들어온다고 하자.
+
+```text
+Alice found an apartment near Lake Union.
+```
+
+단순 RAG라면 별도 chunk로 들어갈 가능성이 높다. 하지만 Memora의 관점에서는 기존 “Alice relocation” 메모리와 관련된 업데이트로 병합하거나 연결할 수 있다.
+
+이게 에이전트 메모리에서는 중요하다. 에이전트가 다루는 정보는 정적인 문서가 아니라 시간에 따라 바뀌는 상태다.
+
+- 사용자의 선호는 바뀐다.
+- 프로젝트의 결정 사항은 갱신된다.
+- 사람과 조직에 대한 정보는 누적된다.
+- 이전 대화에서 나온 사실이 나중에 보정된다.
+
+좋은 메모리 시스템은 많이 저장하는 것보다, 새 정보가 기존 기억과 어떤 관계인지 판단하는 능력이 중요하다.
+
+Memora의 primary abstraction은 이 관계 판단의 기준점 역할을 한다.
+
+## Cue anchors: 같은 기억으로 들어가는 여러 문
+
+Cue anchor는 여러 검색 입구다.
+
+사람은 같은 기억을 여러 단서로 떠올린다.
+
+```text
+Alice가 어디로 이사 간다고 했지?
+Microsoft 들어간 사람이 누구였지?
+비 걱정하던 얘기가 누구였더라?
+Seattle 관련해서 전에 무슨 대화를 했지?
+```
+
+모두 같은 memory value로 이어질 수 있다. 하지만 표현은 다르다. Cue anchor는 이런 접근 경로를 미리 만들어두는 장치다.
+
+README에서는 cue anchor를 `entity + key aspects` 형태의 의미적 entry point로 설명한다. 이 구조는 knowledge graph처럼 엄격한 schema를 강제하지 않으면서도, flat vector search보다는 더 조직적인 검색 경로를 만든다.
+
+내가 보기엔 Memora의 위치는 대략 이 사이에 있다.
+
+```text
+Flat RAG  <  Memora  <  Knowledge Graph
+```
+
+RAG보다 구조적이고, knowledge graph보다 유연하다.
+
+이 중간지대가 실제 에이전트 서비스에서 꽤 중요하다. 대부분의 팀은 완전한 ontology를 설계하고 싶지는 않다. 하지만 대화 chunk를 그냥 벡터DB에 쌓는 것만으로는 장기 메모리 품질이 부족하다.
+
+## 메모리 생명주기: 저장부터 검색까지
+
+Memora README 기준으로 전체 흐름은 네 단계다.
+
+### 1. Memory ingestion
+
+대화나 문서가 들어오면 Memora가 관련 정보를 추출한다. 대화를 topical episode로 나누고, 사실·에피소드·절차적 지식 같은 메모리 entry를 만든다.
+
+### 2. Intelligent storage
+
+Memora는 ChromaDB 기반 벡터 저장소를 사용한다. 저장 과정에서 중복 제거, 병합, 업데이트를 수행한다.
+
+선택적으로 cue index를 사용할 수 있다. 이 cue index가 primary abstraction과 cue anchor 기반 검색 구조를 담당한다.
+
+### 3. Adaptive retrieval
+
+검색 전략은 하나가 아니다.
+
+- **Semantic retrieval**: 벡터 유사도 기반 검색
+- **Prompted retrieval**: LLM이 다단계로 검색 정책을 조정
+- **Hybrid retrieval**: semantic search와 BM25/keyword search 조합
+- **GRPO retrieval**: 강화학습 기반 retrieval policy. 아직 실험적 기능
+
+흥미로운 부분은 prompted retrieval과 GRPO다. 검색을 단순히 “query -> top-k vector search”로 끝내지 않고, 어떤 메모리를 더 탐색할지 정책적으로 결정하려 한다.
+
+에이전트 메모리에서는 직접 유사도는 낮지만 실제로는 중요한 정보가 자주 있다. 예를 들어 “Seattle”이라는 단서에서 “Alice relocation”으로 가고, 거기서 다시 “Microsoft job”이나 “weather concern”으로 확장해야 할 수 있다.
+
+### 4. Answer generation
+
+검색된 메모리는 LLM prompt에 주입되고, 에이전트는 이를 바탕으로 응답한다.
+
+## 사용 예시
+
+Memora의 public API는 `MemoraClient` 중심이다.
+
+```python title="quickstart.py"
+from memora.memora_client import MemoraClient
+
+memory_client = MemoraClient(cfg=cfg, user_id="my_user")
+
+memory_client.add(
+    "Alice is moving to Seattle for a new job.",
+    type="doc",
+)
+
+results = memory_client.query(
+    "Where is Alice moving?",
+    top_k=5,
+)
+
+for entry in results:
+    print(entry.index, entry.value)
+```
+
+에이전트에 붙이면 대략 이런 구조가 된다.
+
+```python title="agent_memory.py"
+from memora.memora_client import MemoraClient
+
+class MyAgent:
+    def __init__(self, cfg):
+        self.memory_client = MemoraClient(cfg=cfg, user_id="agent_user")
+
+    def generate_response(self, user_message):
+        memories = self.memory_client.query(user_message, top_k=5)
+
+        response = self.run_agent_logic(user_message, memories)
+
+        conversation = f"User: {user_message}\nAssistant: {response}"
+        self.memory_client.add(conversation, type="doc")
+
+        return response
+```
+
+사용법 자체는 일반적인 memory client와 크게 다르지 않다. 차이는 내부에서 memory value, abstraction, cue를 어떻게 만들고 검색하느냐에 있다.
+
+## 레포 구조에서 볼 만한 부분
+
+레포 구조는 다음처럼 나뉜다.
+
+```text
+src/memora/
+├── core/            # memory store, entry model, cue index, segmentation
+├── builder/         # chat/document memory builder
+├── processors/      # PDF, DOCX, Excel, Markdown 등 문서 처리
+├── retriever/       # semantic, prompted, local policy retriever
+├── rl/              # GRPO 학습 파이프라인
+├── db_clients/      # ChromaDB, Redis backend
+├── browser/         # 메모리 store 브라우저
+└── memora_client.py # public facade
+```
+
+특히 `core/memory_entry.py`를 보면 `value`, `original_text`, `index`, `history`, `memory_type`, `episodic_memory_ids`, `linked_memory`, `cue_indices` 같은 필드가 보인다. 단순히 문자열 하나를 저장하는 구조가 아니라, 검색 인덱스와 원본 값, 연결 정보를 분리하려는 의도가 드러난다.
+
+`retriever/` 쪽에는 semantic retriever, prompted policy retriever, local policy retriever가 따로 존재한다. 즉 retrieval을 하나의 함수가 아니라 교체 가능한 정책으로 본다.
+
+`rl/` 디렉토리에는 trajectory collection, scoring, GRPO trainer가 있다. 이 부분은 production memory라기보다 연구 실험에 가깝지만, 검색 정책 자체를 학습 대상으로 본다는 점이 흥미롭다.
+
+## 벤치마크: LoCoMo와 LongMemEval
+
+Memora는 두 장기 메모리 벤치마크를 지원한다.
+
+첫 번째는 [LoCoMo](https://arxiv.org/abs/2402.17753)다. long conversation memory를 평가하는 벤치마크로, single-hop, multi-hop, temporal, open-domain question 등을 다룬다.
+
+```bash
+cd app/locomo
+
+python run_memora.py \
+  llm.model="gpt-4.1-mini" \
+  memory.memory_store="memora-cue" \
+  memory.enable_cue_index=True \
+  retrieval.strategy="prompt"
+```
+
+두 번째는 LongMemEval이다. 장기 메모리 시스템의 다양한 질문 유형을 평가한다.
+
+```bash
+cd app/longmemeval
+
+python run_memora.py \
+  llm.model="gpt-4.1-mini" \
+  memory.memory_store="memora-semantic" \
+  memory.enable_episodic_memory=True \
+  retrieval.strategy="semantic"
+```
+
+논문 초록에 따르면 Memora는 LoCoMo와 LongMemEval에서 state-of-the-art 성능을 보였다고 한다. 특히 메모리가 커질수록 retrieval relevance와 reasoning effectiveness에서 강점을 보인다는 주장이다.
+
+## RAG와 knowledge graph 사이의 실용적 중간층
+
+논문 초록에서 가장 흥미로운 문장은 이 부분이다.
+
+> standard RAG and Knowledge Graph-based memory systems emerge as special cases of our framework
+
+즉 Memora는 RAG와 KG를 완전히 대체한다기보다, 둘을 더 일반적인 memory representation의 특수한 경우로 본다.
+
+이 관점은 꽤 설득력 있다.
+
+RAG는 유연하지만 구조가 약하다. Knowledge graph는 구조적이지만 만들고 유지하기가 무겁다. 실제 에이전트 시스템은 그 중간 어딘가가 필요하다.
+
+특히 개인 비서, 업무 에이전트, 멀티에이전트 시스템에서는 다음 요구가 동시에 생긴다.
+
+- 비정형 대화를 저장해야 한다.
+- 사용자별 private memory가 필요하다.
+- agent 또는 role별 memory scope를 나눠야 한다.
+- 시간이 지나며 memory를 업데이트해야 한다.
+- 검색은 빠르고 정확해야 한다.
+- 완전한 ontology 설계까지는 부담스럽다.
+
+Memora의 abstraction + cue 구조는 이 중간층을 만들기 위한 한 가지 답이다.
+
+## 도입할 때 조심해야 할 점
+
+다만 지금 레포를 바로 production memory backend로 채택하기에는 확인할 것이 많다.
+
+우선 의존성이 꽤 무겁다. `requirements.txt`에는 ChromaDB, OpenAI/Azure OpenAI, Hydra, Redis, torch, transformers, PEFT, bitsandbytes, LangGraph, LangMem, mem0ai 등이 포함되어 있다.
+
+또한 현재 공개 레포는 초기 버전에 가깝다. GitHub API 기준 레포 생성은 2026년 5월이고, initial commit 중심으로 구성되어 있다. 패키징도 `pyproject.toml`보다는 `requirements.txt` 기반이다.
+
+따라서 지금은 다음 용도에 더 적합해 보인다.
+
+- 에이전트 장기 메모리 연구
+- LoCoMo / LongMemEval 실험 재현
+- 기존 RAG memory 구조 개선 아이디어 탐색
+- cue-based indexing 구현 참고
+- memory update / merge 정책 설계 참고
+
+실제 서비스에 넣으려면 최소한 다음을 봐야 한다.
+
+- 사용자별 memory isolation
+- cue 생성과 업데이트 비용
+- LLM 호출 비용
+- memory merge 정책의 안정성
+- 오래된 memory의 archival 또는 decay 전략
+- 개인정보와 민감정보 저장 정책
+- 삭제 요청과 audit trail 처리
+
+에이전트 메모리는 기술 문제이면서 동시에 개인정보 문제다. 잘 기억하는 에이전트는 편하지만, 무엇을 기억하고 무엇을 잊어야 하는지 명확하지 않으면 위험하다.
+
+## 내가 가져가고 싶은 설계 원칙
+
+Memora를 보면서 가장 크게 가져갈 점은 이거다.
+
+> 메모리에서 저장 단위, 검색 단위, 응답 근거를 분리하자.
+
+기존 RAG memory는 이 셋이 chunk 하나로 합쳐져 있는 경우가 많다.
+
+```text
+chunk = 저장 단위 = 검색 단위 = prompt에 넣을 근거
+```
+
+이 구조는 단순하지만 장기 메모리에는 한계가 있다. Memora식으로 나누면 다음과 같다.
+
+```text
+Memory value        = 응답 근거
+Primary abstraction = 업데이트와 집계 기준
+Cue anchors         = 검색 입구
+```
+
+이 분리는 production agent 설계에서도 바로 참고할 만하다. 꼭 Memora를 그대로 쓰지 않더라도, 자체 memory layer를 만들 때 다음 질문을 던질 수 있다.
+
+- 이 정보의 원본 value는 무엇인가?
+- 이 memory의 대표 abstraction은 무엇인가?
+- 어떤 cue로 이 memory를 다시 떠올려야 하는가?
+- 새 정보가 들어왔을 때 기존 memory와 merge할 것인가, 새로 만들 것인가?
+- agent별, user별, role별로 어떤 memory를 공유하고 격리할 것인가?
+
+이 질문들이 단순 “vectorDB top-k 몇 개?”보다 훨씬 중요하다.
+
+## 마무리
+
+Memora는 아직 초기 공개 프로젝트처럼 보이지만, 방향은 좋다.
+
+에이전트가 길게 동작하고, 여러 세션을 넘나들고, 사용자별 맥락을 축적하게 될수록 메모리는 핵심 인프라가 된다. 그리고 그 메모리는 단순히 과거 대화 검색 수준에 머물 수 없다.
+
+앞으로의 에이전트 메모리는 아마 이런 방향으로 갈 가능성이 크다.
+
+- 원본 정보와 검색용 abstraction의 분리
+- semantic search와 symbolic cue의 결합
+- memory update / merge 정책 고도화
+- 사용자와 agent role별 memory scope 관리
+- retrieval policy 자체의 학습
+
+Memora는 이 흐름을 잘 보여주는 레포다.
+
+RAG 기반 memory를 이미 붙여봤는데 검색 품질이나 memory drift 문제를 겪고 있다면, 이 레포는 한 번 볼 만하다. 특히 “무엇을 저장할지”보다 “어떤 형태로 기억하게 할지”를 고민하는 사람에게 좋은 참고 자료가 된다.
+
+## 참고 자료
+
+- [microsoft/Memora GitHub Repository](https://github.com/microsoft/Memora)
+- [Memora paper on arXiv](https://arxiv.org/abs/2602.03315)
+- [LoCoMo benchmark](https://arxiv.org/abs/2402.17753)

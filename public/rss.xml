@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 01 Jul 2026 02:06:05 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 01 Jul 2026 02:36:25 GMT</lastBuildDate>
+    <item>
+      <title>Memora: 에이전트 메모리는 RAG보다 더 섬세해야 한다</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-01-memora-harmonic-agent-memory/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-01-memora-harmonic-agent-memory/</guid>
+      <description>Microsoft Memora를 통해 에이전트 메모리에서 추상화와 구체성을 분리해야 하는 이유를 정리한다.</description>
+      <pubDate>Wed, 01 Jul 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>agent-memory</category>
+      <category>RAG</category>
+      <category>Memora</category>
+      <category>long-term-memory</category>
+      <category>microsoft</category>
+    </item>
     <item>
       <title>agentgateway: MCP와 agent 앞단에 proxy를 둬야 하는 이유</title>
       <link>https://seongyeon1.github.io/blog/2026-06-30-agentgateway-agentic-proxy-infrastructure/</link>
