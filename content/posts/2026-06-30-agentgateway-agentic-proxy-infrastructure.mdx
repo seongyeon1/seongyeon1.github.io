@@ -1,0 +1,190 @@
+---
+title: "agentgateway: MCP와 agent 앞단에 proxy를 둬야 하는 이유"
+date: "2026-06-30"
+category: "tool"
+tags: ["mcp", "agent-gateway", "infrastructure", "agent-tools"]
+summary: "agentgateway를 예로 MCP·LLM·agent-to-agent 트래픽을 proxy/gateway 계층에서 다루는 설계 포인트를 정리한다."
+---
+
+## 한 줄 요약
+
+agentgateway는 MCP, A2A, LLM provider 호출을 agent 애플리케이션 안에 직접 흩어두지 않고, 별도 proxy/gateway 계층에서 보안·라우팅·관측·정책을 처리하려는 오픈소스 프로젝트다.
+
+내가 보기엔 이 방향은 꽤 중요하다. agent 시스템이 커질수록 병목은 “모델을 어떻게 부를까”가 아니라 **누가 어떤 tool에 어떤 권한으로 접근했고, 그 호출을 어떻게 추적·제어할 것인가**로 이동한다. 이 문제를 각 agent 코드마다 if문으로 처리하면 금방 망가진다.
+
+## 왜 agent 앞단에 gateway가 필요한가
+
+초기 agent 앱은 보통 이렇게 시작한다.
+
+```text
+agent code
+  -> LLM provider SDK
+  -> MCP server 몇 개
+  -> 내부 HTTP API
+  -> 로그는 대충 stdout
+```
+
+작은 데모에서는 괜찮다. 하지만 팀 단위로 운영하면 금방 다음 문제가 생긴다.
+
+- MCP server가 늘어나면서 endpoint와 credential 관리가 흩어진다.
+- agent마다 tool allowlist, OAuth, rate limit 정책이 다르게 구현된다.
+- 어떤 요청이 어떤 user intent에서 발생했는지 audit trail이 약하다.
+- LLM provider failover나 비용 제한이 애플리케이션 코드에 섞인다.
+- prompt injection이나 과권한 tool call을 실행 직전에서 막기 어렵다.
+- agent-to-agent 통신이 생기면 capability discovery와 trust boundary가 더 복잡해진다.
+
+이건 일반 웹 서비스에서 API gateway, service mesh, observability stack이 필요해졌던 흐름과 비슷하다. 차이는 agent traffic에는 자연어 prompt, tool schema, user intent, model response, tool result가 같이 섞인다는 점이다. 그래서 기존 HTTP proxy만으로는 부족하고, AI-native protocol을 이해하는 gateway가 필요해진다.
+
+## agentgateway가 잡는 위치
+
+agentgateway README는 이 프로젝트를 MCP와 A2A 같은 AI-native protocol 위에 만든 open source proxy라고 설명한다. 대상은 크게 세 경로다.
+
+```text
+agent / app
+  -> agentgateway
+      -> LLM provider
+      -> MCP tool server
+      -> 다른 agent(A2A)
+      -> 내부/외부 HTTP API
+```
+
+README 기준으로 주요 기능은 다음 축으로 나뉜다.
+
+- **LLM Gateway**: 여러 LLM provider를 OpenAI-compatible API 형태로 라우팅하고, budget/spend control, prompt enrichment, load balancing, failover를 제공하는 방향.
+- **MCP Gateway**: MCP tool과 외부 데이터 소스를 stdio, HTTP, SSE, Streamable HTTP transport로 연결하고, OpenAPI integration과 OAuth authentication을 다루는 방향.
+- **A2A Gateway**: agent-to-agent 통신에서 capability discovery, modality negotiation, task collaboration을 다루는 방향.
+- **Inference Routing**: Kubernetes Inference Gateway extension을 활용해 GPU 사용률, KV cache, LoRA adapter, queue depth 같은 신호로 self-hosted model 라우팅을 하는 방향.
+- **Guardrails**: regex, OpenAI moderation, AWS Bedrock Guardrails, Google Model Armor, custom webhook 같은 여러 필터를 계층화하는 방향.
+- **Security & Observability**: JWT, API key, OAuth, RBAC, CEL policy engine, rate limit, TLS, OpenTelemetry metrics/logs/tracing을 gateway 계층에 붙이는 방향.
+
+여기서 핵심은 “기능이 많다”가 아니다. 핵심은 **agent data plane을 애플리케이션 코드 밖으로 빼려는 시도**다. 좋은 agent runtime은 모델 호출 코드보다 호출 경계가 더 중요하다.
+
+## MCP server가 많아질 때 생기는 진짜 문제
+
+MCP는 agent에게 tool을 붙이는 인터페이스로 빠르게 자리 잡고 있다. 그런데 MCP server가 2~3개일 때와 20개 이상일 때의 운영 난이도는 완전히 다르다.
+
+문제는 tool 목록이 길어지는 게 아니다. 다음 질문에 답할 수 있어야 한다.
+
+- 이 tool은 어느 user group에게 허용되는가?
+- read-only 작업과 mutation 작업은 어떻게 구분하는가?
+- OAuth token은 agent가 직접 들고 있는가, gateway가 broker 역할을 하는가?
+- prompt injection이 섞인 tool input을 실행 전에 검사하는가?
+- tool response에 민감정보가 있으면 LLM으로 보내기 전에 마스킹하는가?
+- 특정 MCP server가 느리거나 실패할 때 fallback 또는 circuit breaker가 있는가?
+- 누가, 언제, 어떤 intent로 tool을 호출했는지 나중에 재구성할 수 있는가?
+
+이 질문을 각 agent framework 안에서 해결하려고 하면 vendor lock-in도 커지고 정책 일관성도 깨진다. 나는 MCP 운영에서 다음 단계는 “더 많은 server 만들기”가 아니라 **registry, gateway, policy layer를 분리하는 것**이라고 본다.
+
+agentgateway의 MCP Gateway 방향은 이 지점과 맞닿아 있다. 예제 README를 보면 basic 예제는 단일 stdio MCP server를 노출하고, mcp-authentication 예제는 local stdio MCP와 remote MCP 경로에 대해 OAuth resource metadata, bearer token 검증, JWKS 설정 같은 흐름을 다룬다. 즉 단순 wrapper가 아니라 “MCP를 조직의 인증·인가 모델에 연결하는 계층”으로 보려는 것이다.
+
+## 설정 모델에서 볼 만한 점
+
+agentgateway architecture 문서는 설정을 세 가지로 나눈다.
+
+1. **Static configuration**: 프로세스 초기에 한 번 정해지는 전역 설정. 예를 들어 logging, port 같은 값.
+2. **Local configuration**: YAML/JSON 파일로 backend, route, policy 등을 정의하고 file watch로 동적 reload하는 설정.
+3. **XDS configuration**: remote control plane이 proxy를 설정하는 방식. Envoy의 xDS transport protocol을 쓰되, Envoy type을 그대로 쓰지는 않고 목적에 맞는 type을 사용한다고 설명한다.
+
+이 구분은 꽤 실용적이다. agent gateway는 개발 중에는 로컬 YAML 하나로 시작하고, 운영에서는 control plane이 여러 proxy의 route와 policy를 밀어 넣어야 한다. 둘을 억지로 하나의 설정 방식으로 묶으면 작은 팀에는 무겁고, 큰 팀에는 부족해진다.
+
+basic 예제의 config는 대략 이런 모양이다.
+
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        cors:
+          allowOrigins:
+          - "*"
+          allowHeaders:
+          - mcp-protocol-version
+          - content-type
+          - cache-control
+          - mcp-session-id
+          exposeHeaders:
+          - "Mcp-Session-Id"
+      backends:
+      - mcp:
+          targets:
+          - name: everything
+            stdio:
+              cmd: npx
+              args: ["@modelcontextprotocol/server-everything"]
+```
+
+초안 단계에서는 이 예제를 그대로 운영에 쓰면 안 된다. 특히 CORS `*`나 demo MCP server는 학습용으로 봐야 한다. 하지만 구조는 명확하다. listener, route, policy, backend, MCP target이 분리되어 있고, agent 코드가 아니라 gateway config에서 호출 경계를 정의한다.
+
+## CEL policy engine이 중요한 이유
+
+README는 fine-grained RBAC에 CEL policy engine을 쓴다고 설명한다. CEL(Common Expression Language)은 Kubernetes, Envoy 계열 설정에서 자주 보이는 정책 표현 방식이다.
+
+agent 환경에서 CEL 같은 정책 언어가 중요한 이유는 간단하다. 권한 판단이 “이 endpoint는 허용” 수준으로 끝나지 않기 때문이다.
+
+예를 들면 이런 조건이 필요해진다.
+
+```text
+허용 조건:
+- user.group == "sre"
+- tool.name == "restart_service"
+- environment != "prod" 또는 approved_change_id가 존재
+- request.intent가 incident_remediation으로 분류됨
+- rate limit과 change window를 통과함
+```
+
+이걸 애플리케이션 코드에 흩어두면 policy review가 어렵다. 반대로 gateway 계층에서 표현식으로 관리하면 보안팀, 플랫폼팀, agent 개발팀이 같은 규칙을 볼 수 있다. 물론 CEL을 쓴다고 자동으로 안전해지는 건 아니다. 중요한 건 정책 평가에 필요한 attribute를 request log와 trace에 일관되게 남기는 것이다.
+
+## 어디에 쓰면 좋은가
+
+agentgateway 같은 계층은 모든 개인 프로젝트에 필요한 건 아니다. 로컬에서 한두 개 tool을 연결해 실험하는 수준이면 과하다.
+
+하지만 다음 조건이면 진지하게 볼 만하다.
+
+- 여러 agent framework가 같은 MCP server와 내부 API를 공유한다.
+- LLM provider를 여러 개 쓰고 fallback, cost cap, routing 정책이 필요하다.
+- OAuth, JWT, API key, RBAC를 agent 코드 밖에서 통제해야 한다.
+- tool call audit log와 OpenTelemetry trace가 운영 요구사항이다.
+- prompt guardrail뿐 아니라 tool 실행 전 정책 검사가 필요하다.
+- agent-to-agent 통신이나 multi-agent workflow를 네트워크 경계에서 관리해야 한다.
+- Kubernetes나 별도 control plane으로 gateway 설정을 운영하고 싶다.
+
+특히 기업 환경에서는 “agent를 붙여도 되나?”라는 질문의 답이 모델 성능보다 이 계층에서 갈릴 가능성이 크다. agent가 실수해도 실제 mutation 권한, 민감정보 접근, 비용 폭주를 gateway에서 제한할 수 있어야 한다.
+
+## 조심해야 할 점
+
+반대로 gateway를 넣으면 복잡도도 늘어난다.
+
+첫째, latency가 생긴다. LLM 호출 자체가 느리더라도 gateway에서 인증, 정책 평가, guardrail, tracing을 과하게 붙이면 체감 응답성이 나빠질 수 있다.
+
+둘째, 중앙 장애 지점이 된다. 모든 MCP/LLM 트래픽이 gateway를 거치면 gateway 장애는 곧 agent 장애다. HA, fallback, config rollback이 필수다.
+
+셋째, 정책이 너무 거칠면 agent 품질을 망친다. 예를 들어 모든 tool response를 과하게 마스킹하면 모델이 필요한 근거를 잃는다. 반대로 너무 느슨하면 gateway를 둔 의미가 없다.
+
+넷째, “AI-native”라는 이름만 믿으면 안 된다. 실제 운영에서는 어떤 protocol 버전을 지원하는지, MCP transport별 behavior가 안정적인지, OpenTelemetry trace가 어느 granularity까지 남는지, OAuth flow가 조직 IdP와 맞는지 직접 확인해야 한다.
+
+## 내 결론
+
+agentgateway는 단순한 신제품 소개보다 “agent infra가 어디로 가는가”를 보기 좋은 사례다. agent가 장난감이면 prompt와 tool schema가 중요하다. agent가 제품이면 gateway, policy, auth, observability가 중요해진다.
+
+나는 앞으로 MCP 생태계의 핵심 논점이 server 구현에서 gateway 운영으로 이동할 거라고 본다. 도구를 많이 붙이는 건 쉽다. 어려운 건 그 도구들이 사용자 의도, 권한, 감사 로그, 비용 정책 안에서 안전하게 움직이도록 만드는 것이다.
+
+그래서 agentgateway를 볼 때는 “이걸 바로 써야 하나?”보다 다음 질문을 가져가는 편이 낫다.
+
+- 우리 agent의 LLM/tool/A2A 트래픽은 어디서 관측되는가?
+- tool 권한 정책은 코드에 박혀 있는가, 중앙에서 관리되는가?
+- MCP server 추가가 보안 리뷰와 audit trail에 자동으로 연결되는가?
+- 모델 실패와 gateway 정책 실패를 trace에서 구분할 수 있는가?
+- provider routing, rate limit, cost cap이 agent별로 일관되게 적용되는가?
+
+이 질문에 답이 없으면 agent framework를 바꿔도 운영 품질은 크게 좋아지지 않는다.
+
+## 참고 자료
+
+- agentgateway GitHub: https://github.com/agentgateway/agentgateway
+- agentgateway README: https://raw.githubusercontent.com/agentgateway/agentgateway/main/README.md
+- agentgateway examples README: https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/README.md
+- basic MCP example config: https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml
+- MCP authentication example config: https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/mcp-authentication/config.yaml
+- configuration architecture note: https://raw.githubusercontent.com/agentgateway/agentgateway/main/architecture/configuration.md
+- configuration schema: https://raw.githubusercontent.com/agentgateway/agentgateway/main/schema/config.md

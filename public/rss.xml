@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 30 Jun 2026 01:57:31 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 01 Jul 2026 02:06:05 GMT</lastBuildDate>
+    <item>
+      <title>agentgateway: MCP와 agent 앞단에 proxy를 둬야 하는 이유</title>
+      <link>https://seongyeon1.github.io/blog/2026-06-30-agentgateway-agentic-proxy-infrastructure/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-06-30-agentgateway-agentic-proxy-infrastructure/</guid>
+      <description>agentgateway를 예로 MCP·LLM·agent-to-agent 트래픽을 proxy/gateway 계층에서 다루는 설계 포인트를 정리한다.</description>
+      <pubDate>Tue, 30 Jun 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>mcp</category>
+      <category>agent-gateway</category>
+      <category>infrastructure</category>
+      <category>agent-tools</category>
+    </item>
     <item>
       <title>[논문 리뷰] Generative Agents에서 MemGPT, Mem0까지 — 에이전트 메모리는 어떻게 진화했나</title>
       <link>https://seongyeon1.github.io/blog/2026-06-29-agent-memory-generative-agents-memgpt-mem0/</link>

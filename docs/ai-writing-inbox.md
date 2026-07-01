@@ -1639,7 +1639,7 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [mcp, agent-gateway, infrastructure, agent-tools]
-- status: drafted
+- status: published
 - draft: content/posts/2026-06-30-agentgateway-agentic-proxy-infrastructure.mdx
 
 ### 2026-07-01 — [논문 리뷰] Self-Evolving World Models: LLM agent planning의 foresight를 배포 중 갱신하기
