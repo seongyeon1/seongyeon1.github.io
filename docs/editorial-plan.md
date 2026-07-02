@@ -120,6 +120,10 @@
 | 아이디어 | 미정 | [논문 리뷰] MESA — multi-agent system에서 가장 위험한 communication edge 찾기 | paper-review | 논문 리뷰 | | arXiv 2606.30602 — multi-agent communication graph의 취약 edge 우선순위와 channel hardening 체크리스트 |
 | 아이디어 | 미정 | [논문 리뷰] Forensic Trajectory Signatures — agent memory poisoning을 실행 궤적으로 탐지하기 | paper-review | 논문 리뷰 | | arXiv 2606.30566 — memory/tool trajectory invariant와 trace feature 기반 runtime monitor 설계 |
 | 아이디어 | 미정 | mcp-use: MCP app과 server를 함께 만드는 fullstack agent framework | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — client integration, server lifecycle, auth/context 전달, 테스트 가능한 MCP app 구조 |
+| 아이디어 | 미정 | [논문 리뷰] QVal — long-horizon agent dense supervision을 training 없이 평가하기 | paper-review | AI 평가/운영 | | arXiv 2606.32034 — Q-alignment로 dense supervision 신호를 학습 전 비교하는 agent post-training 평가법 |
+| 아이디어 | 미정 | [논문 리뷰] Generative Skill Composition — agent skill을 합성 가능한 절차 지식으로 다루기 | paper-review | Agent/MCP 실전 | | arXiv 2606.32025 — procedural memory, skill dependency, sandbox setup을 composable skill package로 보는 harness 설계 |
+| 아이디어 | 미정 | [논문 리뷰] CORTEX — RAG hallucination을 token-level 내부 표현으로 잡기 | paper-review | Agentic RAG | | arXiv 2606.31033 — long-form RAG의 span-level hallucination 감지와 production QA overlay 설계 |
+| 아이디어 | 미정 | Archestra: MCP registry·gateway·orchestrator를 enterprise agent control plane으로 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP registry, gateway, guardrail, orchestration boundary를 platform architecture 관점으로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

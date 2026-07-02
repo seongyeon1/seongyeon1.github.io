@@ -1745,3 +1745,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-eval, environment, reinforcement-learning, github-repo]
 - status: idea
+
+### 2026-07-02 — [논문 리뷰] QVal: long-horizon agent dense supervision을 training 없이 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2606.32034v1
+- why-now: long-horizon LLM agent는 한 trajectory가 수백~수천 action으로 길어지면서 outcome-only reward가 너무 희소하고, dense supervision 신호를 매번 학습까지 돌려 비교하기 어렵다.
+- angle: “agent RL에서 reward 신호를 고르기 전에 Q-alignment로 싸게 검증하자” — state-action score, reference-policy Q-value, dense supervision benchmark를 agent post-training 운영 루프로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, reinforcement-learning, eval, dense-supervision]
+- status: idea
+
+### 2026-07-02 — [논문 리뷰] Generative Skill Composition: LLM agent skill을 합성 가능한 절차 지식으로 다루기
+- type: paper
+- source: http://arxiv.org/abs/2606.32025v1
+- why-now: coding/browser agent가 반복 작업을 skill로 저장하기 시작했지만, 실제 업무는 기존 skill을 그대로 호출하기보다 절차를 조합·변형해야 하는 경우가 많다.
+- angle: “agent memory의 다음 단위는 fact가 아니라 composable skill package” — skill description, dependency, sandbox setup, procedural memory update를 개발자 agent harness 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, skill-learning, procedural-memory, harness]
+- status: idea
+
+### 2026-07-02 — [논문 리뷰] TRIAGE: Agentic RL에서 role-typed credit assignment가 필요한 이유
+- type: paper
+- source: http://arxiv.org/abs/2606.32017v1
+- why-now: agentic RL에서 검색, 클릭, 편집, 탐색 같은 action을 최종 성공/실패 하나로 동일하게 보상하면 유용한 탐색과 퇴행적 action을 구분하지 못한다.
+- angle: “GRPO류 agent 학습은 action token이 아니라 역할별 진행 신호를 봐야 한다” — decisive progress, exploration, infrastructure, regression label을 rollout logging과 reward shaping으로 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, credit-assignment, reward-model, tool-use]
+- status: idea
+
+### 2026-07-02 — [논문 리뷰] CORTEX: RAG hallucination을 token-level 내부 표현으로 잡기
+- type: paper
+- source: http://arxiv.org/abs/2606.31033v1
+- why-now: long-form RAG 답변은 전체가 틀리기보다 특정 span에서 근거와 어긋나는 경우가 많아, 문서 단위 judge보다 token/span 단위 감지가 필요하다.
+- angle: “RAG 품질 게이트는 최종 답변 점수보다 어느 토큰이 근거에서 이탈했는지 봐야 한다” — comparative internal representation, span-level flag, production QA overlay로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, hallucination-detection, eval, grounding]
+- status: idea
+
+### 2026-07-02 — [논문 리뷰] One Retrieval to Cover Them All: session-level RAG를 위한 knowledge base 재구성
+- type: paper
+- source: http://arxiv.org/abs/2606.31156v1
+- why-now: 기업 RAG 사용자는 단발 질문보다 관련 질문이 이어지는 session으로 지식을 탐색하는데, query별 top-k retrieval은 세션 전체의 co-occurrence와 흐름을 놓치기 쉽다.
+- angle: “RAG indexing은 문서 chunk가 아니라 session journey에 맞춰 재조직해야 한다” — co-occurrence-aware KB, session coverage, enterprise support/search UX 관점으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, knowledge-base, session-search, enterprise-ai]
+- status: idea
+
+### 2026-07-02 — agent-desktop: OS accessibility tree로 desktop agent를 deterministic하게 만들기
+- type: tech
+- source: https://github.com/lahfir/agent-desktop
+- why-now: browser agent를 넘어 native desktop automation을 맡기는 흐름이 커지면서 screenshot-only VLM 제어보다 구조화된 accessibility tree와 안정적인 element ref가 중요해졌다.
+- angle: “desktop agent의 tool surface는 픽셀 좌표가 아니라 deterministic accessibility API여야 한다” — JSON output, element reference, CLI workflow, 권한/실패 복구를 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [desktop-agent, automation, accessibility, github-repo]
+- status: idea
+
+### 2026-07-02 — Archestra: MCP registry·gateway·orchestrator를 enterprise agent control plane으로 묶기
+- type: tech
+- source: https://github.com/archestra-ai/archestra
+- why-now: MCP server와 agent 앱이 늘어날수록 tool discovery, guardrail, gateway, orchestrator를 각 앱에 흩어두면 권한·관측·정책 일관성이 무너진다.
+- angle: “enterprise agent platform의 핵심은 모델 선택이 아니라 tool control plane” — MCP registry, gateway, guardrail, orchestration boundary를 platform architecture 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-platform, gateway, guardrails]
+- status: idea
+
+### 2026-07-02 — LeanCTX: AI agent가 무엇을 읽을지 결정하는 local context intelligence layer
+- type: tech
+- source: https://github.com/yvgude/lean-ctx
+- why-now: 코딩/업무 agent가 repo와 파일 시스템 전체를 무작정 읽으면 비용·latency·privacy가 모두 나빠져, 로컬에서 context access를 중재하는 계층이 필요해지고 있다.
+- angle: “context engineering은 prompt 작성이 아니라 read 권한과 memory selection을 통제하는 local binary 문제” — local-first context gate, token budget, 기억/읽기 정책을 repo architecture로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [context-engineering, coding-agent, local-first, github-repo]
+- status: idea
