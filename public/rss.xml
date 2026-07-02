@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 01 Jul 2026 02:36:25 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 02 Jul 2026 02:08:56 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Generative Skill Composition — 에이전트 skill은 검색이 아니라 조합 문제다</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-02-generative-skill-composition-agent-skills/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-02-generative-skill-composition-agent-skills/</guid>
+      <description>Generative Skill Composition을 에이전트 skill library 운영 관점에서 읽고, retrieval보다 실행 순서와 의존성 모델링이 중요한 이유를 정리한다.</description>
+      <pubDate>Thu, 02 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>skill-learning</category>
+      <category>procedural-memory</category>
+      <category>harness</category>
+      <category>coding-agent</category>
+    </item>
     <item>
       <title>Memora: 에이전트 메모리는 RAG보다 더 섬세해야 한다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-01-memora-harmonic-agent-memory/</link>

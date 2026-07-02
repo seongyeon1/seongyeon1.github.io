@@ -1,0 +1,231 @@
+---
+title: "[논문 리뷰] Generative Skill Composition — 에이전트 skill은 검색이 아니라 조합 문제다"
+date: "2026-07-02"
+category: "paper-review"
+tags: ["agent", "skill-learning", "procedural-memory", "harness", "coding-agent"]
+summary: "Generative Skill Composition을 에이전트 skill library 운영 관점에서 읽고, retrieval보다 실행 순서와 의존성 모델링이 중요한 이유를 정리한다."
+---
+
+<Paper
+  title="Generative Skill Composition for LLM Agents"
+  authors="Xinyu Zhao, Zhen Tan, Vaishnav Tadiparthi, Nakul Agarwal, Kwonjoon Lee, Ehsan Moradi Pari, Hossein Nourkhiz Mahjoub, Tianlong Chen"
+  year="2026"
+  venue="arXiv preprint"
+  arxiv="2606.32025"
+/>
+
+## 한 줄 요약
+
+`Generative Skill Composition for LLM Agents`의 핵심 주장은 단순하다. 에이전트가 쓸 skill이 많아지면 병목은 “관련 skill을 찾는 것”이 아니라 **어떤 skill을, 몇 개나, 어떤 순서로 실행할지**를 한 번에 정하는 문제가 된다.
+
+이 논문은 이를 structured skill composition 문제로 정의하고, `SkillComposer`라는 task-conditioned skill sequence prediction 방식을 제안한다. 초록 기준으로는 GPT-5.2-Codex와 Gemini-3-Pro-Preview에서 no-skill baseline 대비 pass rate를 각각 +23.1pp, +18.2pp 올렸고, top-3 retrieval보다 낫거나 gold-skill retrieval upper bound에 근접했다고 보고한다.
+
+숫자는 논문 전체 실험 설정을 보고 다시 검증해야 한다. 그래도 방향성은 꽤 설득력 있다. 실무 agent harness에서 skill library를 운영한다면 “RAG로 skill 설명을 몇 개 넣어주기”만으로는 금방 한계가 온다.
+
+## 왜 지금 중요한가
+
+개발자 에이전트는 이미 skill을 쓴다. 이름은 다를 수 있다.
+
+- repo별 `AGENTS.md`나 운영 규칙
+- 반복 작업을 묶은 command/recipe
+- 테스트 실행, sandbox setup, PR 작성 같은 procedural workflow
+- MCP tool 사용법과 실패 복구 절차
+- 팀 내부 convention과 release checklist
+
+처음에는 이런 skill이 몇 개 없으니 프롬프트에 전부 넣거나, 대충 embedding retrieval로 상위 3개를 붙이면 된다. 문제는 skill library가 커질 때다. “테스트 실행” skill과 “sandbox setup” skill은 둘 다 관련 있어도 순서가 틀리면 망한다. “리팩터링” skill은 “symbol search” skill과 같이 써야 의미가 있고, “release note 작성” skill은 구현 검증 이후에 와야 한다.
+
+즉 skill 선택은 독립적인 top-k 검색 문제가 아니다. 작은 workflow planning 문제다.
+
+## 기존 접근의 한계
+
+논문이 지적하는 기존 접근은 크게 두 부류다.
+
+첫째, 전체 skill collection을 모델 reasoning에 노출하는 방식이다. 가장 단순하지만 token cost가 커지고, 모델이 필요 없는 skill까지 읽으며 attention을 낭비한다. 더 나쁜 점은 skill이 많아질수록 “중요한 절차가 묻히는” 현상이 생긴다는 것이다.
+
+둘째, embedding이나 LLM reranker로 관련 skill을 검색하는 방식이다. 이 방식은 token budget에는 유리하지만, 보통 skill을 개별 문서처럼 다룬다. 그래서 다음 세 가지를 분리해서 처리하기 쉽다.
+
+1. 어떤 skill이 필요한가
+2. 몇 개의 skill이 필요한가
+3. 어떤 순서로 실행해야 하는가
+
+실무에서는 이 셋을 분리하면 안 된다. 예를 들어 coding agent에게 “테스트 실패를 고쳐라”라고 했을 때 필요한 skill은 상황에 따라 다르다.
+
+```text
+failure triage
+  -> reproduce test
+  -> inspect changed files
+  -> patch minimal diff
+  -> rerun focused test
+  -> run broader validation
+```
+
+여기서 `reproduce test`만 검색되거나, `patch minimal diff`가 먼저 나오면 전체 workflow 품질이 떨어진다. skill은 문서 조각이 아니라 실행 가능한 절차 지식이기 때문이다.
+
+## 논문의 핵심 아이디어: skill plan을 생성하라
+
+논문은 structured skill composition을 다음 문제로 본다.
+
+> task와 skill library가 주어졌을 때, 활성화할 skill subset, skill 개수, 실행 순서를 함께 포함하는 executable skill plan을 예측한다.
+
+`SkillComposer`는 이를 skill identifier 시퀀스 생성 문제로 만든다. 자연어 step을 길게 생성하는 대신, 제한된 skill ID vocabulary 위에서 autoregressive decoding을 한다. 이렇게 하면 다음 장점이 있다.
+
+- 출력이 실제 library의 skill ID로 제한된다.
+- skill 개수는 decoding 종료 시점으로 자연스럽게 결정된다.
+- 이전에 고른 skill이 다음 skill 선택에 영향을 준다.
+- subset, count, order를 하나의 pass에서 같이 모델링한다.
+
+이건 retrieval과 planner 사이의 중간 지점처럼 보인다. 완전한 general planner를 만들기보다, “skill library 안에서 가능한 조합”으로 action space를 줄인다. 개인적으로 이 방향이 실무에 더 맞다고 본다. agent가 매번 자유롭게 절차를 발명하게 두는 것보다, 검증된 skill package를 조합하게 만드는 편이 관측과 디버깅이 쉽다.
+
+## skill library를 어떻게 봐야 하나
+
+이 논문을 agent memory 관점에서 읽으면 흥미롭다. 보통 memory라고 하면 fact memory를 떠올린다.
+
+```json
+{
+  "project": "ai-blog",
+  "publish_rule": "draft-writer는 draft만 생성한다",
+  "preferred_tone": "concise, practical, opinionated"
+}
+```
+
+하지만 개발자 agent가 실제로 필요로 하는 많은 기억은 fact가 아니라 procedure다.
+
+```json
+{
+  "skill_id": "mdx_draft_post",
+  "requires": ["topic_candidate", "source_link", "content_guide"],
+  "steps": [
+    "check duplicate topic",
+    "write draft with frontmatter",
+    "update inbox status",
+    "run typecheck and build"
+  ],
+  "failure_modes": ["missing draft flag", "MDX component prop type error"]
+}
+```
+
+`Generative Skill Composition`은 이런 procedural memory가 많아질 때 선택 정책이 필요하다고 말하는 논문으로 읽을 수 있다. 특히 skill 간 dependency가 중요하다. 어떤 skill은 선행 skill의 output을 입력으로 요구하고, 어떤 skill은 검증 단계에서만 의미가 있다.
+
+## 실무 harness에 적용한다면
+
+바로 production에 넣는다면 나는 아래처럼 설계할 것 같다.
+
+### 1. skill을 자연어 문서가 아니라 typed artifact로 관리한다
+
+skill마다 최소한 다음 필드는 있어야 한다.
+
+```yaml
+id: fix_failing_tests
+intent: "테스트 실패를 재현하고 최소 수정으로 고친다"
+inputs:
+  - failing_command
+  - error_log
+outputs:
+  - patch
+  - validation_result
+preconditions:
+  - repo_is_checked_out
+  - tests_are_runnable
+cost:
+  token: medium
+  wall_time: high
+risk:
+  filesystem_write: true
+  external_side_effect: false
+```
+
+이렇게 해두면 composer가 단순히 “비슷한 설명”을 찾는 수준을 넘어, precondition과 output contract를 기준으로 조합할 수 있다.
+
+### 2. retrieval은 후보 축소, composition은 별도 단계로 둔다
+
+skill library가 수천 개라면 전체 ID vocabulary를 매번 decoding하는 것도 부담이다. 현실적인 구조는 two-stage가 낫다.
+
+```text
+task
+  -> coarse retrieval로 후보 20~50개 추림
+  -> SkillComposer가 subset/count/order 결정
+  -> runtime이 precondition 검증
+  -> agent에게 실행 계획 주입
+```
+
+중요한 건 retrieval 결과를 그대로 top-k context로 넣지 않는 것이다. retrieval은 후보군을 줄이는 장치이고, 실행 가능한 skill plan은 별도 결정이어야 한다.
+
+### 3. runtime이 skill plan을 검증해야 한다
+
+composer가 그럴듯한 순서를 만들었다고 바로 실행하면 안 된다. 최소한 runtime에서 다음을 확인해야 한다.
+
+- 선행 skill output이 후속 skill input을 만족하는가
+- side effect가 있는 skill 앞에 승인/검증 gate가 있는가
+- 같은 skill이 불필요하게 반복되지 않는가
+- task goal과 무관한 high-risk skill이 섞이지 않았는가
+- 실패 시 rollback 또는 fallback skill이 있는가
+
+이 부분이 없으면 skill composition은 또 다른 prompt injection surface가 된다. skill plan도 모델 출력이므로 정책 검증 대상이다.
+
+## 실험 결과를 어떻게 읽을까
+
+초록에 공개된 결과만 놓고 보면, 논문은 SkillComposer가 두 축에서 평가됐다고 설명한다.
+
+1. held-out test set에서 composition quality
+2. SkillsBench에서 production-grade coding agent의 downstream task success
+
+보고된 수치는 no-skill baseline 대비 GPT-5.2-Codex에서 +23.1pp, Gemini-3-Pro-Preview에서 +18.2pp pass rate 향상이다. 또한 top-3 retrieval을 넘고, 더 낮은 prompt-token cost로 gold-skill retrieval upper bound에 근접한다고 한다.
+
+다만 아직 초안 단계에서는 다음을 확인해야 한다.
+
+- SkillsBench task가 어떤 종류의 coding task인지
+- skill library가 얼마나 크고 중복이 얼마나 있는지
+- gold-skill retrieval upper bound를 어떻게 정의했는지
+- composition 실패가 task 실패로 이어지는 구체적 사례
+- composer 학습 데이터가 다른 팀의 skill library에도 일반화되는지
+
+특히 마지막이 중요하다. skill은 조직과 repo에 강하게 묶인다. 한 팀의 human-curated skill library로 학습한 composer가 다른 팀의 convention, tool, sandbox에서도 잘 작동할지는 별도 문제다.
+
+## 내 의견: skill은 prompt snippet이 아니라 운영 단위다
+
+이 논문의 좋은 점은 skill을 “프롬프트에 넣을 지식 조각”으로 축소하지 않는다는 데 있다. agent 운영에서 skill은 거의 package에 가깝다.
+
+- 언제 쓰는지
+- 무엇을 입력으로 받는지
+- 무엇을 출력으로 남기는지
+- 어떤 도구 권한을 요구하는지
+- 실패하면 어떻게 복구하는지
+- 어떤 skill 다음에 와야 하는지
+
+이 정보 없이 skill 설명만 embedding하면, 결국 “비슷한 문서 검색”으로 돌아간다. 하지만 실제 agent harness에서 중요한 건 문서 유사도가 아니라 실행 가능성이다.
+
+내 기준에서 이 논문은 skill library를 키우는 팀이 봐야 할 경고에 가깝다. skill을 많이 만드는 것은 쉽다. 어려운 건 skill이 많아졌을 때 agent가 그걸 안정적으로 조합하게 만드는 것이다.
+
+## 한계와 확인할 점
+
+아직 조심해서 읽어야 할 부분도 있다.
+
+- 논문 초록만으로는 composer 학습 비용과 데이터 구축 비용을 판단하기 어렵다.
+- constrained decoder가 library 업데이트에 얼마나 잘 적응하는지 확인이 필요하다.
+- skill ID sequence가 실제 실행 중 dynamic observation을 얼마나 반영하는지는 별도 문제다.
+- pass rate 향상이 skill composition 때문인지, 더 좋은 task decomposition prompt 효과인지 분리해서 봐야 한다.
+- 보안 관점에서 malicious 또는 stale skill이 library에 들어왔을 때 composer가 어떻게 견디는지도 중요하다.
+
+그래서 실무 적용은 “composer 하나 붙이면 해결”이 아니라, skill registry·validation·telemetry까지 묶어서 봐야 한다.
+
+## 정리
+
+`Generative Skill Composition`은 agent skill 운영을 한 단계 현실적으로 만든다. 핵심은 skill retrieval을 부정하는 게 아니다. retrieval만으로는 부족하다는 것이다.
+
+개발자 agent가 점점 많은 procedure를 기억하고 재사용하게 될수록 필요한 계층은 대략 이렇게 보인다.
+
+```text
+skill registry
+  -> candidate retrieval
+  -> structured composition
+  -> runtime validation
+  -> execution trace logging
+  -> skill update / deprecation
+```
+
+agent를 진짜 팀 도구로 운영하려면 skill을 prompt snippet 더미로 방치하면 안 된다. skill은 버전이 있고, 의존성이 있고, 실패 이력이 있는 운영 artifact로 다뤄야 한다. 이 논문은 그 방향을 꽤 선명하게 짚는다.
+
+## 참고 자료
+
+- arXiv: [Generative Skill Composition for LLM Agents](https://arxiv.org/abs/2606.32025)
+- arXiv PDF: [2606.32025](https://arxiv.org/pdf/2606.32025)

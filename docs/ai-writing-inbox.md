@@ -1770,7 +1770,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent, skill-learning, procedural-memory, harness]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-02-generative-skill-composition-agent-skills.mdx
 
 ### 2026-07-02 — [논문 리뷰] TRIAGE: Agentic RL에서 role-typed credit assignment가 필요한 이유
 - type: paper
