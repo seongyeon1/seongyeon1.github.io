@@ -1850,3 +1850,107 @@
 - suggested-category: tutorial
 - suggested-tags: [context-engineering, coding-agent, local-first, github-repo]
 - status: idea
+
+### 2026-07-03 — [논문 리뷰] AutoMem: memory management를 trainable cognitive skill로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2607.01224v1
+- why-now: LLM agent memory가 단순 저장소에서 “무엇을 기록하고 언제 검색할지”를 학습하는 절차적 능력으로 이동하고 있다.
+- angle: “메모리는 vector DB 기능이 아니라 agent가 익혀야 하는 운영 skill” — file-system operation, metamemory, encode/retrieve policy를 개인 비서·코딩 에이전트 memory 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, procedural-memory, metamemory, tool-use]
+- status: idea
+
+### 2026-07-03 — [논문 리뷰] Coding Agent 성능 최적화 벤치마크는 정말 믿을 수 있을까
+- type: paper
+- source: http://arxiv.org/abs/2607.01211v1
+- why-now: GSO, SWE-Perf, SWE-fficiency 같은 repo-level 성능 최적화 benchmark가 coding agent leaderboard 근거로 쓰이지만 측정 신뢰도와 reference patch 편향을 따져봐야 한다.
+- angle: “코딩 에이전트 평가는 테스트 통과보다 benchmark harness 자체의 신뢰성이 먼저” — runtime variance, baseline/reference patch, metric leakage를 CI 기반 agent eval 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, benchmark, performance-optimization, eval]
+- status: idea
+
+### 2026-07-03 — [논문 리뷰] Adversarial Pragmatics: instruction conflict와 embedded command를 평가하는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.01153v1
+- why-now: agentic task에서 정책 모호성, 숨은 명령, 진행 상황 허위 보고는 단순 jailbreak보다 실제 운영에 가까운 실패 모드다.
+- angle: “agent safety eval은 금지 문장 분류가 아니라 자연어 행위의 pragmatics 검증” — instruction hierarchy, embedded command, policy ambiguity를 runtime guardrail 테스트셋으로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-safety, instruction-conflict, eval, guardrails]
+- status: idea
+
+### 2026-07-03 — [논문 리뷰] Theoria: informal reasoning state를 rewrite-acceptability로 검증하기
+- type: paper
+- source: http://arxiv.org/abs/2607.01223v1
+- why-now: LLM-as-judge의 불투명한 점수와 formal proof assistant의 낮은 coverage 사이에서, 추론 상태의 변환 가능성을 감사 가능한 검증 단위로 삼는 흐름이 나왔다.
+- angle: “정답을 점수로 판정하기보다 reasoning state가 보존되는 rewrite인지 묻자” — informal proof/reasoning verification, audit trail, judge-free QA gate를 평가 harness 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, verification, llm-eval, auditability]
+- status: idea
+
+### 2026-07-03 — [논문 리뷰] QuasiMoTTo: test-time scaling에서 중복 추론을 줄이는 방법
+- type: paper
+- source: http://arxiv.org/abs/2607.01179v1
+- why-now: reasoning model을 여러 번 샘플링해 성능을 올리는 방식은 비용이 크고, 독립 샘플들이 같은 풀이를 반복하는 낭비가 커지고 있다.
+- angle: “test-time compute는 많이 쓰는 것보다 다양하게 쓰는 게 먼저” — quasi-Monte Carlo sampling, attempt diversity, inference budget 관리를 serving 최적화 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [test-time-scaling, reasoning, inference, optimization]
+- status: idea
+
+### 2026-07-03 — hud-python: agent RL environment와 eval을 한 번 정의해 재사용하기
+- type: tech
+- source: https://github.com/hud-evals/hud-python
+- why-now: agent eval과 RL post-training이 가까워지면서 task environment를 평가용·학습용으로 따로 만드는 비용을 줄이는 프레임워크가 중요해졌다.
+- angle: “agent benchmark는 점수표가 아니라 train/eval 공용 environment package여야 한다” — environment API, rollout, reward/evaluator 재사용, regression suite를 repo architecture 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, reinforcement-learning, environment, github-repo]
+- status: idea
+
+### 2026-07-03 — gh-aw-mcpg: GitHub Agentic Workflows MCP Gateway 살펴보기
+- type: tech
+- source: https://github.com/github/gh-aw-mcpg
+- why-now: GitHub Agentic Workflows가 repo-native 자동화로 확장되면서 MCP gateway가 GitHub 이벤트·권한·tool routing을 어떻게 묶는지 볼 만한 구현체가 생겼다.
+- angle: “개발자 에이전트의 control plane을 GitHub 안에 넣으면 무엇이 달라지나” — MCP gateway, repo event, credential boundary, workflow automation을 GitHub 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [github, mcp, agentic-workflow, developer-tools]
+- status: idea
+
+### 2026-07-03 — Skybridge: type-safe MCP Apps와 ChatGPT Apps를 함께 설계하기
+- type: tech
+- source: https://github.com/alpic-ai/skybridge
+- why-now: MCP server 구현이 늘어나는 다음 단계는 ChatGPT/Claude/App surface까지 포함한 full-stack agent app 개발 경험과 type safety다.
+- angle: “MCP는 server 목록이 아니라 app contract까지 포함한 제품 인터페이스” — TypeScript schema, React UI, platform-agnostic app boundary를 agent-facing product architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-apps, typescript, github-repo]
+- status: idea

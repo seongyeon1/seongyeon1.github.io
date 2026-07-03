@@ -124,6 +124,10 @@
 | 발행완료 | 2026-07-02 | [논문 리뷰] Generative Skill Composition — agent skill을 합성 가능한 절차 지식으로 다루기 | paper-review | Agent/MCP 실전 | | `2026-07-02-generative-skill-composition-agent-skills.mdx` — 자동 발행 완료, arXiv 2606.32025, procedural memory, skill dependency, sandbox setup을 composable skill package로 보는 harness 설계 |
 | 아이디어 | 미정 | [논문 리뷰] CORTEX — RAG hallucination을 token-level 내부 표현으로 잡기 | paper-review | Agentic RAG | | arXiv 2606.31033 — long-form RAG의 span-level hallucination 감지와 production QA overlay 설계 |
 | 아이디어 | 미정 | Archestra: MCP registry·gateway·orchestrator를 enterprise agent control plane으로 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP registry, gateway, guardrail, orchestration boundary를 platform architecture 관점으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] AutoMem — memory management를 trainable cognitive skill로 만들기 | paper-review | 논문 리뷰 | | arXiv 2607.01224 — encode/retrieve policy와 file-system operation을 agent의 metamemory skill로 학습하는 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Coding Agent 성능 최적화 벤치마크는 정말 믿을 수 있을까 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.01211 — GSO/SWE-Perf/SWE-fficiency류 benchmark의 runtime variance, baseline/reference patch, metric leakage 점검 |
+| 아이디어 | 미정 | [논문 리뷰] Adversarial Pragmatics — instruction conflict와 embedded command 평가 | paper-review | AI 평가/운영 | | arXiv 2607.01153 — instruction hierarchy, embedded command, policy ambiguity를 agent safety eval로 정리 |
+| 아이디어 | 미정 | hud-python: agent RL environment와 eval을 한 번 정의해 재사용하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — environment API, rollout, reward/evaluator 재사용, regression suite를 agentic RL 운영 루프로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
