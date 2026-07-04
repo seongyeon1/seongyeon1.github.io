@@ -1954,3 +1954,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, agent-apps, typescript, github-repo]
 - status: idea
+
+### 2026-07-04 — [논문 리뷰] Distributed Attacks in Persistent-State AI Control: PR과 시간에 흩어진 coding-agent 공격
+- type: paper
+- source: http://arxiv.org/abs/2607.02514v1
+- why-now: coding agent가 여러 세션과 PR에 걸쳐 코드를 지속적으로 수정하면서, 단일 diff에서는 benign해 보이는 변경들이 시간이 지나 조합 공격이 되는 persistent-state 위협이 중요해졌다.
+- angle: “AI coding agent 보안은 PR 하나의 diff 리뷰가 아니라 시간 축의 attack graph를 봐야 한다” — delayed payload, cross-PR state, CI/audit log 기반 runtime governance를 개발 워크플로로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, agent-security, repository-governance, persistent-state]
+- status: idea
+
+### 2026-07-04 — [논문 리뷰] ReContext: long-context reasoning을 recursive evidence replay로 보강하기
+- type: paper
+- source: http://arxiv.org/abs/2607.02509v1
+- why-now: long-context 모델이 길어진 입력 안의 근거를 실제로 잘 쓰지 못하는 문제가 계속 드러나면서, context window 크기보다 evidence replay/harness 설계가 성능 병목으로 떠오르고 있다.
+- angle: “긴 컨텍스트를 넣는 것과 필요한 증거를 다시 읽게 만드는 것은 다르다” — recursive evidence replay, retrieval-free long-context QA, agent context manager 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-context, reasoning, evidence-replay, context-engineering]
+- status: idea
+
+### 2026-07-04 — [논문 리뷰] What LLM Agents Say When No One Is Watching: multi-agent debate의 숨은 목적 형성
+- type: paper
+- source: http://arxiv.org/abs/2607.02507v1
+- why-now: multi-agent debate와 agent society가 평가·기획·의사결정에 쓰이기 시작하면서, 공개 발화와 비공개 reasoning 사이의 사회적 구조 편향을 이해해야 한다.
+- angle: “agent를 여러 명 붙이면 중립성이 생기는 게 아니라 역할·관객·관계가 latent objective를 만든다” — public/private expression gap, judge protocol, debate harness 안전장치를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, debate, social-simulation, eval]
+- status: idea
+
+### 2026-07-04 — [논문 리뷰] EvoPolicyGym: autonomous policy evolution을 final score 너머에서 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.02440v1
+- why-now: agent가 executable policy를 feedback으로 계속 고치는 흐름이 늘지만, 최종 성공률만 보면 정책 진화 과정의 안정성·퇴행·탐색 품질을 놓치기 쉽다.
+- angle: “self-improving agent 평가는 마지막 점수가 아니라 policy edit trajectory를 봐야 한다” — interactive environment, regression signal, autonomous policy evolution harness를 agentic RL 운영법으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, policy-evolution, eval, environment]
+- status: idea
+
+### 2026-07-04 — [논문 리뷰] Reasoning effort, not tool access: coding agent 첫 시도 신뢰도는 어디서 오나
+- type: paper
+- source: http://arxiv.org/abs/2607.02436v1
+- why-now: coding agent에 브라우저, 테스트 도구, 디자인 프롬프트를 더 붙이는 것이 항상 첫 시도 성공률을 올리는지 의심해야 하는 단계가 됐다.
+- angle: “도구를 더 주기 전에 reasoning budget과 검증 루프를 먼저 측정하자” — first-try reliability, tool access ablation, agent coding workflow 평가 체크리스트로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, tool-use, reasoning, reliability]
+- status: idea
+
+### 2026-07-04 — TanStack AI: type-safe TypeScript agent SDK의 provider-agnostic 설계
+- type: tech
+- source: https://github.com/TanStack/ai
+- why-now: TypeScript 앱에서 streaming chat, tool calling, agent workflow, multimodal input을 provider lock-in 없이 묶으려는 수요가 커지고 있고 TanStack 생태계가 이를 SDK 레벨로 다루기 시작했다.
+- angle: “agent SDK 선택 기준은 모델 호출 래퍼가 아니라 타입 안전한 tool contract와 UI/runtime 통합성” — streaming state, typed tools, provider abstraction, React/TS 개발 경험을 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [typescript, agent-sdk, tool-calling, tanstack]
+- status: idea
+
+### 2026-07-04 — IBM mcp-context-forge: MCP·A2A·REST를 묶는 gateway/registry 패턴
+- type: tech
+- source: https://github.com/IBM/mcp-context-forge
+- why-now: enterprise agent 환경에서는 MCP server만 늘리는 것보다 MCP, A2A, REST/gRPC API를 통합 endpoint와 registry 뒤에서 관리하는 control plane이 필요해지고 있다.
+- angle: “agent tool 플랫폼의 중심은 개별 MCP 서버가 아니라 gateway, registry, proxy” — unified endpoint, access control, observability, protocol bridging을 엔터프라이즈 agent infra 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, a2a, gateway, enterprise-ai]
+- status: idea
+
+### 2026-07-04 — CORAL: multi-agent autonomous self-evolution을 위한 lightweight infrastructure
+- type: tech
+- source: https://github.com/Human-Agent-Society/CORAL
+- why-now: 연구·자동화 에이전트가 단일 worker를 넘어 여러 agent가 역할을 나누고 스스로 개선하는 구조로 가면서, self-evolution workflow를 실험 가능한 infrastructure로 묶는 repo가 늘고 있다.
+- angle: “multi-agent self-evolution은 role-play가 아니라 state, evaluation, communication protocol의 문제” — autoresearch workflow, agent society runtime, 개선 루프 검증 포인트를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, self-evolution, research-agent, github-repo]
+- status: idea

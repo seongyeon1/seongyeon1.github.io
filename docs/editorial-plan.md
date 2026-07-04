@@ -128,6 +128,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Coding Agent 성능 최적화 벤치마크는 정말 믿을 수 있을까 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.01211 — GSO/SWE-Perf/SWE-fficiency류 benchmark의 runtime variance, baseline/reference patch, metric leakage 점검 |
 | 아이디어 | 미정 | [논문 리뷰] Adversarial Pragmatics — instruction conflict와 embedded command 평가 | paper-review | AI 평가/운영 | | arXiv 2607.01153 — instruction hierarchy, embedded command, policy ambiguity를 agent safety eval로 정리 |
 | 아이디어 | 미정 | hud-python: agent RL environment와 eval을 한 번 정의해 재사용하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — environment API, rollout, reward/evaluator 재사용, regression suite를 agentic RL 운영 루프로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] Distributed Attacks in Persistent-State AI Control — PR과 시간에 흩어진 coding-agent 공격 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02514 — delayed payload, cross-PR state, CI/audit log 기반 repository governance |
+| 아이디어 | 미정 | [논문 리뷰] ReContext — long-context reasoning을 recursive evidence replay로 보강하기 | paper-review | 논문 리뷰 | | arXiv 2607.02509 — context window 크기보다 evidence replay와 agent context manager 설계 관점 |
+| 아이디어 | 미정 | [논문 리뷰] EvoPolicyGym — autonomous policy evolution을 final score 너머에서 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.02440 — policy edit trajectory, regression signal, agentic RL environment 평가 harness |
+| 아이디어 | 미정 | IBM mcp-context-forge: MCP·A2A·REST를 묶는 gateway/registry 패턴 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — unified endpoint, access control, observability, protocol bridging을 agent infra로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
