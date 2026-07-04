@@ -1,0 +1,353 @@
+---
+title: "[논문 리뷰] Dense Retriever의 위치 편향은 타고나는가, 학습되는가"
+date: "2026-07-04"
+category: "paper-review"
+tags: ["retrieval", "rag", "dense-retriever", "position-bias", "data-curation"]
+summary: "Dense retriever가 문서 앞부분 정보를 선호하는 현상은 모델 구조만의 문제가 아니라, fine-tuning 데이터에서 정답 근거가 어디에 있었는지에 크게 좌우된다."
+series: "논문 리뷰"
+seriesOrder: 15
+math: false
+---
+
+<Paper
+  title="Is Position Bias in Dense Retrievers Built In–or Learned from Data?"
+  authors="Daegon Yu, SeungYoon Han, Woomyoung Park"
+  year="2026"
+  venue="arXiv"
+  arxiv="2605.26578"
+/>
+
+## 한 줄 요약
+
+이 논문의 결론은 꽤 직접적이다.
+
+> Dense retriever가 문서 앞부분의 근거를 더 잘 찾는 위치 편향은 모델 구조에 완전히 고정된 성질이 아니라, fine-tuning 데이터에서 정답 근거가 어느 위치에 있었는지에 강하게 학습된다.
+
+RAG 시스템을 만드는 입장에서는 중요한 메시지다. Retriever 성능을 올릴 때 모델 아키텍처, embedding 차원, hard negative만 볼 게 아니라 **positive evidence가 문서 안에서 어디에 있는지**도 데이터 품질 기준으로 봐야 한다.
+
+## 문제: retriever는 문서 앞쪽을 너무 좋아한다
+
+Dense retriever는 질문과 문서를 각각 embedding으로 만들고, 벡터 유사도가 높은 문서를 가져온다. 오늘날 RAG 시스템에서 거의 기본 부품처럼 쓰인다.
+
+문제는 많은 dense retriever가 문서 안의 정답 근거 위치에 민감하다는 점이다.
+
+```text
+같은 문서라도
+- 정답 근거가 앞부분에 있으면 잘 찾고
+- 중간이나 끝부분에 있으면 성능이 떨어진다
+```
+
+예를 들어 계약서, 정책 문서, 세무 문서, 기술 문서를 생각해보자. 핵심 조항이나 예외 조건이 항상 첫 문단에 있지는 않다. 오히려 중요한 제약은 중간 표, 뒷부분의 단서, 부칙, 예외 조항에 숨어 있는 경우가 많다.
+
+Retriever가 “중요한 정보는 앞에 있겠지”라는 shortcut을 배워버리면, RAG의 최종 답변도 같이 흔들린다. LLM이 아무리 좋아도 잘못된 context를 받으면 답변 품질은 한계가 있다.
+
+## 기존 의심: 모델 구조 때문 아닌가?
+
+기존 연구들은 위치 편향을 주로 구조적 관점에서 설명하려 했다.
+
+- positional encoding 때문인가?
+- CLS pooling이나 last-token pooling 때문인가?
+- encoder와 decoder 구조 차이 때문인가?
+- long-context attention이 특정 위치를 더 잘 보게 만드는가?
+
+이 논문은 질문을 바꾼다.
+
+> 구조도 중요하겠지만, 사실 학습 데이터에서 정답 근거가 주로 앞에 있었기 때문에 그렇게 배운 것은 아닐까?
+
+현실적인 가설이다. 뉴스는 첫 문단에 핵심이 몰리는 경우가 많고, Wikipedia 문서도 초반에 요약 정보가 많이 나온다. MS MARCO 같은 retrieval fine-tuning 데이터에서도 query-relevant passage가 앞쪽에 몰린다는 관찰이 있다.
+
+그렇다면 dense retriever의 앞부분 선호는 “타고난 본능”이라기보다 “데이터가 가르친 습관”일 수 있다.
+
+## 실험 설계: 정답 위치만 바꿔서 학습시키기
+
+논문의 실험 설계는 깔끔하다. 같은 모델들을 대상으로 fine-tuning 데이터의 정답 근거 위치만 다르게 만든다.
+
+| 학습 설정 | 정답 근거 위치 분포 |
+| --- | --- |
+| Begin training | 앞부분 100% |
+| Middle training | 중간 100% |
+| End training | 끝부분 100% |
+| Uniform training | 앞/중간/끝 균등 |
+
+그리고 서로 다른 구조를 가진 8개 모델을 fine-tuning한다.
+
+| 모델 | 구조 | 특징 |
+| --- | --- | --- |
+| BERT-base | encoder | absolute positional encoding, CLS pooling |
+| Longformer-base | encoder | long document encoder |
+| ModernBERT-base / large | encoder | RoPE, 긴 context |
+| GPT-2-medium | decoder | last-token pooling |
+| BLOOM-560M | decoder | ALiBi |
+| TinyLlama-NoPE | decoder | positional encoding 없음 |
+| Qwen3-0.6B | decoder | RoPE, 32k context |
+
+이렇게 다양한 모델을 쓴 이유는 분명하다. 만약 구조가 다른 모델들도 학습 데이터 위치 분포에 따라 같은 방향으로 편향이 바뀐다면, 위치 편향을 특정 아키텍처 하나의 문제로만 볼 수 없다.
+
+## 데이터는 어떻게 만들었나
+
+논문은 English Wikipedia 문서를 가져와 문서를 세 구간으로 나눈다.
+
+```text
+[begin segment] [middle segment] [end segment]
+```
+
+그다음 LLM을 이용해 각 구간에서만 답할 수 있는 질문을 만든다.
+
+- 앞부분만 보고 답할 수 있는 질문
+- 중간 부분만 보고 답할 수 있는 질문
+- 끝부분만 보고 답할 수 있는 질문
+
+다만 LLM이 만든 질문이 정말 해당 구간에서만 답 가능한지는 보장되지 않는다. 그래서 논문은 세 개의 cross-encoder reranker로 검증한다.
+
+- bge-reranker-v2-m3
+- gte-multilingual-reranker-base
+- jina-reranker-v2-base-multilingual
+
+세 reranker가 모두 의도한 target segment를 non-target segment보다 충분히 높게 평가한 샘플만 남긴다. 이 과정을 거쳐 약 48만 개의 retained candidate를 만들고, 최종적으로 각 학습 설정별 약 4만 개 샘플을 균형 있게 뽑는다.
+
+중요한 통제는 두 가지다.
+
+1. 학습 샘플 수를 맞춘다.
+2. 문서 길이 분포를 맞춘다.
+
+그래야 나중에 성능 차이가 “데이터가 더 많아서” 또는 “짧은 문서가 많아서”가 아니라, 정답 근거 위치 분포 때문이라고 해석할 수 있다.
+
+## 결과 1: 학습 위치가 bias 방향을 바꾼다
+
+가장 중요한 결과는 단순하다.
+
+| 학습 데이터 | 모델이 선호하게 된 위치 |
+| --- | --- |
+| 앞부분 근거로 학습 | 앞부분 근거 |
+| 중간 근거로 학습 | 중간 근거 |
+| 끝부분 근거로 학습 | 끝부분 근거 |
+| 균등 학습 | 위치별 성능 차이가 작아짐 |
+
+이 패턴은 8개 모델 전반에서 반복된다.
+
+논문이 제시한 예시를 보면 방향 전환이 꽤 선명하다. SQuAD-PosQ에서 Qwen3-0.6B는 근거가 앞쪽에 있을 때 begin-trained 모델이 end-trained 모델보다 훨씬 높다.
+
+```text
+근거가 앞쪽에 있을 때
+- begin-trained: 0.672
+- end-trained:   0.415
+```
+
+반대로 근거가 뒤쪽에 있으면 결과가 뒤집힌다.
+
+```text
+근거가 뒤쪽에 있을 때
+- end-trained:   0.702
+- begin-trained: 0.407
+```
+
+즉, 이 모델이 본질적으로 앞을 좋아한다기보다, 학습에서 많이 본 위치를 좋아하게 된다고 보는 편이 자연스럽다.
+
+특히 TinyLlama-NoPE에서도 같은 패턴이 나타난다. positional encoding이 없는 모델에서도 retrieval-level position bias가 생긴다는 점은 꽤 중요하다. 위치 편향이 명시적 positional encoding 하나로 설명되지 않는다는 뜻이다.
+
+## 결과 2: 균형 학습은 위치 민감도를 크게 줄인다
+
+논문은 위치 민감도를 PSI, Position Sensitivity Index로 측정한다.
+
+직관적으로는 이렇다.
+
+```text
+PSI가 낮다  = 앞/중간/끝 어디에 근거가 있어도 성능이 비슷하다
+PSI가 높다  = 특정 위치에 근거가 있을 때만 잘 찾는다
+```
+
+Uniform training은 모든 모델에서 PSI를 가장 낮게 만든다. 논문에 따르면 controlled position-aware benchmark에서 위치 민감도가 **57–87% 감소**했다.
+
+예시는 다음과 같다.
+
+| 모델 | skewed 설정의 높은 PSI | uniform training PSI |
+| --- | ---: | ---: |
+| GPT-2-medium | 0.592 | 0.080 |
+| Qwen3-0.6B | 0.409 | 0.068 |
+| Longformer-base | 0.331 | 0.143 |
+| ModernBERT-base on FineWeb-PosQ | 0.476 | 0.108 |
+
+여기서 중요한 점은 균형 학습이 단순히 “다 못 찾는 모델”을 만든 게 아니라는 것이다. 평균 nDCG@10도 경쟁력이 있었다.
+
+- SQuAD-PosQ에서는 8개 모델 중 5개에서 uniform training이 최고 평균 성능을 냈다.
+- FineWeb-PosQ에서는 평가한 3개 long-context 모델 모두 uniform training이 최고 평균 성능을 냈다.
+
+즉, 균형 학습은 편향을 줄이면서 성능도 유지한다.
+
+## 결과 3: 표준 벤치마크 점수도 위치 분포에 속을 수 있다
+
+논문은 BEIR의 일부 데이터셋도 본다. 여기서 흥미로운 점은, 일반 retrieval benchmark에서도 evidence 위치가 균등하지 않다는 것이다.
+
+HotpotQA와 FEVER는 정답 근거가 앞쪽에 많이 몰려 있다. 이런 벤치마크에서는 begin-trained 모델이 더 좋아 보일 수 있다.
+
+실제로 네 개 BEIR subset 평균에서 begin-trained 모델이 가장 높은 nDCG@10을 기록한다.
+
+| 설정 | BEIR 평균 nDCG@10 |
+| --- | ---: |
+| Begin-trained | 0.333 |
+| Uniform | 0.297 |
+| Middle-trained | 0.212 |
+| End-trained | 0.193 |
+
+하지만 이걸 “begin-trained가 더 robust하다”고 해석하면 곤란하다. 더 정확한 해석은 이렇다.
+
+> 평가 데이터 자체가 앞쪽 근거에 치우쳐 있으면, 앞쪽 편향이 있는 모델이 더 좋은 점수를 받을 수 있다.
+
+이건 RAG 평가에도 그대로 적용된다. 평균 retrieval score만 보면 모델이 좋아진 것처럼 보이지만, 실제로는 특정 evidence 위치 분포에 overfit된 것일 수 있다.
+
+## Representation 분석: embedding 자체도 바뀐다
+
+논문은 ranking 결과만 본 것이 아니다. Query-document cosine similarity와 document embedding도 분석한다.
+
+방법은 간단하다. 같은 query-relevant evidence를 문서의 10개 위치 중 하나로 옮기면서, query-document similarity가 어디서 가장 높아지는지 본다.
+
+결과는 fine-tuning 데이터 분포를 따라간다.
+
+| 모델 설정 | similarity peak |
+| --- | --- |
+| Begin-trained | 앞쪽 위치 |
+| Middle-trained | 중간 위치 |
+| End-trained | 뒤쪽 위치 |
+| Uniform-trained | peak와 lowest 차이가 작음 |
+
+예를 들어 ModernBERT-base와 Qwen3-0.6B 모두 begin-trained 모델은 position 1 근처에서 peak가 나타나고, end-trained 모델은 position 9 근처에서 peak가 나타난다.
+
+이 말은 위치 편향이 최종 ranking에서만 생기는 표면적 현상이 아니라, fine-tuning 과정에서 embedding space 자체가 바뀐다는 뜻이다.
+
+## RAG 실무에 주는 의미
+
+내가 보기엔 이 논문의 실무적 가치는 “dense retriever도 데이터 shortcut을 배운다”는 점을 명확히 보여준 데 있다.
+
+RAG 품질을 개선한다고 하면 보통 다음을 먼저 본다.
+
+- embedding model 교체
+- chunk size 조정
+- overlap 조정
+- reranker 추가
+- hard negative mining
+- hybrid search
+- query rewriting
+
+다 맞는 방향이다. 그런데 이 논문은 여기에 하나를 더 추가하라고 말한다.
+
+> 학습/평가 데이터에서 정답 근거 위치 분포를 보라.
+
+특히 기업 문서에서는 이게 중요하다.
+
+| 문서 유형 | 위치 편향이 위험한 이유 |
+| --- | --- |
+| 계약서 | 예외 조항과 단서가 뒤에 나올 수 있음 |
+| 세무 문서 | 조건, 적용 제외, 금액 기준이 중간 표에 있을 수 있음 |
+| 정책 문서 | 본문보다 부칙/FAQ가 더 중요할 수 있음 |
+| 기술 문서 | 초반 개요보다 configuration detail이 중후반에 있을 수 있음 |
+| 회의록 | 결정 사항이 마지막 action item에 있을 수 있음 |
+
+이런 환경에서 앞부분 편향 retriever는 그럴듯하게 작동하다가, 진짜 중요한 질문에서 실패할 가능성이 있다.
+
+## 적용 체크리스트
+
+### 1. Evidence span과 위치를 기록하기
+
+Retrieval 학습 데이터를 만들 때 positive document만 저장하지 말고, 가능하면 근거 span과 위치도 같이 저장하는 편이 좋다.
+
+```json
+{
+  "query": "...",
+  "positive_doc_id": "doc-123",
+  "evidence_span": "...",
+  "evidence_position": "middle"
+}
+```
+
+위치는 꼭 begin/middle/end일 필요는 없다. 문서 길이에 대한 상대 위치 percentile로 저장해도 된다.
+
+```json
+{
+  "evidence_start_ratio": 0.72,
+  "evidence_end_ratio": 0.78
+}
+```
+
+이 정보가 있어야 학습 데이터와 평가 데이터의 편향을 볼 수 있다.
+
+### 2. Fine-tuning 데이터를 위치 균형 있게 만들기
+
+만약 데이터 분포가 아래처럼 되어 있다면 위험하다.
+
+| 위치 | 비율 |
+| --- | ---: |
+| 앞 | 80% |
+| 중간 | 15% |
+| 끝 | 5% |
+
+가능하면 다음처럼 맞추는 게 좋다.
+
+| 위치 | 비율 |
+| --- | ---: |
+| 앞 | 33% |
+| 중간 | 33% |
+| 끝 | 33% |
+
+물론 실제 도메인에서 정답이 앞쪽에 더 많은 것은 자연스러울 수 있다. 하지만 “자연 분포 그대로 학습”과 “운영 robustness를 위한 균형 학습”은 다른 목표다. RAG 시스템에서는 후자가 더 중요할 때가 많다.
+
+### 3. 평가를 위치별로 쪼개기
+
+평균 nDCG@10 하나만 보면 부족하다. 최소한 아래처럼 봐야 한다.
+
+| 평가 항목 | 의미 |
+| --- | --- |
+| nDCG@10 on beginning evidence | 근거가 앞에 있을 때 성능 |
+| nDCG@10 on middle evidence | 근거가 중간에 있을 때 성능 |
+| nDCG@10 on end evidence | 근거가 끝에 있을 때 성능 |
+| PSI 또는 유사 지표 | 위치별 성능 차이 |
+
+평균 점수가 좋아졌는데 end evidence 성능이 크게 떨어졌다면, 운영에서는 오히려 나빠졌을 수 있다.
+
+### 4. Chunking만으로 해결된다고 생각하지 않기
+
+짧은 chunk 단위로 자르면 위치 편향이 줄어들 것처럼 보일 수 있다. 실제로 chunking은 중요하다. 하지만 long-context embedding, document-level retrieval, hierarchical retrieval, late chunking에서는 여전히 문서 내부 위치 정보가 영향을 줄 수 있다.
+
+그리고 chunking을 하더라도 다른 형태의 위치 편향이 생길 수 있다.
+
+- 첫 번째 chunk를 더 자주 positive로 뽑는 문제
+- 제목과 가까운 chunk가 과대표집되는 문제
+- 앞쪽 chunk에 metadata가 더 많이 붙는 문제
+- evaluation set에서 answer chunk가 앞쪽에 몰리는 문제
+
+따라서 chunking은 필요조건이지 충분조건은 아니다.
+
+## 한계
+
+논문도 한계를 분명히 인정한다.
+
+1. **합성 데이터 기반**이다. Wikipedia와 LLM-generated query를 사용했고, 사람이 직접 라벨링한 데이터는 아니다.
+2. **영어 중심**이다. 한국어, 세무, 법률, 의료, 사내 문서 도메인에서 같은 크기의 효과가 나는지는 별도 검증이 필요하다.
+3. **end-to-end RAG 답변 품질까지 본 것은 아니다.** Retriever-level 평가가 중심이다.
+4. **물리적 위치와 내용 역할이 완전히 분리되지는 않는다.** 문서 앞/중간/끝은 내용 성격도 다를 수 있다. 앞은 정의, 중간은 설명, 끝은 예외나 부가 정보일 수 있다.
+
+그래도 실험 설계는 충분히 설득력 있다. 여러 구조의 모델에서 같은 방향성이 반복되고, uniform training이 안정적으로 PSI를 낮췄기 때문이다.
+
+## 내 결론
+
+이 논문은 retriever fine-tuning에서 데이터 큐레이션의 기준을 하나 더 추가한다.
+
+> 좋은 retrieval 데이터는 query와 positive document만 맞으면 끝이 아니다. 정답 근거가 문서 안에서 어디에 있는지도 봐야 한다.
+
+RAG 시스템이 단순 FAQ나 짧은 문서 검색을 넘어 계약서, 세무 문서, 정책 문서, 내부 지식베이스로 들어갈수록 이 문제는 더 중요해진다. 중요한 정보는 항상 앞에 있지 않다.
+
+그래서 dense retriever를 fine-tuning하거나 평가할 때는 다음 질문을 꼭 던져야 한다.
+
+```text
+이 모델은 정답이 앞에 있을 때만 잘 찾는가?
+중간이나 끝에 있어도 똑같이 찾는가?
+우리 평가셋은 혹시 앞쪽 근거에 치우쳐 있지 않은가?
+```
+
+이 논문의 메시지는 결국 이거다.
+
+> Retriever가 앞부분을 좋아하는 건 운명만은 아니다. 데이터가 그렇게 가르친 것이다. 그러니 데이터로 고칠 수 있다.
+
+## 참고 자료
+
+- arXiv: [Is Position Bias in Dense Retrievers Built In–or Learned from Data?](https://arxiv.org/abs/2605.26578)
+- HTML version: [arxiv.org/html/2605.26578v1](https://arxiv.org/html/2605.26578v1)
