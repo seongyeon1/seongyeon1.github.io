@@ -1966,7 +1966,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [coding-agent, agent-security, repository-governance, persistent-state]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-04-distributed-attacks-persistent-state-ai-control.mdx
 
 ### 2026-07-04 — [논문 리뷰] ReContext: long-context reasoning을 recursive evidence replay로 보강하기
 - type: paper

@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 02 Jul 2026 02:08:56 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 04 Jul 2026 01:50:49 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Distributed Attacks — PR과 시간에 흩어진 코딩 에이전트 공격</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-04-distributed-attacks-persistent-state-ai-control/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-04-distributed-attacks-persistent-state-ai-control/</guid>
+      <description>코딩 에이전트 보안은 PR 하나의 diff가 아니라 여러 세션에 누적되는 상태와 공격 그래프를 봐야 한다.</description>
+      <pubDate>Sat, 04 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>coding-agent</category>
+      <category>agent-security</category>
+      <category>repository-governance</category>
+      <category>persistent-state</category>
+    </item>
     <item>
       <title>[논문 리뷰] Generative Skill Composition — 에이전트 skill은 검색이 아니라 조합 문제다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-02-generative-skill-composition-agent-skills/</link>

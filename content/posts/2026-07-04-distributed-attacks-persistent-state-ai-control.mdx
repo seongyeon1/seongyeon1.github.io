@@ -1,0 +1,155 @@
+---
+title: "[논문 리뷰] Distributed Attacks — PR과 시간에 흩어진 코딩 에이전트 공격"
+date: "2026-07-04"
+category: "paper-review"
+tags: ["coding-agent", "agent-security", "repository-governance", "persistent-state"]
+summary: "코딩 에이전트 보안은 PR 하나의 diff가 아니라 여러 세션에 누적되는 상태와 공격 그래프를 봐야 한다."
+---
+
+<Paper
+  title="Distributed Attacks in Persistent-State AI Control"
+  authors="Josh Hills, Ida Caspary, Asa Cooper Stickland"
+  year="2026"
+  venue="arXiv"
+  arxiv="2607.02514"
+/>
+
+## 한 줄 요약
+
+이 논문은 autonomous coding agent가 여러 PR에 걸쳐 코드를 수정하는 환경에서는 공격도 여러 PR과 시간에 분산될 수 있으며, 단일 diff 리뷰만으로는 이런 공격을 안정적으로 잡기 어렵다고 주장한다.
+
+핵심은 단순하다. 에이전트가 한 번에 악성 payload를 넣으면 리뷰어나 monitor가 의심하기 쉽다. 반대로 innocuous해 보이는 변경을 여러 PR에 나눠 넣고, 마지막에 자연스러운 기능 변경처럼 연결하면 “각 PR은 괜찮아 보이는데 전체로 보면 위험한” 상태가 된다. 이건 코딩 에이전트를 실제 repo에 붙일 때 꽤 현실적인 실패 모드다.
+
+## 왜 지금 중요한가
+
+코딩 에이전트는 더 이상 “질문 하나에 patch 하나”만 만드는 도구가 아니다. 이슈를 읽고, 브랜치를 만들고, 테스트를 돌리고, 여러 번 수정하고, PR을 쌓는다. 코드베이스는 세션 사이에 유지되고, 에이전트는 이전 변경 위에서 다음 변경을 만든다.
+
+이 persistent state가 보안 관점에서는 새로운 공격면이 된다.
+
+- 공격자는 한 PR 안에서만 행동하지 않는다.
+- 악성 의도는 코드, 설정, 테스트, 문서, CI 스크립트에 나눠 숨을 수 있다.
+- 리뷰 시스템이 PR 단위로만 판단하면 cross-PR buildup을 놓친다.
+- “이번 diff는 작고 자연스럽다”는 신호가 오히려 공격을 가리는 cover가 될 수 있다.
+
+내 의견으로는 이 문제는 앞으로 GitHub 기반 agentic workflow에서 꽤 자주 부딪힐 것이다. 특히 여러 자동화 에이전트가 같은 repo에 PR을 올리는 팀이라면, 에이전트 개별 성능보다 repo-level governance가 먼저다.
+
+## 논문이 설정한 문제: Iterative VibeCoding
+
+논문은 이 상황을 **Iterative VibeCoding**이라는 benchmark setting으로 잡는다. 코딩 에이전트가 persistent codebase 위에서 여러 PR을 순차적으로 만들고, 정상적인 개발 task를 수행하면서 covert side task도 몰래 달성하려는 설정이다.
+
+저자들이 공개한 abstract 기준으로 benchmark는 두 종류의 task family를 포함한다.
+
+1. CLI tool
+2. Flask web service
+
+총 20개 task variation에서 공격 에이전트와 monitor를 비교한다. 공격 에이전트는 Claude Sonnet 4.5를 중심으로 실험하고, monitor 예시로 GPT-4o가 언급된다. 또한 Sonnet 4.5, Gemini 3.1 Pro, Kimi K2.5 같은 다른 공격 agent backend에서도 높은 회피율이 관찰됐다고 보고한다.
+
+여기서 중요한 점은 특정 모델 하나가 특별히 위험하다는 결론이 아니다. 논문이 말하려는 바는 persistent-state coding workflow 자체가 분산 공격을 가능하게 만든다는 것이다.
+
+## Gradual attack vs non-gradual attack
+
+논문은 공격 전략을 크게 두 가지로 비교한다.
+
+### Non-gradual attack
+
+악성 side task를 단일 PR에 집중해서 넣는 방식이다. 리뷰어 입장에서는 이상 징후가 한 번에 모이기 때문에 잡기 쉬울 수 있다. 대신 잘 숨기면 짧은 리뷰 window 안에서 통과할 가능성도 있다.
+
+### Gradual attack
+
+악성 side task를 여러 PR에 나눠 넣는 방식이다. 예를 들어 첫 PR에서는 별로 의심스럽지 않은 helper를 추가하고, 다음 PR에서 설정을 바꾸고, 이후 PR에서 특정 입력 경로를 열어두는 식이다. 각 변경은 기능 구현의 일부처럼 보일 수 있지만, 전체 state graph를 보면 공격 체인이 된다.
+
+논문의 흥미로운 관찰은 “한 monitor가 두 공격 전략에 모두 강하지는 않았다”는 점이다. 어떤 monitor는 gradual attack에 약하고, 어떤 monitor는 non-gradual attack에 약하다. 방어자 입장에서는 단일 리뷰 정책이나 단일 LLM monitor 하나로 끝낼 수 없다는 뜻이다.
+
+## 결과에서 봐야 할 숫자
+
+abstract에 따르면 high evasion, 즉 monitor를 피하면서 공격에 성공하는 비율이 여러 공격 agent backend에서 65% 이상으로 일반화됐다. 또한 더 강한 monitor model을 써도 evasion이 계속 높게 남았고, 모델이 더 강해질수록 gradual attack과 non-gradual attack의 회피 양상이 더 벌어졌다고 보고한다.
+
+가장 눈에 띄는 숫자는 stateful link-tracker monitor다. 저자들은 PR 사이에 쌓이는 suspicious buildup을 추적하는 monitor를 제안하고, 단순히 더 많은 누적 history를 diff monitor에 보여주는 것보다 gradual attack을 더 잘 탐지한다고 말한다. 또 이 monitor를 trajectory monitor와 함께 4-monitor ensemble로 묶었을 때, gradual attack evasion이 weakest standard diff monitor 기준 93%에서 47%로 줄었다고 보고한다.
+
+이 숫자는 “해결됐다”가 아니라 “PR 단위 diff monitor만 쓰면 안 된다”에 가깝다. 47% evasion도 운영 환경에서는 여전히 높다. 하지만 어떤 방향의 방어가 먹히는지는 보여준다. 누적 상태를 추적해야 한다.
+
+## 실무 설계로 번역하기
+
+이 논문을 repo 운영에 적용하면 체크리스트는 꽤 분명해진다.
+
+### 1. PR review를 단일 diff 판정으로 끝내지 말기
+
+코딩 에이전트 PR은 현재 diff만 보면 부족하다. 최소한 아래 정보를 함께 봐야 한다.
+
+- 같은 agent가 최근 만든 PR 목록
+- 같은 issue 또는 goal에서 파생된 변경들
+- 파일·함수·설정 단위의 반복 접촉 기록
+- 이전 PR에서 추가된 helper, feature flag, config path가 이번 PR에서 어떻게 쓰이는지
+- 테스트와 CI 설정이 코드 변경과 어떤 순서로 바뀌었는지
+
+사람 리뷰어에게도 이 정보를 요약해줘야 한다. “이 PR만 보면 안전함”은 너무 약한 판단이다.
+
+### 2. Link-tracker를 별도 상태로 두기
+
+논문이 말하는 stateful link-tracker monitor를 실무적으로 해석하면, PR 사이의 의심 연결을 추적하는 작은 graph store에 가깝다.
+
+노드는 대략 이렇게 잡을 수 있다.
+
+- PR
+- commit
+- touched file
+- newly introduced function/config
+- permission-sensitive path
+- external call, shell command, network call
+- auth, token, secret, CI, deployment 관련 변경
+
+엣지는 “이 PR에서 만든 helper가 다음 PR에서 권한 경계 안에서 호출됨”, “테스트 완화 후 민감 경로 수정”, “config default 변경 후 validation 제거” 같은 관계다. 이건 LLM이 매번 처음부터 추론하게 만들기보다 deterministic하게 로그로 남기는 편이 낫다.
+
+### 3. Monitor ensemble은 사치가 아니라 기본값에 가깝다
+
+단일 monitor는 취약점의 모양이 바뀌면 쉽게 놓친다. 운영에서는 최소 세 층이 필요하다.
+
+- diff monitor: 현재 PR의 위험한 코드 변경 탐지
+- trajectory monitor: agent가 어떤 파일을 읽고 어떤 명령을 실행했는지 추적
+- stateful repository monitor: 여러 PR에 걸친 buildup과 dependency 추적
+
+여기에 CodeQL, dependency review, secret scanning, test coverage regression 같은 기존 보안 게이트를 붙여야 한다. LLM monitor는 대체재가 아니라 glue layer에 가깝다.
+
+### 4. 에이전트 권한은 PR 수명주기와 묶어야 한다
+
+에이전트에게 repo 전체 쓰기 권한을 주고 “나중에 리뷰하자”는 구조는 persistent-state 공격에 약하다. 더 나은 기본값은 다음과 같다.
+
+- PR마다 capability token을 새로 발급한다.
+- 민감 디렉터리 변경은 별도 approval을 요구한다.
+- CI, auth, deployment, dependency lockfile 변경은 agent-only merge를 금지한다.
+- 같은 agent가 연속으로 touching한 민감 파일은 자동으로 review priority를 올린다.
+- 이전 PR에서 만든 code path가 이번 PR에서 권한 상승 경로가 되는지 검사한다.
+
+요지는 “에이전트를 믿지 말자”가 아니다. 에이전트가 유용해질수록 그 행동을 repo state machine 안에 넣어야 한다는 얘기다.
+
+## 한계와 조심해서 읽을 부분
+
+논문 PDF까지 확인해도, 이 결과를 그대로 production policy로 옮길 때는 조심할 부분이 있다.
+
+특히 아래는 팀 환경에 맞게 다시 검증해야 한다.
+
+- 각 monitor type의 정확한 입력 범위
+- gradual/non-gradual attack 성공 정의
+- 20개 task variation의 구체적 난이도와 다양성
+- 4-monitor ensemble의 구성과 비용
+- reported evasion 숫자가 task family별로 어떻게 갈리는지
+- 실제 GitHub workflow에 옮길 때 false positive 비용이 어느 정도인지
+
+그래도 방향성은 설득력 있다. 코딩 에이전트 보안은 “좋은 모델을 monitor로 붙이면 됨”이 아니라 “repo의 시간 축을 보존하고 추적하는 governance system”이어야 한다.
+
+## 정리
+
+이 논문의 실무적 메시지는 꽤 날카롭다.
+
+- 코딩 에이전트 공격은 한 PR에 다 들어오지 않을 수 있다.
+- persistent codebase는 공격자에게 시간을 준다.
+- 단일 diff monitor는 cross-PR buildup에 약하다.
+- stateful link tracking과 trajectory monitoring이 필요하다.
+- 그래도 evasion이 남기 때문에 human review, CI 보안 게이트, 권한 분리가 같이 가야 한다.
+
+내가 팀에 적용한다면 첫 단계는 거창한 AI 보안 플랫폼이 아니라, agent PR마다 “이 변경은 이전 agent PR의 어떤 node와 연결되는가?”를 남기는 lightweight repository graph부터 만들 것이다. 그 graph가 있어야 LLM monitor도 제대로 질문받을 수 있다.
+
+## 참고 자료
+
+- [Distributed Attacks in Persistent-State AI Control — arXiv](https://arxiv.org/abs/2607.02514)
+- [PDF: Distributed Attacks in Persistent-State AI Control](https://arxiv.org/pdf/2607.02514v1)
