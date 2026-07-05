@@ -132,6 +132,11 @@
 | 아이디어 | 미정 | [논문 리뷰] ReContext — long-context reasoning을 recursive evidence replay로 보강하기 | paper-review | 논문 리뷰 | | arXiv 2607.02509 — context window 크기보다 evidence replay와 agent context manager 설계 관점 |
 | 아이디어 | 미정 | [논문 리뷰] EvoPolicyGym — autonomous policy evolution을 final score 너머에서 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.02440 — policy edit trajectory, regression signal, agentic RL environment 평가 harness |
 | 아이디어 | 미정 | IBM mcp-context-forge: MCP·A2A·REST를 묶는 gateway/registry 패턴 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — unified endpoint, access control, observability, protocol bridging을 agent infra로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] LACUNA — LLM unlearning이 진짜 parameter에서 지워졌는지 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.02513 — output-level 차단이 아니라 parameter localization precision과 PII 제거 QA 관점 |
+| 아이디어 | 미정 | [논문 리뷰] Program-as-Weights — 자연어 spec을 로컬 fuzzy function으로 컴파일하기 | paper-review | AI 추론 최적화 | | arXiv 2607.02512 — LLM API 호출과 local executable neural artifact 사이의 설계 공간 |
+| 아이디어 | 미정 | [논문 리뷰] Online Safety Monitoring — LLM 출력 안전성을 실시간 risk control로 감시하기 | paper-review | AI 평가/운영 | | arXiv 2607.02510 — external verifier, threshold calibration, calibrated alarm system으로 guardrail 설계 |
+| 아이디어 | 미정 | [논문 리뷰] TestEvo-Bench — test와 code가 함께 진화하는 coding agent 평가 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02469 — executable benchmark, test-code co-evolution, CI verifier 설계 |
+| 아이디어 | 미정 | agnix: AGENTS.md·MCP·hooks를 위한 linter/LSP | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — repo guidance를 lintable configuration artifact로 다루는 agent harness 운영 패턴 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

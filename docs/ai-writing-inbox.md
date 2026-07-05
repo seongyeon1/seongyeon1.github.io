@@ -2059,3 +2059,107 @@
 - suggested-category: tutorial
 - suggested-tags: [multi-agent, self-evolution, research-agent, github-repo]
 - status: idea
+
+### 2026-07-05 — [논문 리뷰] LACUNA: LLM unlearning이 진짜 parameter에서 지워졌는지 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.02513v1
+- why-now: 개인정보·저작권 데이터 삭제 요구가 커지면서 output-level unlearning 성공만으로는 모델 내부 지식이 실제로 제거됐는지 설명하기 어렵다.
+- angle: “unlearning 평가는 답변 차단이 아니라 knowledge localization precision 문제” — parameter localization, obfuscation risk, PII 제거 QA를 모델 운영 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [unlearning, privacy, llm-eval, interpretability]
+- status: idea
+
+### 2026-07-05 — [논문 리뷰] Program-as-Weights: 자연어 spec을 로컬 fuzzy function으로 컴파일하기
+- type: paper
+- source: http://arxiv.org/abs/2607.02512v1
+- why-now: 모든 애매한 분류·정렬·복구 작업을 LLM API 호출로 처리하면 비용, latency, 재현성, offline 실행 문제가 커진다.
+- angle: “LLM 호출을 함수처럼 쓰는 것과 fuzzy function 자체를 배포하는 것은 다르다” — spec-to-weights 컴파일, local inference, rule-based code와 LLM API 사이의 설계 공간을 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, programming-model, local-ai, fuzzy-functions]
+- status: idea
+
+### 2026-07-05 — [논문 리뷰] Online Safety Monitoring: LLM 출력 안전성을 실시간 risk control로 감시하기
+- type: paper
+- source: http://arxiv.org/abs/2607.02510v1
+- why-now: alignment training만으로 배포 시점 unsafe output을 막기 어렵고, reasoning·red-team task에서 verifier signal을 운영 알람으로 바꾸는 방법이 필요해졌다.
+- angle: “guardrail은 yes/no classifier가 아니라 calibrated alarm system이어야 한다” — external verifier, threshold calibration, risk control을 production LLM monitoring으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-safety, monitoring, risk-control, guardrails]
+- status: idea
+
+### 2026-07-05 — [논문 리뷰] TestEvo-Bench: test와 code가 함께 진화하는 coding agent 평가
+- type: paper
+- source: http://arxiv.org/abs/2607.02469v1
+- why-now: coding agent가 기능 코드를 바꾸면서 테스트를 같이 갱신해야 하는데, 기존 benchmark는 test update가 실행 가능하고 semantic하게 연결됐는지 충분히 보지 못한다.
+- angle: “코딩 에이전트 평가는 패치 통과가 아니라 behavior change를 테스트로 기록하는 능력까지 봐야 한다” — executable benchmark, test-code co-evolution, CI verifier 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, test-generation, benchmark, software-engineering]
+- status: idea
+
+### 2026-07-05 — [논문 리뷰] Steerability via Constraints: coding agent oversight를 제약 시스템으로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2607.02389v1
+- why-now: 코딩 에이전트의 성능이 올라갈수록 사람 리뷰가 병목이 되고, access control·network policy·coding convention 같은 기존 엔지니어링 제약을 agent oversight에 재사용하려는 흐름이 강해졌다.
+- angle: “agent scaffold를 더 붙이기보다 repo 제약을 기계적으로 강제하자” — constraint substrate, scalable oversight, token-cheap governance를 개발 워크플로 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, oversight, constraints, repository-governance]
+- status: idea
+
+### 2026-07-05 — [논문 리뷰] DRIFTLENS: personalization memory가 reasoning drift를 만드는 방식
+- type: paper
+- source: http://arxiv.org/abs/2607.02374v1
+- why-now: 개인화 LLM과 agent memory가 답변 스타일뿐 아니라 추론 경로 자체를 바꿀 수 있어, 장기 기억이 가치 편향과 reasoning drift를 만드는지 점검해야 한다.
+- angle: “agent memory 품질은 기억 정확도뿐 아니라 reasoning trajectory를 얼마나 비트는지도 봐야 한다” — value-category mapping, ground-truth-free drift 측정, personal assistant memory QA로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, personalization, reasoning, eval]
+- status: idea
+
+### 2026-07-05 — agnix: AGENTS.md·MCP·hooks를 위한 linter/LSP
+- type: tech
+- source: https://github.com/agent-sh/agnix
+- why-now: Claude Code, Codex, Gemini CLI 같은 개발자 에이전트가 repo guidance와 hooks/MCP 설정에 의존하면서, 사람이 읽는 문서가 사실상 실행 설정 파일이 되고 있다.
+- angle: “AGENTS.md는 README가 아니라 lintable configuration artifact” — guidance schema, autofix, IDE feedback, agent harness regression을 repo 운영 패턴으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agents-md, lsp, github-repo]
+- status: idea
+
+### 2026-07-05 — Aegis: AI agent runtime policy enforcement와 audit trail 붙이기
+- type: tech
+- source: https://github.com/Justin0504/Aegis
+- why-now: tool 권한을 가진 agent를 실무에 붙일수록 prompt-level guardrail만으로는 부족하고, human approval, kill switch, cryptographic audit trail 같은 runtime control이 필요해진다.
+- angle: “agent 보안은 모델 응답 필터가 아니라 실행 경로 위의 policy enforcement layer” — 무코드 삽입, 승인 게이트, 감사 로그, rollback boundary를 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-security, runtime-policy, audit, github-repo]
+- status: idea
