@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 16:29:06 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 22:54:15 GMT</lastBuildDate>
+    <item>
+      <title>[AI Search] FineWeb2: Multilingual Search를 위한 데이터 파이프라인</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-07-fineweb2-multilingual-data-curation-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-07-fineweb2-multilingual-data-curation-ai-search/</guid>
+      <description>FineWeb2 논문을 AI Search stack 관점에서 읽는다. 다국어 검색 품질은 retrieval model만의 문제가 아니라 언어 식별, deduplication, 언어별 filtering, quality-aware rebalancing으로 만들어지는 데이터 파이프라인 문제다.</description>
+      <pubDate>Tue, 07 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>FineWeb2</category>
+      <category>multilingual</category>
+      <category>data-curation</category>
+      <category>Common-Crawl</category>
+      <category>pretraining-data</category>
+    </item>
     <item>
       <title>[AI Search] AcuRank: Reranking Compute를 어려운 쿼리에 더 쓰는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-acurank-adaptive-listwise-reranking/</link>
