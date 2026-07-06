@@ -1,0 +1,555 @@
+---
+title: "[AI Search] SWE-agent: Agent에게는 검색창보다 Interface가 필요하다"
+date: "2026-07-07"
+category: "paper-review"
+tags: ["AI Search", "SWE-agent", "Agent", "ACI", "SWE-bench", "tool-use", "agent-interface"]
+summary: "SWE-agent 논문을 AI Search stack 관점에서 읽는다. 모델을 바꾸지 않고 agent-computer interface를 재설계해 repository 탐색, 코드 위치 찾기, 편집, 실행 피드백을 어떻게 안정화했는지, 그리고 이것이 Agent QA와 Search UX 설계에 주는 의미를 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 13
+math: false
+---
+
+<Paper
+  title="SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering"
+  authors="John Yang, Carlos E. Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao, Karthik Narasimhan, Ofir Press"
+  year="2024"
+  venue="NeurIPS"
+  arxiv="2405.15793"
+/>
+
+## 한 줄 요약
+
+SWE-agent의 핵심은 “더 똑똑한 모델”보다 **agent가 컴퓨터를 쓰는 interface를 LM 친화적으로 다시 설계하면 성능이 크게 오른다**는 주장이다. AI Search 관점에서는 이 논문을 “agent가 codebase, 문서, 로그, 테스트 결과를 어떻게 검색하고 조작해야 하는가”에 대한 interface 논문으로 읽을 수 있다.
+
+앞선 GLiNER 글이 검색 문서에서 원하는 entity를 구조화하는 이야기였다면, SWE-agent는 한 단계 더 나아간다.
+
+```text
+document / codebase / issue / test log
+  ↓
+agent-friendly search & navigation
+  ↓
+localized context window
+  ↓
+edit / action
+  ↓
+concise feedback / guardrail
+  ↓
+next search or next action
+```
+
+즉, 검색 결과를 “한 번 보여주고 끝”내는 것이 아니라, agent가 목표를 달성할 때까지 **탐색 → 위치 특정 → 조작 → 검증**을 반복할 수 있는 작업 환경을 설계한다.
+
+## 왜 이 논문이 AI Search에 중요한가
+
+SWE-agent는 표면적으로는 software engineering agent 논문이다. SWE-bench 문제를 풀기 위해 repository를 읽고, 파일을 고치고, 테스트를 실행하는 시스템이다.
+
+그런데 AI Search stack 관점에서 보면 더 일반적인 질문을 던진다.
+
+> LLM agent에게 검색 시스템을 줄 때, 우리는 “검색 API”만 주면 충분한가? 아니면 agent 전용 interface를 설계해야 하는가?
+
+전통적인 검색 UX는 사람을 기준으로 설계되어 있다.
+
+| 사람 중심 UX | Agent에게 생기는 문제 |
+| --- | --- |
+| 검색 결과를 길게 보여준다 | context budget을 바로 먹는다 |
+| 사용자가 스크롤하며 무시할 수 있다 | LM은 입력된 모든 토큰을 계산해야 한다 |
+| GUI/IDE에서 시각적으로 위치를 파악한다 | LM은 line number, state, command result가 필요하다 |
+| 사용자가 실수하면 눈으로 보고 고친다 | agent는 structured feedback과 guardrail이 필요하다 |
+| 사람은 여러 창의 상태를 기억한다 | agent는 history와 현재 state를 interface가 관리해줘야 한다 |
+
+SWE-agent의 ACI, 즉 Agent-Computer Interface는 이 차이를 정면으로 다룬다. 논문은 LM agent를 “기존 software를 쓰는 조금 이상한 자동화 스크립트”가 아니라 **새로운 종류의 end user**로 본다. 그래서 사람용 UI를 그대로 주는 대신, LM의 장단점에 맞춘 command, observation, context management를 설계한다.
+
+이 관점은 code agent에만 해당하지 않는다. Agent QA, enterprise search, research assistant, internal knowledge bot도 모두 비슷한 문제를 겪는다.
+
+```text
+질문: "지난 분기 SKT 세무 Agent 논의 중 보안 이슈가 뭐였지?"
+
+나쁜 interface:
+  search("SKT 세무 Agent 보안") → 관련 문서 50개와 긴 snippet 반환
+
+좋은 agent interface:
+  search_scope(project="SKT 세무 Agent", type=["meeting", "decision", "issue"])
+  open_result(id, window=80 lines)
+  jump_to(section="Security")
+  extract_evidence(claim="보안 이슈")
+  cite(result_id, line_range)
+```
+
+SWE-agent가 보여주는 것은 “agent에게 좋은 검색”은 ranking model 하나가 아니라 **작업 가능한 interface**라는 점이다.
+
+## 문제: Shell은 강력하지만 agent에게 친절하지 않다
+
+논문은 간단한 관찰에서 출발한다. 사람 개발자는 VSCode, PyCharm, grep, test runner, linter, debugger 같은 도구를 조합해서 일한다. 하지만 LM agent에게 그냥 Linux shell을 주면 많은 일이 불안정해진다.
+
+예를 들어 agent가 repository에서 버그 위치를 찾아야 한다고 해보자.
+
+```bash
+grep -R "foo" .
+cat some/very/long/file.py
+sed -n '100,240p' some/file.py
+python repro.py
+```
+
+사람에게는 익숙한 흐름이다. 하지만 LM 입장에서는 문제가 많다.
+
+1. **출력이 너무 길다**  
+   `grep -R`이나 `cat` 결과가 수백~수천 줄로 튀면 context가 오염된다.
+
+2. **상태가 명시적이지 않다**  
+   현재 어떤 파일을 보고 있는지, 몇 번째 줄인지, 앞뒤가 얼마나 생략됐는지 interface가 안정적으로 알려주지 않는다.
+
+3. **편집이 취약하다**  
+   agent가 shell command로 patch를 만들거나 heredoc을 쓰면 indentation, syntax, line range 오류가 자주 난다.
+
+4. **실패 피드백이 빈약하다**  
+   잘못된 edit을 했을 때 “무엇이 왜 실패했는지”를 다음 action에 바로 쓸 수 있는 형태로 받기 어렵다.
+
+5. **검색과 조작이 분리되지 않는다**  
+   agent가 위치를 찾는 context와 실제 수정하는 context가 뒤섞인다.
+
+SWE-agent의 아이디어는 shell을 없애는 것이 아니다. Shell 위에 LM이 쓰기 좋은 추상화 layer를 얹는다.
+
+## 핵심 아이디어: Agent-Computer Interface
+
+논문에서 ACI는 agent가 컴퓨터와 상호작용하는 interface 전체를 뜻한다. 여기에는 단순히 tool 목록만 포함되는 게 아니다.
+
+- agent가 호출할 수 있는 command
+- command documentation
+- command 결과를 보여주는 형식
+- 현재 파일, 현재 줄, 검색 결과 같은 state
+- history를 prompt에 어떻게 넣을지 결정하는 context management
+- 잘못된 action을 막거나 되돌리는 guardrail
+
+SWE-agent는 software engineering task를 위해 ACI를 다음 구성요소로 만든다.
+
+| 구성요소 | 역할 |
+| --- | --- |
+| search / navigation | 관련 파일과 symbol 후보를 찾는다 |
+| file viewer | 큰 파일을 line-numbered window로 보여준다 |
+| file editor | 특정 line range를 안전하게 바꾼다 |
+| execution | Python, pytest 등으로 재현과 검증을 한다 |
+| feedback / guardrail | syntax error, edit 실패, command 결과를 간결히 알려준다 |
+| context management | agent가 다음 step에 필요한 상태만 보게 한다 |
+
+중요한 점은 이 interface가 “사람이 보기 예쁜 UI”가 아니라 “LM이 다음 token을 잘 고르게 만드는 UI”라는 것이다.
+
+논문은 ACI 설계 원칙을 대략 이렇게 정리할 수 있다.
+
+1. **Action은 LM이 안정적으로 호출할 수 있어야 한다**  
+   복잡한 shell incantation보다 작은 command set이 낫다.
+
+2. **Observation은 충분히 informative해야 하지만 concise해야 한다**  
+   context를 많이 준다고 항상 좋은 게 아니다. 필요 없는 정보는 distraction이 된다.
+
+3. **상태는 interface가 관리해야 한다**  
+   현재 파일, line window, 검색 결과, working directory 같은 state를 계속 명시해줘야 한다.
+
+4. **Guardrail은 성능 기능이다**  
+   syntax checker나 invalid edit rejection은 단순 안전장치가 아니라 agent가 빨리 회복하게 만드는 성능 요소다.
+
+## SWE-agent가 제공하는 command들
+
+논문에서 SWE-agent는 Linux shell을 그대로 열어두되, repository 탐색과 편집에 자주 필요한 동작을 별도 command로 제공한다.
+
+대표적으로 이런 command들이 있다.
+
+| 범주 | command | 의미 |
+| --- | --- | --- |
+| file viewer | `open <path> [line_number]` | 파일을 열고 특정 줄 주변을 보여준다 |
+| file viewer | `goto <line_number>` | 현재 파일의 특정 줄로 이동한다 |
+| file viewer | `scroll_down`, `scroll_up` | 현재 window를 이동한다 |
+| search | `search_file <term> [file]` | 현재 파일 또는 지정 파일에서 검색한다 |
+| search | `search_dir <term> [dir]` | 디렉터리 단위로 검색한다 |
+| search | `find_file <file_name> [dir]` | 파일명을 찾는다 |
+| edit | `edit <n>:<m> ... end_of_edit` | 현재 파일의 line range를 교체한다 |
+
+여기서 search command는 결과를 무작정 많이 뿌리지 않는다. 논문에 따르면 검색 결과가 너무 많으면 최대 50개까지만 다루고, 너무 broad한 query라면 더 구체적인 query를 쓰라고 유도한다.
+
+이건 검색 시스템 설계에도 그대로 연결된다.
+
+```text
+agent search anti-pattern:
+  "관련 결과 전부 줄게. 알아서 골라."
+
+agent search pattern:
+  "결과가 너무 많다. scope나 keyword를 좁혀라."
+  "상위 후보 20개만 주고, path / line / match context를 함께 준다."
+  "open하면 line-numbered window로 이어진다."
+```
+
+사람용 검색에서는 recall을 넓게 보여주는 것이 괜찮을 때가 많다. 하지만 agent용 검색에서는 “좋은 실패 메시지”도 interface의 일부다.
+
+## File viewer: Agent에게는 line number가 UX다
+
+SWE-agent의 file viewer는 파일 전체를 던지지 않는다. `open`을 하면 최대 100줄짜리 window를 보여주고, 앞뒤에 얼마나 많은 줄이 생략됐는지, 현재 파일 path가 무엇인지, 각 줄 번호가 무엇인지 알려준다.
+
+이건 단순해 보이지만 agent에게 매우 중요하다.
+
+```text
+[File: solvers/diophantine.py (3093 lines total)]
+(400 lines above)
+401: elif total_degree == 3:
+402:     diop_type = "cubic_thue"
+403:
+404: elif (total_degree > 3):
+405:     if all(coeff[k] == 1):
+...
+(2684 lines below)
+```
+
+이런 형식은 agent에게 세 가지를 준다.
+
+1. 지금 보고 있는 파일과 위치
+2. 수정해야 할 line range
+3. 앞뒤 context가 생략되어 있다는 사실
+
+Agent QA에서도 마찬가지다. 문서 검색 결과를 agent에게 줄 때도 “문서 전체”보다 다음 정보가 중요하다.
+
+```text
+[Document: meeting-notes/skt-tax-agent/2026-05-21.md]
+[Section: Security Review]
+[Lines: 120-180 of 420]
+[Previous section: Architecture]
+[Next section: Open Questions]
+```
+
+검색 결과는 content만이 아니라 **navigable state**여야 한다.
+
+## File editor: 편집은 generation이 아니라 controlled operation이어야 한다
+
+SWE-agent의 `edit` command는 현재 열려 있는 파일에서 특정 line range를 replacement text로 바꾸는 방식이다. 그리고 Python 파일에 syntax error가 생기면 edit을 적용하지 않고, 에러와 주변 snippet을 agent에게 보여준다.
+
+이건 AI coding agent에서 정말 중요한 설계다. LLM에게 “patch를 만들어봐”라고 시키면 다음 문제가 반복된다.
+
+- line number가 어긋난다.
+- indentation이 깨진다.
+- patch format이 깨진다.
+- 수정 후 파일 상태를 다시 읽지 않는다.
+- 실패했는데도 성공했다고 착각한다.
+
+SWE-agent는 edit 이후 업데이트된 file viewer를 바로 보여준다. 즉, action의 결과가 다음 observation으로 연결된다.
+
+```text
+edit 404:407
+elif (total_degree > 3 and len(set(k.exp for k in powers)) == 1):
+    if all(coeff[k] == 1):
+        diop_type = 'general_sum_even'
+end_of_edit
+
+→ syntax check
+→ updated file window
+→ next action
+```
+
+이 패턴은 code editing뿐 아니라 document editing, SQL generation, workflow automation에도 적용된다.
+
+```text
+agent action:
+  update_policy(section="refund", lines=42:55, replacement=...)
+
+interface feedback:
+  - schema valid
+  - markdown valid
+  - changed lines preview
+  - broken links: none
+  - next suggested check: run_policy_tests
+```
+
+즉, production agent의 tool은 “함수를 실행했다”로 끝나면 안 된다. **실행 결과를 agent가 다음 판단에 쓸 수 있는 observation으로 반환**해야 한다.
+
+## 실험 결과: 모델이 아니라 interface만 바꿔도 차이가 난다
+
+SWE-agent는 SWE-bench와 HumanEvalFix에서 평가된다. 논문이 강조하는 headline number는 다음과 같다.
+
+| 설정 | 결과 |
+| --- | --- |
+| SWE-bench full, SWE-agent + GPT-4 Turbo | 12.47% resolved, 286 / 2,294 |
+| SWE-bench Lite, SWE-agent + GPT-4 Turbo | 18.00% resolved, 54 / 300 |
+| SWE-bench full, SWE-agent + Claude 3 Opus | 10.46% resolved |
+| SWE-bench Lite, shell-only + GPT-4 Turbo | 11.00% resolved |
+| SWE-bench Lite, SWE-agent + GPT-4 Turbo | 18.00% resolved |
+| HumanEvalFix, SWE-agent | 88.3% pass@1 |
+
+특히 비교가 중요한 부분은 shell-only agent와의 차이다. 같은 GPT-4 Turbo를 써도, 기본 Linux shell만 쓰는 agent는 SWE-bench Lite에서 11.00%를 해결한다. SWE-agent ACI를 쓰면 18.00%가 된다. 논문은 이를 64% relative increase로 해석한다.
+
+또 기존 SWE-bench의 non-interactive RAG 방식과 비교하면, SWE-agent는 더 비싸지만 해결률은 크게 높다. 논문은 SWE-bench Lite에서 RAG 대비 8~13배 비용이 들지만, resolved rate는 6.7배 높다고 보고한다.
+
+이 결과를 “SWE-agent가 코딩을 잘한다”로만 읽으면 반쪽이다. 더 중요한 해석은 이거다.
+
+> Agent 성능은 model capability뿐 아니라, action space와 observation format의 함수다.
+
+검색 시스템에서도 마찬가지다. 같은 retriever와 같은 LLM을 쓰더라도 다음 차이가 성능을 바꾼다.
+
+- 검색 결과를 몇 개 보여줄지
+- snippet을 어떤 길이로 줄지
+- 문서 path, section, timestamp, owner를 같이 줄지
+- 결과가 너무 많을 때 어떻게 실패시킬지
+- agent가 다시 좁혀 검색할 수 있는 command가 있는지
+- action 결과를 검증 가능한 형태로 돌려주는지
+
+## Agent 행동 분석: 성공은 빠르고, 실패는 느리다
+
+논문의 행동 분석도 흥미롭다. SWE-agent는 보통 처음에 두 가지 중 하나로 시작한다.
+
+1. reproduction code를 만든다.
+2. `find_file` / `search_dir`로 관련 파일을 localization한다.
+
+즉, 성공적인 software agent는 “바로 고치기”보다 **재현하거나 위치를 찾는 일**로 시작한다.
+
+논문은 해결된 trajectory에서 action frequency를 분석한다. 초반에는 `create`, `find_file`, `search_dir` 같은 reproduction/localization action이 많고, 이후에는 `edit`, `python`, `pytest` 같은 수정/검증 action이 늘어난다.
+
+이건 Agent QA에도 그대로 들어맞는다.
+
+```text
+좋은 QA agent trajectory:
+  1. 질문의 entity / time range / source type을 파악한다.
+  2. 넓게 검색한다.
+  3. 관련 문서와 section을 좁힌다.
+  4. 근거 line을 연다.
+  5. 답변 후보를 만든다.
+  6. citation과 contradiction을 확인한다.
+  7. 답변한다.
+
+나쁜 QA agent trajectory:
+  1. 검색 한 번 한다.
+  2. 상위 snippet을 보고 바로 답한다.
+```
+
+SWE-agent 논문에서 “successful runs complete earlier and at a cheaper cost”라는 분석도 중요하다. 성공하는 agent는 대체로 빨리 위치를 잡고, 빨리 검증한다. 반대로 실패하는 agent는 오래 헤매며 비용을 태운다.
+
+이건 production agent 운영에서도 좋은 signal이 된다.
+
+| 관찰 | 운영 signal |
+| --- | --- |
+| 검색을 너무 많이 반복한다 | query understanding 또는 index coverage 문제 |
+| 같은 파일을 계속 열고 닫는다 | navigation interface 문제 |
+| edit 실패가 반복된다 | editing interface 또는 guardrail 문제 |
+| 테스트 없이 submit한다 | verification policy 문제 |
+| step 수가 길어진다 | fallback / escalation 필요 |
+
+Agent QA에서도 “몇 번의 search/refine/open/cite 후 답했는가”는 품질 지표가 될 수 있다.
+
+## AI Search Stack에서의 위치
+
+이 시리즈의 앞선 글들을 stack으로 놓으면 SWE-agent는 retrieval model 자체라기보다 **agentic search orchestration layer**에 가깝다.
+
+```text
+[Data / Indexing]
+  Roaring Bitmap, GlotLID, FineWeb2, GLiNER
+
+[Retrieval / Ranking]
+  ColBERT, PLAID, SPLATE, LIMIT, Gemini Embedding, Position Bias
+
+[Reranking / Context Selection]
+  AcuRank, LDAR
+
+[Agentic Search Interface]
+  SWE-agent
+```
+
+여기서 SWE-agent가 추가하는 질문은 이거다.
+
+> 검색 결과를 LLM에게 넣는 것과, LLM이 검색 시스템을 사용할 수 있게 만드는 것은 다르다.
+
+일반 RAG는 보통 이런 구조다.
+
+```text
+user query
+  → retrieve top-k chunks
+  → stuff into prompt
+  → generate answer
+```
+
+SWE-agent식 agentic search는 이런 구조에 가깝다.
+
+```text
+user task
+  → plan next search/action
+  → search scoped corpus
+  → open localized evidence
+  → maybe refine query
+  → maybe execute/check
+  → assemble answer with evidence
+```
+
+즉, RAG가 “검색 결과를 prompt에 넣는 방법”이라면, SWE-agent는 “agent가 검색과 작업 환경을 반복적으로 조작하는 방법”이다.
+
+## Agent QA에 적용하면: 좋은 QA interface의 조건
+
+SWE-agent의 ACI 원칙을 Agent QA 시스템에 옮기면 다음 요구사항이 나온다.
+
+### 1. Search command는 scope를 명시해야 한다
+
+```text
+search(query, corpus="all")
+```
+
+보다 이런 interface가 낫다.
+
+```text
+search(
+  query="보안 검토 이슈",
+  project="SKT 세무 Agent",
+  source_type=["meeting", "decision", "slack_summary"],
+  time_range="2026-05",
+  max_results=20
+)
+```
+
+Agent는 query만 잘 쓰면 되는 게 아니라, 어느 corpus를 볼지 결정해야 한다.
+
+### 2. Result는 ranking score보다 navigation metadata가 중요하다
+
+Agent에게 필요한 것은 단순 score가 아니다.
+
+```text
+result_id
+source_path
+section_title
+line_range
+created_at / updated_at
+owner / author
+neighbor_sections
+why_matched
+```
+
+이 정보가 있어야 agent가 다음에 `open`, `jump`, `compare`, `cite` 같은 action을 할 수 있다.
+
+### 3. Open은 windowed view여야 한다
+
+문서를 통째로 주면 context가 터진다. SWE-agent처럼 window를 열고 이동할 수 있어야 한다.
+
+```text
+open(result_id, line=120, window=80)
+goto(section="Open Questions")
+scroll_down()
+```
+
+### 4. Citation은 action이어야 한다
+
+QA에서는 답변 생성보다 근거 연결이 중요하다. 그래서 citation도 후처리가 아니라 interface action으로 다루는 편이 낫다.
+
+```text
+cite(result_id, lines=120:138, claim="보안 검토에서 PII masking이 open question으로 남음")
+```
+
+### 5. Guardrail은 retrieval에도 필요하다
+
+SWE-agent가 edit syntax error를 잡듯이, QA agent는 다음 오류를 interface에서 잡아야 한다.
+
+- 근거 없는 claim
+- 오래된 문서를 최신인 것처럼 사용
+- 같은 source만 반복 인용
+- query와 다른 entity를 답변
+- citation line에 claim이 실제로 없음
+
+이런 guardrail은 LLM 평가 프롬프트 하나로 끝나는 게 아니라, search/open/cite interface에 녹아 있어야 한다.
+
+## 실무적으로 생각해볼 점
+
+SWE-agent를 읽고 나면 agent system을 설계할 때 질문이 바뀐다.
+
+예전 질문은 보통 이랬다.
+
+> 어떤 LLM을 쓸까? 어떤 retriever를 쓸까? top-k를 몇으로 할까?
+
+SWE-agent식 질문은 더 구체적이다.
+
+> 이 agent가 목표를 달성하기 위해 어떤 action space를 가져야 하지? 각 action의 observation은 다음 판단에 충분한가? 실패했을 때 회복할 수 있는 feedback을 주는가?
+
+실무에서는 다음 체크리스트가 유용하다.
+
+| 설계 질문 | 확인할 것 |
+| --- | --- |
+| action space가 너무 넓지 않은가 | shell/API를 그대로 노출하지 말고 task-specific command 제공 |
+| observation이 너무 길지 않은가 | window, summary, truncation, overflow feedback 설계 |
+| state가 명시적인가 | current file/doc/section/line/query scope 표시 |
+| 실패가 informative한가 | “실패”가 아니라 왜 실패했는지와 다음 수정 방향 제공 |
+| guardrail이 action 가까이에 있는가 | 생성 후 평가보다 edit/search/cite 시점 검증 |
+| trajectory를 분석하고 있는가 | 성공/실패 step, 반복 search, edit 실패율, citation 실패율 기록 |
+
+이건 BrainCrew식 multi-agent harness에도 바로 연결된다. executor, verifier, researcher 같은 agent를 나누는 것도 중요하지만, 각 agent가 쓰는 interface가 LM 친화적이지 않으면 성능이 제한된다.
+
+예를 들어 code review agent에게 GitHub PR diff를 줄 때도 그냥 diff 전체를 넣기보다 이런 command가 낫다.
+
+```text
+list_changed_files()
+open_diff(file, hunk)
+search_symbol(symbol)
+open_callers(function)
+run_test(target)
+comment(file, line, severity, rationale)
+```
+
+결국 “agent를 잘 만든다”는 것은 prompt를 잘 쓰는 것뿐 아니라, **agent가 일할 수 있는 작업장을 설계하는 일**이다.
+
+## 한계와 열린 질문
+
+SWE-agent 논문도 한계를 분명히 갖는다.
+
+첫째, 최종 ACI는 작지만 software engineering에 강하게 특화되어 있다. 논문도 web browsing, static analysis, dynamic analysis, fault localization, fuzzing 같은 추가 도구 가능성을 언급한다. 즉, ACI 설계는 끝난 문제가 아니라 계속 확장되는 문제다.
+
+둘째, ACI 개발 과정이 상당히 수동적이다. 저자들은 작은 development split과 trajectory 관찰을 통해 command와 feedback을 다듬었다. 논문은 향후 ACI 설계 자체를 자동화할 수 있는지 질문한다. 이건 흥미로운 지점이다. agent가 자기 interface를 개선할 수 있다면, prompt optimization보다 더 큰 개선 루프가 생길 수 있다.
+
+셋째, 평가 범위는 software engineering과 code generation 중심이다. 논문은 교육, 데이터 분석, enterprise workflow, knowledge base navigation 같은 다른 digital work로 ACI 원칙이 옮겨갈 수 있는지 열린 질문으로 둔다.
+
+넷째, 비용도 무시할 수 없다. SWE-agent는 non-interactive RAG보다 해결률은 높지만 비용도 높다. Agentic search는 성능을 올리지만 step 수와 tool call 비용을 관리해야 한다.
+
+다섯째, 성공률 자체는 오늘 기준으로 보면 낮아 보일 수 있다. SWE-bench full 12.47%는 당시 state-of-the-art였지만, “이걸 그대로 production에 맡기자”는 의미는 아니다. 이 논문의 가치는 절대 성능보다 **interface design이 agent 성능의 1급 변수라는 증거**에 있다.
+
+## 제 해석
+
+저는 SWE-agent를 “coding agent 논문”보다 “agent UX 논문”으로 보는 편이 더 유용하다고 생각한다.
+
+사람에게 UX가 중요하듯, agent에게도 UX가 있다. 다만 agent UX는 버튼 색이나 화면 배치가 아니라 다음 요소로 구성된다.
+
+- command grammar
+- observation format
+- line number와 state 표시
+- context window 크기
+- search result truncation 방식
+- 실패 메시지
+- guardrail
+- trajectory logging
+
+이걸 잘 설계하면 모델을 바꾸지 않고도 성능이 오른다. 반대로 이걸 못 설계하면 좋은 모델을 써도 agent는 긴 context 속에서 헤맨다.
+
+AI Search에서도 같은 일이 벌어진다. 지금 많은 RAG 시스템은 retriever와 generator에는 신경을 쓰지만, agent가 검색 시스템을 “사용하는 방식”은 대충 tool call 하나로 끝낸다.
+
+```text
+retrieve(query) -> chunks
+```
+
+SWE-agent 이후의 질문은 이렇게 바뀌어야 한다.
+
+```text
+search(scope, query) -> ranked handles
+open(handle, window) -> localized evidence
+refine(previous_search, constraint) -> narrower result
+compare(handles) -> contradiction / agreement
+cite(handle, lines, claim) -> grounded answer unit
+verify(answer) -> missing citation / stale source / unsupported claim
+```
+
+검색은 agent에게 content를 공급하는 backend가 아니라, agent가 사고를 전개하는 **interactive environment**가 된다.
+
+## 정리
+
+SWE-agent의 메시지는 단순하다.
+
+> Agent에게 좋은 도구를 주려면, 사람용 UI나 raw shell을 그대로 던지는 것으로는 부족하다. LM의 한계와 강점에 맞춘 Agent-Computer Interface가 필요하다.
+
+논문이 보여준 중요한 포인트는 세 가지다.
+
+1. **Interface만 바꿔도 성능이 바뀐다**  
+   같은 GPT-4 Turbo라도 shell-only보다 SWE-agent ACI가 SWE-bench Lite에서 더 높은 해결률을 낸다.
+
+2. **검색은 action space의 일부다**  
+   `find_file`, `search_dir`, `open`, `goto`처럼 검색과 navigation이 다음 action으로 이어져야 한다.
+
+3. **Feedback과 guardrail은 성능 기능이다**  
+   concise observation, line-numbered window, syntax check, invalid edit rejection이 agent의 회복력을 만든다.
+
+AI Search 시리즈에서 SWE-agent는 검색 모델 자체보다 한 단계 위의 layer를 보여준다. 이제 질문은 “무엇을 retrieve할 것인가”에서 “agent가 retrieve한 것을 어떻게 보고, 조작하고, 검증하게 할 것인가”로 넘어간다.
+
+다음 글에서는 이 흐름을 이어서, agent의 code editing과 verification을 더 본격적으로 훈련/평가 환경으로 만든 SWE-Gym이나, SWE-agent 계열 이후의 software engineering agent benchmark를 보면 자연스럽다.

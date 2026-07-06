@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 23:05:09 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 23:37:57 GMT</lastBuildDate>
     <item>
       <title>[AI Search] FineWeb2: Multilingual Search를 위한 데이터 파이프라인</title>
       <link>https://seongyeon1.github.io/blog/2026-07-07-fineweb2-multilingual-data-curation-ai-search/</link>
@@ -34,6 +34,21 @@
       <category>entity-extraction</category>
       <category>query-understanding</category>
       <category>document-enrichment</category>
+    </item>
+    <item>
+      <title>[AI Search] SWE-agent: Agent에게는 검색창보다 Interface가 필요하다</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-07-swe-agent-agent-computer-interface-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-07-swe-agent-agent-computer-interface-ai-search/</guid>
+      <description>SWE-agent 논문을 AI Search stack 관점에서 읽는다. 모델을 바꾸지 않고 agent-computer interface를 재설계해 repository 탐색, 코드 위치 찾기, 편집, 실행 피드백을 어떻게 안정화했는지, 그리고 이것이 Agent QA와 Search UX 설계에 주는 의미를 정리한다.</description>
+      <pubDate>Tue, 07 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>SWE-agent</category>
+      <category>Agent</category>
+      <category>ACI</category>
+      <category>SWE-bench</category>
+      <category>tool-use</category>
+      <category>agent-interface</category>
     </item>
     <item>
       <title>[AI Search] AcuRank: Reranking Compute를 어려운 쿼리에 더 쓰는 법</title>
