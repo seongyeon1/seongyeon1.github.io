@@ -1,0 +1,482 @@
+---
+title: "[AI Search] GlotLID: Multilingual Search의 첫 번째 게이트"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "GlotLID", "language-identification", "multilingual", "data-curation", "low-resource"]
+summary: "GlotLID 논문을 AI Search stack 관점에서 읽는다. 다국어 검색·RAG에서 언어 식별은 작은 전처리처럼 보이지만, 실제로는 인덱스 라우팅, 데이터 정제, low-resource corpus 품질을 결정하는 첫 번째 게이트다."
+series: "AI Search Technology Meetup"
+seriesOrder: 10
+math: false
+---
+
+<Paper
+  title="GlotLID: Language Identification for Low-Resource Languages"
+  authors="Amir Hossein Kargaran, Ayyoob Imani, François Yvon, Hinrich Schütze"
+  year="2023"
+  venue="Findings of EMNLP 2023"
+  arxiv="2310.16248"
+/>
+
+## 한 줄 요약
+
+GlotLID는 “이 문장이 어떤 언어인가?”를 1665개 언어까지 넓혀서 다루는 language identification 모델이다. AI Search 관점에서는 retrieval model보다 아래에 있는 **multilingual data quality gate**로 읽는 게 좋다.
+
+LDAR까지의 흐름이 “검색 결과 중 무엇을 LLM에 넣을까”였다면, GlotLID는 그보다 앞단의 문제다.
+
+```text
+문서 수집 / 크롤링
+  ↓
+언어 식별
+  ↓
+언어별 정제 / 라우팅 / 인덱싱
+  ↓
+retrieval / reranking / generation
+```
+
+언어 식별이 틀리면 그 뒤의 embedding, tokenizer, reranker, evaluation은 모두 오염된다. 특히 low-resource 언어에서는 이 문제가 단순한 버그가 아니라 “그 언어의 corpus가 존재한다고 착각하게 만드는” 데이터 품질 문제로 이어진다.
+
+## 왜 language identification이 AI Search 문제인가
+
+검색 시스템을 만들 때 language identification은 종종 전처리 단계로 취급된다.
+
+```text
+if lang == "ko": Korean pipeline
+if lang == "en": English pipeline
+else: multilingual pipeline
+```
+
+이렇게 보면 단순해 보인다. 하지만 실제 multilingual search stack에서는 LID가 꽤 중요한 라우터 역할을 한다.
+
+| 위치 | LID가 하는 일 |
+| --- | --- |
+| crawl/data ingestion | 크롤링된 텍스트를 언어별로 분류하고 쓰레기 데이터를 제거 |
+| index routing | 언어별 tokenizer, analyzer, stemmer, embedding model 선택 |
+| retrieval | 언어별 BM25/벡터 인덱스 선택 또는 cross-lingual retrieval 여부 결정 |
+| reranking | reranker가 처리 가능한 언어인지 판단 |
+| evaluation | query/document 언어 mismatch와 benchmark contamination 탐지 |
+| corpus creation | low-resource 언어 corpus를 만들 때 오염률을 낮춤 |
+
+GlotLID 논문이 중요한 이유는 여기서 “언어 식별은 이미 해결된 문제”라는 가정을 깨기 때문이다.
+
+고자원 언어 몇십 개 또는 100개 정도를 식별하는 문제는 꽤 잘 된다. 하지만 1000개 이상의 언어, 특히 low-resource 언어와 closely related variety까지 다루면 문제가 완전히 달라진다.
+
+논문은 기존 LID들이 대략 300개 안팎의 high-resource / medium-resource 언어에는 좋은 해법을 제공하지만, 다음 세 조건을 동시에 만족하는 공개 모델은 부족하다고 본다.
+
+1. 넓은 low-resource 언어 coverage
+2. 엄격하고 현실적인 평가에서의 신뢰성
+3. 대규모 corpus cleaning에 쓸 수 있는 효율성과 사용성
+
+GlotLID-M은 이 세 가지를 목표로 만든 모델이다.
+
+## GlotLID가 다루는 문제: low-resource LID는 granularity 문제다
+
+논문에서 가장 실무적인 포인트는 “언어 수를 늘리면 그냥 class 수만 늘어나는 게 아니다”라는 점이다.
+
+예를 들어 multilingual corpus에는 이런 문제가 생긴다.
+
+| 문제 | 예시 |
+| --- | --- |
+| closely related languages | 표준 아랍어와 여러 Arabic varieties, Mandarin/Wu/Yue/Hakka Chinese |
+| macrolanguage vs variety | Akan과 Twi, Chinese와 Yue Chinese |
+| out-of-model cousin | 모델이 모르는 가까운 언어를 알고 있는 비슷한 언어로 오분류 |
+| metadata mismatch | ISO code, Wikipedia code, 모델 label convention이 다름 |
+| noisy source corpus | 특정 low-resource 언어 데이터 안에 지배적 high-resource 언어 문장이 섞임 |
+| code switching | 한 문장이나 대화 안에서 언어가 섞임 |
+
+이건 검색에서도 그대로 문제가 된다.
+
+예를 들어 어떤 문서가 실제로는 Tibetan인데 Dzongkha로 잘못 라벨링되면, Dzongkha corpus가 “많아진 것처럼” 보인다. 하지만 그 corpus로 embedding model을 학습하거나 Dzongkha 검색 인덱스를 만들면 결과 품질은 나빠진다.
+
+즉 LID 오류는 단순히 한 문장 label이 틀린 문제가 아니다.
+
+```text
+LID 오류
+  ↓
+언어별 corpus 오염
+  ↓
+언어별 tokenizer / embedding / retriever 학습 오염
+  ↓
+검색 품질 저하
+  ↓
+low-resource 언어 지원이 되는 것처럼 보이는 착시
+```
+
+GlotLID는 이 문제를 corpus creation의 핵심 bottleneck으로 본다.
+
+## 데이터: GlotLID-C
+
+논문은 먼저 GlotLID-C라는 LID 학습용 corpus를 만든다.
+
+주요 수치는 다음과 같다.
+
+| 항목 | 값 |
+| --- | ---: |
+| 전체 언어 수 | 1832 languages |
+| 전체 문장 수 | 289 million sentences |
+| 데이터 크기 | 40GB |
+| 1000문장 이상 보유 언어 | 1677 languages |
+| 논문에서 reasonable performance를 claim하는 subset | 1665 languages |
+
+데이터 소스도 다양하다.
+
+- Wikipedia
+- news corpora
+- NLLB Seed 같은 translation data
+- religious texts
+- Tatoeba
+- MT corpora
+- government domain
+- low-resource news/storybook 관련 추가 source
+
+여기서 흥미로운 선택은, 웹 크롤링 source를 무작정 쓰지 않는다는 점이다. 논문은 LID 학습 데이터 자체가 noisy하면 모델이 오염된 label을 학습한다고 본다. 그래서 language label이 비교적 신뢰 가능한 source를 고르려고 한다.
+
+Preprocessing에서는 GlotScript를 사용해 문장이 해당 언어의 writing system에 맞는 script로 쓰였는지 확인하고, duplicate sentence도 제거한다.
+
+AI Search 관점에서는 이 부분이 중요하다.
+
+검색 품질은 보통 model architecture 문제로 보이지만, multilingual에서는 **언어별 corpus label 품질**이 먼저다. 어떤 언어 corpus가 잘못 섞이면 이후 단계의 dense retrieval 성능을 논하기 전부터 이미 망가진다.
+
+## 모델: 왜 FastText인가
+
+GlotLID-M은 놀랍게도 transformer가 아니라 FastText 기반이다.
+
+논문은 FastText를 선택한 이유를 꽤 실용적으로 설명한다.
+
+| 요구사항 | FastText가 맞는 이유 |
+| --- | --- |
+| broad coverage | 1832개 class 학습을 다룰 수 있음 |
+| open-source | 학습 코드와 사용 생태계가 열려 있음 |
+| ease of use | C++, Python, Java, Node.js, Rust, Ruby, R 등 바인딩 |
+| uncertainty | confidence score로 thresholding 가능 |
+| efficiency | 대규모 corpus cleaning에 필요한 throughput |
+| explainability | n-gram contribution을 해석 가능 |
+
+FastText는 multinomial logistic classifier이고, 문장을 n-gram embedding 평균으로 표현한다. GlotLID-M의 주요 hyperparameter는 다음과 같다.
+
+| parameter | value |
+| --- | ---: |
+| minCount | 1000 |
+| wordNgrams | 1 |
+| bucket | 1,000,000 |
+| char ngram range | 2 to 5 |
+| loss | softmax |
+| dim | 256 |
+| epoch | 2 |
+| learning rate | 0.8 |
+
+요즘 논문 흐름에서는 “왜 transformer가 아니지?”라고 생각할 수 있다. 하지만 이 논문은 corpus cleaning이 주 사용처다. 수십억 라인을 처리해야 하는 pipeline에서는 latency, dependency, deployability가 모델 정확도만큼 중요하다.
+
+개인적으로는 이 선택이 마음에 든다. GlotLID는 SOTA 모델 과시용이라기보다 실제 ingestion pipeline에서 돌릴 수 있는 LID를 목표로 한다.
+
+## 중요한 설계: threshold와 undetermined
+
+GlotLID가 실무적으로 좋은 이유는 confidence threshold를 중요하게 다룬다는 점이다.
+
+LID classifier가 항상 하나의 언어를 찍으면, 모르는 언어나 애매한 문장도 억지로 label이 붙는다.
+
+논문은 다음 규칙을 쓴다.
+
+```text
+가장 높은 language probability가 threshold보다 낮으면
+  -> undetermined
+그렇지 않으면
+  -> argmax language label
+```
+
+이게 왜 중요할까?
+
+Low-resource corpus creation에서는 recall보다 contamination이 더 치명적일 수 있다. 문장을 조금 덜 모으는 건 아쉽지만, 다른 언어 문장이 대량으로 섞이면 downstream 학습과 검색 품질이 망가진다.
+
+논문은 threshold를 올리면 F1은 낮아질 수 있지만, false positive rate는 낮아진다고 설명한다.
+
+```text
+threshold 낮음
+-> 더 많은 문장을 언어별 corpus에 포함
+-> recall 증가 가능
+-> contamination 증가 가능
+
+threshold 높음
+-> 확실한 문장만 포함
+-> recall 감소 가능
+-> contamination 감소
+```
+
+AI Search 제품에서는 이걸 mode별로 다르게 적용할 수 있다.
+
+| 상황 | 권장 방향 |
+| --- | --- |
+| 검색 인덱스 구축 | threshold 높게, corpus purity 우선 |
+| query routing | 너무 높이면 fallback 남발, 적당한 threshold |
+| analytics | undetermined 비율도 중요한 품질 지표 |
+| low-resource corpus 수집 | FPR과 cleanness를 강하게 관리 |
+
+## 평가: SET!보다 SET?가 현실적이다
+
+논문에서 제일 좋은 평가 설계는 SET! / SET? 구분이다.
+
+기존 LID 평가는 보통 benchmark에 어떤 언어들이 들어있는지 안다고 가정한다. 논문은 이를 SET!라고 부른다.
+
+```text
+SET!
+- benchmark에 포함된 언어 set을 알고 있음
+- 모델 prediction 후보를 그 set으로 제한
+- 평가가 쉬워짐
+```
+
+하지만 실제 corpus cleaning에서는 입력에 어떤 언어가 들어올지 모른다. 그래서 논문은 SET?라는 더 현실적인 setting을 제안한다.
+
+```text
+SET?
+- benchmark에 어떤 언어가 있는지 모름
+- 모델이 학습한 모든 언어 중에서 prediction
+- 모르는 언어, 가까운 언어, out-of-model cousin에 취약
+- 실제 ingestion pipeline과 더 비슷함
+```
+
+이 차이는 매우 중요하다.
+
+검색 시스템에서 운영 중 들어오는 웹 문서는 benchmark처럼 깔끔하지 않다. 언어 set이 고정되어 있지도 않고, spam, template, mixed language, dialect, translationese가 섞인다. 따라서 LID는 “known closed set classification”이 아니라 “open-ish routing with rejection”에 가깝다.
+
+## 지표: Accuracy보다 F1과 FPR
+
+논문은 accuracy를 쓰지 않는다. 언어 class가 매우 불균형하기 때문이다. 대신 F1과 false positive rate를 본다.
+
+FPR이 특히 중요하다.
+
+논문은 작은 FPR도 low-resource 언어에서는 치명적일 수 있다고 설명한다. 예를 들어 어떤 언어의 base frequency가 1%인데 FPR도 1%라면, 그 언어 corpus의 절반이 noise가 될 수 있다.
+
+그래서 논문은 FPR뿐 아니라 cleanness도 분석한다.
+
+```text
+cleanness = true positives / all positives
+```
+
+검색 pipeline으로 번역하면 이렇게 볼 수 있다.
+
+| 지표 | 검색 관점 의미 |
+| --- | --- |
+| F1 | 언어 label을 전반적으로 잘 맞히는가 |
+| FPR | 다른 언어 문장을 해당 언어로 잘못 넣는가 |
+| cleanness | 최종 언어별 corpus가 얼마나 깨끗한가 |
+| undetermined rate | 모델이 모른다고 말하는 비율은 적절한가 |
+
+개인적으로 multilingual search dashboard에는 이 네 가지가 같이 있어야 한다고 본다.
+
+## 결과 1: GlotLID-M 자체 성능
+
+Table 2는 GlotLID-M을 GlotLID-C, UDHR, FLORES-200에서 평가한다.
+
+논문이 특히 강조하는 subset, threshold 0.5 결과를 보면:
+
+| benchmark | languages | F1 | FPR |
+| --- | ---: | ---: | ---: |
+| GlotLID-C subset | 1665 | 0.973 | 0.0002 |
+| UDHR subset | 342 | 0.770 | 0.0006 |
+| FLORES-200 subset | 177 | 0.924 | 0.0010 |
+
+UDHR에서 F1이 낮은 것은 domain shift와 언어 수 증가 때문이라고 설명한다. 하지만 FPR은 낮다. Corpus creation 관점에서는 이게 중요하다. Low-resource corpus를 만들 때는 “조금 덜 모으더라도 덜 오염되게”가 더 나은 선택일 수 있다.
+
+## 결과 2: baseline 비교
+
+비교 대상은 네 가지다.
+
+- CLD3
+- FT176
+- OpenLID
+- NLLB LID
+
+논문은 GlotLID-M이 SET? setting에서 CLD3보다 큰 폭으로 좋고, FT176보다도 F1/FPR trade-off 기준으로 좋다고 본다. UDHR에서는 OpenLID와 NLLB보다 F1과 FPR 모두 큰 margin으로 좋다고 말한다.
+
+FLORES에서는 OpenLID/NLLB와 비교가 조금 더 조심스럽다. OpenLID와 NLLB는 FLORES label set과 더 가깝게 설계되어 있어서 FLORES에서 유리한 면이 있다. 논문은 low-resource corpus creation에는 UDHR 쪽이 더 적절한 benchmark라고 해석한다.
+
+핵심은 headline accuracy가 아니라 trade-off다.
+
+```text
+high F1만 보면 안 됨
+low FPR만 봐도 안 됨
+low-resource corpus creation에서는 F1과 FPR의 균형이 중요
+```
+
+## 결과 3: 오류의 대부분은 “언어가 가까워서” 생긴다
+
+Table 4 분석이 꽤 유용하다. GlotLID-M이 헷갈리는 언어쌍은 대부분 closely related language나 variety다.
+
+예시는 다음과 같다.
+
+| conflation | 설명 |
+| --- | --- |
+| Standard Arabic / Najdi Arabic / Egyptian Arabic / Levantine Arabic | Arabic varieties |
+| Mandarin / Yue / Wu / Hakka Chinese | Chinese varieties |
+| Iranian Persian / Dari | Persian varieties |
+| Finnish / Karelian | Finnic |
+| Russian / Church Slavic | Slavic |
+| Hindi / Awadhi | Indo-Aryan |
+| Bhojpuri / Bihari languages | closely related category |
+
+이건 단순 모델 성능 문제가 아니라 언어 데이터 현실의 문제다. 실제 사용자와 문서는 code switching을 하고, 어떤 community에서는 formal variety와 local variety를 섞어 쓴다. Corpus metadata도 항상 깔끔하지 않다.
+
+논문은 Mandarin/Cherokee, Russian/Gilyak, Spanish/Piaroa, Liberian English/Dinka 같은 명백한 오류도 분석한다. 이런 경우는 training corpus 자체에 다른 언어 문장이 섞였을 가능성을 지적한다.
+
+AI Search에서는 이 분석이 중요하다.
+
+만약 특정 언어 인덱스에서 검색 품질이 이상하게 낮다면, embedding model보다 먼저 확인할 것이 있다.
+
+```text
+이 언어 corpus가 정말 그 언어인가?
+가까운 언어/방언/지배적 언어가 섞이지 않았는가?
+script mismatch는 없는가?
+source metadata가 신뢰 가능한가?
+```
+
+## AI Search stack에서 GlotLID의 위치
+
+이 시리즈의 앞 글들이 retrieval representation, reranking, context selection을 다뤘다면 GlotLID는 ingestion과 data governance 쪽이다.
+
+```text
+Data acquisition
+  ↓
+Language identification  ← GlotLID
+  ↓
+Language/script-aware normalization
+  ↓
+Dedup / quality filtering
+  ↓
+Chunking / indexing
+  ↓
+Hybrid retrieval / dense retrieval
+  ↓
+Reranking / context selection
+  ↓
+LLM answer generation
+```
+
+LID는 embedding 모델보다 덜 화려하지만, multilingual search에서는 첫 번째 gate다.
+
+잘못된 LID는 이런 문제를 만든다.
+
+| 실패 | downstream 영향 |
+| --- | --- |
+| 언어 오분류 | 잘못된 analyzer/tokenizer 적용 |
+| low-resource corpus contamination | 해당 언어 검색 품질 저하 |
+| query language 오판 | 잘못된 index로 routing |
+| closely related variety 혼동 | dialect-sensitive query에서 recall/precision 악화 |
+| confidence threshold 부재 | 모르는 언어도 억지 label로 처리 |
+| evaluation set 언어 오염 | retrieval benchmark 결과 왜곡 |
+
+그래서 AI Search stack에서 LID는 “optional preprocessing”이 아니라 “routing and quality control layer”로 봐야 한다.
+
+## 실무 적용 아이디어
+
+### 1. LID를 ingestion pipeline의 hard gate로 둔다
+
+크롤링 또는 문서 업로드 후 바로 LID를 돌리고, 다음 metadata를 저장한다.
+
+```text
+language_top1
+language_confidence
+language_topk
+script
+is_undetermined
+lid_model_version
+lid_threshold
+```
+
+이 정보는 나중에 index routing, filtering, evaluation, debugging에 모두 쓰인다.
+
+### 2. language별 threshold를 다르게 둔다
+
+모든 언어에 같은 threshold를 적용하는 건 단순하지만 최적은 아니다. Low-resource 언어는 false positive 하나가 corpus contamination에 더 큰 영향을 준다.
+
+```text
+high-resource language
+-> recall을 조금 더 중시 가능
+
+low-resource language
+-> precision / cleanness를 더 중시
+```
+
+특히 corpus creation 목적이면 threshold를 높이고, query routing 목적이면 fallback UX와 함께 threshold를 조정하는 게 낫다.
+
+### 3. undetermined를 실패가 아니라 정상 상태로 취급한다
+
+운영 시스템에서 `undetermined`를 에러로 보면 안 된다. 오히려 필요한 rejection class다.
+
+```text
+LID confidence 낮음
+-> multilingual fallback index
+-> human review queue
+-> language-agnostic embedding
+-> no-index or quarantine
+```
+
+모르는 것을 억지로 아는 척하는 LID가 더 위험하다.
+
+### 4. corpus cleanness를 별도 지표로 본다
+
+검색 품질이 낮을 때 Recall@k나 NDCG만 보면 원인을 놓칠 수 있다. 언어별 corpus purity를 같이 봐야 한다.
+
+추천 dashboard는 이런 형태다.
+
+| 지표 | 설명 |
+| --- | --- |
+| language distribution | 수집 데이터의 언어 분포 |
+| confidence histogram | LID confidence 분포 |
+| undetermined rate | 모호하거나 지원하지 않는 입력 비율 |
+| top confusion pairs | 자주 헷갈리는 언어쌍 |
+| cleanness estimate | sampling/human audit 기반 corpus purity |
+| source별 contamination | 특정 domain/source에서 오염이 집중되는지 |
+
+### 5. closely related variety를 product policy로 정의한다
+
+Akan/Twi, Chinese/Yue, Arabic varieties처럼 macrolanguage와 variety가 같이 있는 경우, 모델만으로 결정할 문제가 아니다.
+
+제품 관점에서 물어야 한다.
+
+- 사용자는 variety별 검색을 기대하는가?
+- UI에서 macrolanguage로 합쳐 보여줄 것인가?
+- index는 따로 만들고 검색 결과는 합칠 것인가?
+- query language는 macrolanguage로 fallback할 것인가?
+- evaluation label은 어느 granularity를 쓸 것인가?
+
+GlotLID는 probability를 variety에서 macrolanguage로 합산할 수 있다고 설명한다. 이건 실무적으로 좋은 힌트다. 모델 label granularity와 제품 label granularity를 분리할 수 있다.
+
+## 한계와 주의점
+
+첫째, GlotLID-C train/test는 같은 source domain을 공유할 수 있어 평가가 낙관적일 수 있다. 논문도 이를 limitation으로 인정한다.
+
+둘째, FLORES와 UDHR은 번역 데이터다. 실제 자연 발생 웹 텍스트와 다를 수 있다. Translationese는 자연 언어 사용의 좋은 proxy가 아닐 수 있다.
+
+셋째, lowest-resource 언어 데이터 중에는 religious source가 많다. Bible translation 같은 데이터는 실제 현대 사용 양식을 충분히 반영하지 못할 수 있다.
+
+넷째, 논문은 hyperparameter search를 하지 않았다. 기존 FastText LID 연구의 hyperparameter를 따른다.
+
+다섯째, 여러 LID baseline을 모두 비교하지는 못했다.
+
+여섯째, ethical risk가 있다. LID가 low-resource 언어를 잘못 거르면, corpus collection 과정에서 해당 언어가 배제될 수 있다. 즉 “품질을 높이기 위한 filtering”이 언어 대표성을 낮추는 결과를 낳을 수 있다.
+
+## 제 해석
+
+GlotLID는 화려한 retrieval 논문은 아니다. 하지만 AI Search stack에서는 꽤 근본적인 논문이다.
+
+좋은 multilingual search를 만들려면 query encoder나 vector DB만 잘 고르면 안 된다. 먼저 데이터가 어떤 언어인지, 그 label을 얼마나 믿어도 되는지, 모르는 언어를 어떻게 reject할지, closely related varieties를 제품에서 어떻게 합칠지 정해야 한다.
+
+이 논문의 가장 좋은 문장은 사실 숫자가 아니라 이 관점이다.
+
+> high-quality datasets require high-quality LID.
+
+AI Search 식으로 바꾸면 이렇게 된다.
+
+> high-quality multilingual search requires high-quality language routing.
+
+실무적으로 가져갈 체크리스트는 명확하다.
+
+```text
+1. LID를 단순 전처리가 아니라 routing layer로 본다.
+2. top-1 language만 저장하지 말고 confidence와 top-k도 저장한다.
+3. unknown / undetermined를 정상 상태로 설계한다.
+4. language별 threshold와 product granularity를 따로 둔다.
+5. low-resource corpus는 F1보다 FPR, cleanness, contamination을 더 엄격히 본다.
+6. 검색 품질 문제를 볼 때 language label 품질을 먼저 의심한다.
+```
+
+다음 글에서는 FineWeb2로 이어지면 자연스럽다. GlotLID가 언어를 식별하는 gate라면, FineWeb2는 multilingual web data를 실제로 어떻게 대규모로 정제하고 구성할지의 문제다.

@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 12:01:51 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 16:29:06 GMT</lastBuildDate>
     <item>
       <title>[AI Search] AcuRank: Reranking Compute를 어려운 쿼리에 더 쓰는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-acurank-adaptive-listwise-reranking/</link>
@@ -60,6 +60,20 @@
       <category>embedding</category>
       <category>cross-modal-retrieval</category>
       <category>RAG</category>
+    </item>
+    <item>
+      <title>[AI Search] GlotLID: Multilingual Search의 첫 번째 게이트</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-06-glotlid-language-identification-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-06-glotlid-language-identification-ai-search/</guid>
+      <description>GlotLID 논문을 AI Search stack 관점에서 읽는다. 다국어 검색·RAG에서 언어 식별은 작은 전처리처럼 보이지만, 실제로는 인덱스 라우팅, 데이터 정제, low-resource corpus 품질을 결정하는 첫 번째 게이트다.</description>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>GlotLID</category>
+      <category>language-identification</category>
+      <category>multilingual</category>
+      <category>data-curation</category>
+      <category>low-resource</category>
     </item>
     <item>
       <title>[AI Search] LDAR: Long Context와 RAG 사이에서 Distractor를 피하는 검색</title>
