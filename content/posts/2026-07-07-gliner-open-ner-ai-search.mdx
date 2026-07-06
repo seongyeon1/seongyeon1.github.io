@@ -1,0 +1,488 @@
+---
+title: "[AI Search] GLiNER: 검색 문서에서 원하는 Entity를 바로 뽑는 Open NER"
+date: "2026-07-07"
+category: "paper-review"
+tags: ["AI Search", "GLiNER", "NER", "entity-extraction", "query-understanding", "document-enrichment"]
+summary: "GLiNER 논문을 AI Search stack 관점에서 읽는다. 고정된 NER label set에 갇히지 않고, 자연어 entity type prompt와 span matching으로 임의의 entity를 빠르게 추출하는 open NER 모델이 검색의 query understanding과 document enrichment에 어떤 의미를 갖는지 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 12
+math: false
+---
+
+<Paper
+  title="GLiNER: Generalist Model for Named Entity Recognition using Bidirectional Transformer"
+  authors="Urchade Zaratiana, Nadi Tomeh, Pierre Holat, Thierry Charnois"
+  year="2023"
+  venue="arXiv"
+  arxiv="2311.08526"
+/>
+
+## 한 줄 요약
+
+GLiNER는 NER를 “정해진 label set에 대한 token classification”으로 보지 않고, **사용자가 자연어로 준 entity type과 문서 안의 span을 매칭하는 문제**로 바꾼 모델이다. AI Search 관점에서는 query understanding과 document enrichment 사이에 들어가는 **open entity extraction layer**로 읽을 수 있다.
+
+앞선 FineWeb2 글이 multilingual corpus를 어떻게 깨끗하게 만들 것인가였다면, GLiNER는 그 corpus 안에서 “무엇을 구조화해서 검색 가능한 feature로 만들 것인가”에 가깝다.
+
+```text
+문서 수집 / 정제
+  ↓
+언어 식별 / filtering / dedup
+  ↓
+entity extraction
+  ↓
+metadata enrichment / query understanding
+  ↓
+retrieval / reranking / generation
+```
+
+검색은 결국 문자열이나 벡터만 다루는 일이 아니다. 실제 시스템에서는 문서와 query 안에서 사람, 조직, 제품, 질병, 법률명, API 이름, 모델명, 지역명 같은 entity를 잡아내야 한다. 문제는 domain마다 필요한 entity type이 계속 바뀐다는 점이다.
+
+GLiNER는 이 지점을 건드린다.
+
+> “person / organization / location”만 뽑는 모델이 아니라, “AI model”, “dataset”, “legal clause”, “product feature”처럼 원하는 label을 prompt로 주고 바로 span을 찾을 수 있을까?
+
+## 왜 이 논문이 AI Search에 중요한가
+
+검색 시스템에서 entity extraction은 은근히 많은 곳에 들어간다.
+
+| 위치 | Entity extraction이 하는 일 |
+| --- | --- |
+| query understanding | query 안의 제품명, 회사명, 사람명, 날짜, 지역, 기술 키워드 추출 |
+| document enrichment | 문서에 entity metadata를 붙여 faceted search/filter/ranking feature로 사용 |
+| knowledge graph | 문서에서 node와 relation 후보를 만들기 위한 첫 단계 |
+| reranking | query entity와 document entity의 match 여부를 feature로 사용 |
+| RAG context assembly | 답변에 필요한 entity가 포함된 chunk를 우선 선택 |
+| compliance/privacy | PII, 의료 정보, 법률 조항 같은 민감 entity 탐지 |
+
+전통적인 NER 모델은 보통 label set이 고정되어 있다.
+
+```text
+PERSON / ORG / LOC / DATE / MONEY / ...
+```
+
+이 방식은 뉴스 기사나 일반 문서에서는 괜찮다. 하지만 AI Search 시스템에서는 entity type이 서비스마다 다르다.
+
+예를 들어 AI 논문 검색에서는 이런 label이 필요할 수 있다.
+
+```text
+model, benchmark, dataset, method, metric, baseline, institution
+```
+
+개발 문서 검색에서는 또 다르다.
+
+```text
+API, class, function, config key, error code, package, version
+```
+
+기업 내부 문서 검색에서는 더 다르다.
+
+```text
+project, customer, contract, feature request, incident, owner, milestone
+```
+
+매번 새 label set에 맞춰 데이터를 라벨링하고 NER 모델을 fine-tuning하는 건 현실적으로 무겁다. 그래서 LLM에게 “이 문서에서 dataset 이름을 뽑아줘”라고 시키는 방식이 매력적으로 보인다. 하지만 LLM generation은 느리고 비싸다.
+
+GLiNER는 이 사이를 노린다.
+
+- LLM처럼 arbitrary entity type을 자연어로 줄 수 있다.
+- 하지만 autoregressive generation이 아니라 encoder 기반 span matching이라 훨씬 가볍다.
+- 여러 entity type을 한 번에 병렬로 처리할 수 있다.
+
+## 문제: LLM으로 Open NER를 하면 유연하지만 비싸다
+
+논문이 비교하는 대표적인 흐름은 UniNER 같은 LLM prompting/fine-tuning 방식이다. 예를 들어 이런 식이다.
+
+```text
+Human: What describes person in the text?
+Assistant: ["Alain Farley"]
+
+Human: What describes organization in the text?
+Assistant: ["McGill University"]
+```
+
+이 방식은 직관적이다. entity type을 자연어 질문으로 주면 LLM이 답한다. 하지만 production search pipeline에서는 문제가 생긴다.
+
+1. **느리다**  
+   Autoregressive model은 token을 순차 생성한다. 문서 수가 많아지면 비용이 바로 커진다.
+
+2. **비싸다**  
+   API 기반 LLM을 ingestion pipeline 전체에 돌리면 문서 수에 비례해 비용이 커진다.
+
+3. **출력 안정성이 애매하다**  
+   JSON format, span boundary, 중복 entity, hallucinated entity를 후처리해야 한다.
+
+4. **대량 batch 처리에 불리하다**  
+   검색 index를 만들 때는 수백만~수십억 문서를 처리해야 할 수 있다.
+
+반대로 전통적인 encoder NER 모델은 빠르지만 label set이 고정되어 있다. GLiNER는 이 둘의 장단점을 섞는다.
+
+```text
+LLM Open NER:
+  flexible but slow/expensive/generative
+
+Traditional NER:
+  fast but fixed label set
+
+GLiNER:
+  flexible label prompt + encoder span matching
+```
+
+## 핵심 아이디어: entity type과 text span을 같은 공간에서 맞춘다
+
+GLiNER의 핵심은 간단하다.
+
+입력으로 entity type 목록과 문장을 하나의 sequence로 넣는다.
+
+```text
+[ENT] person [ENT] location [ENT] organization [SEP]
+Alain Farley works at McGill University
+```
+
+여기서 `[ENT]` 뒤에 오는 `person`, `location`, `organization`은 고정 class id가 아니라 텍스트다. 즉 “AI model”, “legal clause”, “database table” 같은 자연어 label도 넣을 수 있다.
+
+모델은 bidirectional transformer encoder, 예를 들면 DeBERTa나 BERT 계열을 사용한다. 그리고 두 종류의 representation을 만든다.
+
+| Representation | 의미 |
+| --- | --- |
+| entity type representation | `[ENT] person` 같은 label prompt의 embedding |
+| span representation | 문장 안의 후보 span, 예: `Alain Farley`, `McGill University` |
+
+그 다음 각 span과 entity type의 matching score를 계산한다.
+
+```text
+score(span, entity_type) = span embedding과 entity type embedding의 compatibility
+```
+
+이 score가 threshold보다 높으면 해당 span을 그 entity type의 결과로 뽑는다.
+
+중요한 차이는 여기다.
+
+- LLM은 “정답 문자열을 생성”한다.
+- GLiNER는 “문서 안의 후보 span을 entity type과 매칭”한다.
+
+그래서 출력이 더 검색 pipeline 친화적이다. span boundary가 있고, score가 있고, type이 있고, 후처리도 명확하다.
+
+## Span 방식이 검색에 잘 맞는 이유
+
+검색 시스템에서는 entity를 생성하는 것보다 **문서 안의 어디에 있는지**가 중요하다.
+
+예를 들어 이런 문서가 있다고 하자.
+
+```text
+ColBERT improves retrieval quality by using late interaction over token embeddings.
+PLAID makes ColBERT-style retrieval efficient through centroid interaction and pruning.
+```
+
+여기서 entity type을 이렇게 줄 수 있다.
+
+```text
+[ENT] retrieval model [ENT] retrieval technique [ENT] optimization method
+```
+
+GLiNER식 결과는 이런 구조가 된다.
+
+```json
+[
+  {"span": "ColBERT", "type": "retrieval model", "start": 0, "end": 1, "score": 0.94},
+  {"span": "late interaction", "type": "retrieval technique", "start": 7, "end": 9, "score": 0.88},
+  {"span": "PLAID", "type": "retrieval model", "start": 12, "end": 13, "score": 0.91},
+  {"span": "pruning", "type": "optimization method", "start": 24, "end": 25, "score": 0.83}
+]
+```
+
+이건 바로 search index metadata가 된다.
+
+- `entity:ColBERT`
+- `entity_type:retrieval model`
+- `method:late interaction`
+- `chunk_has_entity:true`
+- `query_entity_overlap:2`
+
+LLM이 “이 문서에는 ColBERT와 PLAID가 나옵니다”라고 생성한 요약보다, retrieval feature로 쓰기 훨씬 좋다.
+
+## 모델 구조를 조금 더 풀어보면
+
+논문 기준 GLiNER는 크게 세 부분으로 되어 있다.
+
+1. **Pre-trained bidirectional encoder**  
+   BERT, DeBERTa 같은 encoder가 entity type prompt와 입력 문장을 함께 encode한다.
+
+2. **Span representation module**  
+   문장 안의 가능한 span을 만든다. 논문은 span 길이에 upper bound를 둔다. 실제 설정에서는 최대 span 길이를 12로 제한해 복잡도를 관리한다.
+
+3. **Entity representation module**  
+   `[ENT]` token 위치의 representation을 이용해 entity type embedding을 만든다.
+
+학습은 binary cross-entropy 방식이다. 정답 span-type pair는 positive, 나머지는 negative로 두고 matching score를 학습한다.
+
+Decoding은 greedy span selection을 쓴다. Flat NER에서는 overlap되지 않는 span 중 점수가 높은 것을 선택하고, Nested NER에서는 완전 포함 관계의 nested span은 허용하되 partial overlap은 피한다. 논문은 priority queue 기반으로 구현해 `O(n log n)` 복잡도를 언급한다.
+
+실무적으로 보면 이 구조는 꽤 매력적이다.
+
+```text
+문서 하나 + 원하는 entity type 목록
+  ↓
+encoder 1회 forward
+  ↓
+span/type score matrix
+  ↓
+threshold + overlap rule
+  ↓
+structured entity output
+```
+
+LLM extraction과 달리 “몇 개 type을 물어봤는가”가 곧바로 몇 번의 생성 호출로 늘어나지 않는다.
+
+## 학습 데이터: Pile-NER
+
+GLiNER는 Pile-NER 데이터셋으로 학습된다. 이 데이터셋은 UniversalNER 쪽에서 공개한 것으로, Pile corpus에서 샘플링한 텍스트에 대해 ChatGPT로 entity와 type을 추출한 데이터다.
+
+논문에 따르면 Pile-NER는 다음과 같은 규모다.
+
+| 항목 | 값 |
+| --- | ---: |
+| 원본 샘플 | 50,000 texts |
+| filtering 후 passages | 44,889 passages |
+| entity spans | 약 240k |
+| distinct entity types | 약 13k |
+
+여기서 재미있는 점은 entity type을 미리 지정하지 않았다는 것이다. ChatGPT에게 passage에서 entity와 type을 추출하게 해서 다양한 type을 얻는다.
+
+이건 GLiNER의 장점이자 한계다.
+
+장점은 다양한 entity type을 학습할 수 있다는 점이다. 고정된 CoNLL label 몇 개가 아니라 수천~수만 개 type 표현을 본다.
+
+한계는 학습 데이터 자체가 LLM-generated annotation이라는 점이다. 즉 GLiNER는 어느 정도 “LLM으로 만든 supervision을 작고 빠른 encoder로 distill한 모델”에 가깝다. 이 구조는 실용적이지만, annotation noise나 type naming bias도 같이 들어올 수 있다.
+
+## 실험과 결과
+
+논문은 GLiNER를 여러 zero-shot NER benchmark에서 평가한다. 핵심 비교 대상은 ChatGPT, Vicuna, InstructUIE, UniNER, GoLLIE 등이다.
+
+### 1. OOD NER benchmark
+
+OOD benchmark에서는 CrossNER와 MIT 계열의 다양한 domain을 본다. 논문은 GLiNER small/medium/large를 비교한다.
+
+중요한 결과는 다음이다.
+
+- 가장 작은 GLiNER도 약 50M parameter 규모인데 ChatGPT, Vicuna 같은 general-purpose model보다 좋은 성능을 보인다.
+- GLiNER-M은 약 90M parameter 규모로 UniNER-13B와 평균 F1이 비슷하다고 보고한다.
+- GLiNER-L은 UniNER-13B보다 평균 약 5 F1 높고, GoLLIE보다도 좋은 결과를 보인다.
+- GLiNER-L은 A100 한 장에서 약 5시간 학습됐다고 한다.
+
+여기서 핵심은 “LLM보다 항상 좋다”가 아니다. 핵심은 **open NER라는 유연성을 유지하면서도 7B~13B 생성 모델이 아니라 encoder급 모델로 처리할 수 있다**는 점이다.
+
+### 2. 20개 NER dataset zero-shot
+
+논문은 biomedical, news, tweet 등 다양한 20개 NER dataset에서도 평가한다. 여기서 GLiNER-L은 20개 중 13개 dataset에서 가장 높은 성능을 보였고, UniNER보다 평균 약 2 F1 높다고 보고한다.
+
+다만 tweet 기반 NER에서는 UniNER보다 약한 모습을 보였다고 논문이 직접 언급한다. informal하고 noisy한 social text 처리에는 개선 여지가 있다는 것이다.
+
+### 3. Multilingual zero-shot
+
+Multiconer 기반 multilingual 평가도 있다. 여기서 GLiNER는 두 버전으로 평가된다.
+
+| 모델 | Backbone |
+| --- | --- |
+| GLiNER-En | DeBERTa-v3-Large |
+| GLiNER-Multi | mDeBERTa-v3-base |
+
+흥미로운 점은 Pile-NER가 영어 데이터인데도 GLiNER-Multi가 ChatGPT를 많은 언어에서 넘는다는 것이다. 논문은 10개 언어 중 8개에서 ChatGPT보다 좋았다고 요약한다.
+
+하지만 한계도 뚜렷하다. GLiNER-En은 Latin script 언어에서는 경쟁력이 있었지만, Bengali 같은 non-Latin 언어에서는 성능이 크게 낮았다. 논문은 Bengali에서 F1 0.89까지 떨어진 사례를 언급한다.
+
+즉 multilingual search에서 GLiNER를 쓰려면 backbone과 학습 데이터가 중요하다. “open type”이라고 해서 곧바로 모든 언어에 강한 것은 아니다.
+
+## AI Search Stack에서의 위치
+
+이 시리즈의 stack 기준으로 보면 GLiNER는 data curation과 retrieval 사이에 놓인다.
+
+```text
+Data / Corpus layer
+  GlotLID: 언어 식별
+  FineWeb2: corpus cleaning / filtering / balancing
+
+Understanding / Enrichment layer
+  GLiNER: arbitrary entity extraction
+
+Retrieval layer
+  ColBERT / PLAID / SPLATE
+  LIMIT / Gemini Embedding / Position Bias
+
+Reranking / Context layer
+  AcuRank / LDAR
+```
+
+GLiNER는 검색 자체를 수행하지 않는다. 하지만 검색 index에 들어가는 metadata를 만든다.
+
+예를 들어 논문 검색 서비스를 만든다면 ingestion 시점에 이런 entity type을 줄 수 있다.
+
+```text
+[ENT] model
+[ENT] dataset
+[ENT] benchmark
+[ENT] metric
+[ENT] method
+[ENT] baseline
+```
+
+그 결과를 index에 넣으면 검색이 훨씬 풍부해진다.
+
+```text
+query: "ColBERT보다 빠른 late interaction retrieval engine"
+
+query entities:
+  - ColBERT: model
+  - late interaction: method
+  - retrieval engine: system type
+
+document metadata:
+  - PLAID: model/system
+  - ColBERT: model
+  - late interaction: method
+  - efficiency/pruning: method
+```
+
+이렇게 되면 dense retrieval만으로 잡기 어려운 구조적 match를 보강할 수 있다.
+
+## 실무적으로 생각해볼 점
+
+### 1. Search index enrichment에 바로 쓸 수 있다
+
+GLiNER류 모델은 offline indexing pipeline에 잘 맞는다.
+
+```text
+문서 chunk 생성
+  ↓
+GLiNER로 domain entity 추출
+  ↓
+chunk metadata에 entity 저장
+  ↓
+hybrid search / filter / reranking feature로 사용
+```
+
+특히 domain-specific search에서 유용하다. 예를 들어 법률 문서라면 `case`, `article`, `clause`, `court`, `party` 같은 type을 줄 수 있고, 개발 문서라면 `API`, `class`, `function`, `error code`, `config key`를 줄 수 있다.
+
+### 2. Query understanding에도 좋다
+
+Query는 짧아서 LLM을 쓰기 부담이 적지만, latency-sensitive search에서는 encoder 기반 extractor가 여전히 유리하다.
+
+```text
+query: "Next.js 15에서 MDX 빌드 실패하는 에러"
+
+추출 후보:
+  - Next.js 15: framework/version
+  - MDX: technology
+  - build failure: issue
+```
+
+이런 entity를 뽑아두면 query rewriting, filter suggestion, candidate reranking에 쓸 수 있다.
+
+### 3. Label prompt 설계가 중요하다
+
+GLiNER는 entity type을 자연어로 넣는다. 그래서 label naming이 품질에 영향을 줄 수 있다.
+
+```text
+나쁜 label:
+  thing, item, misc
+
+좋은 label:
+  machine learning model
+  benchmark dataset
+  software library
+  legal clause
+  product feature
+```
+
+실무에서는 label catalog를 잘 설계해야 한다. “아무 label이나 넣으면 알아서 잘 된다”가 아니라, 모델이 이해하기 쉬운 type description을 만드는 작업이 필요하다.
+
+### 4. Score와 span boundary를 저장해야 한다
+
+Entity extraction 결과를 단순 문자열 list로 저장하면 나중에 디버깅이 어렵다.
+
+좋은 저장 형식은 이런 식이다.
+
+```json
+{
+  "text": "ColBERT",
+  "type": "retrieval model",
+  "start": 0,
+  "end": 7,
+  "score": 0.94,
+  "extractor": "GLiNER",
+  "label_prompt": "retrieval model"
+}
+```
+
+검색 품질 문제는 대부분 나중에 “왜 이 문서가 올라왔지?”로 돌아온다. 그때 score, span offset, label prompt, extractor version이 있어야 audit이 가능하다.
+
+### 5. LLM extraction과 섞어 쓰는 구조가 좋다
+
+GLiNER가 LLM extraction을 완전히 대체한다고 보기보다는, tiered pipeline으로 쓰는 게 좋아 보인다.
+
+```text
+대량 offline indexing:
+  GLiNER로 빠르게 entity 후보 추출
+
+애매하거나 고가치 문서:
+  LLM으로 relation extraction / schema normalization 보강
+
+검색 시점:
+  entity overlap + dense retrieval + reranker 조합
+```
+
+즉 GLiNER는 “LLM을 쓰지 말자”가 아니라, LLM을 모든 문서에 무차별 호출하지 않기 위한 효율적인 1차 구조화 layer로 볼 수 있다.
+
+## 한계와 열린 질문
+
+논문의 한계도 실무적으로 중요하다.
+
+첫째, 학습 데이터가 ChatGPT로 만든 Pile-NER다. 이건 빠르게 open type supervision을 만들 수 있다는 장점이 있지만, label noise와 LLM bias가 들어갈 수 있다.
+
+둘째, domain label prompt에 민감할 수 있다. 같은 개념도 `AI model`, `machine learning model`, `model name`처럼 표현하면 결과가 달라질 가능성이 있다.
+
+셋째, multilingual 성능은 backbone과 script에 크게 좌우된다. 논문에서도 non-Latin 언어, 특히 Bengali에서 약한 결과가 나온다. 한국어 같은 언어에 바로 쓰려면 별도 평가가 필요하다.
+
+넷째, entity extraction은 relation extraction이 아니다. GLiNER가 “ColBERT”와 “late interaction”을 뽑아줘도, 둘 사이가 어떤 관계인지는 별도 모델이나 rule이 필요하다.
+
+다섯째, 검색 품질로 직접 평가한 논문은 아니다. NER benchmark에서는 강하지만, GLiNER entity metadata가 retrieval nDCG나 RAG answer quality를 얼마나 올리는지는 별도 실험이 필요하다.
+
+## 제 해석
+
+GLiNER의 가장 큰 의미는 NER를 다시 “검색 시스템의 부품”으로 쓸 수 있게 만든다는 점이다.
+
+전통적인 NER는 너무 고정되어 있었다. PERSON, ORG, LOC 정도로는 현대 AI Search에서 필요한 구조화가 부족하다. 반대로 LLM extraction은 유연하지만 ingestion pipeline 전체에 넣기에는 비용과 latency가 부담스럽다.
+
+GLiNER는 그 중간 지점이다.
+
+- domain마다 entity type을 바꿀 수 있고,
+- span-level structured output을 주고,
+- encoder 기반이라 대량 처리에 적합하고,
+- LLM-generated supervision을 작은 모델로 distill한다.
+
+이건 AI Search stack에서 꽤 실용적인 위치다. Retrieval model이 문서의 의미적 유사도를 찾는다면, GLiNER류 모델은 문서 안의 **구조적 anchor**를 만들어준다.
+
+검색 품질은 vector similarity만으로 결정되지 않는다. 사용자는 종종 특정 entity를 찾는다.
+
+```text
+"AcuRank 논문에서 쓴 uncertainty 방식"
+"FineWeb2에서 사용한 language identification 모델"
+"ColBERT를 serving하기 위한 엔진"
+```
+
+이런 query는 embedding similarity도 중요하지만, entity와 type을 제대로 잡는 것이 훨씬 강한 signal이 된다.
+
+## 정리
+
+GLiNER를 한 문장으로 정리하면 다음과 같다.
+
+> GLiNER는 entity type을 자연어 prompt로 받고, bidirectional encoder에서 문서 span과 type embedding을 매칭해 arbitrary entity를 빠르게 추출하는 open NER 모델이다.
+
+AI Search 관점에서 중요한 포인트는 이거다.
+
+- 검색 문서와 query에서 필요한 entity type은 domain마다 계속 바뀐다.
+- LLM extraction은 유연하지만 ingestion/search pipeline에 무차별 적용하기엔 비싸다.
+- GLiNER는 open type NER를 encoder 기반 span matching으로 바꿔 대량 처리 가능성을 높인다.
+- Entity metadata는 retrieval, filter, reranking, RAG context selection의 강한 feature가 될 수 있다.
+- 다만 multilingual/domain-specific 성능과 label prompt 안정성은 별도 평가가 필요하다.
+
+다음 글에서는 이제 data와 document understanding을 지나 agentic search 쪽으로 넘어가면 좋다. 후보로는 SWE-agent가 자연스럽다. 코드베이스 안에서 search, navigation, edit, test가 어떻게 하나의 agent-computer interface로 묶이는지 보여주는 논문이기 때문이다.

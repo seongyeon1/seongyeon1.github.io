@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 22:54:15 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 23:05:09 GMT</lastBuildDate>
     <item>
       <title>[AI Search] FineWeb2: Multilingual Search를 위한 데이터 파이프라인</title>
       <link>https://seongyeon1.github.io/blog/2026-07-07-fineweb2-multilingual-data-curation-ai-search/</link>
@@ -20,6 +20,20 @@
       <category>data-curation</category>
       <category>Common-Crawl</category>
       <category>pretraining-data</category>
+    </item>
+    <item>
+      <title>[AI Search] GLiNER: 검색 문서에서 원하는 Entity를 바로 뽑는 Open NER</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-07-gliner-open-ner-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-07-gliner-open-ner-ai-search/</guid>
+      <description>GLiNER 논문을 AI Search stack 관점에서 읽는다. 고정된 NER label set에 갇히지 않고, 자연어 entity type prompt와 span matching으로 임의의 entity를 빠르게 추출하는 open NER 모델이 검색의 query understanding과 document enrichment에 어떤 의미를 갖는지 정리한다.</description>
+      <pubDate>Tue, 07 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>GLiNER</category>
+      <category>NER</category>
+      <category>entity-extraction</category>
+      <category>query-understanding</category>
+      <category>document-enrichment</category>
     </item>
     <item>
       <title>[AI Search] AcuRank: Reranking Compute를 어려운 쿼리에 더 쓰는 법</title>
