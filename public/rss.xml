@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 08:39:35 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 08:50:58 GMT</lastBuildDate>
     <item>
       <title>AI Search는 Vector DB만으로 끝나지 않는다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-ai-search-stack-meetup-seoul/</link>
@@ -73,6 +73,20 @@
       <category>ColBERT</category>
       <category>late-interaction</category>
       <category>retrieval-engine</category>
+    </item>
+    <item>
+      <title>[AI Search] Position Bias: Dense Retriever가 문서 앞쪽을 좋아하는 이유</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-06-position-bias-dense-retrievers-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-06-position-bias-dense-retrievers-ai-search/</guid>
+      <description>Position Bias in Dense Retrievers 논문을 AI Search stack 관점에서 읽는다. Dense retriever의 위치 편향이 모델 구조만의 문제가 아니라 fine-tuning 데이터에서 정답 근거가 어디에 있었는지에 의해 강하게 학습될 수 있음을 정리한다.</description>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>dense-retrieval</category>
+      <category>position-bias</category>
+      <category>RAG</category>
+      <category>retrieval-evaluation</category>
+      <category>data-curation</category>
     </item>
     <item>
       <title>[AI Search] Roaring Bitmap: Vector Search 이전에 필요한 빠른 필터링</title>

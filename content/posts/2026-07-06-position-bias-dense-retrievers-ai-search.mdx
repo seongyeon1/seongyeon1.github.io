@@ -1,0 +1,427 @@
+---
+title: "[AI Search] Position Bias: Dense Retriever가 문서 앞쪽을 좋아하는 이유"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "dense-retrieval", "position-bias", "RAG", "retrieval-evaluation", "data-curation"]
+summary: "Position Bias in Dense Retrievers 논문을 AI Search stack 관점에서 읽는다. Dense retriever의 위치 편향이 모델 구조만의 문제가 아니라 fine-tuning 데이터에서 정답 근거가 어디에 있었는지에 의해 강하게 학습될 수 있음을 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 7
+math: false
+---
+
+<Paper
+  title="Is Position Bias in Dense Retrievers Built In–or Learned from Data?"
+  authors="Daegon Yu, SeungYoon Han, Woomyoung Park"
+  year="2026"
+  venue="arXiv"
+  arxiv="2605.26578"
+/>
+
+## 한 줄 요약
+
+Dense retriever가 문서 앞쪽 근거를 더 잘 찾는 현상은 모델 구조에만 박혀 있는 본능이 아니라, **fine-tuning 데이터에서 정답 근거가 어디에 있었는지**에 의해 강하게 학습될 수 있다. 이 논문은 retriever를 만들 때 positive document ID만 볼 게 아니라, positive evidence의 위치 분포까지 관리해야 한다는 메시지를 준다.
+
+AI Search stack 관점에서는 이 논문이 꽤 중요하다.
+
+앞선 글들에서는 retrieval representation을 다뤘다.
+
+- ColBERT: single-vector보다 세밀한 token-level late interaction
+- PLAID: ColBERT 계열 검색을 빠르게 serving하는 엔진
+- SPLATE: late interaction을 sparse retrieval infrastructure와 연결
+- LIMIT: single-vector embedding retrieval의 표현력 한계
+- Gemini Embedding 2: multimodal/cross-modal embedding layer 확장
+
+이번 논문은 그 다음 질문을 던진다.
+
+> 좋은 retriever architecture와 embedding model을 골랐다고 해도, 학습 데이터의 위치 편향 때문에 검색 결과가 망가질 수 있지 않을까?
+
+결론부터 말하면, 그럴 수 있다.
+
+## 문제: retriever는 문서 앞부분을 과하게 믿는다
+
+Dense retriever는 query와 document를 embedding하고, 벡터 유사도로 관련 문서를 가져온다. RAG 시스템에서는 거의 기본 부품처럼 쓰인다.
+
+그런데 여러 연구에서 dense retriever가 문서 앞부분에 있는 근거를 더 잘 찾고, 같은 근거가 중간이나 끝으로 밀리면 성능이 떨어지는 현상이 관찰됐다.
+
+```text
+같은 문서, 같은 정답 근거라도
+- 앞부분에 있으면 잘 찾고
+- 중간이나 끝부분에 있으면 덜 찾는다
+```
+
+이건 실제 AI Search에서 꽤 위험하다.
+
+중요한 정보가 항상 문서 첫 문단에 있지는 않다. 오히려 실무 문서에서는 중요한 조건이 뒤에 있는 경우가 많다.
+
+- 계약서의 예외 조항
+- 세무 문서의 단서와 부칙
+- 정책 문서의 적용 제외 조건
+- 기술 문서의 edge case
+- 보고서의 appendix
+- 회의록 중간에 나온 결정 사항
+
+Retriever가 “앞쪽에 있는 정보가 더 중요하다”는 shortcut을 배워버리면, RAG는 핵심 근거를 놓친다. LLM이 아무리 좋아도 context가 빠지면 답변은 흔들린다.
+
+## 기존 설명: 구조 때문 아닌가?
+
+위치 편향을 보면 먼저 모델 구조가 의심된다.
+
+- positional encoding 때문인가?
+- encoder / decoder 차이 때문인가?
+- CLS pooling이나 last-token pooling 때문인가?
+- attention이 특정 위치를 더 잘 보게 만드는가?
+- long-context 모델의 구조적 한계인가?
+
+논문은 이 질문을 조금 비튼다.
+
+> 구조도 영향이 있겠지만, fine-tuning 데이터에서 정답 근거가 주로 앞쪽에 있었기 때문에 그렇게 배운 것은 아닐까?
+
+이 가설은 현실적이다.
+
+뉴스 기사나 Wikipedia 문서는 핵심 정보가 초반에 몰리는 경우가 많다. retrieval fine-tuning 데이터에서도 query-relevant passage가 문서 앞쪽에 집중될 수 있다. 그렇다면 dense retriever의 primacy bias는 architecture의 운명이라기보다 data distribution의 결과일 수 있다.
+
+이 논문의 핵심은 이 가설을 controlled experiment로 직접 테스트한 것이다.
+
+## 실험 설계: 정답 위치만 조작해서 retriever를 학습시킨다
+
+논문은 English Wikipedia 기반으로 synthetic position-targeted training data를 만든다.
+
+큰 흐름은 다음과 같다.
+
+```text
+Wikipedia 문서
+  ↓
+begin / middle / end segment로 나눔
+  ↓
+각 segment에 근거한 query 생성
+  ↓
+reranker 3개로 intended segment가 맞는지 검증
+  ↓
+정답 근거 위치가 통제된 학습 세트 구성
+```
+
+검증에는 세 개의 cross-encoder reranker를 사용한다.
+
+- `bge-reranker-v2-m3`
+- `gte-multilingual-reranker-base`
+- `jina-reranker-v2-base-multilingual`
+
+세 reranker가 intended segment를 충분한 margin으로 선호하는 example만 남긴다. 논문에서 margin은 `δ = 0.3`이다.
+
+그 다음 학습 세트를 네 가지로 만든다.
+
+| 설정 | 정답 근거 위치 분포 |
+| --- | --- |
+| `M_B` | begin 100%, middle 0%, end 0% |
+| `M_M` | begin 0%, middle 100%, end 0% |
+| `M_E` | begin 0%, middle 0%, end 100% |
+| `M_U` | begin 33%, middle 33%, end 33% |
+
+중요한 점은 training scale과 document length distribution을 맞췄다는 것이다. 즉 “begin 데이터가 더 많아서” 또는 “end 데이터가 더 길어서” 생긴 차이를 줄이려 했다.
+
+논문은 네 configuration으로 8개 base model을 fine-tuning한다. 총 32 runs다.
+
+모델 구성도 다양하다.
+
+| 모델 | 구조 / 특징 |
+| --- | --- |
+| BERT-base | encoder, absolute positional encoding |
+| Longformer-base | encoder, long document encoder |
+| ModernBERT-base / large | encoder, RoPE, long context |
+| GPT-2-medium | decoder, last-token pooling |
+| BLOOM-560M | decoder, ALiBi |
+| TinyLlama-NoPE | positional encoding 없음 |
+| Qwen3-0.6B | decoder 계열 embedding model |
+
+이렇게 다양한 모델에서 같은 방향의 결과가 나오면, 특정 architecture 하나로 설명하기 어려워진다.
+
+## 결과 1: bias 방향이 training data를 따라간다
+
+가장 중요한 결과는 단순하다.
+
+```text
+begin-skewed training -> 앞쪽 근거를 선호
+middle-skewed training -> 중간 근거를 선호
+end-skewed training -> 뒤쪽 근거를 선호
+uniform training -> 더 평평한 위치별 성능
+```
+
+논문은 SQuAD-PosQ, FineWeb-PosQ, PosIR 같은 position-aware benchmark에서 nDCG@10을 evidence position별로 측정한다.
+
+대표 숫자를 보면 방향성이 뚜렷하다.
+
+Qwen3-0.6B on SQuAD-PosQ:
+
+- evidence가 앞쪽 bucket에 있을 때: begin-trained `0.672` vs end-trained `0.415`
+- evidence가 뒤쪽 bucket에 있을 때: end-trained `0.702` vs begin-trained `0.407`
+
+ModernBERT-large on FineWeb-PosQ:
+
+- evidence가 앞쪽일 때: begin-trained `0.778` vs end-trained `0.475`
+- evidence가 뒤쪽일 때: end-trained `0.743` vs begin-trained `0.447`
+
+즉 같은 모델도 fine-tuning data의 evidence 위치에 따라 “어디에 있는 근거를 잘 찾는지”가 바뀐다.
+
+특히 TinyLlama-NoPE에서도 같은 패턴이 관찰된다. positional encoding이 없어도 retrieval-level position bias가 생긴다는 점에서, 위치 편향을 단순히 positional encoding 탓으로만 돌리기 어렵다.
+
+## 결과 2: uniform training이 위치 민감도를 줄인다
+
+논문은 Position Sensitivity Index, PSI를 사용한다. 직관적으로 말하면 evidence 위치에 따라 성능이 얼마나 출렁이는지를 보는 지표다.
+
+```text
+PSI가 낮을수록 위치에 덜 민감하다.
+PSI가 높을수록 특정 위치에 성능이 몰린다.
+```
+
+uniform training은 controlled position-aware benchmark에서 PSI를 크게 줄였다.
+
+논문 초록의 headline은 다음과 같다.
+
+> Position-balanced training reduces positional sensitivity by 57–87%.
+
+구체적인 예시는 이렇다.
+
+| 모델 / benchmark | skewed training PSI | uniform training PSI |
+| --- | ---: | ---: |
+| GPT-2-medium on SQuAD-PosQ | 0.592 | 0.080 |
+| Qwen3-0.6B on SQuAD-PosQ | 0.409 | 0.068 |
+| Longformer-base on SQuAD-PosQ | 0.331 | 0.143 |
+| ModernBERT-base on FineWeb-PosQ | 0.476 | 0.108 |
+| ModernBERT-large on FineWeb-PosQ | 0.426 | 0.116 |
+| Qwen3-0.6B on FineWeb-PosQ | 0.359 | 0.116 |
+
+중요한 건 uniform training이 단순히 전체 성능을 낮춰서 PSI만 낮춘 게 아니라는 점이다. 논문은 uniform training이 controlled setting에서 competitive mean retrieval performance를 유지한다고 설명한다.
+
+SQuAD-PosQ에서는 8개 모델 중 5개에서 uniform training이 highest mean nDCG@10을 기록했고, 나머지 3개도 best skewed configuration과의 차이가 `0.004–0.007` 수준이었다. FineWeb-PosQ에서는 평가된 3개 모델 모두 uniform training이 highest mean nDCG@10을 기록했다.
+
+## 결과 3: BEIR 평균 점수는 benchmark의 위치 분포를 반영할 수 있다
+
+이 논문에서 실무적으로 제일 찝찝하면서 중요한 부분은 BEIR 결과다.
+
+논문은 SciFact, HotpotQA, FEVER, Climate-FEVER 네 BEIR subset에서도 평가한다. 여기서는 begin-trained model이 평균 nDCG@10에서 가장 높다.
+
+| training config | BEIR 평균 nDCG@10 |
+| --- | ---: |
+| begin-trained `M_B` | 0.333 |
+| uniform `M_U` | 0.297 |
+| middle-trained `M_M` | 0.212 |
+| end-trained `M_E` | 0.193 |
+
+얼핏 보면 begin-trained가 더 좋은 것처럼 보인다. 하지만 논문은 이 결과를 다르게 해석한다.
+
+HotpotQA와 FEVER는 evidence가 앞쪽에 강하게 몰려 있고, Climate-FEVER도 early-skewed이며, SciFact는 상대적으로 더 넓게 분포한다. 그래서 begin prior를 가진 모델이 standard benchmark 평균에서는 유리할 수 있다.
+
+즉 평균 benchmark score는 모델의 robust retrieval 능력이 아니라, benchmark의 evidence-location distribution과 모델의 위치 prior가 얼마나 잘 맞는지를 반영할 수 있다.
+
+이건 AI Search evaluation에서 꽤 큰 경고다.
+
+> 평균 Recall이나 nDCG만 보면, 위치 편향이 있는 모델을 좋은 모델로 착각할 수 있다.
+
+## 결과 4: bias는 ranking 결과뿐 아니라 embedding similarity에도 나타난다
+
+논문은 representation-level analysis도 한다.
+
+MS MARCO query-document pair에서 relevant evidence를 문서 안의 10개 위치로 옮긴 뒤, query-document cosine similarity가 어디서 가장 높아지는지 본다.
+
+결과는 ranking-level 결과와 비슷하다.
+
+- begin-trained model은 early position에서 similarity가 높다.
+- middle-trained model은 middle position에서 similarity가 높다.
+- end-trained model은 late position에서 similarity가 높다.
+- uniform-trained model은 peak-to-lowest gap이 작다.
+
+예를 들어 peak-lowest cosine gap은 다음처럼 줄어든다.
+
+| 모델 | begin/end skewed gap | uniform gap |
+| --- | ---: | ---: |
+| ModernBERT-base | 약 20대 | 1.9 |
+| Qwen3-0.6B | 약 20대 | 5.5 |
+
+이건 위치 편향이 final ranking layer에서만 나타나는 문제가 아니라, query-document embedding similarity 자체에 반영된다는 뜻이다. 즉 fine-tuning이 representation의 위치 preference를 실제로 바꾼다.
+
+## AI Search stack에서 이 논문의 위치
+
+이 시리즈 흐름에서 Position Bias 논문은 “retriever training/evaluation hygiene”에 해당한다.
+
+```text
+Roaring Bitmap
+-> deterministic filter layer
+
+ColBERT / PLAID / SPLATE
+-> neural retrieval representation & serving
+
+LIMIT
+-> single-vector retrieval의 표현력 한계
+
+Gemini Embedding 2
+-> multimodal embedding layer
+
+Position Bias
+-> retriever가 학습 데이터의 evidence 위치 분포를 shortcut으로 배울 위험
+```
+
+좋은 AI Search 시스템은 단순히 모델을 고르는 문제가 아니다.
+
+```text
+좋은 embedding model + 좋은 vector DB
+```
+
+이 정도로 끝나지 않는다. retriever가 어떤 데이터로 학습됐고, 그 데이터에서 정답 근거가 어디에 있었는지도 봐야 한다.
+
+## 실무적으로 중요한 점
+
+### 1. positive document ID만 저장하면 부족하다
+
+Retriever fine-tuning dataset을 만들 때 보통 이런 식으로 관리한다.
+
+```json
+{
+  "query": "...",
+  "positive_doc_id": "doc_123",
+  "negative_doc_ids": ["doc_456", "doc_789"]
+}
+```
+
+하지만 이 논문을 읽고 나면 이 정보만으로는 부족해 보인다.
+
+최소한 다음 정보도 같이 저장하는 게 좋다.
+
+```json
+{
+  "query": "...",
+  "positive_doc_id": "doc_123",
+  "evidence_span": [1840, 2310],
+  "evidence_position_bucket": "middle",
+  "doc_length": 5200
+}
+```
+
+즉 positive document가 맞는지만 보지 말고, 정답 근거가 문서 안 어디에 있는지 추적해야 한다.
+
+### 2. evaluation도 위치별로 쪼개야 한다
+
+평균 nDCG@10이나 Recall@k만 보면 위치 편향을 놓칠 수 있다.
+
+추천하는 evaluation report는 이런 형태다.
+
+| metric | begin evidence | middle evidence | end evidence | overall |
+| --- | ---: | ---: | ---: | ---: |
+| Recall@10 | ... | ... | ... | ... |
+| nDCG@10 | ... | ... | ... | ... |
+| MRR@10 | ... | ... | ... | ... |
+
+그리고 PSI 같은 position sensitivity metric을 추가하면 더 좋다.
+
+이건 특히 다음 도메인에서 중요하다.
+
+- 법률 / 계약서
+- 세무 / 회계 문서
+- 정책 / 규정 문서
+- 기술 문서
+- 연구 보고서
+- 사내 위키
+- 긴 회의록
+
+이런 문서들은 중요한 근거가 항상 앞에 있지 않다.
+
+### 3. benchmark score를 해석할 때 evidence 위치 분포를 봐야 한다
+
+BEIR 결과가 보여주는 건 “begin-trained model이 더 좋다”가 아니다.
+
+더 정확한 해석은 이렇다.
+
+> benchmark가 early-evidence-heavy이면, early prior를 가진 retriever가 평균 점수에서 유리할 수 있다.
+
+그래서 모델 비교를 할 때는 benchmark 자체의 evidence 위치 분포를 확인해야 한다.
+
+```text
+모델 A가 모델 B보다 nDCG가 높다
+```
+
+이 말만으로는 부족하다.
+
+```text
+그 benchmark의 정답 근거는 주로 어디에 있는가?
+우리 production 문서의 정답 근거 분포도 비슷한가?
+```
+
+이 질문이 빠지면 benchmark winner를 production에 넣었을 때 성능이 기대와 다를 수 있다.
+
+### 4. chunking 전략과도 연결된다
+
+Position bias는 “긴 문서 retriever”에서만 생기는 문제가 아니다. chunking을 어떻게 하느냐에 따라 비슷한 문제가 생긴다.
+
+예를 들어 긴 문서를 chunk로 나누고, query-relevant chunk가 문서 앞쪽에 몰린 데이터로 fine-tuning하면 retriever가 문서 초반 chunk를 과대평가할 수 있다.
+
+반대로 context assembler가 항상 앞쪽 chunk를 더 많이 넣는다면, downstream answer도 앞쪽 evidence에 편향될 수 있다.
+
+따라서 production RAG에서는 다음을 같이 봐야 한다.
+
+- document-level evidence position
+- chunk index within document
+- section heading
+- chunk length
+- answer span position
+- retrieved rank와 evidence position의 관계
+
+## 한계
+
+논문도 한계를 명확히 말한다.
+
+첫째, synthetic position-targeted setting이다. English Wikipedia에서 segment를 만들고 LLM-generated query를 사용했다. 실제 production query와는 분포가 다를 수 있다.
+
+둘째, retained pool은 여러 reranker와 model-based LLM audit으로 필터링했지만 human annotation은 아니다. verifier bias나 residual labeling error가 남을 수 있다.
+
+셋째, physical position과 segment content가 완전히 분리되지는 않는다. 문서 앞/중간/끝은 단순 위치만 다른 게 아니라 discourse role, 내용 종류, 난이도도 달라질 수 있다.
+
+넷째, controlled single-seed setup이고 hard negative mining, early stopping, extensive hyperparameter sweep을 하지 않았다. 작은 nDCG 차이는 조심해서 봐야 한다.
+
+다섯째, retrieval-level 평가이지 end-to-end RAG answer quality 평가는 아니다. 실제 RAG에서는 retriever, reranker, context selection, generator가 같이 작동한다.
+
+그래도 핵심 메시지는 충분히 강하다.
+
+> training-position distribution은 retriever의 위치 편향을 바꿀 수 있는 controllable factor다.
+
+## 내 결론
+
+이 논문은 AI Search에서 “retriever 품질”을 볼 때 한 단계 더 낮은 층을 봐야 한다는 걸 보여준다.
+
+보통 우리는 retriever를 평가할 때 이런 걸 본다.
+
+- 어떤 embedding model인가?
+- dimension은 얼마인가?
+- ANN index는 무엇인가?
+- Recall@k는 얼마인가?
+- reranker를 붙였는가?
+
+이제 여기에 하나를 더 추가해야 한다.
+
+```text
+정답 근거의 위치 분포는 어떤가?
+```
+
+실무적으로는 다음 체크리스트가 유용하다.
+
+- fine-tuning 데이터에 `evidence_position`을 기록한다.
+- begin/middle/end evidence가 균형 있게 들어가도록 샘플링한다.
+- evaluation을 evidence position별로 stratify한다.
+- 평균 nDCG/Recall과 함께 PSI 같은 robustness metric을 본다.
+- production 문서의 evidence 위치 분포와 benchmark 분포가 맞는지 확인한다.
+- 법률, 세무, 계약, 정책 문서처럼 후반부 근거가 중요한 도메인에서는 특히 end-position recall을 따로 본다.
+
+이 논문은 “dense retriever는 나쁘다”는 이야기가 아니다. 오히려 더 실용적인 메시지다.
+
+```text
+retriever는 데이터가 가르친 shortcut을 배운다.
+그러니 검색 품질을 올리려면 architecture뿐 아니라 training/eval data의 구조를 관리해야 한다.
+```
+
+AI Search stack에서 이건 꽤 현실적인 교훈이다. 검색 시스템의 품질은 모델만이 아니라, 어떤 근거를 positive로 정의하고 어떤 위치의 근거를 보여주며 학습시켰는지에서 이미 결정되기 시작한다.
+
+다음 글은 **AcuRank**로 넘어가면 좋다. Position Bias가 retriever 학습 데이터의 편향을 다뤘다면, AcuRank는 reranking 단계에서 query complexity와 ranking cost를 어떻게 adaptive하게 조절할지 보여주는 쪽에 가깝다.
+
+## 참고 자료
+
+- [Is Position Bias in Dense Retrievers Built In–or Learned from Data?](https://arxiv.org/abs/2605.26578)
+- [Dwell in the Beginning: How Language Models Embed Long Documents for Dense Retrieval](https://arxiv.org/abs/2404.04163)
+- [BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663)
