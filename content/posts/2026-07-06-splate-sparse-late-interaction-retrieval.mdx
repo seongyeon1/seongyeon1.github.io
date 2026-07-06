@@ -1,0 +1,330 @@
+---
+title: "[AI Search] SPLATE: Sparse Retrieval과 Late Interaction의 만남"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "SPLATE", "ColBERT", "SPLADE", "sparse-retrieval", "late-interaction"]
+summary: "SPLATE 논문을 AI Search stack 관점에서 읽는다. ColBERTv2의 frozen token embedding을 sparse vocabulary space로 매핑해, late interaction retrieval의 candidate generation을 전통적인 sparse retrieval 인프라로 처리하는 아이디어를 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 4
+math: false
+---
+
+<Paper
+  title="SPLATE: Sparse Late Interaction Retrieval"
+  authors="Thibault Formal, Stéphane Clinchant, Hervé Déjean, Carlos Lassance"
+  year="2024"
+  venue="arXiv"
+  arxiv="2404.13950"
+/>
+
+## 한 줄 요약
+
+SPLATE는 ColBERTv2의 frozen token embedding 위에 가벼운 SPLADE-style adapter를 붙여, dense multi-vector representation을 **sparse vocabulary space**로 옮긴다. 덕분에 ColBERT류 late interaction retrieval의 candidate generation을 전통적인 inverted index와 sparse retrieval 기법으로 처리할 수 있다.
+
+앞선 두 글에서 ColBERT와 PLAID를 봤다.
+
+ColBERT의 메시지는 이랬다.
+
+> 문서를 하나의 벡터로 압축하지 말고, token-level interaction을 늦게 계산하자.
+
+PLAID의 메시지는 그 다음이었다.
+
+> late interaction은 좋지만 비싸다. 그러니 centroid interaction과 pruning으로 정확한 MaxSim을 마지막 후보에만 적용하자.
+
+이번 SPLATE는 같은 문제를 다른 방향에서 푼다.
+
+PLAID가 ColBERTv2의 centroid representation을 활용해 late interaction pipeline을 최적화했다면, SPLATE는 ColBERTv2 representation을 **sparse retrieval이 이해할 수 있는 형태**로 바꾼다.
+
+즉 SPLATE의 질문은 이렇다.
+
+> ColBERT의 좋은 token embedding을 그대로 쓰면서, candidate generation은 오래 검증된 sparse retrieval infrastructure에 맡길 수 없을까?
+
+## 배경: late interaction은 좋은데, candidate generation이 어렵다
+
+ColBERT 계열 retrieval은 query와 document를 token-level vector matrix로 표현한다.
+
+```text
+query -> token vectors
+passage -> token vectors
+score -> query token마다 가장 유사한 passage token을 찾고 합산, MaxSim
+```
+
+이 방식은 single-vector dense retrieval보다 세밀하다. 특정 단어, entity, phrase, 조건절이 뭉개지지 않고 token-level로 매칭된다.
+
+문제는 검색 엔진 관점에서 무겁다는 것이다.
+
+일반적인 sparse retrieval은 inverted index로 동작한다.
+
+```text
+query term -> posting list -> candidate document -> score
+```
+
+BM25, WAND, MaxScore 같은 수십 년간 최적화된 query processing 기법을 그대로 쓸 수 있다.
+
+일반적인 dense retrieval은 vector index로 동작한다.
+
+```text
+query vector -> ANN index -> candidate document
+```
+
+HNSW, IVF, PQ 같은 방법을 쓸 수 있다.
+
+하지만 ColBERT는 document 하나가 vector 하나가 아니라 token vectors 여러 개다. 그래서 candidate generation, embedding lookup, decompression, MaxSim scoring까지 별도 pipeline이 필요하다.
+
+SPLATE 논문은 이 지점에서 sparse retrieval과 late interaction을 연결한다.
+
+## 핵심 아이디어: ColBERT embedding을 vocabulary space로 보내기
+
+SPLATE는 새로운 retriever를 처음부터 학습하는 논문이 아니다. 오히려 저자들은 SPLATE를 “model per se”라기보다 late interaction pipeline을 구현하는 대안이라고 설명한다.
+
+핵심 구조는 간단하다.
+
+```text
+ColBERTv2 frozen token embedding
+-> lightweight MLM adapter
+-> sparse vocabulary vector
+-> sparse retrieval로 candidate generation
+-> ColBERTv2 MaxSim으로 final reranking
+```
+
+여기서 중요한 점은 ColBERTv2 backbone을 frozen으로 둔다는 것이다. SPLATE는 ColBERT의 contextual token embedding 위에 작은 two-layer MLP adapter를 붙이고, 그 출력을 vocabulary projection으로 보낸다.
+
+논문은 이 adapter를 SPLADE module처럼 사용한다. SPLADE는 PLM representation을 vocabulary space로 확장해서 sparse vector를 만든다. 예를 들어 query가 “cost of interior concrete flooring”라면, sparse representation은 다음과 같은 term weight 형태가 된다.
+
+```text
+(price, concrete, interior, floor, internal, ...)
+```
+
+실제 논문 Table 3도 query에 대해 SPLATE가 만든 BoW representation 예시를 보여준다. 이게 중요한 이유는 검색 과정이 더 해석 가능해지기 때문이다. ColBERT의 centroid bag은 효율적이지만 사람이 해석하기 쉽지는 않다. 반면 SPLATE의 candidate generation은 vocabulary term space에서 일어난다.
+
+## SPLATE는 PLAID와 무엇이 다른가
+
+둘 다 ColBERTv2의 late interaction pipeline을 빠르게 만들려는 시도다. 하지만 접근이 다르다.
+
+| 구분 | PLAID | SPLATE |
+| --- | --- | --- |
+| candidate generation | centroid interaction | learned sparse retrieval |
+| representation | centroid ID bag | vocabulary-space sparse vector |
+| approximation | engineered approximation | supervised approximation |
+| index infrastructure | ColBERT/PLAID 전용 engine | inverted index / sparse retrieval engine |
+| 장점 | ColBERTv2 compression 구조를 직접 활용 | CPU-friendly, sparse infra 재사용, 해석 가능 |
+| 비용 | custom engine/kernel 복잡도 | adapter 추가 학습과 sparse index 추가 |
+
+PLAID는 ColBERTv2의 centroid mapping을 활용한다. token vector를 가장 가까운 centroid에 매핑하고, centroid만으로 approximate score를 계산한다.
+
+SPLATE는 pseudo-MLM head를 학습해 ColBERT frozen representation을 sparse BoW representation으로 바꾼다. 논문 표현을 빌리면 approximate step이 “engineered”라기보다 “supervised”된다.
+
+이 차이가 꽤 중요하다.
+
+PLAID는 late interaction에 특화된 engine 최적화에 가깝고, SPLATE는 sparse retrieval infrastructure와 late interaction을 이어주는 bridge에 가깝다.
+
+## 왜 sparse retrieval infrastructure가 여전히 중요한가
+
+요즘 AI Search를 이야기하면 vector DB가 먼저 떠오른다. 하지만 대규모 검색 시스템에서 inverted index는 여전히 강력하다.
+
+- posting list 기반 candidate generation
+- WAND / MaxScore 같은 pruning
+- CPU 환경에서의 빠른 query processing
+- term-level explainability
+- index compression과 shard 운영 경험
+- 기존 search engine과의 통합 용이성
+
+SPLATE의 재미있는 점은 “sparse냐 dense냐”를 이분법으로 보지 않는다는 것이다.
+
+ColBERTv2의 token embedding은 dense representation이다. 하지만 SPLATE는 그 representation을 vocabulary space로 매핑해 sparse retrieval에 사용한다. 그리고 최종 ranking은 다시 ColBERTv2의 MaxSim으로 한다.
+
+즉 하나의 representation 흐름 안에서 sparse retrieval과 late interaction reranking이 연결된다.
+
+```text
+same ColBERT representations
+-> sparse view for candidate generation
+-> dense token view for MaxSim reranking
+```
+
+실무적으로는 이게 좋다. query를 두 개의 완전히 다른 PLM에 두 번 넣지 않아도 되고, sparse retriever와 ColBERT reranker 사이의 semantic gap도 줄어든다.
+
+## 방법: lightweight adapter만 학습한다
+
+SPLATE의 학습 방식도 가볍다.
+
+논문은 ColBERTv2 weights를 initialize한 뒤 frozen으로 둔다. 학습하는 것은 MLM adapter의 parameter뿐이다. 기본 설정에서 MLP는 representation을 절반 차원으로 down-project했다가 다시 up-project하고, 전체 trainable parameter는 약 0.6M이라고 설명한다.
+
+학습은 MS MARCO passage dataset에서 진행된다. 저자들은 ColBERTv2 score를 teacher로 삼아 distillation한다. hard negatives도 ColBERTv2 top-1000에서 가져온다.
+
+즉 SPLATE의 목표는 독립적으로 새로운 ranking function을 배우는 것이 아니다.
+
+> ColBERTv2가 중요하게 보는 candidate를 sparse retrieval로 잘 찾아오도록 근사하는 것
+
+이게 목적이다.
+
+논문은 학습도 무겁지 않다고 보고한다. SPLADE codebase를 사용해 2개의 Tesla V100 32GB GPU에서 2시간 미만으로 학습했다고 한다.
+
+## 실험: 50개만 rerank해도 ColBERTv2/PLAID와 비슷하다
+
+논문은 SPLATE를 두 가지 방식으로 평가한다.
+
+1. **R setting**: SPLATE를 standalone sparse retriever로 평가
+2. **e2e setting**: SPLATE가 후보를 가져오고, ColBERTv2가 MaxSim으로 rerank
+
+SPLATE의 핵심은 2번이다. candidate generation을 sparse retrieval로 하고, 최종 ranking은 ColBERTv2에게 맡기는 구조다.
+
+MS MARCO dev에서 pooling size에 따른 결과를 보면, sparse retrieval latency와 성능 사이의 trade-off가 명확하다.
+
+| 설정 | candidate retrieval MRT | SPLATE R MRR@10 | e2e MRR@10, k=50 |
+| --- | ---: | ---: | ---: |
+| kq=5, kd=30 | 2.9ms | 34.5 | 39.5 |
+| kq=5, kd=50 | 4.3ms | 35.5 | 39.7 |
+| kq=5, kd=100 | 7.4ms | 35.6 | 39.8 |
+| kq=10, kd=100 | 24.0ms | 36.7 | 40.0 |
+| kq=20, kd=200 | 106.0ms | 37.4 | 40.0 |
+
+여기서 재미있는 점은 retrieval-only 성능은 차이가 있지만, ColBERTv2로 50개를 rerank하면 e2e 성능은 거의 비슷하게 올라온다는 것이다.
+
+즉 아주 가벼운 sparse candidate generator도 ColBERTv2가 필요로 하는 좋은 후보를 충분히 제공할 수 있다.
+
+논문은 SPLATE가 top-50 안에서 ColBERTv2의 top-10 document를 90% 이상 회수할 수 있다고 설명한다. 그래서 50개만 rerank해도 ColBERT 성능을 회복할 수 있다는 것이다.
+
+## PLAID와 비교하면 어떨까
+
+Table 2에서 SPLATE는 ColBERTv2, PLAID ColBERTv2, SPLADE++, SparseEmbed, SLIM++ 등과 비교된다.
+
+핵심만 보면 SPLATE e2e는 MS MARCO에서 MRR@10 40.0을 기록한다. 같은 표에서 ColBERTv2는 39.7, PLAID ColBERTv2는 39.8이다. LoTTE에서도 SPLATE e2e는 S@5 71.0이고, PLAID ColBERTv2는 69.6으로 보고된다.
+
+물론 완전히 동일한 latency 조건에서 end-to-end serving을 비교한 것은 아니다. 논문은 ColBERT reranking을 on-the-fly로 수행했고, end-to-end latency 측정은 future work로 남긴다. 하지만 candidate generation 자체는 sparse retrieval로 매우 빠르게 할 수 있다는 점을 보여준다.
+
+논문은 특히 mono-CPU 환경에서 SPLATE가 매력적이라고 강조한다. SPLATE의 candidate generation은 PISA engine과 block-max WAND를 사용해 한 CPU core에서 측정된다. 반면 ColBERT/PLAID류 engine은 dense token representation lookup과 decompression, custom kernels 같은 별도 시스템 최적화가 필요하다.
+
+## AI Search stack에서 SPLATE의 위치
+
+지금까지의 시리즈 흐름에 SPLATE를 놓으면 이런 모양이 된다.
+
+```text
+Roaring Bitmap
+-> metadata / permission / faceted filtering
+
+ColBERT
+-> token-level late interaction retrieval
+
+PLAID
+-> ColBERTv2 serving engine optimization
+
+SPLATE
+-> sparse infrastructure로 late interaction candidate generation
+```
+
+SPLATE는 “late interaction vs sparse retrieval”의 대립을 약하게 만든다.
+
+검색 stack을 이렇게 나눠볼 수 있다.
+
+```text
+Stage 0. hard filter
+Stage 1. cheap candidate generation
+Stage 2. high-quality neural reranking
+Stage 3. context selection / answer generation
+```
+
+SPLATE는 Stage 1과 Stage 2를 자연스럽게 잇는다.
+
+- Stage 1은 sparse inverted index로 빠르게 한다.
+- Stage 2는 ColBERT MaxSim으로 정확하게 한다.
+- 둘은 완전히 다른 모델이 아니라 ColBERT representation을 공유한다.
+
+이게 SPLATE의 실무적 매력이다.
+
+## 실무적으로 생각해볼 점
+
+### 1. Vector search 이후에도 inverted index는 사라지지 않는다
+
+SPLATE는 AI Search가 vector DB만으로 끝나지 않는다는 시리즈의 메시지와 잘 맞는다.
+
+좋은 retrieval system은 보통 하나의 index로 끝나지 않는다.
+
+```text
+bitmap filter
++ sparse index
++ dense index
++ multi-vector reranker
++ cross-encoder or LLM judge
+```
+
+SPLATE는 이 중 sparse index와 multi-vector reranker를 한 pipeline 안에서 연결한다.
+
+### 2. Candidate generator는 최종 scorer와 같은 언어를 쓰는 게 좋다
+
+BM25로 후보를 가져와 ColBERT로 rerank할 수도 있다. SPLADE++로 후보를 가져와 ColBERT로 rerank할 수도 있다.
+
+하지만 SPLATE는 ColBERTv2 representation을 sparse space로 변환해서 후보를 가져온다. 즉 candidate generator가 final scorer인 ColBERTv2를 근사하도록 학습된다.
+
+이건 RAG에서도 중요한 설계 원칙이다.
+
+> 첫 단계 retriever가 마지막 단계 reranker/generator가 중요하게 보는 evidence를 잘 보존해야 한다.
+
+retriever와 reranker가 보는 signal이 너무 다르면, 좋은 reranker가 있어도 후보에 정답 문서가 없어서 실패한다.
+
+### 3. CPU-only search path는 여전히 중요하다
+
+대규모 AI Search 시스템에서 모든 query path를 GPU에 올리는 것은 비싸고 복잡하다. retrieval은 QPS가 높고 tail latency가 중요하다. GPU는 generation, reranking, batch inference에 이미 쓰일 수 있다.
+
+SPLATE는 candidate generation을 sparse retrieval로 처리하기 때문에 CPU path에 잘 맞는다. 특히 기존 inverted index engine을 갖고 있는 조직이라면, ColBERT류 품질을 도입할 때 SPLATE 같은 접근이 꽤 현실적인 bridge가 될 수 있다.
+
+### 4. Sparse representation은 explainability를 준다
+
+SPLATE가 만든 BoW representation은 사람이 볼 수 있다. query가 어떤 vocabulary term으로 확장되었는지, 어떤 term이 높은 weight를 받았는지 확인할 수 있다.
+
+이건 운영에서 생각보다 중요하다.
+
+- 왜 이 문서가 후보로 들어왔는가?
+- query expansion이 이상한 단어로 튀지 않았는가?
+- domain-specific term이 제대로 잡혔는가?
+- tokenizer artifact가 candidate generation에 영향을 주는가?
+
+Dense vector만 볼 때보다 debugging surface가 넓어진다.
+
+## 한계와 주의할 점
+
+SPLATE의 방향은 매력적이지만, 몇 가지 주의할 점도 있다.
+
+### 1. End-to-end latency는 완전히 측정되지 않았다
+
+논문은 retrieval-only latency를 PISA 기반으로 잘 측정한다. 하지만 e2e setting에서 ColBERT reranking은 on-the-fly로 수행하고, end-to-end latency는 future work로 남긴다.
+
+따라서 “SPLATE 전체 pipeline이 PLAID보다 항상 빠르다”고 말하면 과장이다. 더 정확히는:
+
+> SPLATE는 candidate generation을 sparse retrieval로 매우 빠르게 수행할 수 있고, 50개 rerank만으로 ColBERT/PLAID 수준의 효과를 회복할 가능성을 보여준다.
+
+### 2. 추가 sparse index가 필요하다
+
+SPLATE는 ColBERT index 외에 sparse document vector index도 필요하다. 논문은 이 overhead가 ColBERT index에 비해 작다고 설명하지만, 운영에서는 index build, refresh, shard, consistency 관리가 추가된다.
+
+### 3. ColBERTv2 teacher에 의존한다
+
+SPLATE는 ColBERTv2 score를 distill해서 ColBERT가 좋아할 후보를 sparse retrieval로 찾도록 학습한다. 따라서 teacher인 ColBERTv2의 domain fit과 bias가 SPLATE에도 반영될 수 있다.
+
+### 4. Vocabulary space의 장단점이 같이 온다
+
+Sparse vocabulary space는 해석 가능하고 inverted index와 잘 맞지만, tokenizer artifact나 vocabulary coverage 문제도 함께 가져온다. 논문 Table 3 예시에도 `##ing`, `##isan` 같은 subword token이 등장한다. 운영에서 explanation을 만들 때는 이 점을 감안해야 한다.
+
+## 내 결론
+
+SPLATE는 “ColBERT를 더 빠르게 만드는 또 다른 방법” 정도로만 보면 조금 아깝다. 제가 보기엔 이 논문은 AI Search stack에서 더 중요한 메시지를 준다.
+
+> sparse retrieval과 late interaction retrieval은 경쟁 관계라기보다, 같은 pipeline 안에서 서로 다른 역할을 맡을 수 있다.
+
+ColBERT는 token-level matching의 품질을 보여줬다. PLAID는 그 품질을 production serving에 가깝게 만들기 위해 engine을 최적화했다. SPLATE는 한 발 더 옆으로 가서, 기존 sparse retrieval infrastructure를 late interaction의 candidate generation에 다시 연결한다.
+
+이 흐름은 꽤 현실적이다.
+
+실제 시스템을 만든다면 모든 걸 새 vector DB나 새 neural engine으로 갈아엎기 어렵다. 기존 search infrastructure가 있고, CPU path가 있고, inverted index가 있고, debugging tool이 있다. SPLATE는 그 위에 ColBERT류 품질을 얹는 방법을 제안한다.
+
+한 문장으로 정리하면 이렇다.
+
+> SPLATE는 ColBERT의 dense token representation을 sparse vocabulary view로 바꿔, inverted index로 후보를 찾고 MaxSim으로 최종 ranking하는 bridge다.
+
+다음 글부터는 embedding retrieval 자체의 한계로 넘어가면 좋겠다. 다음 논문은 LIMIT다. 지금까지는 “좋은 late interaction retrieval을 어떻게 빠르게 만들 것인가”였다면, LIMIT는 “single-vector embedding retrieval은 구조적으로 어디까지 가능한가”라는 질문을 던진다.
+
+## 참고 자료
+
+- [SPLATE: Sparse Late Interaction Retrieval](https://arxiv.org/abs/2404.13950)
+- [ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT](https://arxiv.org/abs/2004.12832)
+- [PLAID: An Efficient Engine for Late Interaction Retrieval](https://arxiv.org/abs/2205.09707)
+- [SPLADE codebase](https://github.com/naver/splade)
