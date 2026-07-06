@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 08:50:58 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 09:06:31 GMT</lastBuildDate>
+    <item>
+      <title>[AI Search] AcuRank: Reranking Compute를 어려운 쿼리에 더 쓰는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-06-acurank-adaptive-listwise-reranking/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-06-acurank-adaptive-listwise-reranking/</guid>
+      <description>AcuRank 논문을 AI Search stack 관점에서 읽는다. LLM listwise reranker를 고정된 횟수로 돌리는 대신, TrueSkill 기반 불확실성으로 top-k 경계가 애매한 문서에 reranking compute를 집중하는 방법을 정리한다.</description>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>AcuRank</category>
+      <category>reranking</category>
+      <category>listwise-reranking</category>
+      <category>uncertainty</category>
+      <category>RAG</category>
+    </item>
     <item>
       <title>AI Search는 Vector DB만으로 끝나지 않는다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-ai-search-stack-meetup-seoul/</link>

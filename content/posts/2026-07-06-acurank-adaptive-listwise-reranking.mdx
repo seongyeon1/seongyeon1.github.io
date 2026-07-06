@@ -1,0 +1,437 @@
+---
+title: "[AI Search] AcuRank: Reranking Compute를 어려운 쿼리에 더 쓰는 법"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "AcuRank", "reranking", "listwise-reranking", "uncertainty", "RAG"]
+summary: "AcuRank 논문을 AI Search stack 관점에서 읽는다. LLM listwise reranker를 고정된 횟수로 돌리는 대신, TrueSkill 기반 불확실성으로 top-k 경계가 애매한 문서에 reranking compute를 집중하는 방법을 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 8
+math: false
+---
+
+<Paper
+  title="AcuRank: Uncertainty-Aware Adaptive Computation for Listwise Reranking"
+  authors="Soyoung Yoon, Gyuwan Kim, Gyu-Hwung Cho, Seung-won Hwang"
+  year="2025"
+  venue="NeurIPS 2025"
+  arxiv="2505.18512"
+/>
+
+## 한 줄 요약
+
+AcuRank는 LLM listwise reranker를 모든 쿼리에 같은 횟수로 쓰지 말고, **top-k 경계가 아직 불확실한 문서에만 추가 compute를 쓰자**는 논문이다. TrueSkill 기반으로 각 문서의 relevance를 평균과 불확실성 분포로 들고 있다가, 확실한 문서는 건너뛰고 애매한 문서만 다시 reranking한다.
+
+AI Search stack 관점에서는 이 논문이 reranking layer의 운영 문제를 다룬다.
+
+앞선 글들에서 retrieval 쪽을 봤다면,
+
+- Roaring Bitmap: filter layer
+- ColBERT / PLAID / SPLATE: retrieval representation과 serving
+- LIMIT: single-vector embedding retrieval의 표현력 한계
+- Gemini Embedding 2: multimodal embedding layer
+- Position Bias: retriever training/evaluation hygiene
+
+이번 AcuRank는 그 다음 단계다.
+
+> Candidate를 가져온 뒤, 비싼 LLM reranker compute를 어디에 얼마나 써야 할까?
+
+답은 단순한데 실용적이다. 쉬운 쿼리와 어려운 쿼리에 같은 예산을 쓰지 말자는 것이다.
+
+## 문제: listwise reranking은 좋은데 비싸다
+
+RAG나 search pipeline은 보통 두 단계로 간다.
+
+```text
+first-stage retriever
+  BM25 / dense retriever / SPLADE / hybrid search
+  ↓
+top-100 또는 top-1000 candidate
+  ↓
+reranker
+  cross-encoder / LLM reranker / listwise reranker
+  ↓
+상위 k개를 context 또는 search result로 사용
+```
+
+여기서 LLM listwise reranker는 여러 문서를 한 번에 보고 상대적 순서를 판단할 수 있어서 강력하다. Pointwise scoring처럼 문서 하나씩 독립적으로 점수화하지 않고, 후보 문서들 사이의 경쟁 관계를 같이 보기 때문이다.
+
+문제는 비용이다.
+
+논문은 실제로 top-100이나 top-1000 candidate를 한 번에 LLM reranker에 넣기 어렵다고 본다. context length와 inference cost 때문에 보통 작은 subset으로 나눠서 여러 번 reranking하고, 그 결과를 합쳐 최종 ranking을 만든다. 논문 설정에서는 보통 reranker window size가 `m = 20`이다.
+
+기존 방식은 주로 고정 스케줄이다.
+
+| 방식 | 직관 | 문제 |
+| --- | --- | --- |
+| Sliding Window | 아래쪽 window부터 위로 밀어 올리며 반복 reranking | 모든 쿼리에 같은 pass 수를 씀 |
+| Tournament | 후보를 그룹으로 나누고 승자를 다음 round로 보냄 | round 수와 구조가 고정됨 |
+| Static top candidates | 현재 점수가 높은 문서만 다시 봄 | 불확실성이 아니라 점수만 봄 |
+
+이 방식들은 구현은 쉽지만, query difficulty를 모른다.
+
+어떤 쿼리는 BM25 top-10만 봐도 거의 답이 정해져 있다. 반대로 어떤 쿼리는 top-30 근처에 비슷한 문서가 몰려 있어서, 한두 번의 reranking으로는 top-k가 안정되지 않는다. 그런데 fixed-computation 방식은 둘 다 같은 예산을 쓴다.
+
+```text
+쉬운 쿼리: compute 낭비
+어려운 쿼리: compute 부족
+```
+
+AcuRank는 이 비효율을 줄이려 한다.
+
+## 핵심 아이디어: relevance를 점수가 아니라 분포로 본다
+
+AcuRank의 핵심은 각 문서를 하나의 deterministic score로만 보지 않는 것이다.
+
+각 문서의 relevance를 Gaussian belief로 표현한다.
+
+```text
+문서 D_i의 relevance
+= 평균 µ_i + 불확실성 σ_i를 가진 분포
+```
+
+여기서 평균 `µ_i`는 현재까지 봤을 때 문서가 얼마나 relevant해 보이는지, `σ_i`는 그 판단이 얼마나 불확실한지를 나타낸다.
+
+이 모델링에는 TrueSkill이 사용된다. TrueSkill은 원래 multiplayer game rating system이다. AcuRank에서는 문서를 player처럼 보고, listwise reranker가 어떤 문서를 더 위에 놓으면 그 문서가 match에서 이긴 것처럼 TrueSkill parameter를 업데이트한다.
+
+예를 들어 reranker가 `[D3, D1, D7, D2]` 순서를 반환했다면 다음처럼 해석한다.
+
+```text
+D3 > D1 > D7 > D2
+```
+
+이 결과를 바탕으로 각 문서의 `µ`와 `σ`를 업데이트한다.
+
+- 예상보다 위에 온 문서: `µ` 상승
+- 예상보다 아래 온 문서: `µ` 하락
+- 관측이 쌓인 문서: `σ` 감소
+- 아직 판단이 애매한 문서: `σ` 유지 또는 상대적으로 큼
+
+즉 reranking 결과가 단순히 최종 순서 하나로 버려지는 게 아니라, 다음 reranking 대상을 고르는 belief update로 사용된다.
+
+## top-k 경계가 애매한 문서만 다시 본다
+
+AcuRank가 관심을 두는 것은 전체 순위가 아니라 top-k 경계다.
+
+RAG에서는 보통 최종적으로 상위 `k`개 문서만 context에 넣는다. Search UI에서도 사용자가 보는 것은 top results다. 그러면 80위와 90위의 정확한 순서는 별로 중요하지 않다. 중요한 것은 다음 질문이다.
+
+> 이 문서가 top-k 안에 들어갈 가능성이 아직 애매한가?
+
+AcuRank는 각 문서에 대해 `s_i = P(x_i > t(k))`를 계산한다. 직관적으로는 “이 문서가 top-k threshold를 넘을 확률”이다.
+
+그 다음 애매한 문서만 candidate set으로 고른다.
+
+```text
+C = {D_i | epsilon < s_i < 1 - epsilon}
+```
+
+논문 기본 설정에서는 `epsilon = 0.01`, `k = 10`이다.
+
+이 기준을 해석하면 이렇다.
+
+| `s_i` 값 | 의미 | 처리 |
+| ---: | --- | --- |
+| 거의 1 | top-k 안에 들어갈 가능성이 매우 높음 | 굳이 다시 안 봄 |
+| 거의 0 | top-k 밖일 가능성이 매우 높음 | 굳이 다시 안 봄 |
+| 중간 | top-k 경계가 애매함 | reranker compute 투입 |
+
+이게 AcuRank의 중요한 포인트다. 단순히 현재 점수가 높은 문서만 보는 게 아니다. **경계 근처에서 불확실한 문서**를 본다.
+
+## 알고리즘 흐름
+
+논문 알고리즘을 실무식으로 풀면 다음과 같다.
+
+```text
+입력: query, first-stage candidate documents, listwise reranker, target k
+
+1. first-stage retrieval score로 각 문서의 µ, σ 초기화
+2. 각 문서가 top-k 안에 들어갈 확률 s_i 계산
+3. s_i가 0도 1도 아닌 애매한 문서만 선택
+4. 선택된 문서를 µ 기준으로 정렬하고, 비슷한 점수끼리 group으로 묶음
+5. 각 group을 listwise reranker에 넣음
+6. reranker 결과로 TrueSkill belief 업데이트
+7. 불확실한 문서가 충분히 줄거나 budget을 다 쓰면 종료
+8. 최종 µ 기준으로 ranking 출력
+```
+
+초기화도 실용적이다. AcuRank는 default TrueSkill 값을 그대로 쓰는 대신 first-stage retrieval score를 prior로 사용한다. 논문 기본 설정에서는 `µ_i`를 BM25 같은 retrieval score로 두고, `σ_i = µ_i / 3`으로 둔다.
+
+그룹을 만들 때도 무작위로 섞지 않는다. 불확실한 후보들을 `µ` 기준으로 정렬한 뒤 비슷한 relevance estimate를 가진 문서끼리 묶는다. 이유는 간단하다. 이미 차이가 큰 문서끼리 비교하는 것보다, 비슷해서 헷갈리는 문서끼리 비교할 때 정보량이 더 크다.
+
+## 결과 1: 같은 예산이면 더 좋은 ranking을 만든다
+
+논문은 TREC-DL 6개 track과 BEIR 8개 dataset에서 평가한다.
+
+- TREC-DL: DL19, DL20, DL21, DL22, DL23, DL-Hard
+- BEIR: TREC-COVID, NFCorpus, Signal-1M, News, Robust04, Touché, DBPedia, SciFact
+- 기본 first-stage retriever: BM25 top-100
+- 기본 reranker: RankZephyr-7B
+- metric: NDCG@10
+- efficiency proxy: query당 reranker call 수
+
+핵심 비교는 Table 1이다.
+
+BM25 top-100 + RankZephyr-7B 설정에서 평균 결과를 보면:
+
+| 방법 | 평균 NDCG@10 | 평균 reranker calls |
+| --- | ---: | ---: |
+| BM25 only | 41.1 | 0.0 |
+| Sliding Window 1 pass | 54.3 | 8.8 |
+| Sliding Window 2 pass | 54.5 | 17.6 |
+| Sliding Window 3 pass | 54.6 | 26.4 |
+| TourRank-1 | 53.4 | 12.7 |
+| TourRank-2 | 54.9 | 25.5 |
+| TourRank-5 | 55.1 | 63.7 |
+| TourRank-10 | 55.2 | 127.4 |
+| AcuRank-9 | 54.6 | 8.8 |
+| AcuRank | 55.5 | 19.7 |
+| AcuRank-H | 55.7 | 41.7 |
+| AcuRank-HH | 55.8 | 57.2 |
+
+가장 눈에 띄는 부분은 두 가지다.
+
+첫째, `AcuRank-9`는 Sliding Window 1 pass와 같은 평균 call 수인 `8.8`을 쓰면서 평균 NDCG@10은 `54.6`으로 더 높다.
+
+둘째, 기본 `AcuRank`는 평균 `19.7` calls를 쓰는데, `26.4` calls를 쓰는 Sliding Window 3 pass보다도 평균 NDCG@10이 높다. 즉 더 적은 call로 더 좋은 ranking을 만든다.
+
+고예산 variant도 의미가 있다. `AcuRank-H`와 `AcuRank-HH`는 더 엄격한 불확실성 threshold와 stopping criterion을 써서 call 수는 늘지만, 성능도 조금씩 오른다. 논문은 이를 anytime prediction처럼 볼 수 있다고 설명한다. 예산이 있으면 더 돌리고, 없으면 낮은 budget variant로 멈출 수 있다.
+
+## 결과 2: call 수만 봐도 불리한데, 실제 latency도 줄어든다
+
+논문은 reranker call 수가 AcuRank에 불리한 proxy일 수 있다고 말한다. 왜냐하면 AcuRank는 매번 최대 window size 20을 꽉 채우지 않을 수 있기 때문이다. 불확실한 문서 수가 줄어들면 더 작은 batch를 reranking한다.
+
+그래서 Table 2에서는 call 수 외에도 window size, input length, latency, FLOPs를 본다.
+
+대표적으로 SW-2와 AcuRank를 비교하면:
+
+| dataset | NDCG@10 | calls | latency |
+| --- | --- | --- | --- |
+| DL19 | SW-2 `74.6` / AcuRank `74.2` | `18.0` / `18.2` | `126s` / `106s` |
+| DL20 | SW-2 `70.2` / AcuRank `71.8` | `18.0` / `16.3` | `126s` / `93s` |
+| COVID | SW-3 `84.4` / AcuRank `85.3` | `27.0` / `21.8` | `213s` / `142s` |
+| News | SW-2 `52.7` / AcuRank `53.9` | `18.0` / `18.5` | `179s` / `150s` |
+
+논문은 AcuRank가 유사한 call budget에서 input length와 latency를 최대 약 20% 줄이고, FLOPs는 평균 15–30% 줄인다고 보고한다.
+
+실무적으로는 이게 중요하다. Reranker 비용은 단순히 “몇 번 호출했나”만으로 결정되지 않는다.
+
+```text
+총 비용 ~= 호출 수 × 각 호출의 입력 길이 × 모델 크기 × decoding/forward 비용
+```
+
+AcuRank는 호출 대상을 줄일 뿐 아니라, 일부 단계에서 입력 window 자체도 줄인다. 그래서 call count가 비슷해도 실제 latency와 FLOPs가 낮아질 수 있다.
+
+## 결과 3: retrieval model과 reranker가 바뀌어도 동작한다
+
+AcuRank는 BM25 top-100만을 위한 trick이 아니다.
+
+논문은 추가로 다음 설정을 평가한다.
+
+- BM25 top-1000
+- SPLADE++ED top-100
+- Contriever top-100
+- RankGPT, 즉 `gpt-4.1-mini` reranker
+
+SPLADE++ED top-100 + RankZephyr 설정에서는 AcuRank가 평균 NDCG@10 `53.8`, 평균 calls `20.9`를 기록한다. 같은 setting에서 SW-1은 `52.3` / `9.0`, SW-2는 `52.6` / `18.0`, SW-3는 `52.6` / `27.0`이다. 강한 first-stage retriever를 썼을 때도 AcuRank가 fixed schedule보다 나은 trade-off를 보인다.
+
+RankGPT setting도 흥미롭다. BM25 top-100 + `gpt-4.1-mini` reranker에서 AcuRank는 평균 NDCG@10 `53.7`, calls `20.8`을 기록한다. SW-1은 `53.4`, calls `8.8`이다. 모든 dataset에서 이기는 것은 아니지만, underlying reranker가 RankZephyr에서 API LLM 계열로 바뀌어도 uncertainty-guided allocation이 유지된다는 점이 중요하다.
+
+이건 AcuRank가 특정 reranker architecture에 과적합된 방법이라기보다, listwise reranking을 scheduling하는 framework에 가깝다는 뜻이다.
+
+## 결과 4: 어려운 쿼리에 compute를 더 쓴다
+
+AcuRank가 정말 adaptive하게 행동하는지도 확인한다.
+
+논문은 query difficulty를 WIG, Weighted Information Gain으로 측정한다. BM25 top-100 score distribution에서 계산하는 값이고, 낮을수록 relevance distribution이 애매한 어려운 쿼리라고 볼 수 있다.
+
+TREC와 BEIR의 612개 query에서 AcuRank의 reranker call 수와 WIG 사이에는 유의한 음의 상관이 나온다.
+
+```text
+Spearman rho = -0.27
+p < 1e-8
+```
+
+해석하면 이렇다.
+
+```text
+WIG 낮음 = 어려운 쿼리
+→ AcuRank가 reranker call을 더 많이 씀
+```
+
+이게 이 논문의 핵심 주장과 잘 맞는다. AcuRank는 평균적으로 call 수를 줄이는 것만 목표로 하지 않는다. 쉬운 쿼리에서는 덜 쓰고, 애매한 쿼리에서는 더 쓴다.
+
+실제 AI Search 제품에서는 이 방향이 꽤 자연스럽다.
+
+- 단순 keyword성 질의: 빠르게 반환
+- 정책/법률/세무/기술 문서처럼 후보가 비슷한 질의: reranking budget 확대
+- 사용자가 중요한 결정을 내리는 high-stakes query: stricter threshold 사용
+- latency budget이 빡빡한 query path: AcuRank-9 같은 budgeted variant 사용
+
+즉 reranking을 고정 pipeline이 아니라 query-adaptive policy로 볼 수 있다.
+
+## Ablation: 무엇이 실제로 중요했나
+
+논문은 AcuRank의 설계 요소도 분리해서 본다.
+
+Table 4의 평균 결과는 다음과 같다.
+
+| 설정 | 평균 NDCG@10 | calls |
+| --- | ---: | ---: |
+| 기본 AcuRank | 55.5 | 19.7 |
+| first-stage score 초기화 제거 | 54.8 | 13.4 |
+| random partitioning | 55.3 | 22.6 |
+| top-k stability stopping | 55.2 | 22.7 |
+
+여기서 볼 수 있는 점은 세 가지다.
+
+첫째, first-stage retrieval score를 prior로 쓰는 것이 성능에 도움이 된다. 완전 uniform belief에서 시작하면 call은 줄지만 성능도 떨어진다.
+
+둘째, 비슷한 `µ`를 가진 문서끼리 비교하는 sequential partitioning이 random grouping보다 낫다. 애매한 문서끼리 붙여야 reranker 결과가 더 정보량 있는 update가 된다.
+
+셋째, uncertainty-based stopping은 top-k가 안 바뀌는지만 보는 방식보다 비슷하거나 더 좋은 성능을 더 적은 call로 낸다. 단순한 rank stability보다 belief uncertainty를 보는 것이 compute control에 더 적합하다는 해석이 가능하다.
+
+## AI Search stack에서 이 논문의 위치
+
+AcuRank는 retrieval model 자체를 바꾸는 논문은 아니다. Vector DB를 대체하지도 않고, embedding model을 새로 만들지도 않는다. 대신 retrieval pipeline의 비싼 후반부를 어떻게 운영할지 다룬다.
+
+```text
+Query
+  ↓
+Filter / metadata constraint
+  Roaring Bitmap 같은 deterministic filtering
+  ↓
+Candidate generation
+  BM25 / dense embedding / SPLADE / ColBERT 계열
+  ↓
+Candidate serving optimization
+  PLAID / SPLATE 같은 efficient retrieval engine
+  ↓
+Adaptive reranking
+  AcuRank: top-k boundary uncertainty에 compute 집중
+  ↓
+Context assembly / answer generation
+```
+
+이 위치를 이해하는 게 중요하다.
+
+AcuRank는 “retriever가 나쁜 candidate를 가져와도 다 고쳐준다”는 논문이 아니다. First-stage retrieval이 후보를 충분히 recall해야 한다. AcuRank는 그 후보들 사이에서 **top-k 결정이 애매한 부분**을 더 똑똑하게 다듬는 방법이다.
+
+그래서 production RAG에서 적용한다면 다음처럼 볼 수 있다.
+
+| 시스템 요소 | AcuRank 적용 포인트 |
+| --- | --- |
+| first-stage retriever | top-100 또는 top-1000 candidate와 score 제공 |
+| reranker | LLM listwise reranker 또는 cross-encoder listwise reranker |
+| budget controller | query별 최대 call 수, latency cap, high/low precision mode |
+| uncertainty state | 문서별 `µ`, `σ`, top-k probability 관리 |
+| observability | query difficulty, rerank calls, top-k stability, latency 기록 |
+
+특히 RAG에서는 top-k가 context에 직접 들어가기 때문에, top-k boundary uncertainty가 곧 answer quality risk가 된다. AcuRank는 이 risk가 큰 쿼리에 reranker compute를 더 쓰는 방식이다.
+
+## 실무 적용 시 생각할 점
+
+### 1. Reranker call 수를 고정하지 말고 policy로 둔다
+
+많은 RAG pipeline은 `retrieve top-50 -> rerank top-20 -> use top-5`처럼 고정되어 있다. AcuRank 관점에서는 이게 너무 정적이다.
+
+실무에서는 다음 값을 policy로 둘 수 있다.
+
+- target `k`
+- maximum reranker calls
+- uncertainty threshold
+- latency budget
+- high-stakes query 여부
+- first-stage score 분포의 sharpness
+
+예를 들어 고객지원 FAQ 같은 쉬운 질의는 낮은 budget으로 충분할 수 있고, 사내 규정/계약/세무 문서 질의는 더 높은 budget을 쓸 수 있다.
+
+### 2. Reranking 결과를 일회성 순서로 버리지 않는다
+
+AcuRank의 좋은 점은 reranker output을 belief update로 재사용한다는 것이다.
+
+기존 pipeline에서는 reranker가 반환한 순서가 최종 결과로 끝나는 경우가 많다. 하지만 AcuRank처럼 `µ`, `σ` state를 두면 다음을 할 수 있다.
+
+- 어떤 문서가 확실한 top-k인지 추적
+- 어떤 문서가 boundary case인지 추적
+- 추가 reranking이 실제로 top-k를 바꿀 가능성이 있는지 판단
+- query별 uncertainty trace를 로그로 남김
+
+이건 debugging에도 좋다. “왜 이 query는 reranking 비용이 많이 들었나?”를 설명할 수 있기 때문이다.
+
+### 3. 평가 metric에 cost-quality curve를 넣는다
+
+AcuRank 논문에서 중요한 그림은 Pareto curve다. 단일 NDCG@10만 보는 게 아니라, reranker calls 또는 latency 대비 NDCG를 본다.
+
+Production AI Search도 마찬가지다.
+
+```text
+좋은 reranking system = quality가 높은 system
+```
+
+이 아니라,
+
+```text
+좋은 reranking system = 주어진 latency/cost budget에서 quality가 높은 system
+```
+
+에 가깝다.
+
+따라서 evaluation dashboard도 다음을 같이 봐야 한다.
+
+- Recall@k / NDCG@k / answer accuracy
+- reranker call count
+- reranker input tokens
+- p50/p95 latency
+- query difficulty bucket별 품질
+- high uncertainty query 비율
+- top-k가 안정되기까지 필요한 iterations
+
+### 4. Parallelization 가능성을 같이 봐야 한다
+
+논문은 call count를 proxy로 쓰지만, AcuRank는 disjoint candidate group을 parallel reranking할 수 있다고 설명한다. 즉 sequential pass를 여러 번 도는 방식보다 latency 측면에서 유리한 배치 구조를 만들 수 있다.
+
+다만 실제 서비스에서는 API rate limit, batch inference 지원 여부, queueing delay가 중요하다. AcuRank를 그대로 가져오기보다, serving stack에 맞게 다음을 정해야 한다.
+
+- group을 병렬로 얼마나 던질 수 있는가
+- LLM API reranker인지 local reranker인지
+- batch inference가 가능한가
+- timeout이 났을 때 현재 belief로 fallback할 수 있는가
+- reranker call 실패 시 uncertainty를 어떻게 처리할 것인가
+
+## 한계와 주의점
+
+AcuRank는 실용적인 논문이지만, 적용할 때 몇 가지 주의가 필요하다.
+
+첫째, 논문은 efficiency를 주로 reranker call 수와 실험 latency로 측정한다. 실제 production latency는 serving 환경, batching, API rate limit, cache, document length distribution에 따라 달라진다.
+
+둘째, TrueSkill update가 reranker 판단을 관측값으로 신뢰한다. Reranker가 systematic bias를 갖고 있으면 uncertainty가 줄어드는 방향이 항상 올바르지는 않을 수 있다. 예를 들어 특정 문체, 길이, position, source authority에 편향된 reranker라면 belief update도 그 편향을 강화할 수 있다.
+
+셋째, first-stage retriever recall이 부족하면 AcuRank는 답을 만들 수 없다. 후보군 안에 좋은 문서가 들어와 있어야 adaptive reranking도 의미가 있다.
+
+넷째, 논문 기본 설정은 `k = 10`, `m = 20`, `epsilon = 0.01`, `tau = 10` 같은 hyperparameter를 둔다. 실제 RAG에서는 context window, chunk size, answer generation strategy에 따라 target k와 threshold를 다시 잡아야 한다.
+
+다섯째, 복잡한 stateful reranking이므로 observability가 필요하다. 단순 reranker보다 구현 복잡도가 올라가고, 디버깅 포인트도 늘어난다.
+
+## 제 해석
+
+AcuRank의 메시지는 꽤 명확하다.
+
+> Reranking은 모델 선택 문제가 아니라 compute allocation 문제이기도 하다.
+
+요즘 AI Search/RAG에서 reranker는 거의 필수 부품처럼 들어간다. 그런데 많은 시스템은 reranker를 “항상 top-N에 한 번 적용하는 block”으로 취급한다. AcuRank는 이 block을 adaptive controller로 바꾼다.
+
+이 변화가 중요한 이유는 LLM reranker가 비싸기 때문이다. 특히 agentic search나 enterprise RAG에서는 query마다 중요도와 난이도가 크게 다르다. 모든 쿼리에 동일한 reranking budget을 쓰면, 쉬운 쿼리에서는 돈과 latency를 낭비하고 어려운 쿼리에서는 품질을 놓친다.
+
+AcuRank는 production에서 바로 쓸 수 있는 몇 가지 설계 원칙을 준다.
+
+```text
+1. first-stage score를 prior로 사용한다.
+2. reranker 결과를 belief update로 누적한다.
+3. top-k boundary uncertainty를 계산한다.
+4. 확실한 문서는 건너뛴다.
+5. 애매한 문서끼리 비교한다.
+6. quality-cost curve로 평가한다.
+```
+
+개인적으로는 이 논문이 “검색 성능을 올리려면 더 큰 reranker를 쓰자”가 아니라 “같은 reranker를 어디에 쓸지 더 똑똑하게 정하자”는 쪽이라 좋다. 모델 스케일링보다 운영 설계에 가까운 논문이다.
+
+다음 글에서는 LDAR를 이어서 보면 자연스럽다. AcuRank가 reranking compute를 어디에 쓸지 다뤘다면, LDAR는 retrieval 과정에서 distraction을 어떻게 인식하고 줄일지의 문제로 이어진다.
