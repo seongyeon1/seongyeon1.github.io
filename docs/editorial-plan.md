@@ -141,6 +141,11 @@
 | 아이디어 | 미정 | [논문 리뷰] SkillFuzz — agent skill marketplace를 fuzzing하는 법 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02345 — skill composition, implicit intent discovery, marketplace QA를 coding agent 보안 하네스로 해석 |
 | 아이디어 | 미정 | [논문 리뷰] CheckRLM — RAG reasoning의 knowledge-thought coherence 검사 | paper-review | Agentic RAG | | arXiv 2607.02262 — retrieval evidence와 reasoning step mismatch를 잡는 agentic RAG QA gate 설계 |
 | 아이디어 | 미정 | Mission Control: self-hosted multi-agent orchestration 대시보드 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — task dispatch, multi-agent workflow, spend monitoring, governance를 control plane으로 묶기 |
+| 아이디어 | 미정 | [논문 리뷰] Atomic Task Graph — agent planning을 원자 작업 그래프로 쪼개기 | paper-review | 논문 리뷰 | | arXiv 2607.01942 — task decomposition, dependency edge, execution monitor, 부분 실패 복구 패턴 |
+| 아이디어 | 미정 | [논문 리뷰] Cloak and Detonate — agent skill malware를 동적으로 잡는 법 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02357 — skill marketplace supply-chain, scanner evasion, sandbox detonation, CI quarantine workflow |
+| 아이디어 | 미정 | [논문 리뷰] Coding Agents Are Guessing — DevOps action-boundary 위반 평가 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02294 — underspecified instruction, operational API guardrail, approval checkpoint, least-action policy |
+| 아이디어 | 미정 | trpc-agent-go: Go 기반 production agent workflow 런타임 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — graph workflow, MCP/A2A, memory, eval, observability를 Go backend 통합 관점으로 정리 |
+| 아이디어 | 미정 | ctx: 작업 창에 맞는 skills·agents·MCP만 로드하는 context router | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — skill/MCP graph, token budget, retrieval policy, agent harness cold-start 최적화 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

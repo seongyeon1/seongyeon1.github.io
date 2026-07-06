@@ -2267,3 +2267,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-memory, workspace, self-hosted, github-repo]
 - status: idea
+
+### 2026-07-06 — [논문 리뷰] What LLM Agents Say When No One Is Watching: multi-agent debate의 숨은 objective
+- type: paper
+- source: http://arxiv.org/abs/2607.02507v1
+- why-now: multi-agent debate와 committee-style judge를 제품 평가·의사결정에 쓰는 흐름이 커지면서, 역할·청중·관계 구조만으로 agent 발화가 어떻게 달라지는지 점검할 필요가 생겼다.
+- angle: “multi-agent system 평가는 정답률뿐 아니라 사회적 구조가 만드는 latent objective를 봐야 한다” — role/audience effect, debate topology, judge diversity와 trace audit 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, debate, llm-as-judge, eval]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] Atomic Task Graph: agent planning을 원자 작업 그래프로 쪼개기
+- type: paper
+- source: http://arxiv.org/abs/2607.01942v1
+- why-now: agent 성능 개선이 더 큰 모델이나 task-specific tuning에만 기대기 어려워지면서, planning/execution scaffold 자체를 일반화하는 접근이 다시 중요해졌다.
+- angle: “agent 계획은 긴 자연어 plan이 아니라 검증 가능한 atomic task graph여야 한다” — task decomposition, dependency edge, execution monitor, 재시도·부분 실패 복구 패턴으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-planning, task-graph, execution, orchestration]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] SkillCoach: agent skill-use 평가 rubrics를 스스로 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2607.01874v1
+- why-now: agent skill repository가 커질수록 어떤 skill을 언제 쓰고, 겹치는 skill을 어떻게 구분할지 사람이 rubric을 계속 관리하기 어렵다.
+- angle: “skill은 설치 목록이 아니라 평가 가능한 operational layer” — self-evolving rubric, skill selection QA, overlap handling, regression suite를 agent harness 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, eval, rubric, regression-test]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] Cloak and Detonate: agent skill malware를 동적으로 잡는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.02357v1
+- why-now: 공개 skill marketplace와 MCP/agent plugin 생태계가 커지면서, static scan을 우회하고 실행 시점에만 payload를 터뜨리는 skill supply-chain 공격이 현실적인 위협이 됐다.
+- angle: “agent skill 보안은 README 검사보다 sandboxed detonation과 behavior trace가 핵심” — scanner evasion, dynamic detection, permission boundary, CI quarantine workflow로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, skill-marketplace, malware, sandbox]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] Coding Agents Are Guessing: underspecified DevOps 지시의 action-boundary 위반
+- type: paper
+- source: http://arxiv.org/abs/2607.02294v1
+- why-now: coding agent가 shell, repository, cloud/API까지 만지는 상황에서 “대충 알아서 해줘”가 과권한 명령 실행과 운영 사고로 이어질 수 있다.
+- angle: “agent가 맞는 결과를 냈어도 action boundary를 넘으면 실패다” — underspecification, operational API guardrail, approval checkpoint, least-action policy로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, devops, safety, action-boundary]
+- status: idea
+
+### 2026-07-06 — trpc-agent-go: Go 기반 production agent workflow 런타임
+- type: tech
+- source: https://github.com/trpc-group/trpc-agent-go
+- why-now: Python/TypeScript 중심 agent framework 사이에서 Go 서비스 팀이 graph workflow, MCP, A2A, memory, eval, observability를 한 런타임에서 묶을 선택지가 늘고 있다.
+- angle: “agent framework 선택 기준을 언어 생태계와 운영 런타임까지 내려서 보자” — graph workflow, typed tools, memory/eval/observability, Go backend integration 체크리스트로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, golang, mcp, observability]
+- status: idea
+
+### 2026-07-06 — google/adk-go: Google ADK를 Go 서비스 agent runtime으로 쓰기
+- type: tech
+- source: https://github.com/google/adk-go
+- why-now: agent 개발이 notebook demo에서 backend service로 이동하면서, code-first agent를 Go로 평가·배포하려는 팀에게 공식 ADK의 Go surface가 실무 옵션이 된다.
+- angle: “ADK는 모델 호출 wrapper가 아니라 session, tool, eval, deployment boundary를 가진 service SDK” — Python ADK와 비교하며 Go 팀의 agent 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [google-adk, agent-framework, golang, eval]
+- status: idea
+
+### 2026-07-06 — ctx: 현재 작업 창에 맞는 skills·agents·MCP만 로드하는 context router
+- type: tech
+- source: https://github.com/stevesolun/ctx
+- why-now: agent harness가 커질수록 모든 AGENTS.md, skill, MCP 설명을 매 turn 넣는 방식은 token budget과 local compute를 빠르게 낭비한다.
+- angle: “context engineering은 더 많이 넣는 기술이 아니라 지금 필요한 agent substrate만 고르는 routing 문제” — skill/MCP graph, token budget, retrieval policy, harness cold-start 최적화로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [context-engineering, agent-harness, mcp, github-repo]
+- status: idea
