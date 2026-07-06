@@ -1,0 +1,394 @@
+---
+title: "[AI Search] LIMIT: Embedding Search의 이론적 한계"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "LIMIT", "embedding", "dense-retrieval", "vector-search", "retrieval-evaluation"]
+summary: "LIMIT 논문을 AI Search stack 관점에서 읽는다. single-vector embedding retrieval이 왜 모든 top-k relevance 조합을 표현할 수 없는지, 그리고 이 한계가 단순한 학습 데이터 부족이 아니라 embedding dimension과 검색 표현 방식의 문제일 수 있음을 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 5
+math: false
+---
+
+<Paper
+  title="On the Theoretical Limitations of Embedding-Based Retrieval"
+  authors="Orion Weller, Michael Boratko, Iftekhar Naim, Jinhyuk Lee"
+  year="2026"
+  venue="ICLR 2026"
+  arxiv="2508.21038"
+/>
+
+## 한 줄 요약
+
+LIMIT 논문은 single-vector embedding retrieval이 모든 relevance 조합을 표현할 수 없다는 점을 이론과 실험으로 보여준다. 중요한 메시지는 “embedding 모델이 아직 작아서 못하는 것”이 아니라, **문서와 query를 각각 하나의 고정 차원 벡터로 표현하는 구조 자체에 한계가 있다**는 것이다.
+
+지금까지 이 시리즈에서는 검색 품질을 높이기 위한 구조를 봤다.
+
+- Roaring Bitmap: vector search 이전의 빠른 hard filtering
+- ColBERT: 문서를 하나의 벡터로 뭉개지 않는 late interaction
+- PLAID: ColBERTv2를 serving 가능한 속도로 만드는 engine
+- SPLATE: sparse retrieval infrastructure와 late interaction의 연결
+
+이번 LIMIT는 조금 다른 방향의 논문이다.
+
+앞선 논문들이 “좋은 retrieval을 어떻게 만들 것인가”를 다뤘다면, LIMIT는 더 근본적인 질문을 던진다.
+
+> single-vector embedding retrieval은 애초에 어디까지 가능한가?
+
+## 배경: embedding search에 너무 많은 일을 맡기고 있다
+
+요즘 AI Search에서 embedding은 거의 기본값이 됐다.
+
+문서를 embedding한다. query를 embedding한다. cosine similarity나 dot product로 가까운 문서를 찾는다. 이 구조는 단순하고 빠르며, vector DB와도 잘 맞는다.
+
+```text
+query -> one vector
+ document -> one vector
+ score -> dot product / cosine similarity
+```
+
+초기 dense retrieval은 주로 semantic search를 잘하는 것이 목표였다. 그런데 최근에는 embedding model에게 훨씬 더 많은 일을 시키고 있다.
+
+- instruction-following retrieval
+- reasoning-based retrieval
+- coding retrieval
+- multi-hop retrieval
+- query에 정의된 임의의 relevance 기준 따르기
+- agent가 만든 hyper-specific query 처리하기
+
+예를 들어 “동적 계획법을 쓰는 LeetCode 문제와 비슷한 문제를 찾아줘” 같은 query는 단순 semantic similarity보다 복잡하다. “1849년에 나온 소설 또는 George Sand의 소설”처럼 논리 연산이 들어간 query도 마찬가지다.
+
+LIMIT 논문은 이런 흐름을 보며 질문한다.
+
+> 우리가 embedding model에게 ‘어떤 query든, 어떤 relevance definition이든’ 처리하라고 기대하고 있는데, single-vector 구조가 그걸 표현할 수 있나?
+
+## 핵심 주장: top-k 조합 수는 embedding dimension에 의해 제한된다
+
+논문의 이론적 핵심은 간단히 말하면 이렇다.
+
+문서가 `n`개 있고, query마다 top-k relevant document set을 반환해야 한다고 하자. 가능한 top-k set의 조합 수는 조합론적으로 매우 빠르게 늘어난다.
+
+예를 들어 문서 100개에서 10개를 골라야 하면 가능한 relevant set은 엄청나게 많다. 웹 규모의 corpus라면 말할 것도 없다.
+
+그런데 single-vector retrieval은 query와 document를 모두 고정 차원 벡터로 놓고, inner product 순서로 ranking을 만든다. 이 기하학적 구조에서 표현 가능한 top-k subset의 수는 embedding dimension `d`에 의해 제한된다.
+
+논문은 known result를 연결해 다음 메시지를 만든다.
+
+> 고정된 embedding dimension에서는 어떤 top-k document set들은 어떤 query vector로도 만들 수 없다.
+
+즉, 특정 relevance 조합은 vector space 안에서 ranking으로 구현 불가능하다.
+
+이건 “학습을 덜 해서 못한다”와 다르다. 모델이 아무리 잘 학습돼도, 표현 공간이 허용하지 않는 ranking 조합이 있다는 뜻이다.
+
+## 직관적인 예시
+
+문서가 5개 있다고 해보자.
+
+```text
+d1, d2, d3, d4, d5
+```
+
+어떤 query는 `d1, d3`을 top-2로 가져와야 하고, 다른 query는 `d2, d5`를 가져와야 한다. 또 다른 query는 `d1, d4`를 가져와야 한다.
+
+문서 수가 작을 때는 그럭저럭 가능해 보인다. 하지만 문서 수가 커지고, query가 요구하는 조합이 다양해지면 문제가 된다.
+
+single-vector retrieval은 각 문서를 공간 위의 점으로 놓고, query vector와의 방향/거리로 순서를 정한다. 결국 가능한 ranking은 그 공간이 만들 수 있는 기하학적 분할에 제한된다.
+
+반면 사용자가 만들 수 있는 relevance definition은 훨씬 자유롭다.
+
+```text
+A를 좋아하는 사람
+B를 좋아하는 사람
+A 또는 C를 좋아하는 사람
+A는 좋아하지만 B는 싫어하는 사람
+특정 조건 5개를 동시에 만족하는 문서
+```
+
+query language가 풍부해질수록 가능한 top-k 조합은 폭발한다. embedding dimension이 그 조합을 모두 담지 못할 수 있다.
+
+## free embedding 실험: test set에 직접 최적화해도 한계가 있다
+
+LIMIT 논문이 좋은 이유는 이론만 말하지 않는다는 점이다. 저자들은 가장 강한 조건의 실험을 만든다.
+
+일반적인 embedding model은 자연어 encoder, 학습 데이터, optimization, generalization 문제를 모두 가진다. 그래서 실패하면 원인을 여러 가지로 해석할 수 있다.
+
+- 모델이 작아서?
+- 학습 데이터가 부족해서?
+- 자연어 query가 어려워서?
+- domain shift 때문이라서?
+
+논문은 이런 변수를 제거하기 위해 **free embedding optimization**을 한다. 즉 query vector와 document vector 자체를 직접 parameter로 두고, target qrel matrix에 맞게 gradient descent로 최적화한다.
+
+이건 현실적인 retrieval model보다 훨씬 유리한 조건이다.
+
+```text
+encoder 없음
+자연어 없음
+generalization 필요 없음
+test qrel matrix에 직접 최적화
+```
+
+그런데도 embedding dimension이 충분하지 않으면 모든 조합을 풀 수 없다. 논문은 이것을 통해 “이 문제는 단순히 자연어 encoder가 약해서 생기는 문제가 아니다”라고 주장한다.
+
+## LIMIT dataset: 아주 단순한 자연어 task로 만든 stress test
+
+그 다음 저자들은 이론을 자연어 retrieval task로 옮긴다. 이게 LIMIT dataset이다.
+
+재미있는 점은 task가 전혀 어려워 보이지 않는다는 것이다.
+
+문서는 이런 식이다.
+
+```text
+Jon Durben likes Quokkas and Apples.
+Ovid Rahm likes Quokkas and Rabbits.
+Leslie Laham likes Apples and Candy.
+```
+
+query는 이런 식이다.
+
+```text
+Who likes Quokkas?
+Who likes Apples?
+```
+
+즉 복잡한 reasoning도 아니고, 어려운 domain knowledge도 아니다. 단순히 어떤 attribute를 좋아하는 사람을 찾는 문제다.
+
+하지만 dataset construction이 중요하다. 저자들은 50k documents, 1000 queries를 만들고, 각 query가 두 개의 relevant document를 갖도록 설계한다. 핵심은 46개의 relevant documents에서 가능한 top-2 조합이 1035개라는 점이다. 이것이 1000개 query를 만들기에 충분한 조합 공간을 제공한다.
+
+또 작은 버전도 만든다. LIMIT-small은 relevant document 46개만 남긴 버전이다. 문서가 46개뿐이면 쉬워 보여야 한다.
+
+그런데 결과는 그렇지 않다.
+
+## 결과: SOTA embedding model도 단순 task에서 크게 흔들린다
+
+논문은 여러 state-of-the-art embedding model을 평가한다.
+
+- GritLM
+- Qwen3 Embeddings
+- Promptriever
+- Gemini Embeddings
+- Snowflake Arctic Embed Large
+- E5-Mistral
+- GTE-ModernColBERT
+- BM25 등
+
+결과의 핵심은 이렇다.
+
+- full LIMIT에서 single-vector model들은 Recall@100도 20%에 도달하기 어렵다.
+- LIMIT-small은 문서가 46개뿐인데도 모델들이 Recall@20으로도 task를 풀지 못한다.
+- embedding dimension이 커질수록 성능은 좋아지는 경향이 있다.
+- multi-vector model인 GTE-ModernColBERT는 single-vector보다 훨씬 낫지만 완전한 해결은 아니다.
+- BM25는 lexical overlap이 있는 기본 LIMIT에서는 매우 잘한다.
+- 하지만 synonym version에서는 BM25가 크게 떨어진다.
+
+논문 Figure 6은 특히 흥미롭다. LIMIT-small에서는 BM25가 97.8 Recall@2를 보이지만, synonym version에서는 10.6으로 떨어진다. 반대로 neural embedding model들은 전반적으로 낮지만 synonym 환경에서는 lexical model보다 덜 급격히 무너진다.
+
+이 결과는 단순한 “BM25가 최고다”가 아니다.
+
+정확한 해석은 이렇다.
+
+> sparse lexical model은 높은 차원성과 exact match 덕분에 특정 조합 문제에 강하지만, paraphrase나 synonym에는 약하다. single-vector dense model은 semantic matching은 가능하지만, 조합 표현력에 제한이 있다. multi-vector나 reranker는 더 표현력이 높지만 비용과 serving 구조가 달라진다.
+
+## domain shift가 아니라는 점
+
+저자들은 성능이 낮은 이유가 domain shift인지도 확인한다.
+
+LIMIT query는 표면적으로 web search query처럼 보이지만, 혹시 모델들이 이런 synthetic pattern을 못 본 것이라서 실패할 수도 있다.
+
+그래서 off-the-shelf embedding model을 LIMIT train set에 fine-tuning한다. 만약 domain shift라면 train set 학습으로 성능이 크게 올라야 한다.
+
+하지만 논문은 train set fine-tuning이 거의 도움이 되지 않는다고 보고한다. 반면 test set 자체에 overfit하면 풀 수 있다.
+
+이 차이는 중요하다.
+
+> 비슷한 형태의 train data를 더 주는 것만으로는 충분하지 않고, 특정 조합을 외우듯 맞춰야 성능이 올라간다.
+
+이 역시 single-vector 구조의 표현력 한계를 뒷받침한다.
+
+## 대안: single-vector만으로 밀어붙이지 말기
+
+LIMIT 논문은 embedding model을 버리자고 말하는 논문은 아니다. 오히려 single-vector embedding이 여전히 first-stage retrieval에 유용하다고 인정한다.
+
+다만 “모든 search problem을 single-vector embedding으로 해결할 수 있다”는 기대를 경계한다.
+
+논문이 언급하는 대안은 크게 세 가지다.
+
+### 1. Cross-encoder / reranker
+
+Cross-encoder는 query와 document를 함께 보고 score를 계산한다. first-stage retrieval로 쓰기에는 비싸지만 표현력은 높다.
+
+논문은 Gemini 2.5 Pro reranker에게 LIMIT-small의 46개 documents와 1000개 queries를 한 번에 주고 관련 문서를 출력하게 했을 때, 100%를 풀 수 있었다고 보고한다.
+
+즉 task 자체가 인간적으로 어렵거나 semantic하게 불가능한 것이 아니다. single-vector retrieval 구조가 약한 것이다.
+
+### 2. Multi-vector model
+
+ColBERT 같은 multi-vector model은 sequence당 여러 vector를 사용하고 MaxSim 같은 연산을 쓴다. LIMIT에서도 GTE-ModernColBERT가 single-vector model보다 훨씬 나은 결과를 보인다.
+
+이건 앞선 ColBERT, PLAID, SPLATE 글과 바로 연결된다.
+
+문서를 하나의 벡터로 뭉개지 않고, token-level 또는 multi-vector interaction을 유지하면 표현력이 올라간다. 물론 index size, latency, serving complexity라는 대가가 있다.
+
+### 3. Sparse / hybrid model
+
+BM25 같은 sparse model은 매우 높은 차원성을 가진 single vector로 볼 수도 있다. vocabulary dimension이 크기 때문에 조합을 표현하는 데 유리하다.
+
+하지만 synonym version에서 보듯, lexical overlap이 깨지면 약해진다. 따라서 sparse만으로도 충분하지 않다.
+
+실무적으로는 hybrid 구조가 자연스럽다.
+
+```text
+sparse lexical retrieval
++ dense semantic retrieval
++ multi-vector reranking
++ cross-encoder / LLM reranking
+```
+
+LIMIT 논문은 이 구조가 단순 engineering preference가 아니라, 표현력 관점에서도 필요하다는 근거를 준다.
+
+## AI Search stack에서 LIMIT의 위치
+
+지금까지의 시리즈 흐름에 LIMIT를 놓으면 이렇게 된다.
+
+```text
+Roaring Bitmap
+-> deterministic filter
+
+ColBERT
+-> single-vector 한계를 넘는 token-level matching
+
+PLAID
+-> late interaction을 빠르게 serving하는 engine
+
+SPLATE
+-> sparse infrastructure와 late interaction의 bridge
+
+LIMIT
+-> 왜 single-vector retrieval만으로는 부족한가에 대한 이론적/실험적 근거
+```
+
+즉 LIMIT는 앞선 글들을 뒤에서 정당화해주는 논문처럼 읽힌다.
+
+ColBERT, PLAID, SPLATE는 “single-vector retrieval보다 복잡한 구조가 왜 필요한가”에 대한 실용적인 답이었다. LIMIT는 그 질문에 이론적 배경을 준다.
+
+> 모든 검색 문제를 하나의 query vector와 하나의 document vector의 내적으로 풀 수 있다고 가정하는 순간, 표현 가능한 relevance 조합의 수가 embedding dimension에 묶인다.
+
+이게 AI Search 시스템 설계에서 매우 중요한 메시지다.
+
+## 실무적으로 생각해볼 점
+
+### 1. embedding benchmark 점수만 보고 search stack을 단순화하면 위험하다
+
+MTEB 같은 benchmark에서 좋은 embedding model이 실제 product search에서도 모든 query를 잘 처리한다는 보장은 없다.
+
+LIMIT가 지적하듯, 일반 benchmark는 가능한 query 조합의 극히 일부만 본다. 실제 사용자는 hyper-specific query를 만든다. agent는 더 심하다. agent는 여러 조건을 조합해 자동으로 query를 만든다.
+
+따라서 평가셋에는 다음 유형이 들어가야 한다.
+
+- AND / OR / NOT 조건 조합
+- range condition
+- entity 조합
+- paraphrase와 synonym
+- rare attribute 조합
+- multi-hop relevance definition
+- instruction-following retrieval
+
+### 2. top-k recall 실패를 “모델이 덜 좋아서”로만 해석하지 않기
+
+검색 실패를 보면 보통 더 좋은 embedding model을 찾는다. 물론 도움이 될 수 있다.
+
+하지만 LIMIT는 다음 질문을 먼저 하라고 말한다.
+
+> 이 query가 요구하는 relevance 조합을 single-vector similarity가 표현할 수 있는가?
+
+만약 query가 여러 독립 조건을 조합하거나, 문서 subset을 복잡하게 정의한다면 dense vector 하나로는 구조적으로 불리할 수 있다.
+
+### 3. retrieval architecture를 query type별로 다르게 가져가기
+
+모든 query에 같은 retriever를 쓰지 않아도 된다.
+
+예를 들어:
+
+```text
+simple semantic query -> dense retriever
+keyword/entity-heavy query -> sparse + filter
+complex condition query -> structured query / metadata filter / SQL
+reasoning-heavy query -> candidate retrieval + reranker
+high-risk query -> multi-vector or cross-encoder verification
+```
+
+LIMIT의 메시지는 “embedding을 쓰지 말자”가 아니다.
+
+> embedding을 first-stage로 쓰되, embedding이 약한 query class를 알아보고 다른 retrieval path로 라우팅하자.
+
+### 4. agentic search에서는 이 문제가 더 커진다
+
+사람이 직접 검색할 때도 query는 복잡해진다. 하지만 agent가 검색을 수행하면 더 복잡해진다.
+
+agent는 사용자의 목표를 분해하면서 이런 query를 만든다.
+
+- “2024년 이후 논문 중, dense retriever position bias를 다루고, benchmark leakage를 언급한 것”
+- “이 코드베이스에서 billing과 auth를 동시에 건드리는 PR”
+- “회의록 중 Sean이 언급했고, 다음 액션이 미정인 항목”
+
+이런 query는 단순 semantic similarity라기보다 structured retrieval, filtering, logical composition, reranking이 섞여 있다.
+
+따라서 AI Search stack은 vector DB 하나가 아니라 여러 retrieval operator의 조합이어야 한다.
+
+## 한계와 주의할 점
+
+LIMIT 논문은 강한 메시지를 주지만, 해석할 때 주의할 점도 있다.
+
+### 1. 이론은 single-vector embedding에 초점이 있다
+
+저자들도 limitation에서 말하듯, 이론적 결과가 multi-vector model이나 cross-encoder에 그대로 적용되는 것은 아니다. 오히려 multi-vector model은 이 한계를 완화할 수 있는 대안으로 제시된다.
+
+### 2. 어떤 query가 실패할지 사전에 특정하지는 못한다
+
+논문은 “어떤 조합은 반드시 표현 불가능하다”는 점을 보이지만, 실제 product에서 어떤 query가 그 조합에 해당하는지 사전에 알기는 어렵다.
+
+그래서 운영에서는 query classifier, retrieval diagnostics, fallback path, reranking eval이 필요하다.
+
+### 3. LIMIT dataset은 의도적으로 stress test다
+
+LIMIT는 자연어로 단순하게 보이지만, 이론적 한계를 드러내도록 설계된 dataset이다. 따라서 일반 사용자 query distribution에서 같은 빈도로 이런 문제가 발생한다고 단정하면 안 된다.
+
+하지만 agentic search, instruction-following retrieval, complex query benchmark가 늘어나는 방향을 보면 이런 stress test의 의미는 커진다.
+
+### 4. BM25가 답이라는 뜻은 아니다
+
+BM25가 기본 LIMIT에서 매우 잘하지만 synonym version에서는 크게 떨어진다. sparse lexical retrieval은 조합 표현에는 강하지만, lexical mismatch에는 약하다.
+
+따라서 결론은 BM25 회귀가 아니라 hybridization이다.
+
+## 내 결론
+
+LIMIT는 AI Search 시리즈에서 꽤 중요한 전환점이다.
+
+앞의 ColBERT, PLAID, SPLATE가 “더 정교한 retrieval architecture”를 보여줬다면, LIMIT는 왜 그런 복잡도가 필요한지를 설명한다.
+
+single-vector embedding은 훌륭한 기본 도구다. semantic search를 간단하게 만들고, 대규모 first-stage retrieval에 유용하다. 하지만 모든 relevance definition을 하나의 벡터 내적으로 표현할 수 있다고 기대하면 안 된다.
+
+AI Search 시스템은 앞으로 더 복합적인 구조가 될 가능성이 높다.
+
+```text
+hard filter
++ sparse retrieval
++ dense retrieval
++ multi-vector retrieval
++ reranker
++ structured query
++ context selection
+```
+
+LIMIT가 주는 가장 실용적인 교훈은 이거다.
+
+> embedding model을 더 키우는 것만으로 retrieval 문제가 모두 해결되지는 않는다. query가 요구하는 relevance 구조에 맞는 retrieval operator를 선택해야 한다.
+
+다음 글은 Gemini Embedding 2로 넘어가면 좋다. LIMIT가 single-vector embedding의 한계를 짚었다면, Gemini Embedding 2는 embedding model이 텍스트를 넘어 multimodal search까지 확장되는 방향을 보여준다.
+
+## 참고 자료
+
+- [On the Theoretical Limitations of Embedding-Based Retrieval](https://arxiv.org/abs/2508.21038)
+- [LIMIT dataset/code](https://github.com/google-deepmind/limit)
+- [ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT](https://arxiv.org/abs/2004.12832)
+- [SPLATE: Sparse Late Interaction Retrieval](https://arxiv.org/abs/2404.13950)

@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 02:25:16 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 04:49:03 GMT</lastBuildDate>
     <item>
       <title>AI Search는 Vector DB만으로 끝나지 않는다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-ai-search-stack-meetup-seoul/</link>
@@ -32,6 +32,20 @@
       <category>retrieval</category>
       <category>late-interaction</category>
       <category>BERT</category>
+    </item>
+    <item>
+      <title>[AI Search] LIMIT: Embedding Search의 이론적 한계</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-06-limit-theoretical-limitations-embedding-retrieval/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-06-limit-theoretical-limitations-embedding-retrieval/</guid>
+      <description>LIMIT 논문을 AI Search stack 관점에서 읽는다. single-vector embedding retrieval이 왜 모든 top-k relevance 조합을 표현할 수 없는지, 그리고 이 한계가 단순한 학습 데이터 부족이 아니라 embedding dimension과 검색 표현 방식의 문제일 수 있음을 정리한다.</description>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>LIMIT</category>
+      <category>embedding</category>
+      <category>dense-retrieval</category>
+      <category>vector-search</category>
+      <category>retrieval-evaluation</category>
     </item>
     <item>
       <title>[AI Search] PLAID: ColBERT를 빠르게 만드는 검색 엔진</title>
