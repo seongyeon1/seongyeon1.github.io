@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 09:06:31 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 12:01:51 GMT</lastBuildDate>
     <item>
       <title>[AI Search] AcuRank: Reranking Compute를 어려운 쿼리에 더 쓰는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-acurank-adaptive-listwise-reranking/</link>
@@ -60,6 +60,20 @@
       <category>embedding</category>
       <category>cross-modal-retrieval</category>
       <category>RAG</category>
+    </item>
+    <item>
+      <title>[AI Search] LDAR: Long Context와 RAG 사이에서 Distractor를 피하는 검색</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-06-ldar-distraction-aware-retrieval/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-06-ldar-distraction-aware-retrieval/</guid>
+      <description>LDAR 논문을 AI Search stack 관점에서 읽는다. Long-context LLM에 모든 문서를 넣는 방식과 top-k RAG 사이에서, LLM이 distractor에 흔들리지 않도록 similarity distribution만 보고 검색 범위를 학습하는 방법을 정리한다.</description>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>LDAR</category>
+      <category>RAG</category>
+      <category>long-context</category>
+      <category>retrieval</category>
+      <category>distraction-aware</category>
     </item>
     <item>
       <title>[AI Search] LIMIT: Embedding Search의 이론적 한계</title>

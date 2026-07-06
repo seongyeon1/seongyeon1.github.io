@@ -1,0 +1,482 @@
+---
+title: "[AI Search] LDAR: Long Context와 RAG 사이에서 Distractor를 피하는 검색"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "LDAR", "RAG", "long-context", "retrieval", "distraction-aware"]
+summary: "LDAR 논문을 AI Search stack 관점에서 읽는다. Long-context LLM에 모든 문서를 넣는 방식과 top-k RAG 사이에서, LLM이 distractor에 흔들리지 않도록 similarity distribution만 보고 검색 범위를 학습하는 방법을 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 9
+math: false
+---
+
+<Paper
+  title="Beyond RAG vs. Long-Context: Learning Distraction-Aware Retrieval for Efficient Knowledge Grounding"
+  authors="Seongwoong Shim, Myunsoo Kim, Jae Hyeon Cho, Byung-Jun Lee"
+  year="2026"
+  venue="ICLR 2026"
+  arxiv="2509.21865"
+/>
+
+## 한 줄 요약
+
+LDAR는 “RAG로 조금만 가져올 것인가, long-context LLM에 전부 넣을 것인가”의 이분법을 피한다. 핵심은 **정답 근거를 많이 넣는 것보다, LLM을 헷갈리게 만드는 distractor를 덜 넣는 retrieval policy를 학습하자**는 것이다.
+
+AI Search stack 관점에서는 AcuRank 다음에 읽기 좋다.
+
+AcuRank가 reranking 단계에서 “어려운 쿼리에 compute를 더 쓰자”는 논문이었다면, LDAR는 retrieval 단계에서 “LLM이 실제로 잘 답하게 만드는 passage set을 고르자”는 논문이다.
+
+```text
+AcuRank
+-> top-k boundary가 애매한 후보에 reranking compute 집중
+
+LDAR
+-> LLM이 distractor에 흔들리지 않도록 retrieval 범위 자체를 조절
+```
+
+둘 다 공통적으로 “검색 결과를 많이 넣으면 좋은가?”라는 단순한 생각을 경계한다.
+
+## 문제: Long context가 RAG를 완전히 대체하지는 않는다
+
+요즘 LLM은 context window가 크게 늘었다. GPT-4o, Gemini 2.5, Qwen 2.5 계열처럼 128K token 이상을 처리하는 모델도 흔하다.
+
+그러면 자연스럽게 이런 생각이 든다.
+
+> 굳이 RAG로 몇 개 passage만 고르지 말고, 그냥 전체 문서를 long-context에 넣으면 되는 것 아닌가?
+
+이 논문은 그 답이 “항상 그렇지는 않다”라고 말한다.
+
+Long-context 접근은 장점이 있다. Retriever가 놓칠 수 있는 정보를 모델이 직접 볼 수 있고, 여러 위치에 흩어진 근거를 통합할 가능성도 있다. 하지만 세 가지 문제가 있다.
+
+| 문제 | 의미 |
+| --- | --- |
+| token inefficiency | 불필요하거나 중복된 context까지 모두 처리해야 함 |
+| lost in the middle | 긴 입력 중간에 있는 정보를 잘 못 쓰는 현상 |
+| distraction | 관련 없어 보이거나 애매하게 관련된 passage가 LLM 판단을 흐림 |
+
+특히 LDAR가 집중하는 것은 세 번째, distraction이다.
+
+논문은 중요한 관찰을 한다.
+
+> gold passage가 retrieval 결과에 포함되어 있어도, 함께 들어간 다른 passage 때문에 LLM이 틀릴 수 있다.
+
+즉 RAG 실패를 단순히 “정답 문서를 못 찾았다”로만 보면 안 된다.
+
+```text
+정답 passage 있음
++ distractor passage도 있음
+= LLM이 오답 생성
+```
+
+이 경우에는 recall을 더 높이는 것이 오히려 독이 될 수 있다. 더 많이 가져올수록 정답 근거도 들어올 가능성이 커지지만, 동시에 LLM을 헷갈리게 하는 passage도 같이 들어온다.
+
+## 기존 top-k retrieval의 한계
+
+일반적인 dense retrieval은 query와 passage를 embedding한 뒤 similarity가 높은 순서대로 top-k를 가져온다.
+
+```text
+query embedding
+  ↓
+passage embeddings와 cosine similarity 계산
+  ↓
+similarity 높은 top-k 선택
+```
+
+이 방식은 싸고 빠르다. 하지만 downstream LLM의 관점에서는 최적이 아닐 수 있다.
+
+왜냐하면 retriever의 목표와 LLM의 목표가 다르기 때문이다.
+
+- retriever: query와 semantic similarity가 높은 passage를 찾음
+- LLM: 주어진 passage set으로 정답을 생성해야 함
+
+Similarity가 높은 passage가 항상 좋은 context는 아니다. 어떤 passage는 query와 비슷하지만 답을 헷갈리게 만든다. 어떤 passage는 개별적으로 넣으면 정답을 돕지만, 다른 passage와 같이 넣으면 reasoning을 복잡하게 만들어 오답을 유도할 수 있다.
+
+논문 Figure 2의 메시지는 꽤 세다.
+
+1. top-k로 누적해서 가져오면 distractor 때문에 틀릴 수 있다.
+2. gold passage를 앞에 reranking해도, 뒤에 distractor가 같이 있으면 틀릴 수 있다.
+3. 심지어 개별적으로는 정답을 유도하는 passage들만 모아도, 함께 넣으면 reasoning이 꼬여 틀릴 수 있다.
+4. open-source LLM과 closed-source LLM은 같은 passage set에 대해서도 다르게 반응한다.
+
+즉 “좋은 passage”는 독립적으로 정의하기 어렵고, **passage set과 target LLM의 조합**으로 봐야 한다.
+
+## LDAR의 핵심: text를 보지 않고 similarity distribution만 본다
+
+LDAR는 꽤 의도적으로 제한된 접근을 택한다.
+
+LDAR의 adaptive retriever는 passage 텍스트를 직접 읽지 않는다. Query-passage cosine similarity distribution만 본다. 그리고 그 distribution 위에서 어떤 구간의 passage를 가져올지 결정한다.
+
+왜 텍스트를 안 볼까?
+
+텍스트를 다 읽고 판단하려면 비싼 reranker나 LLM judge가 필요하다. Long-context setting에서는 passage 수가 많아질수록 이 비용이 터진다. LDAR는 큰 embedding model과 LLM은 고정하고, 그 사이에 작은 policy network만 학습한다.
+
+입력과 출력은 다음처럼 볼 수 있다.
+
+```text
+입력:
+  query와 N개 passage의 cosine similarity vector
+
+LDAR policy:
+  similarity distribution을 보고 retrieval band 결정
+
+출력:
+  lower quantile q_L
+  upper quantile q_U
+
+선택:
+  similarity 순서에서 q_L ~ q_U 구간에 해당하는 passage들
+```
+
+예를 들어 similarity 순으로 정렬된 passage가 100개 있다고 하자.
+
+- `q_L = 0.90`, `q_U = 1.00`이면 상위 10%만 가져온다.
+- `q_L = 0.70`, `q_U = 1.00`이면 상위 30%를 가져온다.
+- `q_L = 0.40`, `q_U = 0.80`이면 꼭 최상위만이 아니라 중간 band도 포함할 수 있다.
+
+논문은 이걸 band-based retrieval이라고 부른다.
+
+## 왜 band인가: subset selection은 너무 어렵다
+
+직관적으로는 각 passage마다 “가져올지 말지”를 Bernoulli로 결정할 수도 있다.
+
+```text
+p1 선택? yes/no
+p2 선택? yes/no
+p3 선택? yes/no
+...
+```
+
+하지만 이 방식은 조합 공간이 너무 크다. passage가 100개면 가능한 subset이 사실상 폭발한다. 논문은 Bernoulli-based variant가 좋은 trade-off를 찾지 못하고, long-context에 가까운 suboptimal solution으로 수렴한다고 보고한다.
+
+반면 band 방식은 search space를 훨씬 작고 부드럽게 만든다.
+
+```text
+모든 subset 중 하나를 고르는 문제
+-> similarity rank 위의 연속 구간을 고르는 문제
+```
+
+이건 약간 “retrieval policy의 action space를 추상화한다”에 가깝다. 개별 passage를 직접 고르는 대신, similarity distribution의 어느 구간을 믿을지 정한다.
+
+LDAR가 학습하는 전략은 상황에 따라 다르다.
+
+| similarity distribution | LDAR의 경향 |
+| --- | --- |
+| 상위 passage similarity가 뚜렷하게 높음 | 좁은 상위 band만 선택 |
+| 강한 후보가 뚜렷하지 않음 | 더 넓은 band를 선택해 coverage 확보 |
+| target LLM이 long-context에 약함 | 더 적은 passage 선택 |
+| target LLM이 long-context에 강함 | 더 많은 passage 선택 가능 |
+
+즉 LDAR는 retrieval 결과를 query별, task별, LLM별로 조절한다.
+
+## 학습 방식: LLM이 맞히면 reward를 준다
+
+LDAR의 목표는 단순한 retrieval metric이 아니다. 최종 LLM이 정답을 맞히는 것이다.
+
+논문은 LDAR policy가 passage set을 선택하면, 그 passage set을 target LLM에 넣어 답변을 생성하게 한다. 그 다음 정답 여부를 평가하고 reward를 준다.
+
+```text
+query + selected passages
+  ↓
+target LLM generates answer
+  ↓
+정답이면 reward 1, 아니면 reward 0
+  ↓
+policy gradient로 LDAR 업데이트
+```
+
+평가는 GPT-4o judge를 사용한다. Query, ground-truth answer, model prediction을 주고 correctness를 판단하게 한다.
+
+중요한 점은 LDAR가 embedding model이나 LLM을 fine-tuning하지 않는다는 것이다.
+
+- embedding model: 고정
+- target LLM: 고정
+- LDAR policy network만 학습
+
+논문 기본 실험에서는 embedding model로 `bge-large-en-v1.5`를 사용한다. LDAR는 reranker를 사용하지 않는다. 이건 의도적인 선택이다. Reranker 없이도 similarity distribution만으로 distraction-aware policy를 배울 수 있음을 보이려는 것이다.
+
+## 실험 설정
+
+논문은 여섯 개 knowledge-intensive benchmark/task에서 평가한다.
+
+LaRA benchmark에서 네 개 task를 사용한다.
+
+| task | 의미 |
+| --- | --- |
+| Location | 주어진 context에서 정확한 정보를 찾는 능력 |
+| Reasoning | 논리 추론, 연역, 계산 능력 |
+| Comparison | 여러 위치의 정보를 통합하고 비교하는 능력 |
+| Hallucination | context에 답이 없을 때 거절할 수 있는지 |
+
+추가로 HELMET benchmark의 long-context HotpotQA와 Natural Questions도 zero-shot 평가에 사용한다.
+
+모델도 다양하다.
+
+| 구분 | 모델 |
+| --- | --- |
+| open-source | Qwen-2.5-7B-Instruct, Qwen-3-4B-2507, Llama-3.1-8B-Instruct, Llama-3.2-3B-Instruct, Mistral-Nemo-Instruct-12B |
+| closed-source | GPT-4o, GPT-4o-mini, Gemini-2.5-pro, Gemini-2.5-flash |
+
+비교 baseline은 다음과 같다.
+
+- Top-1, Top-5, Top-10, Top-25, Top-50 similarity retrieval
+- LC, 즉 full long-context
+- RAG: top-5를 `bge-reranker-large`로 재정렬
+- RankZephyr: top-50을 listwise reranking 후 top-5 선택
+- BGM: retriever와 LLM preference gap을 줄이는 bridge model
+- Self-Route: LLM이 RAG와 long-context 중 선택
+- Adaptive-k: sorted similarity score의 큰 gap으로 k 선택
+
+## 결과 1: LDAR는 long-context보다 적은 token으로 더 좋은 성능을 낸다
+
+Table 1의 핵심 메시지는 단순하다.
+
+> LDAR는 대체로 long-context보다 훨씬 적은 token을 쓰면서, 평균 성능은 더 높다.
+
+Context length 32K 설정에서 전체 평균을 보면:
+
+| 방법 | open-source 평균 | closed-source 평균 |
+| --- | ---: | ---: |
+| LC | 58.62 | 74.00 |
+| RAG | 62.12 | 70.62 |
+| RankZephyr | 58.55 | 72.20 |
+| LDAR | 70.00 | 79.42 |
+
+Context length 128K 설정에서도 비슷하다.
+
+| 방법 | open-source 평균 | closed-source 평균 |
+| --- | ---: | ---: |
+| LC | 43.65 | 69.97 |
+| RAG | 54.67 | 64.42 |
+| RankZephyr | 51.20 | 59.48 |
+| LDAR | 61.55 | 76.22 |
+
+특히 128K open-source setting에서 LC 평균이 `43.65`까지 떨어지는 것이 눈에 띈다. 긴 context를 다 넣는 것이 open-source 모델에는 오히려 부담이 될 수 있다는 뜻이다. LDAR는 같은 setting에서 `61.55`를 기록한다.
+
+Token usage도 중요하다. 논문은 LDAR의 평균 token usage ratio를 long-context 대비 다음처럼 보고한다.
+
+| 설정 | LDAR token usage ratio |
+| --- | ---: |
+| 32K open-source | 0.47 |
+| 32K closed-source | 0.63 |
+| 128K open-source | 0.25 |
+| 128K closed-source | 0.52 |
+
+즉 open-source 모델에는 더 적은 passage를 주고, closed-source 모델에는 더 많은 passage를 허용하는 식으로 policy가 달라진다. 이건 LDAR가 target LLM의 long-context 처리 능력에 맞춰 retrieval 범위를 조절한다는 근거다.
+
+## 결과 2: task마다 최적 retrieval 범위가 다르다
+
+논문은 task별 token usage ratio도 보고한다.
+
+| task | LDAR token usage ratio |
+| --- | ---: |
+| Location | 0.45 |
+| Reasoning | 0.43 |
+| Comparison | 0.50 |
+| Hallucination | 0.42 |
+
+Comparison task가 상대적으로 더 많은 token을 쓴다. 여러 위치의 정보를 비교하고 통합해야 하므로, 좁은 top band만으로는 부족할 수 있기 때문이다.
+
+이건 실무적으로 중요한 포인트다.
+
+RAG에서 `top_k = 5` 같은 전역 설정을 박아두면 task 차이를 무시하게 된다.
+
+```text
+단순 factual lookup
+-> 적은 passage로 충분할 수 있음
+
+multi-hop / comparison query
+-> 더 넓은 coverage 필요
+
+hallucination-sensitive query
+-> distractor를 많이 넣으면 거절 실패 가능
+```
+
+LDAR는 이런 차이를 “몇 개 가져올지”의 문제가 아니라, similarity distribution 위에서 어떤 band를 가져올지의 문제로 모델링한다.
+
+## 결과 3: zero-shot에서도 어느 정도 일반화된다
+
+논문은 LaRA에서 학습한 retrieval strategy가 HELMET의 HotpotQA와 NQ로도 일반화되는지 본다.
+
+전체 평균을 보면:
+
+| 설정 | LC | RAG | LDAR |
+| --- | ---: | ---: | ---: |
+| HotpotQA open-source 평균 | 44.2 | 55.8 | 60.0 |
+| NQ open-source 평균 | 37.4 | 41.0 | 49.2 |
+| HotpotQA closed-source 평균 | 78.0 | 60.5 | 81.8 |
+| NQ closed-source 평균 | 59.0 | 45.0 | 61.0 |
+
+성능 차이는 Table 1만큼 크지는 않지만, LDAR는 평균적으로 RAG와 LC보다 좋은 성능을 보인다. 논문은 이를 learned retrieval strategy가 다른 benchmark에도 zero-shot으로 어느 정도 이전될 수 있다는 근거로 본다.
+
+다만 여기서 과대해석하면 안 된다. LDAR는 task-specific signal로 학습된다. 완전히 범용 retriever라기보다는, 특정 task/LLM 조합에 맞는 retrieval policy를 학습한 뒤 유사한 setting으로 옮길 수 있다는 쪽에 가깝다.
+
+## 결과 4: reranker보다 빠른 이유
+
+LDAR는 text-free policy다. Passage 텍스트를 cross-encoder로 다시 읽지 않고, similarity vector만 보고 band를 고른다.
+
+그래서 inference overhead가 작다.
+
+논문은 Location task에서 per-example inference time을 비교한다. Table 3의 parsing이 PDF상 조금 지저분하지만, 본문 결론은 명확하다.
+
+- LC는 모든 passage를 LLM에 넣기 때문에 open-source setting에서 latency가 크다.
+- RAG, RankZephyr, BGM 같은 text-based reranker/bridge model은 cross-encoder 또는 sequence model 비용이 있다.
+- LDAR는 lightweight text-free adaptive retriever라서 LC와 reranker baseline보다 빠르면서 성능도 높다.
+
+또한 deployment가 많아질수록 LDAR의 cost advantage가 커진다고 분석한다. 학습 비용은 한 번 들지만, inference 때 매번 long-context를 덜 쓰기 때문이다.
+
+## AI Search stack에서 이 논문의 위치
+
+LDAR는 dense retriever를 대체하는 논문은 아니다. Embedding model도 고정하고, LLM도 고정한다. 대신 둘 사이의 **context selection policy**를 학습한다.
+
+```text
+Query
+  ↓
+Pretrained retriever
+  query-passage similarity 계산
+  ↓
+LDAR
+  similarity distribution에서 retrieval band 선택
+  ↓
+Selected context
+  distractor 위험과 coverage 사이 균형
+  ↓
+Target LLM
+  answer generation
+```
+
+이 시리즈 흐름에서 보면 LDAR는 다음 위치다.
+
+```text
+Roaring Bitmap
+-> deterministic filter layer
+
+ColBERT / PLAID / SPLATE
+-> retrieval representation & serving
+
+LIMIT / Position Bias
+-> retrieval 표현력과 training/eval risk
+
+AcuRank
+-> reranking compute allocation
+
+LDAR
+-> LLM-aware context selection policy
+```
+
+특히 RAG vs long-context 논쟁을 실무적으로 정리해준다.
+
+```text
+RAG가 항상 이기는 것도 아니고,
+long-context가 항상 이기는 것도 아니다.
+중요한 건 target LLM과 task에 맞춰 context 양과 구성을 조절하는 것이다.
+```
+
+## 실무 적용 시 생각할 점
+
+### 1. top-k를 config가 아니라 policy로 본다
+
+대부분의 RAG 시스템은 `top_k = 5` 같은 설정으로 시작한다. 하지만 LDAR 관점에서는 이 값이 너무 단순하다.
+
+더 나은 방식은 query별로 context selection policy를 두는 것이다.
+
+- similarity distribution이 sharp한가?
+- 상위 후보와 중간 후보의 score gap이 큰가?
+- task가 lookup인가, comparison인가, multi-hop인가?
+- target LLM이 long-context에 강한가?
+- hallucination risk가 높은 domain인가?
+- latency/token budget은 얼마인가?
+
+이런 신호를 보고 top-k 또는 retrieval band를 동적으로 정해야 한다.
+
+### 2. “정답 passage 포함”만으로 평가하지 않는다
+
+RAG 평가에서 흔히 Recall@k를 본다.
+
+```text
+정답 passage가 top-k 안에 들어왔는가?
+```
+
+하지만 LDAR는 이게 충분하지 않다고 말한다.
+
+정답 passage가 들어와도 distractor 때문에 LLM이 틀릴 수 있다. 따라서 context selection 평가는 downstream answer accuracy와 함께 봐야 한다.
+
+좋은 dashboard는 이런 형태가 된다.
+
+| 지표 | 이유 |
+| --- | --- |
+| Recall@k | gold evidence가 들어왔는지 |
+| answer accuracy | LLM이 실제로 맞혔는지 |
+| token usage | 비용과 latency |
+| distractor sensitivity | 추가 passage 때문에 오답으로 바뀌는지 |
+| task bucket별 성능 | lookup/comparison/reasoning 차이 |
+| model bucket별 성능 | open-source/closed-source/long-context capability 차이 |
+
+### 3. Reranker와 LDAR는 경쟁보다 조합에 가깝다
+
+논문에서는 LDAR의 효과를 독립적으로 보이기 위해 reranker를 쓰지 않는다. 하지만 실제 시스템에서는 조합 가능성이 크다.
+
+예를 들어:
+
+```text
+1. retriever로 candidate pool 생성
+2. LDAR로 target LLM에 넣을 similarity band 결정
+3. band 안에서 lightweight reranker 또는 dedup 수행
+4. context order를 재배치
+5. answer generation
+```
+
+LDAR의 limitation에도 나오듯, LDAR는 retrieved passage ordering을 명시적으로 최적화하지 않는다. 실제 RAG에서는 선택과 순서가 둘 다 중요하다. 따라서 LDAR류 policy와 reranking/context ordering을 같이 보는 게 자연스럽다.
+
+### 4. Domain-specific policy가 필요할 수 있다
+
+LDAR는 task-specific signal로 학습된다. 논문도 limitation에서 실제 retrieval scenario는 단일 task formulation과 잘 맞지 않을 수 있다고 말한다.
+
+실무에서는 domain별 policy가 필요할 수 있다.
+
+- 법률/세무: distractor가 매우 위험하고 근거 충돌이 많음
+- 기술 문서: version, dependency, edge case가 distractor가 될 수 있음
+- 고객지원: 비슷한 제품/요금제/지역 조건이 distractor가 됨
+- 리서치/논문 검색: coverage가 중요하고 comparison query가 많음
+
+즉 LDAR를 그대로 가져오기보다, query/task classifier와 함께 “어떤 retrieval policy를 쓸지”를 정하는 쪽이 현실적이다.
+
+## 한계와 주의점
+
+첫째, LDAR는 task-specific feedback으로 학습된다. 다양한 실무 질의가 섞인 환경에서는 단일 LDAR policy가 최적이 아닐 수 있다. 논문도 meta-classifier나 mixture-of-experts 방식의 task-specialized retrieval strategy를 future work로 제안한다.
+
+둘째, LDAR는 passage ordering을 명시적으로 최적화하지 않는다. 어떤 passage를 넣을지도 중요하지만, long-context LLM에서는 어디에 넣을지도 중요하다. Lost-in-the-middle 문제를 생각하면 ordering은 별도의 최적화 대상이다.
+
+셋째, similarity distribution만 본다는 제한은 장점이자 한계다. 빠르고 저렴하지만, passage 내용의 세부 의미나 contradiction, source reliability는 직접 보지 못한다.
+
+넷째, reward가 LLM correctness judge에 의존한다. GPT-4o judge를 사용하지만, judge 오류나 task-specific grading bias가 policy 학습에 영향을 줄 수 있다.
+
+다섯째, Hallucination task에서는 학습 reward가 degenerate strategy를 만들 수 있다. 논문도 Hallucination task를 학습 objective로 쓰면 일부러 passage를 안 가져오거나 irrelevant passage를 가져와 refusal을 유도하는 문제가 생긴다고 보고한다. 그래서 해당 task는 evaluation-only로 처리한다.
+
+## 제 해석
+
+LDAR의 가장 좋은 메시지는 이거다.
+
+> RAG의 목적은 많은 문서를 넣는 것이 아니라, target LLM이 답을 잘하게 만드는 context를 구성하는 것이다.
+
+이 말은 당연해 보이지만, 실제 시스템에서는 자주 잊힌다. 우리는 보통 retriever의 similarity score, reranker score, Recall@k 같은 proxy를 최적화한다. 하지만 최종 사용자가 보는 것은 answer quality다.
+
+LDAR는 retrieval을 LLM-aware하게 만든다. 그것도 비싼 text reranking을 매번 돌리는 대신, similarity distribution만 보고 “얼마나 넓게 가져올지”를 학습한다. 이게 실용적인 이유다.
+
+개인적으로는 이 논문을 “RAG vs long-context” 논쟁의 중간 지점으로 읽는 게 좋다고 본다.
+
+```text
+RAG: token efficient하지만 coverage 부족 가능
+Long-context: coverage는 높지만 distractor와 비용 문제
+LDAR: target LLM/task에 맞춰 coverage와 distraction을 조절
+```
+
+AI Search 제품을 만든다면 이 논문에서 가져갈 포인트는 꽤 명확하다.
+
+```text
+1. top-k는 고정값이 아니라 policy다.
+2. recall만 높이면 안 되고 distractor sensitivity를 봐야 한다.
+3. target LLM의 long-context 능력에 따라 retrieval 양을 바꿔야 한다.
+4. task별 context selection 전략이 달라야 한다.
+5. answer accuracy와 token cost를 함께 최적화해야 한다.
+```
+
+다음 글에서는 GlotLID를 보면 자연스럽다. LDAR가 “어떤 context를 넣을까”의 문제였다면, GlotLID는 multilingual search stack에서 “이 텍스트가 어떤 언어인가”를 안정적으로 식별하는 기반 계층으로 이어진다.
