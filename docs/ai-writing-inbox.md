@@ -2163,3 +2163,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-security, runtime-policy, audit, github-repo]
 - status: idea
+
+### 2026-07-06 — [논문 리뷰] SkillFuzz: open skill marketplace의 암묵적 intent를 fuzzing하기
+- type: paper
+- source: http://arxiv.org/abs/2607.02345v1
+- why-now: LLM agent가 재사용 가능한 skill을 marketplace에서 조합하는 흐름이 커지면서, skill description 뒤에 숨어 있는 implicit intent와 조합형 위험을 테스트해야 한다.
+- angle: “agent skill은 프롬프트 조각이 아니라 fuzzing 대상 API surface” — skill composition, implicit intent discovery, marketplace QA를 coding agent 보안 하네스 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, fuzzing, security, marketplace]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] AgenticSTS: bounded-memory long-horizon agent 테스트베드
+- type: paper
+- source: http://arxiv.org/abs/2607.02255v1
+- why-now: 장기 실행 agent는 모든 과거 관찰과 tool trace를 prompt에 붙일 수 없고, memory contract가 성능·비용·프라이버시를 동시에 좌우한다.
+- angle: “agent memory 평가는 기억을 많이 넣었나가 아니라 어떤 결정을 위해 무엇을 볼 수 있게 했나를 봐야 한다” — bounded-memory contract, state tracking, long-horizon regression suite로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, long-horizon, eval, bounded-context]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] ContextNest: autonomous agent를 위한 verifiable context governance
+- type: paper
+- source: http://arxiv.org/abs/2607.02116v1
+- why-now: RAG/agent가 외부 knowledge store에 의존할수록 relevance만으로는 부족하고 provenance, version, integrity, point-in-time reconstruction이 운영 요구가 되고 있다.
+- angle: “RAG context는 검색 결과가 아니라 감사 가능한 supply chain artifact” — context provenance, version identity, traceability, 재현 가능한 agent 실행 로그를 설계 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [context-governance, rag, agent, provenance]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] PACE: 비싼 agent benchmark를 대신하는 capability proxy
+- type: paper
+- source: http://arxiv.org/abs/2607.02032v1
+- why-now: SWE-Bench, GAIA 같은 agent benchmark는 비용과 인프라 부담이 커서 모델·프롬프트·툴 설정을 빠르게 반복 평가하기 어렵다.
+- angle: “agent eval은 full benchmark만 돌리기보다 proxy metric으로 후보를 걸러야 한다” — proxy 설계, rank correlation, regression triage를 eval 운영 루프로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, benchmark, proxy-metric, swe-bench]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] CheckRLM: retrieval-augmented reasoning에서 knowledge-thought coherence 검사하기
+- type: paper
+- source: http://arxiv.org/abs/2607.02262v1
+- why-now: reasoning model이 긴 chain-of-thought를 만들 때 retrieval evidence와 생각 단계가 중간에서 어긋나도 최종 답변만 보면 원인을 찾기 어렵다.
+- angle: “RAG 평가는 답변 grounding만이 아니라 reasoning step과 evidence의 coherence를 봐야 한다” — knowledge-thought mismatch, verifier, agentic RAG QA gate로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, reasoning, coherence, eval]
+- status: idea
+
+### 2026-07-06 — [논문 리뷰] A-TMA: long-term agent memory의 ghost memory 실패 분해하기
+- type: paper
+- source: http://arxiv.org/abs/2607.01935v1
+- why-now: 개인화 agent에서 사용자 사실은 바뀌는데, 오래된 기억이 현재 상태처럼 섞이는 ghost memory가 장기 운영 품질을 크게 흔든다.
+- angle: “agent memory에는 과거 사실과 현재 사실을 구분하는 state-aware QA가 필요하다” — memory update, stale fact, temporal coordination failure를 개인 비서 메모리 regression test로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, personalization, stale-facts, eval]
+- status: idea
+
+### 2026-07-06 — Mission Control: self-hosted multi-agent orchestration 대시보드
+- type: tech
+- source: https://github.com/builderz-labs/mission-control
+- why-now: 팀 단위 agent 운영은 개별 CLI 실행을 넘어 task dispatch, multi-agent workflow, spend monitoring, governance를 한 control plane에서 봐야 하는 단계로 가고 있다.
+- angle: “agent orchestration의 운영 UI는 채팅창이 아니라 mission control dashboard” — 작업 배정, 비용 관측, 권한·정책, multi-agent workflow를 repo architecture 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, orchestration, governance, github-repo]
+- status: idea
+
+### 2026-07-06 — Commonly: 팀과 에이전트가 공유하는 self-hosted workspace memory
+- type: tech
+- source: https://github.com/Team-Commonly/commonly
+- why-now: 여러 agent runtime을 쓰는 팀에서는 agent별 memory silo가 지식 중복, 권한 혼선, 감사 불가능성을 만들기 쉽다.
+- angle: “agent memory는 개인 비서 기능이 아니라 팀 workspace substrate가 될 수 있다” — shared memory, self-hosting, runtime-agnostic integration, governance boundary를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, workspace, self-hosted, github-repo]
+- status: idea

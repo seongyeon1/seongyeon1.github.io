@@ -137,6 +137,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Online Safety Monitoring — LLM 출력 안전성을 실시간 risk control로 감시하기 | paper-review | AI 평가/운영 | | arXiv 2607.02510 — external verifier, threshold calibration, calibrated alarm system으로 guardrail 설계 |
 | 아이디어 | 미정 | [논문 리뷰] TestEvo-Bench — test와 code가 함께 진화하는 coding agent 평가 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02469 — executable benchmark, test-code co-evolution, CI verifier 설계 |
 | 아이디어 | 미정 | agnix: AGENTS.md·MCP·hooks를 위한 linter/LSP | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — repo guidance를 lintable configuration artifact로 다루는 agent harness 운영 패턴 |
+| 아이디어 | 미정 | [논문 리뷰] ContextNest — agent context를 감사 가능한 supply chain으로 다루기 | paper-review | Agentic RAG | | arXiv 2607.02116 — provenance, version identity, integrity, point-in-time reconstruction을 agent context governance로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SkillFuzz — agent skill marketplace를 fuzzing하는 법 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02345 — skill composition, implicit intent discovery, marketplace QA를 coding agent 보안 하네스로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] CheckRLM — RAG reasoning의 knowledge-thought coherence 검사 | paper-review | Agentic RAG | | arXiv 2607.02262 — retrieval evidence와 reasoning step mismatch를 잡는 agentic RAG QA gate 설계 |
+| 아이디어 | 미정 | Mission Control: self-hosted multi-agent orchestration 대시보드 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — task dispatch, multi-agent workflow, spend monitoring, governance를 control plane으로 묶기 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
