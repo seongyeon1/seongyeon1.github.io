@@ -1,0 +1,401 @@
+---
+title: "[AI Search] Gemini Embedding 2: Multimodal Search를 위한 Unified Embedding"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "Gemini Embedding 2", "multimodal", "embedding", "cross-modal-retrieval", "RAG"]
+summary: "Gemini Embedding 2 논문을 AI Search stack 관점에서 읽는다. 텍스트, 이미지, 비디오, 오디오를 하나의 embedding space로 묶는 native multimodal embedding이 검색 시스템과 RAG, 추천, agentic search에 어떤 의미를 갖는지 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 6
+math: false
+---
+
+<Paper
+  title="Gemini Embedding 2: A Native Multimodal Embedding Model from Gemini"
+  authors="Madhuri Shanbhogue et al., Gemini Embedding Team"
+  year="2026"
+  venue="arXiv"
+  arxiv="2605.27295"
+/>
+
+## 한 줄 요약
+
+Gemini Embedding 2는 텍스트, 이미지, 비디오, 오디오, 문서, 그리고 이들이 섞인 interleaved input을 **하나의 unified vector space**에 매핑하는 native multimodal embedding model이다. AI Search 관점에서 보면, 이 논문은 검색 대상이 텍스트 chunk를 넘어 이미지, 표, 슬라이드, 영상, 음성까지 확장될 때 embedding layer가 어떤 모양이 되어야 하는지를 보여준다.
+
+앞선 LIMIT 글에서는 single-vector embedding retrieval의 이론적 한계를 봤다. 그래서 이번 글이 살짝 아이러니하게 보일 수 있다.
+
+> 방금 embedding search의 한계를 이야기했는데, 바로 다음 글이 더 강한 embedding model이라니?
+
+하지만 이 둘은 충돌하지 않는다.
+
+LIMIT의 메시지는 “embedding을 쓰지 말자”가 아니라 “single-vector embedding 하나로 모든 relevance 구조를 해결한다고 생각하지 말자”에 가깝다. Gemini Embedding 2는 그중에서도 **embedding layer가 담당할 수 있는 범위를 modality 차원에서 크게 확장**하는 논문으로 읽는 게 맞다.
+
+즉 이번 글의 질문은 이거다.
+
+> AI Search가 텍스트 검색을 넘어 multimodal retrieval로 갈 때, embedding model은 어떻게 바뀌어야 할까?
+
+## 배경: 검색 대상은 더 이상 텍스트만이 아니다
+
+RAG를 처음 만들 때는 보통 텍스트 문서를 chunking하고 embedding한다.
+
+```text
+PDF -> text extraction -> chunk -> embedding -> vector DB
+```
+
+이 방식은 간단하다. 하지만 실제 enterprise search나 개인 knowledge search에서는 검색 대상이 훨씬 더 복잡하다.
+
+- PDF 안의 표와 차트
+- 캡처 이미지
+- 슬라이드
+- 제품 사진
+- 회의 녹음
+- 데모 영상
+- 화면 녹화
+- 이미지와 텍스트가 섞인 문서
+- 영상 안의 특정 장면
+- 음성 query와 텍스트 문서의 cross-lingual retrieval
+
+이걸 모두 텍스트로 변환해서 검색할 수도 있다.
+
+```text
+image -> caption -> text embedding
+video -> sampled frames -> caption -> text embedding
+audio -> ASR -> text embedding
+PDF page -> OCR -> text embedding
+```
+
+하지만 이 pipeline에는 손실이 있다.
+
+이미지를 caption 하나로 바꾸면 공간 배치, 색, 작은 글자, 시각적 디테일이 사라진다. 오디오는 ASR로 바꾸면 발화의 애매함, 억양, 발음, prosody가 사라진다. 비디오는 몇 줄 요약으로 바꾸면 temporal event를 잃는다.
+
+Gemini Embedding 2 논문은 이 문제를 native multimodal embedding으로 접근한다.
+
+## 기존 multimodal embedding의 한계: late fusion
+
+논문은 CLIP, ALIGN, SigLIP, CoCa 같은 기존 multimodal embedding 모델을 언급한다. 이 모델들은 보통 image-text pair 같은 cross-modal pair를 학습하고, modality-specific encoder를 통해 unified vector space를 만든다.
+
+이 접근은 image-text retrieval에는 강력하다. 하지만 논문이 지적하는 한계는 크게 두 가지다.
+
+첫째, mixed-modality input을 자연스럽게 다루기 어렵다.
+
+예를 들어 query가 이런 형태라면 어떨까?
+
+```text
+이 이미지의 오른쪽 아래 표와 관련된 정책 문서를 찾아줘
+```
+
+또는:
+
+```text
+이 영상에서 제품 화면이 바뀌는 장면과 연결되는 매뉴얼 섹션을 찾아줘
+```
+
+여기에는 텍스트, 이미지, 비디오, 문서 구조가 함께 들어간다. 단순 image encoder + text encoder의 pairwise alignment만으로는 충분하지 않을 수 있다.
+
+둘째, modality 간 interaction을 충분히 활용하지 못한다.
+
+late-fusion 방식은 각 modality를 따로 encode한 뒤 같은 space에 맞추는 느낌에 가깝다. 반면 Gemini Embedding 2는 Gemini의 multimodal capability를 활용해 input 자체를 native하게 처리하고, text, image, video, audio, document 조합을 하나의 embedding으로 만든다.
+
+논문 표현을 빌리면, Gemini Embedding 2는 arbitrary combinations of interleaved inputs를 unified representation space에 embedding한다.
+
+## 핵심 아이디어: Gemini 기반 native multimodal embedder
+
+Gemini Embedding 2의 구조를 단순화하면 이렇다.
+
+```text
+text / image / video / audio / document / mixed input
+        ↓
+Gemini 기반 multimodal tokenization + transformer
+        ↓
+mean pooling
+        ↓
+linear projection
+        ↓
+up to 3072-dimensional embedding
+```
+
+모델은 Gemini에서 초기화되고, embedding task에 맞게 fine-tuning된다. 중요한 점은 input modality별로 완전히 분리된 encoder를 붙이는 것이 아니라, Gemini의 multimodal foundation 위에서 embedding representation을 만든다는 것이다.
+
+출력 embedding은 최대 3072 dimension이다. 그리고 Matryoshka Representation Learning, 즉 MRL을 적용해 768, 1536 dimension도 지원하도록 학습한다.
+
+실무적으로 이건 꽤 중요하다.
+
+모든 시스템이 3072 dimension embedding을 감당할 수 있는 것은 아니다. index size, memory, latency, network transfer cost가 모두 늘어난다. 그래서 같은 모델에서 768 또는 1536 dimension을 사용할 수 있다는 건 운영상 trade-off를 조절할 수 있다는 뜻이다.
+
+```text
+quality 우선 -> 3072 dim
+latency / storage 우선 -> 768 or 1536 dim
+```
+
+## 학습 방식: multi-task, multi-stage contrastive training
+
+Gemini Embedding 2는 large-scale contrastive learning을 multi-task, multi-stage로 수행한다.
+
+논문에서 설명하는 큰 흐름은 다음과 같다.
+
+### 1. Pre-Fine-Tuning, PFT
+
+auto-regressive generation model에서 embedding encoder로 적응시키는 단계다. 여기서는 noisy한 query-target pair를 대량으로 사용하고, large batch size가 안정적인 학습에 도움이 됐다고 설명한다.
+
+이 단계에서는 image, text, code task를 사용한다.
+
+### 2. Fine-Tuning, FT
+
+그 다음 fine-tuning 단계에서는 text, code, document, image, audio, video task를 더 폭넓게 사용한다. query, positive target, hard negative target triplet을 포함하는 task도 많다.
+
+여기서 중요한 건 모든 modality를 한꺼번에 균일하게 섞는 게 쉽지 않다는 점이다. 논문은 sampling rate와 batch size 같은 hyperparameter에 성능이 민감했다고 말한다.
+
+AI Search 실무에서도 이 부분은 꽤 현실적이다.
+
+multimodal embedding model을 만든다는 건 단순히 “모든 데이터를 넣고 contrastive learning”이 아니다. 어떤 modality와 task를 얼마나 섞을지, 어떤 negative를 줄지, 어떤 평가를 최적화할지에 따라 결과가 달라진다.
+
+### 3. Model soup
+
+여러 fine-tuning run의 checkpoint를 averaging해 generalization을 높인다. 논문은 같은 run의 checkpoint average, 다른 run의 checkpoint average, weighted average 등을 실험했다고 설명한다.
+
+이건 모델 개발 관점에서는 “하나의 magic recipe”보다 “여러 modality와 task 사이의 균형을 맞추는 engineering”에 가깝다.
+
+## 주요 결과: text-only 성능을 잃지 않으면서 multimodal로 확장
+
+Gemini Embedding 2 논문의 핵심 주장은 “multimodal을 지원하느라 text embedding 성능을 희생하지 않았다”에 가깝다.
+
+논문은 여러 benchmark에서 결과를 제시한다.
+
+### Multimodal retrieval
+
+Table 1에서 Gemini Embedding 2는 image, text, video, document modality를 포함한 retrieval benchmark에서 강한 성능을 보인다.
+
+대표 숫자는 다음과 같다.
+
+- MSCOCO text-to-image: 62.9 Recall@1
+- Vatex text-to-video: 68.8 NDCG@10
+- ViDoRe V2 document retrieval: 64.9 NDCG@10
+- Image+Text to Text, EncyclopedicVQA: 71.5 Recall@20
+
+ViDoRe V2 같은 document retrieval에서 64.9를 기록한 점도 흥미롭다. 이 benchmark는 page-level visual structure, layout, embedded text 이해가 필요한데, Gemini Embedding 2는 Amazon Nova MME 60.6보다 높고 Voyage-3.5-multimodal 65.5와 가까운 수준으로 보고된다.
+
+### Text-only / multilingual / code
+
+Table 2에서는 text-only benchmark에서도 강한 결과를 보인다.
+
+- MTEB multilingual mean: 69.9
+- MTEB Code mean: 84.0
+- CoIR mean: 82.3
+
+논문은 이전 text-only Gemini Embedding model의 MTEB multilingual mean 68.32를 Gemini Embedding 2가 69.9로 넘어섰다고 설명한다.
+
+이 포인트가 중요하다.
+
+일반적으로 multimodal model을 만들면 “텍스트만 할 때보다 성능이 희생되는 것 아닌가?”라는 걱정이 생긴다. 이 논문은 적어도 제시된 benchmark에서는 multimodal 확장이 text-only embedding 성능을 훼손하지 않았다고 주장한다.
+
+### Audio retrieval: ASR pipeline보다 native audio가 낫다
+
+개인적으로 가장 실용적으로 흥미로운 결과는 audio retrieval이다.
+
+일반적인 audio search pipeline은 이렇다.
+
+```text
+audio -> ASR -> text -> embedding -> retrieval
+```
+
+Gemini Embedding 2는 raw audio를 직접 embedding하는 path와 ASR을 거친 path를 비교한다.
+
+MSEB passage retrieval split에서 결과는 다음과 같다.
+
+- ASR baseline average mrr@10: 70.40
+- Native audio average mrr@10: 73.99
+- Passage In-Lang: 73.58 -> 75.58
+- Passage Cross-Lang: 67.55 -> 72.56
+
+특히 cross-lingual setup에서 +5.01 point가 난다.
+
+논문은 ASR pipeline의 문제를 error propagation으로 설명한다. ASR이 ambiguous audio를 잘못된 text로 확정해버리면, downstream retrieval은 이미 틀어진 query를 받는다. 반면 native audio embedding은 음성의 연속적 신호와 애매함을 representation 안에 남길 수 있다.
+
+검색 시스템 관점에서 이건 중요한 메시지다.
+
+> modality를 텍스트로 변환한 뒤 검색하는 것이 항상 최선은 아니다.
+
+## AI Search stack에서의 위치
+
+Gemini Embedding 2는 이 시리즈에서 embedding layer의 확장을 담당한다.
+
+```text
+Roaring Bitmap
+-> deterministic filter
+
+ColBERT / PLAID / SPLATE
+-> text retrieval의 representation granularity와 serving 구조
+
+LIMIT
+-> single-vector retrieval이 모든 relevance 조합을 표현할 수 없다는 경고
+
+Gemini Embedding 2
+-> 검색 대상과 query modality를 text 밖으로 확장하는 unified embedding layer
+```
+
+즉 Gemini Embedding 2는 “retrieval architecture의 최종 답”이라기보다, AI Search에서 candidate generation과 semantic matching의 입력 공간을 넓히는 역할에 가깝다.
+
+기존 RAG가 텍스트 chunk 기반이었다면, Gemini Embedding 2 같은 모델은 다음 구조를 가능하게 한다.
+
+```text
+text query -> image / video / audio / document 검색
+image query -> text 문서 검색
+voice query -> text passage 검색
+image + text query -> answer passage 검색
+video scene -> manual section 검색
+PDF page -> 관련 policy / ticket / code 검색
+```
+
+이건 단순히 “이미지 검색도 된다”가 아니다. enterprise search에서 실제로 필요한 건 modality 간 이동이다.
+
+## 실무적으로 생각해볼 점
+
+### 1. multimodal search를 텍스트 변환 pipeline으로만 볼 필요가 없다
+
+지금까지 많은 시스템은 모든 것을 text로 바꾼 뒤 검색했다.
+
+```text
+OCR, ASR, captioning, parsing
+-> text chunk
+-> text embedding
+```
+
+이 방식은 여전히 유용하다. text index는 디버깅하기 쉽고, exact match와 metadata filtering도 잘 붙는다.
+
+하지만 Gemini Embedding 2의 결과는 native modality embedding path도 함께 고려해야 한다는 걸 보여준다.
+
+특히 다음 경우에는 native embedding이 의미 있을 수 있다.
+
+- ASR 오류가 잦은 회의 음성
+- 이미지 안의 시각적 단서가 중요한 제품 검색
+- 영상의 특정 temporal event 검색
+- PDF layout과 chart/table 이해가 필요한 문서 검색
+- text query와 image/document target 간 cross-modal retrieval
+
+실무적으로는 둘 중 하나를 고르는 게 아니라 hybrid가 자연스럽다.
+
+```text
+text extraction index
++ native multimodal embedding index
++ metadata/filter index
++ reranker/context selector
+```
+
+### 2. unified embedding은 index 설계를 바꾼다
+
+모든 modality를 하나의 vector space에 넣을 수 있다면 index도 단순해질 수 있다.
+
+```text
+image vectors
+video vectors
+page vectors
+audio vectors
+text vectors
+```
+
+이들을 같은 ANN index에 넣고 검색할 수 있다. 하지만 운영에서는 몇 가지 질문이 생긴다.
+
+- modality별 score distribution이 같은가?
+- text-to-text score와 image-to-text score를 같은 threshold로 볼 수 있는가?
+- video는 frame 단위, segment 단위, whole video 단위 중 무엇을 embedding할 것인가?
+- audio는 utterance 단위인가, chunk 단위인가?
+- document page와 text chunk를 같은 result list에서 어떻게 섞을 것인가?
+
+unified space가 있다고 해서 ranking policy가 자동으로 해결되지는 않는다. modality-aware calibration과 reranking이 여전히 필요하다.
+
+### 3. dimension은 품질뿐 아니라 비용 문제다
+
+Gemini Embedding 2는 최대 3072 dimension을 제공하고, MRL로 768/1536 dimension도 지원한다.
+
+AI Search 운영에서는 이게 꽤 큰 차이를 만든다.
+
+예를 들어 같은 corpus라도 3072 dimension은 768 dimension보다 저장 공간과 vector 연산 비용이 대략 4배 커진다. 물론 실제 비용은 quantization, ANN index 구조, hardware에 따라 달라진다.
+
+따라서 embedding model 선택은 benchmark 점수만이 아니라 다음 기준으로 봐야 한다.
+
+- target modality
+- index size
+- latency budget
+- recall requirement
+- reranker 존재 여부
+- quantization 가능성
+- dimension truncation 시 품질 하락
+
+### 4. LIMIT와 함께 읽으면 균형이 잡힌다
+
+LIMIT를 읽은 직후라면 Gemini Embedding 2를 “single-vector embedding의 부활”처럼 읽으면 안 된다.
+
+Gemini Embedding 2도 결국 많은 use case에서 하나의 embedding vector를 만들어 retrieval한다. 그래서 LIMIT가 말한 표현력 한계는 여전히 중요한 경고다.
+
+다만 Gemini Embedding 2가 확장하는 축은 다르다.
+
+- LIMIT: single-vector ranking이 표현할 수 있는 relevance 조합의 한계
+- Gemini Embedding 2: 다양한 modality를 하나의 semantic space에 올리는 능력
+
+둘을 같이 읽으면 결론은 이렇다.
+
+> embedding layer는 더 강해지고 더 넓어질 것이다. 하지만 search system은 여전히 filter, sparse retrieval, multi-vector, reranker, structured query, context selection을 함께 가져가야 한다.
+
+## 한계와 열린 질문
+
+논문은 강한 benchmark 결과를 보여주지만, 실제 시스템에 넣을 때는 몇 가지 질문이 남는다.
+
+### 1. unified vector space의 score calibration
+
+text, image, audio, video가 같은 space에 들어간다고 해도 모든 modality pair의 score가 같은 의미를 갖는지는 별도 문제다.
+
+예를 들어 text-to-text similarity 0.75와 image-to-text similarity 0.75를 같은 confidence로 볼 수 있을까? product search에서는 modality별 threshold와 reranking이 필요할 가능성이 크다.
+
+### 2. chunking / segmentation 문제
+
+비디오를 1 FPS up to 32 frames로 embedding했다고 논문은 설명한다. 하지만 실제 서비스에서는 영상 길이, event granularity, scene boundary, audio alignment가 다 다르다.
+
+문서도 마찬가지다. page 단위, section 단위, figure 단위, table 단위 중 무엇을 embedding할지에 따라 retrieval 품질이 달라진다.
+
+### 3. benchmark와 production query distribution
+
+MSCOCO, Vatex, ViDoRe, MTEB, MSEB는 유용한 benchmark지만, 실제 enterprise corpus의 dirty PDF, 내부 용어, 화면 캡처, 회의 음성, partial screenshot 같은 distribution은 또 다르다.
+
+따라서 production에서는 offline benchmark만으로 충분하지 않다. 실제 query log 기반 eval과 human review가 필요하다.
+
+### 4. native multimodal embedding과 explainability
+
+text retrieval은 검색 결과를 설명하기 쉽다. 어떤 keyword가 match됐는지, 어떤 chunk가 근거인지 보여줄 수 있다.
+
+multimodal embedding은 더 어렵다. 이미지나 audio embedding이 왜 특정 문서를 가져왔는지 설명하려면 saliency, caption, OCR, ASR, metadata 같은 auxiliary signal이 필요할 수 있다.
+
+## 내 결론
+
+Gemini Embedding 2는 AI Search stack에서 embedding layer가 어디로 가고 있는지 잘 보여준다.
+
+검색 대상은 텍스트 chunk에 머물지 않는다. 사용자는 이미지로 묻고, 음성으로 묻고, 영상 속 장면을 찾고, PDF page의 layout과 표를 근거로 삼고 싶어 한다. agentic system은 더 나아가 여러 modality를 조합해 query를 만들 것이다.
+
+이 흐름에서 embedding model은 단순 text vectorizer가 아니라, multimodal semantic interface가 된다.
+
+다만 이 논문을 읽고 “이제 unified embedding 하나면 검색 끝”이라고 결론 내리면 안 된다. 오히려 제 결론은 반대에 가깝다.
+
+```text
+multimodal embedding은 검색의 입력 공간을 넓힌다.
+하지만 좋은 AI Search는 여전히 여러 retrieval operator를 조합해야 한다.
+```
+
+Gemini Embedding 2는 AI Search stack의 한 층을 강하게 만든다. 특히 multimodal candidate generation, cross-modal retrieval, document/page search, audio search에서는 중요한 building block이 될 수 있다.
+
+하지만 최종 품질은 여전히 다음 레이어들에 달려 있다.
+
+- metadata filter
+- sparse lexical retrieval
+- dense / multimodal retrieval
+- multi-vector interaction
+- reranking
+- score calibration
+- context selection
+- evaluation
+
+다음 글은 **Position Bias in Dense Retrievers**로 넘어가면 좋다. Gemini Embedding 2가 embedding space를 넓히는 방향이라면, Position Bias 논문은 dense retriever가 학습 데이터의 문서 위치 편향을 어떻게 흡수하는지 보여준다. 즉 “embedding은 강력하지만, 무엇을 보고 배웠는지에 따라 검색 결과가 편향될 수 있다”는 이야기다.
+
+## 참고 자료
+
+- [Gemini Embedding 2: A Native Multimodal Embedding Model from Gemini](https://arxiv.org/abs/2605.27295)
+- [LIMIT: On the Theoretical Limitations of Embedding-Based Retrieval](https://arxiv.org/abs/2508.21038)
+- [MMTEB: Massive Multilingual Text Embedding Benchmark](https://arxiv.org/abs/2502.13595)
+- [ViDoRe Benchmark](https://arxiv.org/abs/2407.01449)
