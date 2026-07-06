@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 01:46:53 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 01:53:49 GMT</lastBuildDate>
     <item>
       <title>AI Search는 Vector DB만으로 끝나지 않는다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-ai-search-stack-meetup-seoul/</link>
@@ -32,6 +32,19 @@
       <category>retrieval</category>
       <category>late-interaction</category>
       <category>BERT</category>
+    </item>
+    <item>
+      <title>[AI Search] PLAID: ColBERT를 빠르게 만드는 검색 엔진</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-06-plaid-efficient-late-interaction-retrieval/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-06-plaid-efficient-late-interaction-retrieval/</guid>
+      <description>PLAID 논문을 ColBERT 계열 late interaction retrieval의 운영 엔진 관점에서 읽는다. 품질 좋은 multi-vector 검색을 실제 latency budget 안으로 넣기 위해 centroid interaction과 centroid pruning이 어떻게 쓰이는지 정리한다.</description>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>PLAID</category>
+      <category>ColBERT</category>
+      <category>late-interaction</category>
+      <category>retrieval-engine</category>
     </item>
     <item>
       <title>[AI Search] Roaring Bitmap: Vector Search 이전에 필요한 빠른 필터링</title>

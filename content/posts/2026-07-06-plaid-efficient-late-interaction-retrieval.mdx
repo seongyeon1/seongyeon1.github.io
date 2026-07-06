@@ -1,0 +1,338 @@
+---
+title: "[AI Search] PLAID: ColBERT를 빠르게 만드는 검색 엔진"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "PLAID", "ColBERT", "late-interaction", "retrieval-engine"]
+summary: "PLAID 논문을 ColBERT 계열 late interaction retrieval의 운영 엔진 관점에서 읽는다. 품질 좋은 multi-vector 검색을 실제 latency budget 안으로 넣기 위해 centroid interaction과 centroid pruning이 어떻게 쓰이는지 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 3
+math: false
+---
+
+<Paper
+  title="PLAID: An Efficient Engine for Late Interaction Retrieval"
+  authors="Keshav Santhanam, Omar Khattab, Christopher Potts, Matei Zaharia"
+  year="2022"
+  venue="arXiv"
+  arxiv="2205.09707"
+/>
+
+## 한 줄 요약
+
+PLAID는 ColBERTv2 같은 late interaction retriever를 빠르게 실행하기 위한 retrieval engine이다. 핵심은 모든 후보 passage의 token embedding을 곧바로 복원해서 MaxSim을 계산하지 않고, 먼저 **centroid만으로 싼 근사 점수**를 계산해 낮은 후보를 과감하게 버리는 것이다.
+
+지난 글에서 ColBERT를 다뤘다. ColBERT의 메시지는 명확했다.
+
+> 문서를 하나의 벡터로 뭉개지 말고, token-level evidence를 늦게라도 비교하자.
+
+이 방식은 품질 면에서 매력적이다. query와 passage를 각각 token embedding matrix로 표현하고, query token마다 passage token 중 가장 잘 맞는 것을 찾는다. single-vector dense retrieval보다 세밀하고, cross-encoder보다 훨씬 싸다.
+
+그런데 운영 관점에서는 바로 다음 문제가 생긴다.
+
+> 문서 하나가 벡터 하나가 아니라 token embedding 여러 개라면, 이걸 어떻게 빠르게 검색할 것인가?
+
+ColBERT가 “late interaction이 왜 좋은가”를 보여준 논문이라면, PLAID는 “late interaction을 검색 엔진으로 어떻게 빠르게 돌릴 것인가”를 다루는 논문이다.
+
+## 문제: 좋은 검색은 만들었는데, serving path가 무겁다
+
+일반적인 vector search는 단순하다.
+
+```text
+query vector 1개 -> ANN index -> 가까운 document vector top-k
+```
+
+반면 ColBERT류 late interaction은 훨씬 복잡하다.
+
+```text
+query token vectors 여러 개
+passage token vectors 여러 개
+각 query token마다 passage token들과 MaxSim
+모든 query token의 MaxSim score를 합산
+```
+
+검색 품질은 좋아지지만, document representation이 matrix가 된다. 그래서 기존 sparse retrieval의 WAND 같은 pruning 전략이나 dense retrieval의 HNSW 같은 단일 벡터 kNN 전략을 그대로 적용하기 어렵다.
+
+PLAID 논문은 ColBERTv2를 기반으로 한다. ColBERTv2는 이미 저장 공간을 줄이기 위해 residual compression을 사용한다. 각 token vector를 그대로 저장하지 않고, 다음 두 부분으로 나눠 저장한다.
+
+```text
+token vector ≈ nearest centroid ID + quantized residual
+```
+
+즉 각 token embedding은 가까운 centroid의 ID와, 그 centroid로부터 얼마나 벗어나는지 나타내는 residual로 표현된다. 이 덕분에 index size는 줄어든다.
+
+하지만 serving path에서 문제가 남는다. 최종 점수를 정확히 계산하려면 후보 passage의 residual을 읽고, 압축을 풀고, token embedding을 복원한 다음 MaxSim을 계산해야 한다. 논문은 vanilla ColBERTv2의 병목이 주로 **index lookup과 residual decompression**에 있다고 분석한다.
+
+이게 PLAID의 출발점이다.
+
+> 비싼 residual decompression을 모든 후보에 하지 말고, centroid만으로 먼저 약한 후보를 버리자.
+
+## 핵심 아이디어: centroid를 가벼운 vocabulary처럼 쓴다
+
+PLAID의 가장 중요한 관찰은 이렇다.
+
+ColBERTv2의 compressed representation에는 이미 각 token vector가 어느 centroid에 속하는지 정보가 있다. 그러면 passage를 다음처럼 볼 수 있다.
+
+```text
+passage = [centroid_12, centroid_87, centroid_12, centroid_305, ...]
+```
+
+즉 passage를 token vector들의 bag이 아니라, **centroid ID들의 bag**으로 근사할 수 있다.
+
+이때 query embedding과 모든 centroid 사이의 similarity는 query마다 한 번만 계산하면 된다.
+
+```text
+query token vectors x centroid vectors -> query-centroid score table
+```
+
+그 다음 각 passage는 자신이 가진 centroid ID들을 이 score table에 lookup해서 approximate MaxSim score를 계산할 수 있다. 이게 논문에서 말하는 **centroid interaction**이다.
+
+직관적으로는 BM25와 비슷한 느낌도 있다. BM25가 query term과 document term의 matching score를 빠르게 계산한다면, PLAID는 query vector와 centroid ID 사이의 matching score를 빠르게 계산한다.
+
+차이는 term vocabulary가 사람이 정의한 단어가 아니라, token embedding들을 clustering해서 얻은 centroid vocabulary라는 점이다.
+
+## PLAID pipeline
+
+논문 Figure 5의 pipeline은 크게 네 단계로 볼 수 있다.
+
+```text
+Stage 1. Initial candidate generation
+Stage 2. Centroid interaction with pruning
+Stage 3. Centroid interaction without pruning
+Stage 4. Final ranking with decompression
+```
+
+각 단계를 조금 풀면 이렇다.
+
+### Stage 1. centroid 기반 candidate generation
+
+먼저 query embedding matrix와 index의 centroid vector들을 비교한다.
+
+```text
+query vectors x centroid vectors -> centroid relevance scores
+```
+
+각 query token에 대해 가까운 top centroid들을 찾고, 그 centroid에 할당된 token을 가진 passage ID들을 후보로 모은다.
+
+vanilla ColBERTv2는 centroid에서 embedding ID로 이어지는 inverted list를 저장한다. PLAID는 이를 passage ID 중심으로 바꾼다. passage보다 token embedding 수가 훨씬 많기 때문에, passage ID를 저장하는 쪽이 더 작고 다루기 쉽다. 논문은 MS MARCO v2 inverted list에서 이 변경만으로 71GB에서 27GB로 줄어드는 효과를 언급한다.
+
+### Stage 2. centroid interaction + pruning
+
+초기 후보가 만들어지면, 모든 후보의 residual을 바로 복원하지 않는다. 대신 passage를 centroid ID들의 bag으로 보고 approximate MaxSim을 계산한다.
+
+여기에 **centroid pruning**을 붙인다. query와 거의 관련 없는 centroid는 아예 score 계산에서 제외한다. 논문은 query마다 중요한 centroid는 일부에 몰려 있고, 나머지는 낮은 magnitude의 score를 갖는다는 관찰을 사용한다.
+
+즉 Stage 2는 이런 역할을 한다.
+
+```text
+많은 후보 passage
+-> centroid만으로 싼 근사 점수 계산
+-> 낮은 후보 대량 제거
+```
+
+### Stage 3. centroid interaction without pruning
+
+Stage 2에서 줄어든 후보에 대해 다시 centroid interaction을 수행한다. 이 단계에서는 pruning 없이 더 안정적으로 후보를 정리한다. 논문은 실험에서 Stage 3이 `ndocs / 4` 정도의 후보를 다음 단계로 넘기는 heuristic을 사용한다.
+
+### Stage 4. final ranking with decompression
+
+마지막으로 아주 적은 후보에 대해서만 residual을 복원한다. 여기서 원래 ColBERTv2의 full embedding을 재구성하고, 정확한 MaxSim score로 최종 ranking을 만든다.
+
+핵심은 최종 ranking의 품질을 유지하면서, 비싼 작업을 뒤로 미루고 후보 수를 줄인다는 것이다.
+
+```text
+cheap approximate filtering first
+expensive exact scoring last
+```
+
+검색 엔진에서 너무 익숙한 패턴이다. 다만 PLAID는 이 패턴을 late interaction retrieval에 맞게 다시 설계했다.
+
+## 왜 centroid만으로 후보를 잘 찾을 수 있나
+
+PLAID가 성립하려면 중요한 전제가 필요하다.
+
+> centroid-only retrieval이 full ColBERTv2가 찾을 좋은 후보를 대부분 포함해야 한다.
+
+논문은 이를 실험으로 확인한다. vanilla ColBERTv2가 찾은 top-k passage를 기준으로, centroid-only ColBERTv2가 더 넓은 후보 집합 안에 그 passage들을 얼마나 포함하는지 본다.
+
+결과는 꽤 강하다. 논문은 centroid만 사용해 `10 * k`개 후보를 가져와도 vanilla ColBERTv2 full pipeline의 top-k passage를 99% 이상 포함한다고 보고한다.
+
+이 말은 곧, centroid representation이 단순히 압축용 metadata가 아니라 candidate filtering signal로도 충분히 쓸 만하다는 뜻이다.
+
+이 관찰이 PLAID 전체를 가능하게 만든다.
+
+## 실험 결과: 품질 손실 없이 GPU 최대 6.8배, CPU 최대 45배
+
+논문은 MS MARCO v1, Wikipedia OpenQA, LoTTE, MS MARCO v2에서 PLAID를 평가한다. corpus size도 2M에서 140M passage까지 본다.
+
+headline은 abstract와 conclusion에 명확하게 나온다.
+
+- vanilla ColBERTv2 대비 GPU에서 약 2.5~7배 빠르다.
+- CPU에서 약 9~45배 빠르다.
+- retrieval quality는 거의 유지한다.
+- 140M passage scale에서도 평가한다.
+
+MS MARCO v1에서는 가장 보수적인 `k = 1000` 설정에서 vanilla ColBERTv2와 MRR@10, Recall@100을 맞추면서도 GPU 6.8배, CPU 45배 speedup을 보인다.
+
+논문 Table 3의 주요 흐름을 단순화하면 이렇다.
+
+| 시스템 | MRR@10 | R@100 | 8-CPU latency | GPU latency |
+| --- | ---: | ---: | ---: | ---: |
+| Vanilla ColBERTv2 | 39.7 | 91.4 | 4568.5ms | 259.6ms |
+| PLAID ColBERTv2, k=1000 | 39.8 | 91.3 | 101.3ms | 38.4ms |
+
+품질은 거의 같고, latency는 크게 줄어든다.
+
+Wikipedia OpenQA에서도 같은 패턴이 나온다. 논문은 PLAID가 vanilla ColBERTv2 대비 GPU 3.7배, CPU 22배 speedup을 보이면서 quality loss가 없다고 설명한다.
+
+LoTTE 같은 out-of-domain benchmark에서도 효과가 유지된다. `k = 1000` 설정에서 GPU 2.5배, CPU 9.2배 speedup을 보이고, 오히려 quality가 개선된 설정도 있다.
+
+MS MARCO v2는 138M passage, 9.4B token 규모다. 논문은 여기서도 PLAID가 100개 passage까지의 quality loss 없이 CPU에서 20.8배 빠르다고 보고한다.
+
+정리하면 PLAID의 주장은 단순하다.
+
+> late interaction은 품질은 좋은데 느리다는 인식을, engine 최적화로 상당 부분 뒤집을 수 있다.
+
+## AI Search stack에서 PLAID의 위치
+
+ColBERT가 retrieval representation의 논문이라면, PLAID는 retrieval serving engine의 논문이다.
+
+AI Search stack에서 보면 위치는 이 정도다.
+
+```text
+metadata filter       -> Roaring Bitmap
+multi-vector retrieval -> ColBERT / ColBERTv2
+late interaction engine -> PLAID
+sparse-late hybrid    -> SPLATE
+adaptive reranking    -> AcuRank
+context selection     -> LDAR
+```
+
+ColBERT 글에서 병목이 바뀐다고 했다.
+
+```text
+cross-encoder bottleneck: repeated BERT computation
+ColBERT bottleneck: embedding storage, transfer, decompression, candidate pruning
+```
+
+PLAID는 바로 이 바뀐 병목을 최적화한다.
+
+특히 실무 관점에서는 다음 메시지가 중요하다.
+
+> 모델 품질 논문과 serving engine 논문을 분리해서 봐야 한다.
+
+ColBERT류 late interaction을 보고 “좋지만 너무 비싸서 못 쓴다”고 판단할 수 있다. 그런데 PLAID는 같은 모델 계열도 index layout, approximate filtering, custom kernel, decompression 최적화에 따라 latency profile이 크게 달라질 수 있음을 보여준다.
+
+## 실무적으로 생각해볼 점
+
+### 1. Multi-vector retrieval은 model 문제가 아니라 engine 문제이기도 하다
+
+single-vector retrieval은 vector DB에 올리기 쉽다. query vector 하나, document vector 하나, ANN top-k면 된다.
+
+반면 ColBERT/PLAID 계열은 index 구조부터 다르다.
+
+- passage당 여러 token vector
+- centroid ID와 residual
+- centroid-to-passage inverted list
+- approximate centroid scoring
+- 후보 단계별 pruning
+- 마지막 full MaxSim scoring
+
+즉 단순히 “ColBERT 모델을 쓴다”가 아니라 “late interaction용 retrieval engine을 운영한다”에 가깝다.
+
+### 2. 압축 representation은 저장 공간만 줄이는 것이 아니다
+
+ColBERTv2의 centroid + residual 표현은 처음 보면 compression 기법처럼 보인다. 하지만 PLAID는 centroid를 검색 signal로 재사용한다.
+
+이게 좋은 설계다. 압축을 위해 만든 중간 표현이 serving-time pruning에도 쓰인다.
+
+실제 AI Search 시스템에서도 비슷한 질문을 해볼 수 있다.
+
+- chunk metadata를 단순 저장용이 아니라 pruning signal로 쓸 수 있는가?
+- embedding quantization codebook을 candidate filtering에 재사용할 수 있는가?
+- clustering 결과를 routing이나 shard selection에 쓸 수 있는가?
+- index 내부 통계를 reranking budget 결정에 쓸 수 있는가?
+
+좋은 검색 엔진은 offline index artifact를 online serving에서 여러 번 재사용한다.
+
+### 3. 비싼 정확 계산은 마지막에만 한다
+
+PLAID의 구조는 classic IR의 철학과 닮았다.
+
+```text
+cheap filter -> approximate score -> fewer candidates -> exact score
+```
+
+LLM/RAG 시스템에서도 이 패턴은 그대로 중요하다.
+
+```text
+permission/date/language filter
+-> sparse/dense first-stage retrieval
+-> ColBERT/PLAID-style high precision retrieval
+-> cross-encoder or LLM reranking
+-> final context selection
+```
+
+모든 후보에 비싼 모델을 쓰면 품질은 좋아질 수 있지만 latency와 cost가 무너진다. 반대로 너무 초기에 aggressive하게 잘라내면 recall이 무너진다. PLAID의 가치는 이 중간을 잘 설계한 데 있다.
+
+### 4. CPU latency가 중요하다
+
+논문에서 흥미로운 점은 GPU뿐 아니라 CPU 결과를 매우 강조한다는 것이다. PLAID는 CPU에서 9~45배 speedup을 보인다.
+
+검색 시스템에서는 GPU가 항상 query serving path에 들어갈 수 있는 것은 아니다. 비용, 배포 복잡도, multi-tenant isolation, scaling 방식 때문에 CPU-only retrieval이 더 현실적인 경우도 많다.
+
+특히 AI Search 시스템에서 GPU는 generation이나 reranking에 이미 많이 쓰인다. retrieval까지 GPU에 태우는 것이 항상 좋은 선택은 아니다. PLAID의 CPU 최적화는 late interaction retrieval을 더 넓은 운영 환경으로 가져오는 의미가 있다.
+
+## 한계와 주의할 점
+
+PLAID가 late interaction의 운영 가능성을 크게 높인 것은 맞지만, 여전히 단순한 기술은 아니다.
+
+### 1. 구현 복잡도
+
+논문은 PLAID가 대략 300줄의 Python과 700줄의 C++ 추가 구현이라고 설명한다. 숫자만 보면 작아 보일 수 있지만, 실제 운영에서는 custom kernel, memory layout, compression, NUMA, CPU/GPU transfer까지 고려해야 한다.
+
+일반적인 vector DB를 붙이는 것과는 난이도가 다르다.
+
+### 2. ColBERTv2 representation에 강하게 의존
+
+PLAID는 ColBERTv2의 centroid + residual compression을 적극적으로 활용한다. 즉 다른 multi-vector retriever에 바로 적용하려면 비슷한 centroid representation이나 압축 구조가 필요하다.
+
+### 3. Hyperparameter와 latency-quality trade-off
+
+PLAID에는 `nprobe`, `tcs`, `ndocs`, `k` 같은 설정이 있다. conservative하게 가면 품질은 유지되지만 latency가 늘고, aggressive하게 가면 더 빨라지지만 quality loss가 생길 수 있다.
+
+즉 production에서는 query type, corpus size, latency budget에 맞춰 별도 튜닝이 필요하다.
+
+### 4. Query encoding latency 제외
+
+논문은 latency 측정에서 neural model의 query encoding latency를 제외한다. 이는 prior work를 따른 선택이고, BERT query encoding은 quantization/distillation 등으로 줄일 수 있다는 논리를 둔다. 그래도 실제 end-to-end 서비스 latency를 계산할 때는 query encoding, network, serialization, cache miss까지 포함해서 봐야 한다.
+
+## 내 결론
+
+PLAID의 핵심은 “좋은 retriever를 빠르게 만드는 방법”에 대한 꽤 실용적인 답이다.
+
+ColBERT가 single-vector retrieval의 한계를 넘기 위해 token-level interaction을 제안했다면, PLAID는 그 token-level interaction의 비용을 줄이기 위해 centroid-level approximation을 사용한다.
+
+한 문장으로 정리하면 이렇다.
+
+> PLAID는 late interaction retrieval에서 비싼 full MaxSim을 모든 후보에 하지 않고, centroid만으로 먼저 후보를 줄인 뒤 마지막에만 정확히 계산하는 엔진이다.
+
+AI Search 관점에서는 이 논문이 특히 좋다. 모델 논문처럼 보이지만 사실은 engine 논문이고, 검색 품질은 모델 architecture만으로 결정되지 않는다는 점을 보여준다.
+
+좋은 AI Search 시스템은 다음을 함께 설계해야 한다.
+
+- representation granularity
+- index layout
+- compression
+- candidate generation
+- approximate filtering
+- exact scoring
+- CPU/GPU execution path
+- latency-quality trade-off
+
+다음 글에서는 SPLATE를 볼 차례다. ColBERT와 PLAID가 multi-vector late interaction 계열이라면, SPLATE는 sparse retrieval과 late interaction 사이에서 또 다른 절충점을 제안한다.
+
+## 참고 자료
+
+- [PLAID: An Efficient Engine for Late Interaction Retrieval](https://arxiv.org/abs/2205.09707)
+- [ColBERT GitHub Repository](https://github.com/stanford-futuredata/ColBERT)
+- [ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT](https://arxiv.org/abs/2004.12832)
