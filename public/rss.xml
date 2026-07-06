@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 00:24:01 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 01:46:53 GMT</lastBuildDate>
     <item>
       <title>AI Search는 Vector DB만으로 끝나지 않는다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-ai-search-stack-meetup-seoul/</link>
@@ -19,6 +19,19 @@
       <category>vector-search</category>
       <category>reranking</category>
       <category>agent</category>
+    </item>
+    <item>
+      <title>[AI Search] ColBERT: 문서를 하나의 벡터로 뭉개지 않는 검색</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-06-colbert-late-interaction-retrieval/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-06-colbert-late-interaction-retrieval/</guid>
+      <description>ColBERT 논문을 AI Search stack의 neural retrieval 계층에서 읽는다. Cross-encoder처럼 세밀하게 비교하고 싶지만 production latency는 지켜야 할 때, late interaction이 어떤 절충점을 만드는지 정리한다.</description>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>ColBERT</category>
+      <category>retrieval</category>
+      <category>late-interaction</category>
+      <category>BERT</category>
     </item>
     <item>
       <title>[AI Search] Roaring Bitmap: Vector Search 이전에 필요한 빠른 필터링</title>

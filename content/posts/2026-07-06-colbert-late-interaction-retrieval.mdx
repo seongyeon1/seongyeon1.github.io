@@ -1,0 +1,352 @@
+---
+title: "[AI Search] ColBERT: 문서를 하나의 벡터로 뭉개지 않는 검색"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "ColBERT", "retrieval", "late-interaction", "BERT"]
+summary: "ColBERT 논문을 AI Search stack의 neural retrieval 계층에서 읽는다. Cross-encoder처럼 세밀하게 비교하고 싶지만 production latency는 지켜야 할 때, late interaction이 어떤 절충점을 만드는지 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 2
+math: false
+---
+
+<Paper
+  title="ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT"
+  authors="Omar Khattab, Matei Zaharia"
+  year="2020"
+  venue="SIGIR"
+  arxiv="2004.12832"
+/>
+
+## 한 줄 요약
+
+ColBERT는 query와 document를 각각 BERT로 인코딩하되, 최종 점수 계산은 token embedding들 사이의 **late interaction**으로 수행하는 passage retrieval 모델이다. AI Search 관점에서는 “문서 하나를 벡터 하나로 압축하는 방식”과 “query-document pair 전체를 매번 BERT에 넣는 방식” 사이의 중요한 절충안이다.
+
+지난 글에서 Roaring Bitmap을 검색 시스템의 가장 아래층, 즉 빠른 deterministic filter로 봤다. 이번 글은 그 위에 올라가는 neural retrieval 계층이다.
+
+요즘 RAG나 AI Search 시스템을 만들면 가장 흔하게 떠올리는 구조는 이렇다.
+
+```text
+query -> embedding -> vector DB -> top-k documents -> LLM
+```
+
+이 구조는 단순하고 빠르다. 하지만 문제가 있다. 문서 전체를 하나의 dense vector로 압축하면, 검색이 너무 거칠어진다.
+
+- query의 특정 단어가 문서의 어느 단어와 매칭됐는지 알기 어렵다.
+- 숫자, 함수명, 약어, 조건절처럼 세밀한 단서가 뭉개질 수 있다.
+- passage가 조금만 길어져도 여러 의미가 하나의 벡터 안에 섞인다.
+- “대충 관련 있어 보이는 문서”와 “정확히 답을 지지하는 passage”를 구분하기 어렵다.
+
+반대로 cross-encoder 방식은 query와 document를 함께 BERT에 넣어 세밀하게 relevance를 계산한다. 품질은 좋지만 너무 비싸다. 논문은 기존 BERT ranker들이 이전 모델보다 **100~1000배 더 비싼 계산 비용**을 요구한다고 지적한다.
+
+ColBERT는 이 사이에서 질문을 던진다.
+
+> BERT의 표현력은 쓰되, query-document pair를 매번 통째로 BERT에 넣지 않고도 세밀한 matching을 할 수 없을까?
+
+## 배경: bi-encoder와 cross-encoder 사이의 빈틈
+
+검색 모델을 아주 단순화하면 세 가지 계열로 볼 수 있다.
+
+| 방식 | 구조 | 장점 | 단점 |
+| --- | --- | --- | --- |
+| Bi-encoder | query와 document를 따로 인코딩해 벡터 하나씩 비교 | 빠름, 미리 색인 가능 | token-level matching이 약함 |
+| Cross-encoder | query-document pair를 함께 인코딩 | relevance 판단이 세밀함 | 후보마다 BERT를 다시 실행해야 해서 비쌈 |
+| Late interaction | query와 document를 따로 인코딩하되, token embedding끼리 나중에 비교 | 품질과 비용 사이 절충 | 저장 공간과 index 설계가 복잡함 |
+
+Single-vector bi-encoder는 production에 올리기 쉽다. document embedding을 미리 만들어 vector index에 넣고, query embedding과 가까운 것만 찾으면 된다. 하지만 문서 하나를 벡터 하나로 표현해야 하므로 fine-grained matching이 어렵다.
+
+Cross-encoder는 정반대다. query와 document를 함께 넣기 때문에 relevance 판단은 훨씬 세밀하다. 하지만 top-1000 후보를 rerank하려면 BERT를 1000번 돌려야 한다. 검색 시스템에서 이 비용은 치명적이다.
+
+ColBERT의 핵심은 두 계산을 분리하는 것이다.
+
+```text
+비싼 BERT encoding: query와 document에 각각 독립적으로 수행
+싼 matching: token embedding 사이의 MaxSim으로 수행
+```
+
+document는 미리 인코딩해서 저장한다. query가 들어오면 query만 BERT로 인코딩한다. 그다음 query token embedding과 document token embedding 사이의 similarity를 계산한다.
+
+이것이 논문 제목에 있는 **Contextualized Late Interaction**이다.
+
+## 핵심 아이디어: MaxSim 기반 late interaction
+
+ColBERT는 query와 document를 각각 token embedding의 bag으로 표현한다.
+
+```text
+query q    -> Eq = [q1, q2, q3, ...]
+document d -> Ed = [d1, d2, d3, ...]
+```
+
+여기서 중요한 점은 각 token embedding이 단순 word embedding이 아니라 BERT를 통과한 **contextualized embedding**이라는 것이다. 즉 같은 단어라도 주변 문맥에 따라 다른 벡터가 된다.
+
+그 다음 relevance score는 대략 이렇게 계산된다.
+
+```text
+for each query token embedding qi:
+    find the most similar document token embedding dj
+sum all max similarity scores
+```
+
+논문에서는 이것을 MaxSim이라고 부른다.
+
+```text
+score(q, d) = sum over query tokens i of max over document tokens j similarity(qi, dj)
+```
+
+직관적으로는 이렇다.
+
+> query의 각 token이 document 안에서 가장 잘 맞는 token을 하나씩 찾고, 그 matching evidence를 모두 더한다.
+
+이 구조가 좋은 이유는 query의 각 단서가 독립적으로 문서 안에서 근거를 찾을 수 있기 때문이다.
+
+예를 들어 query가 다음과 같다고 하자.
+
+```text
+ColBERT late interaction MaxSim retrieval latency
+```
+
+Single-vector retrieval은 이 query 전체를 하나의 벡터로 압축한다. 반면 ColBERT는 `ColBERT`, `late`, `interaction`, `MaxSim`, `retrieval`, `latency` 같은 token-level 단서가 문서 안에서 각각 무엇과 매칭되는지 본다.
+
+이 차이는 AI Search에서 꽤 중요하다. 실제 검색 query에는 다음처럼 “하나라도 놓치면 의미가 바뀌는” 단서가 많다.
+
+- API 이름
+- 에러 메시지
+- 함수명
+- 버전
+- 수치 조건
+- 제품명
+- 특정 용어의 조합
+
+문서 전체가 query와 “의미적으로 비슷한가”보다, query 안의 중요한 단서들이 문서 안에서 실제로 지지되는지가 더 중요할 때가 많다.
+
+## ColBERT의 architecture
+
+논문 기준 ColBERT는 크게 세 부분으로 구성된다.
+
+1. Query encoder
+2. Document encoder
+3. Late interaction module
+
+Query와 document는 모두 BERT 기반 encoder를 지난다. 다만 입력 앞에 query인지 document인지 구분하는 special token을 붙인다.
+
+```text
+query:    [Q] + query tokens + [MASK] padding
+document: [D] + document tokens
+```
+
+query에는 일정 길이까지 `[MASK]` token을 붙이는 **query augmentation**이 들어간다. 논문은 이 query augmentation이 효과에 중요하다고 보고한다. 직관적으로는 query를 부드럽게 확장하거나 query token의 중요도를 재조정할 수 있는 공간을 주는 셈이다.
+
+BERT 출력은 linear layer를 거쳐 더 작은 차원의 embedding으로 줄어든다. 논문 실험에서는 주로 embedding dimension `m = 128`을 사용한다. document 쪽에서는 punctuation embedding을 제거해 저장해야 할 embedding 수를 줄인다.
+
+정리하면 다음과 같다.
+
+```text
+offline indexing:
+  document -> BERT document encoder -> token embeddings -> store
+
+online serving:
+  query -> BERT query encoder -> query token embeddings
+  query token embeddings x stored document token embeddings -> MaxSim score
+```
+
+여기서 production 관점의 포인트는 명확하다.
+
+> document BERT encoding을 online query path에서 제거한다.
+
+Cross-encoder가 느린 이유는 query마다 후보 document를 다시 BERT에 태워야 하기 때문이다. ColBERT는 document representation을 offline에 미리 계산해둔다. online에서는 query만 인코딩하고, 저장된 document token embedding과 빠르게 비교한다.
+
+## Re-ranking과 end-to-end retrieval
+
+ColBERT는 두 가지 방식으로 사용할 수 있다.
+
+첫 번째는 **re-ranker**다.
+
+```text
+BM25 or first-stage retriever -> top-1000 candidates -> ColBERT reranking
+```
+
+이 경우 ColBERT는 후보 문서 수가 작으므로 후보 전체를 exhaustively scoring한다. 논문은 MS MARCO에서 BM25 top-1000 결과를 rerank하는 설정을 실험한다.
+
+두 번째는 **end-to-end retrieval**이다.
+
+```text
+query token embeddings -> vector similarity search over all document token embeddings -> candidate documents -> ColBERT reranking
+```
+
+이 방식은 더 흥미롭다. ColBERT의 document는 “문서당 벡터 하나”가 아니라 “문서당 token embedding 여러 개”로 저장된다. query token 하나하나가 전체 document token embedding index를 검색하고, 그 결과를 document id로 합친 뒤, 후보 문서만 다시 정밀하게 scoring한다.
+
+논문은 이를 위해 FAISS의 IVFPQ index를 사용한다. 모든 document token embedding을 vector index에 넣고, query token embedding별로 nearest neighbor를 찾는다. 그 뒤 matching된 embedding들이 속한 document id를 모아 후보를 만들고, 최종적으로 ColBERT score를 계산한다.
+
+이 구조는 뒤에 나올 PLAID와도 자연스럽게 이어진다. ColBERT는 late interaction retrieval의 품질 가능성을 보여줬고, PLAID는 이 방식을 더 빠르고 scalable하게 만드는 방향으로 간다.
+
+## 실험 결과: BERT ranker에 가까운 품질, 훨씬 낮은 비용
+
+논문은 MS MARCO Ranking과 TREC-CAR에서 ColBERT를 평가한다.
+
+MS MARCO re-ranking 설정에서 주요 결과는 다음과 같다.
+
+| 모델 | MRR@10 Dev | MRR@10 Eval | Re-ranking latency | FLOPs/query |
+| --- | ---: | ---: | ---: | ---: |
+| BM25 official | 16.7 | 16.5 | - | - |
+| BERTbase | 34.7 | 35.9 | 10,700ms | 97T |
+| BERTlarge | 36.5 | - | 32,900ms | 340T |
+| ColBERT over BERTbase | 34.9 | 34.9 | 61ms | 7B |
+
+수치만 보면 ColBERT의 위치가 명확하다.
+
+- 품질은 BERTbase ranker와 비슷한 수준이다.
+- latency는 BERTbase 대비 170배 이상 빠르다.
+- FLOPs는 약 13,900배 적다.
+- non-BERT baseline은 모두 앞선다.
+
+논문 결론에서는 ColBERT가 기존 BERT 기반 모델보다 **170배 이상 빠르고, query당 FLOPs는 14,000배 적다**고 요약한다.
+
+여기서 재미있는 부분은 ColBERT의 61ms latency 중 query encoding과 interaction 자체는 13ms 정도라는 점이다. 나머지 비용은 주로 document embedding을 gather하고 GPU로 옮기는 데서 발생한다. 즉 병목이 “BERT 계산”에서 “저장된 embedding을 어떻게 효율적으로 가져오느냐”로 이동한다.
+
+AI Search 시스템을 운영하는 입장에서는 이게 중요하다. 모델 architecture가 바뀌면 병목도 바뀐다.
+
+```text
+cross-encoder bottleneck: repeated BERT computation
+ColBERT bottleneck: embedding storage, transfer, indexing, candidate pruning
+```
+
+## 왜 single-vector보다 강한가
+
+논문의 ablation에서 중요한 비교가 나온다. ColBERT와 같은 BERT 기반 encoder를 쓰되, query와 document를 각각 하나의 `[CLS]` vector로 표현해서 dot product를 계산하는 모델을 비교한다.
+
+결과는 single-vector 방식이 ColBERT보다 꽤 떨어진다. 논문은 이를 통해 fine-grained late interaction이 중요하다고 본다.
+
+이 지점이 AI Search 관점에서 가장 핵심이다.
+
+Embedding search를 만들다 보면 보통 “embedding 모델이 좋아지면 검색 품질이 좋아질 것”이라고 생각하기 쉽다. 물론 맞는 말이다. 하지만 ColBERT는 다른 질문을 던진다.
+
+> 좋은 embedding 모델을 쓰더라도, 문서 전체를 벡터 하나로 압축하는 representation 자체가 병목일 수 있다.
+
+특히 다음과 같은 검색에는 token-level interaction이 유리하다.
+
+- 정확한 용어 조합이 중요한 기술 문서 검색
+- 에러 로그 / stack trace 검색
+- API reference 검색
+- 법률, 의료, 세무처럼 세부 조건이 중요한 문서 검색
+- 코드 검색
+- multi-hop RAG에서 중간 근거 passage를 찾는 검색
+
+Single-vector retrieval은 query와 passage의 global semantic similarity를 잘 잡는다. 하지만 “query의 각 token-level evidence가 passage 안에 있는가”를 확인하는 데는 한계가 있다.
+
+ColBERT는 이 지점을 정면으로 파고든다.
+
+## AI Search stack에서 ColBERT의 위치
+
+내가 이 논문을 AI Search stack에서 본다면, ColBERT는 단순한 모델 하나라기보다 **retrieval representation 설계의 전환점**에 가깝다.
+
+```text
+metadata filter       -> Roaring Bitmap 같은 deterministic index
+first-stage retrieval -> BM25, dense vector, hybrid search
+late interaction      -> ColBERT 계열
+reranking             -> cross-encoder, LLM reranker
+context selection     -> RAG / long-context input 구성
+answer generation     -> LLM
+```
+
+ColBERT는 first-stage retrieval과 reranker 사이에 걸쳐 있다. BM25 top-k를 rerank하는 데 쓸 수도 있고, document token embedding index를 만들어 end-to-end retrieval에 쓸 수도 있다.
+
+실무적으로는 다음과 같은 선택지가 생긴다.
+
+### 1. 고정밀 reranker로 사용하기
+
+기존 vector search나 BM25로 top-100 또는 top-1000 후보를 가져온 뒤, ColBERT 계열 모델로 rerank한다.
+
+```text
+BM25 + dense retrieval -> candidate merge -> ColBERT rerank -> LLM context
+```
+
+이 방식은 기존 검색 인프라를 크게 바꾸지 않고도 품질을 올릴 수 있다.
+
+### 2. token-level evidence search로 사용하기
+
+문서 하나가 여러 의미를 담고 있거나, query의 세부 단서가 중요한 경우 ColBERT의 MaxSim 점수는 single-vector보다 더 설명 가능한 matching signal을 줄 수 있다.
+
+물론 완전한 explainability는 아니다. 하지만 “query token별로 어떤 document token과 강하게 매칭됐는가”를 볼 수 있다는 점에서 single-vector보다는 디버깅하기 좋다.
+
+### 3. 검색 품질 병목 진단 도구로 보기
+
+내 vector search가 자꾸 “관련은 있지만 답은 없는 문서”를 가져온다면, 문제는 embedding model만이 아닐 수 있다. representation granularity 문제일 수 있다.
+
+이때 ColBERT류 late interaction은 좋은 비교군이 된다.
+
+```text
+single-vector가 실패하고 ColBERT가 성공한다
+=> query/document의 fine-grained matching이 필요한 task일 가능성
+```
+
+## 비용: 좋아 보이지만 공짜는 아니다
+
+ColBERT가 cross-encoder보다 훨씬 빠른 것은 맞다. 하지만 single-vector retrieval보다 단순한 것도 아니다.
+
+비용은 다른 형태로 이동한다.
+
+### 1. 저장 공간
+
+문서 하나당 embedding 하나가 아니라 token embedding 여러 개를 저장해야 한다. 논문 Table 4를 보면 MS MARCO collection에서 설정에 따라 수십 GiB에서 수백 GiB까지 저장 공간이 필요하다.
+
+가장 큰 설정은 286 GiB, 더 작은 설정은 27 GiB까지 줄일 수 있다. 논문은 24차원, 2-byte float 설정이 가장 공간 효율적이며 MRR@10도 큰 설정보다 약 1%p 정도만 낮다고 보고한다.
+
+### 2. indexing 비용
+
+document를 모두 BERT로 인코딩해야 한다. 논문에서는 여러 최적화를 적용하면 MS MARCO를 약 3시간에 index할 수 있다고 설명한다. 그래도 단순 BM25 index나 single-vector embedding pipeline보다 운영 복잡도는 높다.
+
+### 3. serving path 복잡도
+
+query token마다 vector search를 수행하고, document id를 모으고, 후보를 다시 scoring해야 한다. 단순 `query vector -> ANN search`보다 훨씬 복잡하다.
+
+그래서 ColBERT는 모든 검색 시스템에 기본값으로 넣을 기술이라기보다는, 다음 조건에서 특히 고려할 만하다.
+
+- 검색 품질이 핵심 경쟁력인 경우
+- query의 세부 term matching이 중요한 경우
+- RAG hallucination의 상당 부분이 retrieval miss에서 오는 경우
+- latency budget이 cross-encoder에는 부족하지만, single-vector로는 품질이 부족한 경우
+- storage와 indexing 비용을 감당할 수 있는 경우
+
+## 이 논문이 지금도 중요한 이유
+
+ColBERT는 2020년 논문이다. 지금은 embedding model도 훨씬 좋아졌고, vector DB도 성숙했고, reranker도 다양해졌다. 그런데도 이 논문은 여전히 중요하다.
+
+이유는 ColBERT가 특정 모델 성능보다 더 근본적인 질문을 다루기 때문이다.
+
+> 검색 representation을 얼마나 세밀하게 유지할 것인가?
+
+AI Search에서는 늘 압축과 상호작용 사이의 trade-off가 있다.
+
+```text
+문서 하나를 벡터 하나로 압축한다
+  -> 빠르지만 정보가 뭉개진다
+
+query-document pair를 통째로 모델에 넣는다
+  -> 세밀하지만 비싸다
+
+token-level representation을 저장하고 late interaction한다
+  -> 중간 지점이다
+```
+
+이 trade-off는 지금도 그대로 남아 있다. 오히려 RAG와 agentic search가 커질수록 더 중요해진다. LLM이 마지막 답변을 잘 만들더라도, 검색 단계에서 정확한 evidence를 못 가져오면 전체 품질은 무너진다.
+
+ColBERT는 “검색 품질을 올리려면 embedding model만 바꾸면 된다”는 단순한 관점을 깨준다. 좋은 AI Search 시스템은 representation granularity, index 구조, reranking 비용, context selection을 함께 설계해야 한다.
+
+## 내 결론
+
+ColBERT의 핵심은 한 문장으로 정리할 수 있다.
+
+> 문서를 하나의 벡터로 뭉개지 말고, token-level evidence를 늦게라도 비교하자.
+
+이 아이디어는 현대 AI Search에서 계속 반복된다. PLAID는 ColBERT류 late interaction을 더 빠르게 만들고, SPLATE는 sparse retrieval과 late interaction의 절충을 탐색한다. LIMIT 같은 논문은 single-vector retrieval의 근본적 한계를 더 이론적으로 파고든다.
+
+그래서 이 시리즈에서 ColBERT는 중요한 분기점이다.
+
+Roaring Bitmap이 “검색 대상 universe를 빠르게 줄이는 기술”이었다면, ColBERT는 “남은 후보 안에서 query와 passage가 실제로 어떻게 맞는지 더 세밀하게 보는 기술”이다.
+
+다음 글에서는 자연스럽게 ColBERT의 비용 문제를 이어받은 PLAID를 볼 차례다. ColBERT가 late interaction의 품질을 보여줬다면, PLAID는 그걸 대규모 검색 엔진으로 만들기 위해 어떤 pruning과 index 구조를 쓰는지 보여준다.
+
+## 참고 자료
+
+- [ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT](https://arxiv.org/abs/2004.12832)
+- [ColBERT GitHub Repository](https://github.com/stanford-futuredata/ColBERT)
+- [FAISS: A library for efficient similarity search](https://github.com/facebookresearch/faiss)
