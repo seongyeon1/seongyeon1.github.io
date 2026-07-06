@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 00:17:26 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 00:24:01 GMT</lastBuildDate>
     <item>
       <title>AI Search는 Vector DB만으로 끝나지 않는다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-06-ai-search-stack-meetup-seoul/</link>
@@ -19,6 +19,19 @@
       <category>vector-search</category>
       <category>reranking</category>
       <category>agent</category>
+    </item>
+    <item>
+      <title>[AI Search] Roaring Bitmap: Vector Search 이전에 필요한 빠른 필터링</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-06-roaring-bitmap-ai-search-filter-index/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-06-roaring-bitmap-ai-search-filter-index/</guid>
+      <description>Roaring Bitmap 논문을 AI Search stack의 가장 아래층인 filtering index 관점에서 읽는다. Vector search가 좋아져도 권한, tenant, 날짜, 언어 같은 hard filter는 빠르고 정확한 set operation 위에서 처리되어야 한다.</description>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>bitmap-index</category>
+      <category>roaring-bitmap</category>
+      <category>retrieval</category>
+      <category>index</category>
     </item>
     <item>
       <title>[논문 리뷰] Distributed Attacks — PR과 시간에 흩어진 코딩 에이전트 공격</title>

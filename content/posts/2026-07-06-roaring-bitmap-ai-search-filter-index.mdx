@@ -1,0 +1,300 @@
+---
+title: "[AI Search] Roaring Bitmap: Vector Search 이전에 필요한 빠른 필터링"
+date: "2026-07-06"
+category: "paper-review"
+tags: ["AI Search", "bitmap-index", "roaring-bitmap", "retrieval", "index"]
+summary: "Roaring Bitmap 논문을 AI Search stack의 가장 아래층인 filtering index 관점에서 읽는다. Vector search가 좋아져도 권한, tenant, 날짜, 언어 같은 hard filter는 빠르고 정확한 set operation 위에서 처리되어야 한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 1
+math: false
+---
+
+<Paper
+  title="Consistently faster and smaller compressed bitmaps with Roaring"
+  authors="Daniel Lemire, Gregory Ssi-Yan-Kai, Owen Kaser"
+  year="2016"
+  venue="Software: Practice and Experience"
+  arxiv="1603.06549"
+/>
+
+## 한 줄 요약
+
+Roaring Bitmap은 정수 집합을 빠르고 작게 저장하기 위한 compressed bitmap format이다. AI Search 관점에서는 vector search 이전에 필요한 **metadata filter, permission filter, faceted search, candidate pruning**의 기본 부품으로 볼 수 있다.
+
+요즘 AI Search를 이야기하면 대부분 embedding, vector DB, reranker, RAG부터 떠올린다. 그런데 실제 검색 시스템을 만들면 아주 낮은 층에서 반복되는 문제가 있다.
+
+> “이 문서는 검색 대상에 포함해도 되는가?”
+
+이 질문은 LLM이 답하면 안 된다. 검색 전에 deterministic하게 처리되어야 한다.
+
+- 이 사용자가 볼 수 있는 문서인가?
+- 이 tenant의 데이터인가?
+- 이 날짜 범위에 들어오는가?
+- 이 언어 문서인가?
+- 이 제품군에 속하는가?
+- 삭제되거나 deprecated된 문서는 아닌가?
+
+이런 조건을 빠르게 처리하려면 결국 set operation이 필요하다. Roaring Bitmap은 이 set operation을 빠르게 하기 위한 현실적인 자료구조다.
+
+## 왜 bitmap index인가
+
+논문은 아주 기본적인 문제에서 출발한다. 데이터베이스나 검색 엔진에서는 특정 속성을 만족하는 row 또는 document id의 집합을 자주 다룬다.
+
+예를 들어 다음과 같은 집합들이 있다고 하자.
+
+```text
+A = 한국어 문서 id 집합
+B = 2026년에 생성된 문서 id 집합
+C = 사용자가 접근 가능한 문서 id 집합
+D = product = search 인 문서 id 집합
+```
+
+사용자가 “2026년에 작성된 search 제품 관련 한국어 문서”를 검색한다면, semantic retrieval을 하기 전에 먼저 이런 연산을 해야 한다.
+
+```text
+candidate = A AND B AND C AND D
+```
+
+bitmap은 이런 연산에 잘 맞는다. 정수 id가 집합에 포함되어 있으면 해당 bit를 1로 두고, 포함되어 있지 않으면 0으로 둔다. 그러면 intersection, union, difference 같은 연산은 CPU의 bitwise operation으로 처리할 수 있다.
+
+문제는 단순 bitmap이 항상 좋은 것은 아니라는 점이다.
+
+- id 공간이 크고 sparse하면 메모리를 많이 낭비한다.
+- run-length encoding은 정렬된 데이터나 긴 연속 구간에는 좋지만, 일반적인 unsorted data에서는 항상 빠르거나 작지 않다.
+- 검색 엔진에서는 집합 연산이 매우 자주 일어나므로 압축률만 좋고 연산이 느리면 곤란하다.
+
+Roaring Bitmap의 핵심은 이 trade-off를 container 단위로 나눠서 해결하는 것이다.
+
+## Roaring의 핵심 아이디어: 하나의 표현만 고집하지 않는다
+
+Roaring은 32-bit 정수 공간을 상위 16-bit 기준으로 chunking한다. 각 chunk는 하위 16-bit 값들의 집합을 담는다. 즉 전체 id 공간을 `2^16` 크기의 작은 블록들로 나누고, 각 블록에 가장 적합한 container를 선택한다.
+
+논문에서 설명하는 기본 구조는 다음과 같다.
+
+```text
+상위 16-bit key -> container
+상위 16-bit key -> container
+상위 16-bit key -> container
+...
+```
+
+각 container는 해당 chunk 안의 하위 16-bit 값들을 저장한다. 중요한 점은 모든 chunk를 같은 방식으로 저장하지 않는다는 것이다.
+
+Roaring은 크게 세 가지 container를 사용한다.
+
+| Container | 언제 유리한가 | 저장 방식 |
+| --- | --- | --- |
+| Array container | 값이 sparse할 때 | 정렬된 16-bit 정수 배열 |
+| Bitmap container | 값이 dense할 때 | 1024개의 64-bit word, 총 8KB bitmap |
+| Run container | 연속 구간이 많을 때 | 시작값과 run length 쌍 |
+
+원래 Roaring은 array container와 bitmap container를 조합했다. 이 논문은 여기에 **run container**를 추가해, long run이 많은 데이터에서도 더 잘 압축되도록 개선한다.
+
+이 설계가 좋은 이유는 단순하다.
+
+> sparse한 곳은 array로, dense한 곳은 bitmap으로, 연속 구간이 많은 곳은 run으로 저장한다.
+
+하나의 압축 방식을 전체 데이터에 강제하지 않고, 데이터의 지역적인 특성에 맞춰 표현을 바꾼다.
+
+## 4096이라는 기준
+
+Roaring에서 array container와 bitmap container를 나누는 기준은 cardinality 4096이다.
+
+Bitmap container는 16-bit 공간 전체를 표현하므로 항상 8KB를 사용한다. 반면 array container는 값 하나당 16-bit, 즉 2 byte를 사용한다.
+
+단순히 계산하면 array container가 4096개 값을 담을 때 대략 8192 byte가 된다. 이 시점부터는 bitmap container와 크기가 비슷해진다.
+
+```text
+array container: c개의 값 -> 대략 2c byte
+bitmap container: 고정 8192 byte
+```
+
+그래서 Roaring은 다음처럼 동작한다.
+
+- 값이 4096개 이하이면 array container가 유리하다.
+- 값이 4096개를 넘으면 bitmap container가 유리하다.
+- run container는 array나 bitmap보다 작을 때만 사용한다.
+
+이 기준은 구현을 단순하게 만들면서도, sparse와 dense 사이의 균형을 잘 잡는다.
+
+## Run container: 정렬된 데이터와 긴 구간을 위한 보완
+
+기존 Roaring이 항상 RLE 기반 format보다 작은 것은 아니었다. 특히 데이터가 정렬되어 있고, bitmap 안에 긴 연속 구간이 많으면 RLE가 더 작을 수 있다.
+
+이 논문이 추가한 run container는 이 약점을 보완한다.
+
+예를 들어 값이 다음과 같다고 하자.
+
+```text
+11, 12, 13, 14, 15
+```
+
+array container라면 다섯 개 값을 저장해야 한다. run container는 이를 다음처럼 저장할 수 있다.
+
+```text
+start = 11, length = 4
+```
+
+여기서 length 4는 시작값 11 이후에 4개의 연속 값이 더 있다는 뜻이다. 즉 11부터 15까지를 하나의 pair로 표현한다.
+
+논문은 run container가 array나 bitmap container보다 작을 때만 존재하도록 제한한다. 이 점이 중요하다. run container를 무조건 쓰는 것이 아니라, 실제로 더 작을 때만 변환한다.
+
+Roaring에서는 보통 먼저 array와 bitmap container로 bitmap을 만들고, 필요할 때 `runOptimize` 같은 최적화 과정을 통해 run container로 바꾼다. 분석 시스템처럼 bitmap을 한 번 만들고 오래 조회하는 workload에서는 이런 후처리 최적화가 특히 잘 맞는다.
+
+## 성능 결과: 빠르고 작게
+
+논문의 주장은 꽤 강하다.
+
+초록 기준으로 Roaring의 새 구현은 WAH, Concise, EWAH 같은 전통적인 RLE 기반 대안보다 여러 배 빠르며, 경우에 따라 최대 두 orders of magnitude까지 빠르다고 설명한다. 결론에서는 array, bitmap, run 세 container를 조합한 hybrid bitmap format이 경쟁 format보다 최대 수백 배 빠를 수 있다고 정리한다.
+
+물론 이런 숫자는 dataset과 workload에 따라 달라진다. bitmap index는 데이터 분포, 정렬 여부, cardinality, 연산 종류에 영향을 많이 받는다. 논문도 sorted dataset에서는 run compression이 특히 매력적이라고 설명한다.
+
+그래도 핵심 메시지는 분명하다.
+
+> 압축률과 연산 속도는 반드시 반비례하지 않는다. 데이터 특성에 맞는 hybrid representation을 쓰면 둘 다 얻을 수 있다.
+
+이 점이 Roaring이 Lucene, Spark, Kylin, Druid 같은 시스템에서 채택된 이유와 연결된다.
+
+## AI Search에서 Roaring을 어디에 쓰나
+
+Roaring Bitmap은 embedding model도 아니고 neural retrieval도 아니다. 하지만 AI Search stack에서 꽤 현실적인 위치를 가진다.
+
+### 1. Permission filter
+
+Enterprise search나 사내 RAG에서 가장 먼저 필요한 것은 권한 필터다.
+
+문서가 semantic하게 관련 있더라도 사용자가 볼 수 없다면 검색 결과에 나오면 안 된다. 이건 soft ranking 문제가 아니라 hard constraint다.
+
+```text
+visible_docs(user) AND semantic_candidates(query)
+```
+
+`visible_docs(user)` 같은 집합을 빠르게 계산하고 조합하는 데 bitmap index가 유용하다.
+
+### 2. Metadata filter
+
+AI Search는 점점 복잡한 metadata filter를 요구한다.
+
+- 날짜 범위
+- 조직
+- 제품군
+- 언어
+- 문서 타입
+- region
+- source
+- status
+
+Vector DB도 metadata filter를 제공하지만, 규모가 커지고 조건이 복잡해질수록 filter layer의 효율이 중요해진다. Roaring Bitmap은 이런 속성별 document id 집합을 빠르게 조합하는 데 잘 맞는다.
+
+### 3. Faceted search
+
+검색 결과 옆에 “문서 타입별 개수”, “언어별 개수”, “작성자별 개수” 같은 facet을 보여주는 기능도 결국 set operation이다.
+
+```text
+result_set AND docs_with_language_ko
+result_set AND docs_with_type_pdf
+result_set AND docs_from_team_platform
+```
+
+검색 UI에서는 이런 계산을 매 query마다 빠르게 해야 한다. AI Search UI에서도 facet과 filter는 여전히 중요하다.
+
+### 4. Hybrid retrieval의 candidate pruning
+
+Dense retrieval, sparse retrieval, reranking을 모두 쓰는 시스템에서는 candidate set을 여러 단계로 줄인다.
+
+```text
+allowed_docs
+  -> metadata filtered docs
+  -> sparse candidates
+  -> dense candidates
+  -> reranking candidates
+  -> context
+```
+
+이때 bitmap은 “어떤 후보군에 포함되는가”를 빠르게 표현하는 공통 자료구조가 될 수 있다.
+
+### 5. Evaluation slice 분석
+
+검색 평가에서도 bitmap은 유용하다.
+
+예를 들어 retrieval 성능을 다음 slice별로 보고 싶다고 하자.
+
+- 한국어 문서
+- 30일 이내 문서
+- 특정 제품군 문서
+- 긴 문서
+- table 포함 문서
+- 권한 제한 문서
+
+각 slice를 bitmap으로 들고 있으면 평가 결과를 빠르게 분해할 수 있다. AI Search 시스템에서는 전체 평균보다 slice별 실패가 더 중요할 때가 많다.
+
+## Vector DB와 Roaring은 경쟁 관계가 아니다
+
+Roaring Bitmap을 이야기하면 “그럼 vector DB 대신 bitmap을 쓰자는 말인가?”로 들릴 수 있다. 전혀 아니다.
+
+둘은 해결하는 문제가 다르다.
+
+| 층 | 질문 | 예시 기술 |
+| --- | --- | --- |
+| Filter index | 검색 대상에 포함되는가? | Roaring Bitmap, inverted index |
+| Semantic retrieval | 의미적으로 가까운가? | dense embedding, vector DB |
+| Lexical retrieval | 단어/구문이 맞는가? | BM25, SPLADE |
+| Late interaction | token-level로 잘 맞는가? | ColBERT |
+| Reranking | 최종 순서가 맞는가? | cross-encoder, LLM reranker |
+
+Roaring은 semantic similarity를 계산하지 않는다. 대신 semantic search가 처리해야 할 후보 universe를 빠르게 줄이고, hard constraint를 정확하게 적용한다.
+
+AI Search에서 좋은 구조는 대략 이런 식이다.
+
+```text
+1. 권한과 metadata filter로 검색 가능한 문서 집합을 만든다.
+2. sparse/dense retrieval로 의미적 후보를 찾는다.
+3. late interaction 또는 reranker로 정밀하게 순위를 조정한다.
+4. context selection으로 LLM에 넣을 근거를 고른다.
+```
+
+Roaring은 1번에 해당한다. 낮은 층이지만, 이 층이 틀리면 위에 아무리 좋은 모델을 얹어도 시스템은 불안정해진다.
+
+## 개인적으로 흥미로웠던 점
+
+이 논문을 AI Search Meetup 시리즈의 첫 번째 개별 글로 잡은 이유는 일부러다. 요즘 검색 이야기는 너무 빨리 neural retrieval로 점프한다. 그런데 검색 시스템을 실제로 만들 때는 여전히 오래된 시스템 문제들이 중요하다.
+
+- set을 어떻게 표현할 것인가
+- filter를 어디서 적용할 것인가
+- sparse한 데이터와 dense한 데이터를 어떻게 다르게 저장할 것인가
+- CPU cache와 bit operation을 어떻게 활용할 것인가
+- immutable analytic workload와 update-heavy workload를 어떻게 다르게 볼 것인가
+
+이런 문제는 LLM이 등장했다고 사라지지 않았다. 오히려 LLM 기반 검색이 더 많은 데이터와 더 복잡한 권한 구조를 다루게 되면서 더 중요해졌다.
+
+Roaring Bitmap은 “AI Search는 vector DB만으로 끝나지 않는다”는 시리즈 메시지와 잘 맞는다. 검색 stack의 아래쪽에는 여전히 자료구조와 시스템 최적화가 있다.
+
+## 한계와 주의할 점
+
+Roaring Bitmap이 모든 경우에 정답은 아니다.
+
+첫째, bitmap index는 정수 id 집합을 다루는 데 강하다. 하지만 semantic similarity 자체를 계산하지는 않는다. 따라서 embedding search나 lexical retrieval을 대체하는 기술이 아니다.
+
+둘째, workload에 따라 최적의 표현이 달라진다. 논문에서도 run compression은 정렬된 데이터나 long run이 많은 analytical workload에서 특히 매력적이라고 설명한다. update가 매우 잦은 환경에서는 최적화 시점과 변환 비용을 따져야 한다.
+
+셋째, filter가 너무 복잡해지면 index 설계 자체가 별도 문제가 된다. 모든 metadata 조합을 미리 bitmap으로 만들 수는 없다. 어떤 속성을 bitmap으로 둘지, 어떤 속성은 inverted index나 columnar store에서 처리할지 결정해야 한다.
+
+그래도 AI Search 시스템에서 hard filter가 중요하다면, Roaring Bitmap은 알아둘 가치가 충분하다.
+
+## 정리
+
+Roaring Bitmap 논문을 AI Search 관점에서 읽으면 메시지는 이렇게 정리된다.
+
+> Vector search 이전에, 검색 가능한 문서 집합을 빠르고 정확하게 정의하는 layer가 필요하다.
+
+Roaring은 array, bitmap, run container를 조합해 sparse, dense, run-heavy 데이터를 각각 다르게 저장한다. 이 hybrid representation 덕분에 압축률과 set operation 성능을 동시에 노린다.
+
+AI Search에서 이 기술은 화려한 LLM 기능은 아니지만, 실제 시스템의 안정성을 결정하는 아래층 인프라에 가깝다. 권한, metadata, facet, slice, candidate pruning을 빠르게 처리하려면 이런 자료구조가 여전히 중요하다.
+
+다음 글에서는 한 층 위로 올라가서, 문서를 하나의 벡터로 압축하지 않는 neural retrieval 방식인 **ColBERT**를 정리해볼 예정이다.
+
+## 참고 자료
+
+- Daniel Lemire, Gregory Ssi-Yan-Kai, Owen Kaser, *Consistently faster and smaller compressed bitmaps with Roaring*, arXiv: https://arxiv.org/abs/1603.06549
+- Apache Lucene RoaringDocIdSet issue: https://issues.apache.org/jira/browse/LUCENE-5983
+- Elastic blog, *Frame of Reference and Roaring Bitmaps*: https://www.elastic.co/blog/frame-of-reference-and-roaring-bitmaps
