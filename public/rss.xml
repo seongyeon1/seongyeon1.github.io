@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 06 Jul 2026 23:37:57 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 07 Jul 2026 00:06:12 GMT</lastBuildDate>
+    <item>
+      <title>[AI Search] Darwin Gödel Machine: 스스로 진화하는 Agent를 어떻게 평가할 것인가</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-07-darwin-godel-machine-self-improving-agent-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-07-darwin-godel-machine-self-improving-agent-ai-search/</guid>
+      <description>Darwin Gödel Machine 논문을 AI Search와 Agent QA 관점에서 읽는다. agent가 자기 코드를 수정하고 benchmark feedback으로 선택되는 open-ended archive 구조가 검색, 평가, self-improvement loop 설계에 어떤 의미를 갖는지 정리한다.</description>
+      <pubDate>Tue, 07 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>Darwin Godel Machine</category>
+      <category>self-improving-agent</category>
+      <category>agent-evaluation</category>
+      <category>open-endedness</category>
+      <category>SWE-bench</category>
+    </item>
     <item>
       <title>[AI Search] FineWeb2: Multilingual Search를 위한 데이터 파이프라인</title>
       <link>https://seongyeon1.github.io/blog/2026-07-07-fineweb2-multilingual-data-curation-ai-search/</link>

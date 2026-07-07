@@ -1,0 +1,527 @@
+---
+title: "[AI Search] Darwin Gödel Machine: 스스로 진화하는 Agent를 어떻게 평가할 것인가"
+date: "2026-07-07"
+category: "paper-review"
+tags: ["AI Search", "Darwin Godel Machine", "self-improving-agent", "agent-evaluation", "open-endedness", "SWE-bench"]
+summary: "Darwin Gödel Machine 논문을 AI Search와 Agent QA 관점에서 읽는다. agent가 자기 코드를 수정하고 benchmark feedback으로 선택되는 open-ended archive 구조가 검색, 평가, self-improvement loop 설계에 어떤 의미를 갖는지 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 14
+math: false
+---
+
+<Paper
+  title="Darwin Gödel Machine: Open-Ended Evolution of Self-Improving Agents"
+  authors="Jenny Zhang, Shengran Hu, Cong Lu, Robert Lange, Jeff Clune"
+  year="2026"
+  venue="ICLR"
+  arxiv="2505.22954"
+/>
+
+## 한 줄 요약
+
+Darwin Gödel Machine, 줄여서 DGM은 agent가 **자기 자신의 코드와 workflow를 수정하고, benchmark 결과로 살아남을 변형을 고르는 self-improving agent system**이다. AI Search 관점에서는 단순히 “자동 코딩 agent”가 아니라, agent 개선을 위한 **search space, archive, evaluation feedback loop**를 어떻게 설계할 것인가에 대한 논문으로 읽을 수 있다.
+
+앞선 SWE-agent 글이 “agent에게 좋은 interface가 필요하다”는 이야기였다면, DGM은 그 다음 질문을 던진다.
+
+> 그 interface와 workflow 자체를 agent가 스스로 개선하게 만들 수 있을까?
+
+구조를 단순화하면 이렇다.
+
+```text
+agent archive
+  ↓ select parent
+parent agent modifies its own code
+  ↓
+new agent candidate
+  ↓ evaluate on coding benchmark
+pass / score / safety checks
+  ↓
+add to archive or discard
+  ↓
+repeat
+```
+
+검색 시스템으로 비유하면, DGM은 “정답 문서를 찾는 search”가 아니라 **더 나은 agent 설계를 찾는 search engine**이다.
+
+## 왜 이 논문이 AI Search에 중요한가
+
+DGM은 표면적으로 self-improving coding agent 논문이다. 하지만 이 시리즈의 흐름에서 보면 중요한 위치가 있다.
+
+SWE-agent는 agent가 codebase를 탐색하고 수정하는 데 필요한 Agent-Computer Interface, 즉 ACI를 설계했다. DGM은 한 단계 더 나아가, 그 ACI와 workflow를 사람이 계속 손으로 튜닝하는 대신 **agent population이 직접 탐색하게 만든다**.
+
+AI Search stack으로 보면 이런 layer다.
+
+```text
+[retrieval model]
+  ColBERT / SPLATE / Gemini Embedding
+
+[reranking & context policy]
+  AcuRank / LDAR
+
+[agentic interface]
+  SWE-agent
+
+[self-improvement search loop]
+  Darwin Gödel Machine
+```
+
+대부분의 RAG 또는 Agent QA 시스템은 한 번 설계되면 고정된다.
+
+```text
+retriever = bge
+reranker = cross-encoder
+top_k = 20
+prompt = v7
+tools = search/open/cite
+```
+
+이후 개선은 사람이 한다. 로그를 보고, 실패 케이스를 보고, prompt를 바꾸고, tool을 추가하고, evaluator를 고친다.
+
+DGM의 질문은 이거다.
+
+> 이 개선 루프 자체를 agent가 수행하게 만들 수 있을까?
+
+Agent QA 시스템에 대입하면 이런 그림이 된다.
+
+```text
+QA agent v1
+  ↓ 실패 로그 분석
+  ↓ search strategy 수정
+  ↓ citation verifier 추가
+  ↓ stale-document penalty 추가
+QA agent v2
+  ↓ evaluation set에서 검증
+  ↓ archive에 저장
+QA agent v3, v4, v5 ...
+```
+
+즉, DGM은 retrieval 논문이라기보다 **agent system을 개선하는 meta-search 논문**이다.
+
+## 문제: 자기 개선은 증명하기 어렵다
+
+논문 제목의 Gödel Machine은 Schmidhuber의 이론적 아이디어에서 온다. 원래 Gödel machine은 자기 자신의 코드를 바꾸되, 그 변경이 이득이라는 것을 formal proof로 증명하는 self-improving system이다.
+
+문제는 현실의 LLM agent에서는 그런 증명이 거의 불가능하다는 점이다.
+
+예를 들어 coding agent에 도구를 하나 추가한다고 해보자.
+
+```text
+새 tool: run_static_analysis()
+```
+
+직관적으로는 좋아 보인다. 하지만 실제로는 다음 중 하나가 될 수 있다.
+
+- 유용한 signal을 줘서 성능이 오른다.
+- 출력이 너무 길어서 context를 오염시킨다.
+- agent가 static analysis warning에 과적합한다.
+- tool call 비용만 늘어난다.
+- 특정 benchmark에는 좋지만 다른 task에는 나쁘다.
+
+즉, “이 변경은 항상 유익하다”를 증명하기 어렵다. DGM은 여기서 formal proof를 포기하고, **empirical validation**으로 간다.
+
+```text
+변경안을 만든다
+  → 실제 benchmark에서 돌린다
+  → 좋아지면 archive에 남긴다
+  → 아니면 버린다
+```
+
+이 발상은 AI Search에서도 익숙하다. ranking feature 하나가 이론적으로 좋아 보여도 실제 search metric, latency, hallucination, citation quality에 미치는 영향은 실험해야 한다. DGM은 agent 설계에도 같은 원칙을 적용한다.
+
+## 핵심 아이디어: Darwin + Gödel
+
+DGM이라는 이름은 두 아이디어의 결합이다.
+
+| 축 | 의미 |
+| --- | --- |
+| Gödel Machine | 자기 자신의 코드를 수정하는 self-referential system |
+| Darwinian evolution | 여러 변형을 만들고, 환경에서 평가해 선택하는 open-ended search |
+
+DGM은 하나의 agent만 계속 hill-climbing하지 않는다. archive를 유지한다. archive에는 지금까지 발견된 여러 agent들이 저장된다. 매 iteration마다 이 archive에서 parent agent를 고르고, 그 parent가 자기 코드를 수정해 child agent를 만든다. child는 coding benchmark에서 평가되고, 기본 기능을 유지하면 archive에 들어간다.
+
+중요한 점은 “항상 현재 최고 agent에서만 분기하지 않는다”는 것이다.
+
+```text
+greedy search:
+  current best → mutate → better? keep : discard
+
+DGM:
+  archive of many agents
+  → pick promising / underexplored parent
+  → mutate
+  → evaluate
+  → keep diverse stepping stones
+```
+
+논문은 이 open-ended archive가 중요하다고 주장한다. 어떤 변경은 당장은 성능을 떨어뜨리지만, 나중에 더 큰 개선으로 이어지는 stepping stone이 될 수 있다. 그래서 DGM은 성능이 낮은 node도 완전히 버리지 않고, 다양한 path를 탐색한다.
+
+이건 검색 시스템에서도 익숙한 trade-off다.
+
+| 검색/최적화 문제 | Greedy 방식의 위험 |
+| --- | --- |
+| prompt optimization | 현재 eval set에만 과적합 |
+| retriever tuning | 특정 query class만 개선 |
+| agent workflow | 한 실패 유형만 해결하고 다른 기능 악화 |
+| tool design | local optimum에 갇힘 |
+
+DGM은 agent 개선을 “하나의 정답으로 수렴하는 optimization”보다 “여러 가능성을 보존하는 archive search”로 본다.
+
+## DGM loop 자세히 보기
+
+논문에서 DGM의 loop는 대략 이렇게 진행된다.
+
+### 1. Base agent에서 시작한다
+
+초기 agent는 의도적으로 가볍다. frozen foundation model에 tool use를 붙인 coding agent다. 기본적으로 Bash tool과 edit tool을 사용해 repository를 보고 수정한다.
+
+```text
+base coding agent
+  - Bash tool
+  - edit tool
+  - task prompt
+  - target repository
+  - test framework information
+```
+
+이 agent가 DGM archive의 첫 node가 된다.
+
+### 2. Archive에서 parent를 고른다
+
+DGM은 archive 안의 agent들 중 하나를 parent로 선택한다. 선택 확률은 성능이 높을수록 올라가지만, child가 너무 많은 agent는 덜 선택되도록 해 exploration을 유지한다. 모든 agent는 non-zero selection probability를 가진다.
+
+이 부분이 중요하다. 성능만 보면 exploitation으로 쏠린다. 반대로 무작위로만 고르면 좋은 lineage를 못 밀어준다. DGM은 성능과 under-exploration을 같이 본다.
+
+### 3. Parent가 자기 코드를 수정한다
+
+선택된 parent agent는 자신의 평가 로그를 보고, 어떤 기능을 추가하거나 수정할지 제안한다. 그리고 그 제안을 problem statement로 받아 자기 자신의 codebase를 수정한다.
+
+이게 self-reference다.
+
+```text
+agent solves external coding task
+  → normal coding agent
+
+agent edits its own implementation
+  → self-improving agent
+```
+
+### 4. 새 agent를 benchmark로 평가한다
+
+수정된 child agent는 SWE-bench나 Polyglot 같은 coding benchmark에서 평가된다. 논문에서는 비용 문제 때문에 staged evaluation을 쓴다.
+
+- 먼저 10개 task로 기본 codebase editing 기능을 확인한다.
+- 통과한 agent는 50개 task로 확장 평가한다.
+- SWE-bench에서는 60-task subset에서 40%를 넘고 archive top 2에 들면 200개 task로 더 평가한다.
+
+이 staged design은 실무적으로도 중요하다. Self-improving system은 평가 비용이 커지기 쉽다. 모든 후보를 full eval로 돌리면 비용이 터진다.
+
+### 5. Archive에 추가한다
+
+컴파일되고, code editing 능력을 유지하고, benchmark에서 의미 있는 점수를 얻은 agent는 archive에 들어간다. 그렇지 않으면 버려진다.
+
+이 과정을 80 iteration 동안 반복한다. 논문에서는 SWE-bench 실험은 2개 iteration을 병렬로, Polyglot은 4개 iteration을 병렬로 실행했다.
+
+## 실험 결과: 자기 개선과 open-ended exploration 둘 다 필요하다
+
+DGM의 headline result는 꽤 강하다.
+
+| 평가 | Base agent | DGM best agent |
+| --- | ---: | ---: |
+| SWE-bench | 20.0% | 50.0% |
+| Polyglot subset | 14.0% | 38.0% |
+| Polyglot full | 14.2% | 30.7% |
+
+논문은 DGM이 단순히 랜덤하게 agent를 여러 개 만든 것이 아니라, 두 구성요소가 모두 중요하다고 ablation으로 보인다.
+
+| Method | SWE-bench | Polyglot |
+| --- | ---: | ---: |
+| DGM | 50.0% | 38.0% |
+| DGM w/o open-ended exploration | 23.0% | 14.0% |
+| DGM w/o self-improve | 39.0% | 28.0% |
+| DGM Greedy | 39.7% | 30.0% |
+
+해석하면 이렇다.
+
+- **self-improvement가 없으면** meta-agent가 고정되어 장기 개선이 둔화된다.
+- **open-ended archive가 없으면** 한 번 나쁜 변형으로 가면 회복이 어렵다.
+- **greedy하게 best만 따라가도** 성능은 오르지만 DGM archive보다 낮다.
+
+논문에서 특히 흥미로운 부분은 DGM이 실제로 발견한 개선들이다. 예를 들면 다음과 같다.
+
+- line 단위로 더 세밀하게 file viewing
+- 전체 파일 교체 대신 string replacement 기반의 더 granular한 editing
+- patch가 비어 있지 않은지 검증하고 retry
+- context limit에 도달하면 자동 summarize
+- 여러 patch candidate를 만들고 ranking
+- 이전 attempt history를 고려해 다음 attempt 생성
+- peer-review style의 평가/선택 mechanism
+
+이건 사람이 coding agent를 개선할 때 실제로 할 법한 일들이다. DGM은 이런 scaffolding 개선을 자동으로 찾았다.
+
+## Transfer 결과: benchmark에만 과적합했나?
+
+Self-improving system을 보면 자연스럽게 의심이 든다.
+
+> 그냥 SWE-bench subset에 과적합한 것 아닌가?
+
+논문은 이를 보려고 model transfer와 benchmark transfer를 실험한다.
+
+SWE-bench에서 Claude 3.5 Sonnet으로 찾은 best agent를 다른 FM으로 바꿔 평가했을 때도 개선이 유지된다.
+
+| FM | Base agent | DGM-discovered agent |
+| --- | ---: | ---: |
+| o3-mini | 23.0% | 33.0% |
+| Claude 3.7 Sonnet | 19.0% | 59.5% |
+
+또 SWE-bench에서 진화한 agent를 Polyglot에 가져가도 개선이 나타난다.
+
+| Transfer | Base | Transferred best agent |
+| --- | ---: | ---: |
+| SWE-bench → Polyglot | 14.2% | 28.9% |
+| Polyglot → SWE-bench | 20.0% | 24.5% |
+
+완벽한 증명은 아니지만, 적어도 논문 기준으로는 DGM이 단일 benchmark artifact만 파먹은 것은 아니라는 근거다. 더 세밀한 file viewing, granular editing, multiple candidate generation 같은 개선은 task와 model을 넘어 일반적인 agent capability에 가깝다.
+
+AI Search로 치면, 특정 query set에서만 top-k를 튜닝한 것이 아니라, 여러 corpus와 query 유형에서 통하는 search workflow primitive를 찾은 셈이다.
+
+## AI Search Stack에서의 위치
+
+DGM을 AI Search stack에 넣으면 조금 추상적인 layer가 된다.
+
+```text
+user task
+  ↓
+agent uses search / tools / memory / verifier
+  ↓
+trajectory logs + evaluation results
+  ↓
+meta-agent proposes workflow/tool/prompt changes
+  ↓
+new agent variant
+  ↓
+evaluation suite
+  ↓
+archive of agent variants
+```
+
+여기서 “검색”은 두 층에서 일어난다.
+
+첫째, object-level search다. agent가 실제 task를 풀기 위해 문서, 코드, 로그, issue를 검색한다.
+
+둘째, meta-level search다. 어떤 agent workflow가 더 좋은지, 어떤 tool이 더 좋은지, 어떤 verifier가 더 좋은지 search한다.
+
+DGM은 두 번째 search를 자동화한다.
+
+Agent QA 시스템에 적용하면 다음 같은 변형을 archive search할 수 있다.
+
+| 변형 대상 | 예시 |
+| --- | --- |
+| search strategy | broad-first vs entity-first vs time-filter-first |
+| result view | snippet-only vs section-window vs line-numbered evidence |
+| citation policy | answer-first-cite-later vs cite-before-answer |
+| verifier | claim-level verifier, stale-source checker, contradiction checker |
+| memory policy | recent-session 우선 vs project-SOT 우선 |
+| fallback | low-confidence 시 재검색, 사람 확인 요청, 답변 보류 |
+
+이런 것들은 사람이 수동으로 설계할 수 있다. 하지만 DGM식 접근은 여러 variant를 만들고, benchmark와 production-like eval로 고르게 만든다.
+
+## Agent QA에 적용하면: 평가가 search space를 만든다
+
+DGM에서 가장 중요한 병목은 benchmark다. 자기 개선은 평가 기준을 따라간다. benchmark가 coding success만 보면 agent는 coding success를 올리는 방향으로 진화한다. 안전성, 해석가능성, 비용, latency, citation quality를 평가하지 않으면 그 속성은 보장되지 않는다.
+
+Agent QA도 마찬가지다.
+
+만약 evaluation이 “정답 문자열이 맞는가”만 본다면 agent는 다음 나쁜 shortcut을 배울 수 있다.
+
+- citation 없이도 그럴듯하게 답하기
+- 오래된 문서를 최신 근거처럼 쓰기
+- 다수결처럼 보이는 source만 가져오기
+- 모르는 질문에 모른다고 하지 않기
+- 비용을 무시하고 검색을 무한 반복하기
+
+따라서 self-improving QA agent를 만들려면 evaluation suite가 더 다층적이어야 한다.
+
+```text
+answer correctness
++ citation support
++ source freshness
++ contradiction handling
++ calibrated abstention
++ privacy / permission boundary
++ latency / token cost
++ tool-call budget
++ user-facing clarity
+```
+
+DGM의 핵심 교훈은 “self-improvement loop를 만들자”가 아니라, **무엇을 평가하느냐가 agent의 진화 방향을 결정한다**는 점이다.
+
+## 실무적으로 생각해볼 점
+
+DGM을 실무 agent system에 그대로 적용하기는 쉽지 않다. 하지만 설계 원칙은 바로 가져올 수 있다.
+
+### 1. Agent variant archive를 남겨야 한다
+
+대부분의 팀은 prompt v12, v13, v14를 덮어쓴다. 하지만 DGM식으로 보면 과거 variant도 stepping stone이다.
+
+```text
+agent-qa-v12
+  - entity-first search
+  - weak citation verifier
+  - good on legal docs
+
+agent-qa-v13
+  - broader search
+  - better meeting notes performance
+  - worse latency
+
+agent-qa-v14
+  - source freshness penalty
+  - better production safety
+```
+
+단순히 최신 버전만 남기지 말고, 어떤 variant가 어떤 task family에서 강한지 archive로 남겨야 한다.
+
+### 2. Full eval 전에 staged eval이 필요하다
+
+DGM은 모든 후보를 full SWE-bench로 돌리지 않는다. 작은 smoke test를 먼저 돌리고, 강한 후보만 더 큰 eval로 올린다.
+
+Agent QA도 비슷하게 가야 한다.
+
+```text
+stage 1: format / tool-use / citation schema smoke test
+stage 2: 20개 curated hard questions
+stage 3: project-specific regression set
+stage 4: production shadow traffic
+stage 5: human review / rollout
+```
+
+Self-improving loop에서 eval cost는 제품 비용 그 자체다. staged eval 없이 자동 개선을 돌리면 금방 비싸지고, noise에 취약해진다.
+
+### 3. Archive selection은 성능만 보면 안 된다
+
+DGM은 high score뿐 아니라 underexplored lineage도 본다. 실무에서도 평균 score만 보면 위험하다.
+
+예를 들어 QA agent variant A가 평균 90점이고 B가 평균 86점이라고 해도, B가 보안 질문이나 회계 문서 질문에 강하다면 버리면 안 된다.
+
+```text
+selection score = quality
+                + task coverage diversity
+                + cost efficiency
+                + safety score
+                + underexplored domain bonus
+```
+
+### 4. Improvement proposal은 로그에서 나와야 한다
+
+DGM의 parent agent는 evaluation log를 보고 self-modification proposal을 만든다. Agent QA에서도 개선안은 감이 아니라 실패 trajectory에서 나와야 한다.
+
+```text
+실패 로그:
+  - query에 날짜가 있었지만 search filter를 쓰지 않음
+  - source가 2025년 문서인데 2026년 최신 상태처럼 답함
+  - citation line에 claim이 없음
+
+개선 proposal:
+  - temporal constraint extractor 추가
+  - source freshness verifier 추가
+  - cite-before-answer policy 적용
+```
+
+이런 형태가 되어야 self-improvement가 실제 운영 품질과 연결된다.
+
+## 안전성: 자기 개선은 sandbox와 oversight 없이는 위험하다
+
+DGM 논문은 safety discussion을 꽤 진지하게 다룬다. 자기 코드를 수정하는 agent는 능력이 올라갈수록 위험도 같이 올라간다. 특히 benchmark 성능만 optimize하면 사람이 의도하지 않은 행동이나 취약점이 누적될 수 있다.
+
+논문에서 사용한 완화책은 다음과 같다.
+
+- agent execution과 self-modification을 isolated sandbox에서 실행
+- 각 실행에 strict time limit 적용
+- 수정 범위를 coding benchmark 성능 향상으로 제한
+- DGM archive로 modification lineage를 추적 가능하게 유지
+- agent performance와 code change를 actively monitor
+- human oversight를 포함
+
+이건 실무 self-improving agent에도 최소 조건에 가깝다.
+
+```text
+자동 개선 허용 범위:
+  - prompt / tool routing / verifier threshold 수정 가능
+  - credential, network policy, permission boundary 수정 불가
+  - production write action 자동 활성화 금지
+  - 모든 변경은 diff와 eval report로 남김
+```
+
+DGM이 흥미롭다고 해서 production agent에게 바로 자기 코드를 마음대로 고치게 하면 안 된다. 오히려 이 논문은 self-improvement loop를 만들수록 **평가, 격리, 감사, 권한 경계가 더 중요해진다**는 사실을 보여준다.
+
+## 한계와 열린 질문
+
+DGM은 강력한 아이디어를 보여주지만, 한계도 분명하다.
+
+첫째, 비용이 크다. 논문은 SWE-bench에서 DGM single run이 약 2주가 걸리고 상당한 API 비용이 든다고 말한다. Agent 개선을 자동화하려면 eval 비용과 compute budget을 어떻게 줄일지가 핵심이다.
+
+둘째, 현재는 coding domain에 묶여 있다. 자기 수정이 code editing task와 자연스럽게 연결되기 때문이다. QA, research, enterprise workflow 같은 영역에서는 “자기 개선 능력”과 “task 성능”의 연결이 덜 직접적일 수 있다.
+
+셋째, open-ended exploration process 자체는 고정되어 있다. 논문도 이 부분을 future work로 둔다. 즉, DGM은 agent code를 진화시키지만, 어떤 parent를 고르고 어떤 archive를 유지할지 같은 meta-process는 아직 사람이 설계한 것이다.
+
+넷째, benchmark가 모든 desired property를 담지 못한다. safety, robustness, interpretability, permission boundary, human preference가 eval에 들어가지 않으면 self-improvement loop는 그 속성을 보존하지 않을 수 있다.
+
+다섯째, frontier model의 reasoning 능력에 의존한다. DGM은 foundation model을 바꾸는 것이 아니라, frozen FM 주변의 tool, workflow, scaffold를 개선한다. 논문도 미래에는 training script나 foundation model 자체까지 수정하는 방향을 언급하지만, 여기까지는 아직 가지 않는다.
+
+## 제 해석
+
+저는 DGM을 “무서운 자기개선 AI”라는 과장된 프레임보다, **agent engineering을 search problem으로 바꾼 논문**으로 보는 게 더 생산적이라고 생각한다.
+
+우리가 지금 agent를 만들 때 하는 일은 대부분 수동 search다.
+
+```text
+prompt 바꿔보기
+retriever top-k 바꿔보기
+tool description 바꿔보기
+verifier 추가해보기
+memory policy 바꿔보기
+```
+
+DGM은 이 과정을 더 체계화한다.
+
+```text
+variant 생성
+→ benchmark 평가
+→ archive 저장
+→ 다른 lineage에서 다시 변형
+→ transfer 확인
+```
+
+AI Search에서도 결국 비슷한 방향으로 갈 가능성이 높다. 좋은 검색 시스템은 한 번 설계된 static pipeline이 아니라, query log, 실패 답변, citation 오류, 사용자 feedback을 보며 계속 자기 workflow를 바꾸는 system이 될 것이다.
+
+다만 이때 핵심은 “자동으로 바꾼다”가 아니라 “무엇을 바꿀 수 있고, 무엇은 바꾸면 안 되며, 어떤 평가를 통과해야 하는가”다.
+
+DGM은 agentic system의 미래가 단순히 더 큰 LLM이 아니라, 다음 세 가지의 결합일 수 있음을 보여준다.
+
+1. **좋은 interface** — SWE-agent가 보여준 ACI
+2. **좋은 evaluation** — benchmark와 staged validation
+3. **좋은 search process** — DGM의 archive 기반 open-ended exploration
+
+## 정리
+
+Darwin Gödel Machine의 메시지는 이렇다.
+
+> Agent 개선은 사람이 handcraft하는 prompt engineering에 머물지 않고, agent population이 스스로 variant를 만들고 평가받으며 진화하는 search process가 될 수 있다.
+
+이 논문에서 기억할 점은 네 가지다.
+
+1. **Self-improvement는 code modification + empirical validation으로 구현된다**  
+   formal proof 대신 benchmark 결과를 사용한다.
+
+2. **Archive가 중요하다**  
+   현재 최고 agent만 따라가는 greedy search보다, 다양한 stepping stone을 보존하는 open-ended exploration이 더 강하다.
+
+3. **평가 기준이 진화 방향을 정한다**  
+   coding score만 보면 coding score가 오른다. safety, citation, latency, permission boundary를 원하면 eval에 넣어야 한다.
+
+4. **안전장치가 필수다**  
+   sandbox, time limit, scope 제한, lineage tracking, human oversight 없이는 self-improving loop를 운영하면 안 된다.
+
+AI Search 시리즈에서 DGM은 “검색 모델”이 아니라 “agent system을 개선하는 검색 시스템”이다. 이제 검색의 대상은 문서나 chunk만이 아니다. **agent의 tool, prompt, workflow, verifier, memory policy 자체가 search space**가 된다.
+
+다음 글에서는 이 흐름을 이어서, 약한 judge나 verifier를 어떻게 보강할 수 있는지 다루는 **Debate Helps Weak Judges** 쪽으로 넘어가면 자연스럽다.
