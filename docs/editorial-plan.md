@@ -150,7 +150,7 @@
 | 아이디어 | 미정 | [논문 리뷰] DRIFTLENS — 개인화 memory가 reasoning trajectory를 어떻게 drift시키나 | paper-review | AI 평가/운영 | | arXiv 2607.02374 — memory-induced reasoning drift, trace 비교, personalization regression suite |
 | 아이디어 | 미정 | [논문 리뷰] CLAP — domain agent post-training을 폐루프 release control로 운영하기 | paper-review | AI 평가/운영 | | arXiv 2607.01846 — offline/application mismatch, adapter release gate, rollback 기준 |
 | 아이디어 | 미정 | [논문 리뷰] Reasoning effort, not tool access — agentic code generation에서 진짜 신뢰도를 사는 것 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02436 — tool access ablation, reasoning budget, first-try reliability |
-| 아이디어 | 미정 | open-multi-agent: goal을 task DAG로 쪼개는 TypeScript multi-agent orchestration | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — coordinator, task DAG, provider abstraction, failure/retry policy |
+| 발행완료 | 2026-07-07 | open-multi-agent: goal을 task DAG로 쪼개는 TypeScript multi-agent orchestration | tool | Agent/MCP 실전 | | `2026-07-07-open-multi-agent-task-dag-orchestration.mdx` — 자동 발행 완료, GitHub repo 기반 — coordinator, task DAG, provider abstraction, failure/retry policy |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

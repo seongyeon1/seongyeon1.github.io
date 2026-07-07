@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 07 Jul 2026 00:06:12 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 07 Jul 2026 02:15:16 GMT</lastBuildDate>
     <item>
       <title>[AI Search] Darwin Gödel Machine: 스스로 진화하는 Agent를 어떻게 평가할 것인가</title>
       <link>https://seongyeon1.github.io/blog/2026-07-07-darwin-godel-machine-self-improving-agent-ai-search/</link>
@@ -48,6 +48,18 @@
       <category>entity-extraction</category>
       <category>query-understanding</category>
       <category>document-enrichment</category>
+    </item>
+    <item>
+      <title>open-multi-agent: 목표를 task DAG로 바꾸는 TypeScript multi-agent 런타임</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-07-open-multi-agent-task-dag-orchestration/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-07-open-multi-agent-task-dag-orchestration/</guid>
+      <description>open-multi-agent를 예로 목표 기반 multi-agent orchestration을 task DAG, scheduler, replay 관점에서 살펴본다.</description>
+      <pubDate>Tue, 07 Jul 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>multi-agent</category>
+      <category>orchestration</category>
+      <category>task-dag</category>
+      <category>typescript</category>
     </item>
     <item>
       <title>[AI Search] SWE-agent: Agent에게는 검색창보다 Interface가 필요하다</title>

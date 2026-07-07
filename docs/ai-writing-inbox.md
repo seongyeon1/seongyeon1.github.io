@@ -2474,7 +2474,8 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [multi-agent, orchestration, task-dag, typescript]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-07-open-multi-agent-task-dag-orchestration.mdx
 
 ### 2026-07-07 — Future AGI: eval·observability·simulation을 한 플랫폼으로 묶는 agent QA stack
 - type: tech
