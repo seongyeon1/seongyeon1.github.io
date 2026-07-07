@@ -2371,3 +2371,120 @@
 - suggested-category: tutorial
 - suggested-tags: [context-engineering, agent-harness, mcp, github-repo]
 - status: idea
+
+### 2026-07-07 — [논문 리뷰] Steerability via Constraints: coding agent oversight를 제약 시스템으로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2607.02389v1
+- why-now: coding agent가 repo 변경, 테스트, 배포 스크립트까지 직접 만지는 흐름에서 “사람이 리뷰한다”만으로는 보안·확장성·코드베이스 일관성을 지키기 어렵다.
+- angle: “agent oversight는 채팅 승인보다 constraint substrate가 되어야 한다” — allowed action, repository invariant, policy-as-code, review cost 절감을 coding agent 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, oversight, constraints, policy-as-code]
+- status: idea
+
+### 2026-07-07 — [논문 리뷰] DRIFTLENS: 개인화 memory가 reasoning trajectory를 어떻게 drift시키나
+- type: paper
+- source: http://arxiv.org/abs/2607.02374v1
+- why-now: personalization memory를 붙인 LLM 서비스가 늘면서 답변 내용뿐 아니라 reasoning path 자체가 사용자 기억 주입으로 바뀌는지 측정할 필요가 커졌다.
+- angle: “agent memory 평가는 기억 검색 정확도만이 아니라 추론 경로 drift를 봐야 한다” — memory-induced reasoning drift, trace 비교, personalization regression suite로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, personalization, reasoning, eval]
+- status: idea
+
+### 2026-07-07 — [논문 리뷰] CLAP: domain agent post-training을 폐루프 release control로 운영하기
+- type: paper
+- source: http://arxiv.org/abs/2607.01846v1
+- why-now: 업무용 agent를 adapter/post-training으로 개선할 때 offline score, 실제 업무 성능, release risk가 어긋나는 문제가 반복된다.
+- angle: “agent 학습은 학습 파이프라인보다 release control loop가 핵심” — business data 정제, offline/application mismatch, adapter release gate, rollback 기준을 실무 운영법으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-training, release-control, eval, domain-agent]
+- status: idea
+
+### 2026-07-07 — [논문 리뷰] Bayesian Uncertainty Propagation: Agentic RAG pipeline의 실패 확률을 단계별로 전파하기
+- type: paper
+- source: http://arxiv.org/abs/2607.00972v1
+- why-now: Agentic RAG는 query rewrite, retrieval, tool use, synthesis가 이어지는 multi-stage pipeline이라 어느 단계의 불확실성이 최종 답변 위험으로 커지는지 보기 어렵다.
+- angle: “RAG confidence는 최종 답변 logprob가 아니라 pipeline uncertainty graph로 봐야 한다” — 단계별 uncertainty propagation, fallback trigger, multi-hop QA gate를 설계한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, uncertainty, bayesian, qa-gate]
+- status: idea
+
+### 2026-07-07 — [논문 리뷰] Open-source multi-agent framework 생태계 건강도를 어떻게 볼까
+- type: paper
+- source: http://arxiv.org/abs/2607.02453v1
+- why-now: agent framework가 너무 많아지면서 GitHub stars나 데모 영상만으로 LangGraph, CrewAI, AutoGen류 선택을 판단하기 어렵다.
+- angle: “framework 선택은 인기보다 adoption trajectory와 maintenance health를 봐야 한다” — longitudinal repo 분석, contributor health, release cadence, lock-in risk 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, framework-selection, ecosystem-health, github-analysis]
+- status: idea
+
+### 2026-07-07 — [논문 리뷰] Reasoning effort, not tool access: agentic code generation에서 진짜 신뢰도를 사는 것
+- type: paper
+- source: http://arxiv.org/abs/2607.02436v1
+- why-now: coding agent에 browser test, design prompt, extra tool을 계속 붙이는 흐름이 있지만, 첫 시도 신뢰도가 실제로 어디서 개선되는지 분리해 봐야 한다.
+- angle: “tool을 더 주는 것보다 reasoning budget과 검증 루프를 어떻게 배분할지가 중요하다” — first-try reliability, tool access ablation, coding workflow 설계 기준으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, reasoning-effort, tool-use, reliability]
+- status: idea
+
+### 2026-07-07 — Skybridge: MCP Apps와 ChatGPT Apps를 type-safe TypeScript framework로 묶기
+- type: tech
+- source: https://github.com/alpic-ai/skybridge
+- why-now: MCP client/server와 ChatGPT Apps를 각각 따로 만드는 대신, React 기반 UI와 typed tool contract를 함께 관리하려는 full-stack agent app 흐름이 생기고 있다.
+- angle: “agent app은 tool schema와 UI state를 분리하면 금방 깨진다” — type-safe tool contract, React-powered app surface, platform-agnostic MCP/ChatGPT app 구조를 repo 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, chatgpt-apps, typescript, agent-framework]
+- status: idea
+
+### 2026-07-07 — open-multi-agent: goal을 task DAG로 쪼개는 TypeScript multi-agent orchestration
+- type: tech
+- source: https://github.com/open-multi-agent/open-multi-agent
+- why-now: multi-agent demo가 채팅방식 협업을 넘어서 coordinator가 목표를 DAG로 분해하고 여러 LLM backend에 실행시키는 runtime 패턴으로 이동하고 있다.
+- angle: “multi-agent orchestration은 역할놀이가 아니라 task graph runtime” — coordinator, task DAG, provider abstraction, failure/retry policy를 TypeScript 서비스 관점에서 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, orchestration, task-dag, typescript]
+- status: idea
+
+### 2026-07-07 — Future AGI: eval·observability·simulation을 한 플랫폼으로 묶는 agent QA stack
+- type: tech
+- source: https://github.com/future-agi/future-agi
+- why-now: agent 품질 관리는 단발 benchmark보다 trace, eval, simulation, dataset, guardrail을 함께 돌리는 self-hostable QA loop가 필요해지고 있다.
+- angle: “agent eval platform은 점수판이 아니라 개선 루프의 control plane” — tracing, simulations, datasets, gateway/guardrail, CI regression을 운영 체크리스트로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, observability, simulation, self-hosted]
+- status: idea
