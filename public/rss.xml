@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 07 Jul 2026 02:15:16 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 07 Jul 2026 12:29:51 GMT</lastBuildDate>
     <item>
       <title>[AI Search] Darwin Gödel Machine: 스스로 진화하는 Agent를 어떻게 평가할 것인가</title>
       <link>https://seongyeon1.github.io/blog/2026-07-07-darwin-godel-machine-self-improving-agent-ai-search/</link>
@@ -34,6 +34,21 @@
       <category>data-curation</category>
       <category>Common-Crawl</category>
       <category>pretraining-data</category>
+    </item>
+    <item>
+      <title>[AI Search] Gemma 4: Open-weight Multimodal Model을 Search Stack에서 읽기</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-07-gemma-4-open-multimodal-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-07-gemma-4-open-multimodal-ai-search/</guid>
+      <description>Gemma 4 Technical Report를 AI Search stack 관점에서 읽는다. open-weight multimodal model family가 dense/MoE, encoder-free 12B, thinking mode, long-context KV cache 최적화, quantization, MTP drafter를 통해 검색·에이전트 시스템의 실행 위치와 비용 구조를 어떻게 바꾸는지 정리한다.</description>
+      <pubDate>Tue, 07 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>Gemma 4</category>
+      <category>open-weight</category>
+      <category>multimodal</category>
+      <category>long-context</category>
+      <category>edge-ai</category>
+      <category>reasoning</category>
     </item>
     <item>
       <title>[AI Search] GLiNER: 검색 문서에서 원하는 Entity를 바로 뽑는 Open NER</title>

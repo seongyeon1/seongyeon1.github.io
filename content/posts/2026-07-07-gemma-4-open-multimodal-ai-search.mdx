@@ -1,0 +1,388 @@
+---
+title: "[AI Search] Gemma 4: Open-weight Multimodal Model을 Search Stack에서 읽기"
+date: "2026-07-07"
+category: "paper-review"
+tags: ["AI Search", "Gemma 4", "open-weight", "multimodal", "long-context", "edge-ai", "reasoning"]
+summary: "Gemma 4 Technical Report를 AI Search stack 관점에서 읽는다. open-weight multimodal model family가 dense/MoE, encoder-free 12B, thinking mode, long-context KV cache 최적화, quantization, MTP drafter를 통해 검색·에이전트 시스템의 실행 위치와 비용 구조를 어떻게 바꾸는지 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 15
+math: false
+---
+
+<Paper
+  title="Gemma 4 Technical Report"
+  authors="Gemma Team, Google DeepMind"
+  year="2026"
+  venue="Technical Report"
+  arxiv="2607.02770"
+/>
+
+## 한 줄 요약
+
+Gemma 4는 단순히 “새 open model이 나왔다”보다 **AI Search stack에서 모델을 어디에 배치할 수 있는가**를 다시 생각하게 만드는 technical report다. 텍스트, 이미지, 오디오를 모두 받는 open-weight model family가 long-context, reasoning, quantization, speculative decoding까지 같이 가져가면, 검색 시스템의 일부 추론 단계를 클라우드 대형 모델에만 맡기지 않아도 되는 가능성이 생긴다.
+
+앞선 글들에서 retrieval, reranking, long-context distractor, multilingual data, agent interface를 봤다면, Gemma 4는 그 위에 올라가는 **실행 모델 계층**에 가깝다.
+
+```text
+raw document / image / audio / code / log
+  ↓
+indexing & retrieval
+  ↓
+reranking / filtering / context assembly
+  ↓
+multimodal reasoning model
+  ↓
+answer / action / citation / tool call
+```
+
+AI Search에서 중요한 질문은 “어떤 retriever가 좋은가”만이 아니다. 실제 제품에서는 곧바로 다음 질문이 따라온다.
+
+> 이 검색 결과를 누가 읽고, 어느 정도의 비용과 latency로, 어떤 device/privacy boundary 안에서 판단할 것인가?
+
+Gemma 4는 이 질문에 대한 Google DeepMind의 open-weight 쪽 답변으로 볼 수 있다.
+
+## 왜 이 논문이 AI Search에 중요한가
+
+AI Search 제품을 만들 때 모델 선택은 보통 마지막 단계처럼 보인다. vector DB를 붙이고, reranker를 고르고, prompt를 짠 다음 “어떤 LLM으로 답변할까?”를 정한다.
+
+그런데 실제 운영에서는 모델이 search architecture 자체를 바꾼다.
+
+| 모델 특성 | Search stack에 생기는 변화 |
+| --- | --- |
+| Long context가 강함 | retrieval top-k를 무작정 줄이지 않아도 되고, multi-hop evidence를 더 넓게 넣을 수 있다 |
+| Multimodal 입력 지원 | 문서 OCR, 이미지, 차트, 음성 기록을 별도 파이프라인으로만 다루지 않아도 된다 |
+| Open-weight | private/on-device/edge 배포 선택지가 생긴다 |
+| Quantized checkpoint | 비용·메모리 제약이 큰 환경에서도 rerank/answer model 후보가 된다 |
+| Thinking mode | 어려운 query에서 reasoning budget을 명시적으로 쓸 수 있다 |
+| Speculative decoding용 drafter | 답변 latency와 throughput 설계에 영향을 준다 |
+
+Gemma 4 Technical Report가 흥미로운 이유는 이 요소들을 따로따로가 아니라 하나의 model family 안에 묶어 제시한다는 점이다. 특히 2.3B, 4.5B, 12B, 31B dense model과 26B total / 3.8B activated MoE model을 함께 내놓는다. 즉 “큰 모델 하나”가 아니라 hardware와 latency budget에 따라 다른 지점에 꽂을 수 있는 모델군이다.
+
+## Gemma 4가 제시하는 모델군
+
+논문은 Gemma 4를 open-weight, natively multimodal language model family로 소개한다. 모델 구성은 대략 이렇다.
+
+| 모델 | 구조 | 논문에서 강조하는 위치 |
+| --- | --- | --- |
+| E2B | effective 2.3B dense | 작은 hardware, on-device 후보 |
+| E4B | effective 4.5B dense | 경량 multimodal + long-context 후보 |
+| 12B | dense, encoder-free architecture | 별도 vision/audio encoder 없이 raw image/audio patch를 LLM embedding으로 투입 |
+| 26B-A4B | MoE, 26B total / 3.8B activated | 큰 총 파라미터 대비 낮은 activated compute |
+| 31B | dense | open dense model 중 high-end 성능 지점 |
+
+E2B와 E4B는 per-layer embedding을 사용해 각각 총 5B, 8B 중 effective 2.3B, 4.5B로 동작한다고 설명한다. 26B-A4B는 26B 전체 파라미터 중 약 3.8B만 활성화되는 MoE다.
+
+AI Search 관점에서 이 model family 구성은 꽤 실용적이다. 같은 검색 시스템 안에서도 model role이 하나가 아니기 때문이다.
+
+```text
+small model:
+  query rewrite / language detection / light reranking / local summary
+
+medium model:
+  document-level reasoning / multimodal extraction / private search assistant
+
+large model:
+  final synthesis / hard reasoning / evaluation / tool-using agent
+```
+
+Gemma 4는 이 role들을 한 family 안에서 커버하려는 방향으로 보인다.
+
+## 핵심 아이디어 1: Multimodal을 기본값으로 둔다
+
+Gemma 4는 텍스트만 다루는 모델이 아니다. 논문은 이미지와 오디오를 model family의 기본 기능으로 다룬다.
+
+일반적인 enterprise search를 생각해보면, 실제 지식은 텍스트 파일에만 있지 않다.
+
+- 회의 녹음
+- 발표 자료 이미지
+- 차트와 표
+- 스캔 PDF
+- 제품 스크린샷
+- 로그 캡처
+- 문서 안의 diagram
+
+기존 RAG stack에서는 이런 입력을 보통 별도 pipeline으로 쪼갠다.
+
+```text
+image → OCR / captioning → text index
+speech → ASR → text index
+PDF/table → parser → text chunks
+```
+
+이 접근은 여전히 필요하지만, multimodal model이 좋아질수록 “검색된 원본 evidence를 다시 모델이 직접 본다”는 설계가 더 자연스러워진다. 예를 들어 OCR이 틀린 차트나 표를 top-k context에 넣고, final model이 원본 이미지와 추출 텍스트를 같이 보게 만들 수 있다.
+
+논문에서 E2B와 E4B는 150M vision encoder, 305M audio encoder를 사용하고, 더 큰 모델은 550M vision encoder를 쓴다. audio encoder는 Gemma 3n의 680M에서 305M으로 줄였다고 설명한다. 그리고 12B는 여기서 한 발 더 나아가 encoder-free architecture를 제시한다.
+
+## 핵심 아이디어 2: 12B의 encoder-free architecture
+
+Gemma 4 12B에서 가장 눈에 띄는 부분은 unified, encoder-free architecture다. 일반적인 multimodal LLM은 vision encoder나 audio encoder가 따로 있고, 그 출력 representation을 LLM에 붙인다.
+
+Gemma 4 12B는 다르게 간다.
+
+- 이미지: 48×48×3 RGB patch를 받아 35M parameter matmul로 LLM embedding space에 투영
+- 오디오: 16kHz audio를 40ms chunk로 나누어 640-dimensional vector를 만들고 LLM embedding space로 직접 투영
+- 별도 550M vision encoder와 305M audio conformer encoder를 제거
+
+논문 표현을 그대로 빌리면, separate encoder를 없애서 memory fragmentation을 줄이는 방향이다.
+
+AI Search stack에서 이건 꽤 중요한 신호다. multimodal search는 보통 modality별 encoder를 계속 늘린다.
+
+```text
+text embedding model
+image embedding model
+OCR model
+ASR model
+table parser
+captioning model
+reranker
+answer model
+```
+
+이 구조는 품질을 잘 뽑을 수 있지만, 운영이 복잡해진다. 모델마다 버전, latency, GPU memory, failure mode가 다르다. Gemma 4 12B의 encoder-free 접근은 “모든 modality를 하나의 embedding space로 단순히 통합한다”는 뜻은 아니지만, 적어도 **multimodal reasoning runtime의 부품 수를 줄이려는 방향**으로 읽힌다.
+
+내가 보기엔 이 지점이 검색 제품에서 특히 중요하다. retrieval 단계에서는 modality-specialized encoder가 계속 필요하더라도, 검색 결과를 읽고 판단하는 answer layer는 점점 더 통합될 가능성이 있다.
+
+## 핵심 아이디어 3: Long-context 비용을 줄인다
+
+AI Search에서 long context는 양날의 검이다.
+
+- 장점: 더 많은 evidence, 더 긴 문서, multi-hop context를 넣을 수 있다.
+- 단점: latency, 비용, distractor, KV cache memory가 폭증한다.
+
+Gemma 4는 long-context efficiency를 위해 local/global attention pattern과 positional encoding, KV cache 최적화를 같이 사용한다. 논문은 E2B는 4:1, 나머지 모델은 5:1의 local sliding window attention 대 global self-attention 비율을 유지한다고 설명한다. 그리고 global attention layer에서 keys를 values로 재사용하는 방식 등을 통해 global KV cache footprint를 최대 37.5% 줄인다고 말한다.
+
+이건 “128k context를 지원한다” 같은 스펙보다 더 실무적인 이야기다. Search system에서 long context를 쓰면 bottleneck은 종종 context length 자체보다 KV cache와 serving cost다.
+
+```text
+더 긴 context를 넣을 수 있음
+  ≠ 항상 더 좋은 검색 답변
+
+더 긴 context를 적정 비용으로 serving할 수 있음
+  = 제품 feature가 될 가능성 증가
+```
+
+논문 Table 9의 long-context 평가에서도 Gemma 4는 Gemma 3 대비 큰 개선을 보인다. 예를 들어 RULER 128k에서 Gemma 3 27B는 66.0인데, Gemma 4 31B는 96.4, 26B-A4B는 89.8, 12B는 91.2로 보고된다. LOFT text retrieval 128k에서도 Gemma 3 27B는 8.6인 반면 Gemma 4 31B는 79.5, 12B는 66.4다.
+
+물론 benchmark 숫자를 그대로 제품 성능으로 옮기면 안 된다. 하지만 “긴 context 안에서 evidence를 찾아내는 능력”이 model family 전체에서 전진했다는 신호로는 충분히 볼 만하다.
+
+## 핵심 아이디어 4: Thinking mode를 모델 기능으로 넣는다
+
+Gemma 4는 instruction-tuned model에 thinking mode를 넣었다고 설명한다. 모델이 답변 전에 reasoning trace를 생성하는 방식이다. 논문은 특히 수학과 코딩 같은 reasoning-heavy domain에서 성능 향상이 나타난다고 말한다.
+
+AI Search에서는 query마다 필요한 reasoning budget이 다르다.
+
+| Query 유형 | 필요한 모델 행동 |
+| --- | --- |
+| 단순 사실 확인 | 빠른 retrieval + 짧은 답변 |
+| 문서 요약 | coverage와 중복 제거 |
+| 정책/계약 비교 | evidence alignment와 contradiction check |
+| 코드/로그 분석 | multi-step hypothesis testing |
+| research assistant | 검색, 읽기, 재검색, 종합 |
+
+모든 query에 긴 reasoning을 쓰면 latency와 비용이 터진다. 반대로 어려운 query에 reasoning을 너무 아끼면 hallucination과 shallow answer가 나온다.
+
+그래서 thinking mode의 의미는 “모델이 생각한다”라는 마케팅 문구보다 **reasoning budget을 routing할 수 있는 실행 옵션**에 있다. Search stack에서는 query classifier나 difficulty estimator가 먼저 판단하고, 어려운 query에서만 thinking mode를 켜는 식의 설계가 가능하다.
+
+```text
+if query_is_easy:
+  retrieve → short answer
+else:
+  retrieve → rerank → evidence pack → thinking answer → citation check
+```
+
+앞서 AcuRank 글에서 reranking compute를 어려운 query에 더 쓰는 이야기를 했다면, Gemma 4의 thinking mode는 generation/reasoning compute에서도 비슷한 adaptive compute 설계를 가능하게 한다.
+
+## 핵심 아이디어 5: Quantization과 MTP drafter는 제품 기능이다
+
+논문은 quantization-aware training(QAT)된 checkpoint와 int8 KV cache, Q4_0 quantization 등을 제공한다고 설명한다. Table 3에서는 32k context 기준 text-only memory footprint를 비교한다. 예를 들어 31B는 bf16에서 64.0GB인데 quantized checkpoint는 19.2GB, KV cache 추가는 1.10GB로 제시된다. 12B는 bf16 24.0GB, quantized 7.65GB, KV 추가 0.28GB다.
+
+또 하나는 MTP, 즉 multi-token prediction drafter다. 논문은 speculative decoding을 위해 작은 autoregressive drafter head를 같이 학습한다고 설명한다. E2B/E4B drafter에서는 vocabulary 전체 projection을 top-k cluster operation으로 줄여 final matrix multiplication을 `d × 262,000`에서 `d × 4096`으로 줄였다고 한다.
+
+이런 내용은 benchmark 표보다 덜 화려하지만 제품 관점에서는 중요하다.
+
+- quantization은 deploy 가능한 hardware boundary를 바꾼다.
+- KV cache 절감은 long-context serving cost를 바꾼다.
+- speculative decoding은 perceived latency와 throughput을 바꾼다.
+- 작은 model family는 edge/local/private deployment 선택지를 만든다.
+
+AI Search는 대개 “검색 품질”로 평가되지만, 실제 채택은 품질만으로 결정되지 않는다. 사내 문서 검색, 고객센터 agent, mobile assistant, browser-side assistant는 latency, privacy, cost, offline 가능성 같은 조건이 더 세다. Gemma 4는 이 조건들을 모델 설계 전반에서 의식하고 있다.
+
+## 주요 결과를 어떻게 읽어야 하나
+
+논문은 다양한 benchmark를 제시한다. 몇 가지 숫자만 뽑으면 다음과 같다.
+
+| 영역 | 논문에서 보고한 신호 |
+| --- | --- |
+| Arena Text | Gemma 4 31B는 open dense category에서 상위권이며, 26B-A4B도 훨씬 큰 open MoE들과 경쟁 |
+| Reasoning/STEM | MMLU Pro, AIME 2026, GPQA Diamond 등에서 Gemma 3 27B 대비 큰 개선 |
+| Coding/Agent | LiveCodeBench, Codeforces Elo, Terminal Bench Hard, Tau2 등 포함 |
+| Vision | MMMU Pro, MATH-Vision, InfographicVQA 등에서 Gemma 3 대비 개선 |
+| Audio | Gemma 3n 대비 translation과 transcription이 개선되면서 audio encoder footprint는 390MB에서 87MB로 감소 |
+| Long context | RULER, LOFT, GraphWalks, MTOB에서 Gemma 3 대비 큰 개선 |
+
+특히 논문은 E2B가 Gemma 3 27B와 대략 비슷한 성능을 10분의 1 수준 parameter로 낸다고 표현한다. 이 주장은 open-weight small model의 역할을 다시 보게 만든다. 작은 모델이 final answer model까지 항상 맡기는 어렵더라도, search pipeline 안의 많은 보조 작업은 충분히 가져갈 수 있다.
+
+예를 들면:
+
+```text
+E2B / E4B:
+  - query rewrite
+  - snippet compression
+  - language-specific normalization
+  - low-risk local answer
+  - document triage
+
+12B:
+  - multimodal document reading
+  - private corpus QA
+  - long-context evidence synthesis
+
+26B-A4B / 31B:
+  - hard reasoning
+  - agentic search
+  - evaluation / verifier
+  - final customer-facing answer
+```
+
+이런 식으로 model family를 role별로 나눠 쓰는 구성이 더 현실적이다.
+
+## AI Search Stack에서의 위치
+
+Gemma 4는 retriever 논문이 아니다. index structure를 제안하지도 않고, dense retrieval training recipe를 다루지도 않는다. 그런데도 AI Search stack에서 중요하다. 이유는 검색 시스템의 마지막 mile이 점점 “model-runtime 문제”가 되고 있기 때문이다.
+
+내 기준으로 Gemma 4의 위치는 여기다.
+
+```text
+[Data layer]
+  FineWeb2 / domain corpus / logs / docs / audio / image
+
+[Index layer]
+  bitmap filter / sparse retrieval / dense embedding / late interaction
+
+[Ranking layer]
+  reranker / adaptive compute / distractor-aware selection
+
+[Context layer]
+  chunk assembly / citation / long-context packing
+
+[Reasoning runtime]
+  Gemma 4-like multimodal open-weight model
+
+[Agent layer]
+  tool use / interface / verification / memory
+```
+
+Gemma 4는 특히 `Context layer → Reasoning runtime` 사이를 바꾼다. context를 얼마나 많이 넣을 수 있는지, 이미지와 오디오 evidence를 어떻게 읽을지, private 환경에서 돌릴 수 있는지, 어려운 query에서 thinking을 켤지, latency를 얼마나 줄일 수 있는지가 모두 여기에 걸린다.
+
+## 실무적으로 생각해볼 점
+
+### 1. “Open-weight final answer model”이 다시 선택지가 된다
+
+Frontier closed model만 final answer model로 쓰는 구조는 품질 면에서 편하다. 하지만 enterprise search에서는 data boundary가 항상 문제다. Gemma 4처럼 open-weight multimodal model이 좋아지면 다음 구성이 가능해진다.
+
+```text
+sensitive corpus
+  → local retrieval
+  → local/open-weight reasoning model
+  → only sanitized summary goes out, or nothing goes out
+```
+
+모든 서비스가 이렇게 갈 필요는 없지만, 보안·비용·규제 제약이 큰 영역에서는 꽤 매력적이다.
+
+### 2. Multimodal evidence를 “텍스트로만 변환”하지 않아도 된다
+
+OCR/ASR은 계속 필요하다. 검색 index는 여전히 text representation을 좋아한다. 하지만 final reasoning 단계에서는 원본 modality를 같이 보는 편이 나을 수 있다.
+
+예를 들어:
+
+- OCR text와 원본 표 이미지를 같이 제공
+- 회의 녹취 요약과 audio segment를 같이 제공
+- screenshot caption과 image patch를 같이 제공
+
+Gemma 4류 모델은 이런 hybrid evidence pack을 다루는 answer layer 후보가 된다.
+
+### 3. Long context는 retrieval을 대체하지 않는다
+
+논문 숫자만 보면 “그냥 128k 넣으면 되나?”라는 유혹이 생긴다. 하지만 AI Search에서는 여전히 retrieval과 context assembly가 중요하다.
+
+Long context가 좋아질수록 retrieval이 사라지는 게 아니라, retrieval의 역할이 바뀐다.
+
+```text
+과거:
+  top-5 chunk를 아주 빡세게 골라야 함
+
+앞으로:
+  더 넓은 evidence set을 넣을 수 있지만,
+  distractor를 줄이고 citation 가능한 구조로 packing해야 함
+```
+
+즉 long-context model은 검색을 대체하는 것이 아니라, search system이 더 넓은 context를 안전하게 넘길 수 있게 해주는 runtime이다.
+
+### 4. Small model routing이 중요해진다
+
+Gemma 4처럼 family가 여러 크기로 나오면, 하나의 모델을 모든 query에 쓰는 방식은 점점 비효율적이다. query difficulty와 data sensitivity에 따라 model routing을 해야 한다.
+
+```text
+cheap path:
+  E2B/E4B → quick answer or triage
+
+standard path:
+  12B → multimodal/private document QA
+
+hard path:
+  26B-A4B/31B or frontier model → deep reasoning + verifier
+```
+
+이건 model serving 문제가 아니라 product architecture 문제다. 어떤 query를 어떤 path로 보낼지 결정하는 classifier, fallback, verifier가 필요하다.
+
+## 한계와 열린 질문
+
+논문은 technical report 성격이 강하다. 그래서 제품 적용 관점에서는 몇 가지를 조심해서 읽어야 한다.
+
+첫째, benchmark가 곧 production search 품질은 아니다. RULER, LOFT, GraphWalks 같은 long-context benchmark는 유용하지만, 실제 사내 문서 검색의 messy document, stale data, permission boundary, duplicate evidence, conflicting evidence를 그대로 반영하지는 않는다.
+
+둘째, open-weight라고 해서 자동으로 안전하거나 private한 것은 아니다. 논문도 safety policy, train-time mitigation, monitoring, privacy consideration을 강조한다. 모델을 내부에 배포해도 prompt injection, data leakage, unsafe tool use, citation hallucination 문제는 별도로 막아야 한다.
+
+셋째, thinking mode는 비용과 latency trade-off가 있다. 어려운 query에서는 도움이 되지만, 모든 query에 켜면 제품 경험이 나빠질 수 있다. 그리고 reasoning trace를 사용자에게 그대로 보여줄지, 내부적으로만 쓸지도 별도 정책이 필요하다.
+
+넷째, encoder-free 12B는 흥미롭지만, 이것이 모든 modality-specialized encoder를 대체한다는 뜻은 아니다. retrieval index를 만들 때는 여전히 text/image/audio별 representation이 필요할 가능성이 높다. 여기서의 의미는 answer/reasoning layer의 runtime simplification에 더 가깝다.
+
+## 제 해석
+
+Gemma 4를 AI Search 관점에서 보면, 핵심은 “open model이 closed frontier model을 몇 점 이겼나”가 아니다. 더 중요한 건 **검색 시스템의 추론 runtime이 점점 다양해진다**는 점이다.
+
+예전에는 AI Search architecture가 대충 이렇게 단순했다.
+
+```text
+Vector DB + GPT API = RAG
+```
+
+이제는 훨씬 복잡하다.
+
+```text
+filter index
++ sparse/dense/late-interaction retrieval
++ adaptive reranking
++ long-context context assembly
++ multimodal evidence handling
++ open/closed model routing
++ thinking budget control
++ verifier / citation checker
++ privacy-aware deployment
+```
+
+Gemma 4는 이 중 `open/closed model routing`, `multimodal evidence handling`, `long-context context assembly`, `thinking budget control`, `privacy-aware deployment`에 직접 영향을 준다.
+
+특히 개인적으로는 12B encoder-free와 QAT/MTP 조합이 제일 흥미롭다. benchmark leaderboard보다 “이걸 실제로 어디에 올릴 수 있나?”가 제품에서는 더 중요하기 때문이다. 검색 품질은 모델 성능만이 아니라, 충분히 빠르고 싸고 안전하게 많이 호출할 수 있는지에 크게 좌우된다.
+
+## 정리
+
+Gemma 4 Technical Report는 open-weight multimodal model family가 단순한 연구 공개물을 넘어, AI Search stack의 실행 계층을 어떻게 바꿀 수 있는지 보여준다.
+
+- 모델군은 2.3B부터 31B, 그리고 26B-A4B MoE까지 다양한 deployment point를 제공한다.
+- image/audio/text를 기본 modality로 다루며, 12B에서는 encoder-free architecture를 제시한다.
+- long-context KV cache 절감, QAT, MTP drafter는 search serving cost와 latency에 직접 연결된다.
+- thinking mode는 query difficulty에 따른 adaptive reasoning budget 설계로 이어질 수 있다.
+- 하지만 long context와 multimodal model이 retrieval, permission, citation, verifier 문제를 없애지는 않는다.
+
+결국 Gemma 4는 “검색 결과를 읽는 모델”의 선택지를 넓힌다. AI Search의 다음 경쟁력은 retriever 하나가 아니라, **어떤 evidence를 어떤 모델에게 어떤 비용으로 읽힐 것인가**를 설계하는 능력에서 나올 가능성이 크다.
