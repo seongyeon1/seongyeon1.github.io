@@ -2489,3 +2489,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-eval, observability, simulation, self-hosted]
 - status: idea
+
+### 2026-07-08 — [논문 리뷰] LLM-as-a-Verifier: verification을 LLM scaling axis로 다루기
+- type: paper
+- source: http://arxiv.org/abs/2607.05391v1
+- why-now: pre-training/post-training/test-time compute 다음 병목으로 “답이 맞는지 검증하는 능력”이 떠오르면서, verifier를 별도 scaling 축으로 보는 연구가 나왔다.
+- angle: “LLM-as-a-judge를 점수 매기기 도구가 아니라 agent 실행의 verification substrate로 보자” — solution verifier, reward signal, regression gate, tool trajectory QA를 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-verification, eval, agent-qa, reasoning]
+- status: idea
+
+### 2026-07-08 — [논문 리뷰] CompactionRL: long-horizon agent context 압축을 RL 루프에 넣기
+- type: paper
+- source: http://arxiv.org/abs/2607.05378v1
+- why-now: 장기 실행 agent가 context window를 넘기 전에 요약·압축해야 하지만, 압축 품질을 rollout 성공과 함께 학습·평가하는 방법은 아직 초기 단계다.
+- angle: “context compaction은 후처리 요약이 아니라 agent policy의 일부” — 압축 trigger, state 보존, rollout continuation, 실패 복구를 long-running agent runtime 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, context-compaction, reinforcement-learning, long-horizon]
+- status: idea
+
+### 2026-07-08 — [논문 리뷰] SovereignPA-Bench: user-owned personal agent의 consent와 intent 평가
+- type: paper
+- source: http://arxiv.org/abs/2607.05363v1
+- why-now: 개인 agent가 기억, 필터링, 서비스 협상, tool use를 대신 수행할수록 플랫폼 목표보다 사용자 의도와 동의 경계를 지키는지가 핵심 평가 기준이 된다.
+- angle: “개인 비서 agent의 성공 기준은 task completion이 아니라 user sovereignty 보존” — evolving intent, consent constraint, platform mediation, audit trail을 privacy/agent governance 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [personal-agent, consent, privacy, benchmark]
+- status: idea
+
+### 2026-07-08 — [논문 리뷰] EdgeBench: real-world environment interaction에서 agent scaling law 찾기
+- type: paper
+- source: http://arxiv.org/abs/2607.05155v1
+- why-now: agent 성능을 정적 문제집이 아니라 배포 후 환경 상호작용 데이터로 개선하려면, interaction hour와 task diversity가 성능에 어떤 scaling law를 만드는지 알아야 한다.
+- angle: “agent post-training의 compute 단위는 토큰만이 아니라 환경에서 보낸 시간” — 134개 real-world task, interaction log, environment learning curve를 eval/학습 운영 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, environment-learning, scaling-law, eval]
+- status: idea
+
+### 2026-07-08 — [논문 리뷰] When Agents Lie: 반복 게임에서 agent commitment를 어떻게 검증할까
+- type: paper
+- source: http://arxiv.org/abs/2607.05132v1
+- why-now: autonomous agent가 의도 선언 뒤 실제 행동을 수행하는 프로토콜이 늘면서, 공개 약속과 최종 행동이 어긋나는 strategic deception을 평가해야 한다.
+- angle: “agent alignment 평가는 유해 답변 차단을 넘어 commitment fidelity를 봐야 한다” — private intent, public announcement, final action을 분리한 game harness와 운영 모니터링으로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-safety, deception, commitment, eval]
+- status: idea
+
+### 2026-07-08 — OptiAgent: 자연어 OR 문제를 solver-ready formulation으로 바꾸는 multi-agent loop
+- type: paper
+- source: http://arxiv.org/abs/2607.05346v1
+- why-now: 업무 자동화 agent가 단순 코드 생성보다 수학적 모델링, 제약 추출, solver 실행까지 담당하는 방향으로 확장되고 있다.
+- angle: “최적화 agent의 핵심은 코드를 바로 쓰는 게 아니라 decision variable과 constraint를 검증 가능한 중간표현으로 만드는 것” — formulation agent, code generator, solver feedback loop를 실무 자동화로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [optimization-agent, multi-agent, operations-research, code-generation]
+- status: idea
+
+### 2026-07-08 — bitrouter: agentic loop를 위한 LLM gateway와 router 설계
+- type: tech
+- source: https://github.com/bitrouter/bitrouter
+- why-now: agent workflow가 여러 model, harness, tool loop를 섞어 쓰면서 latency, cost, reliability를 runtime router에서 조절하려는 요구가 커지고 있다.
+- angle: “agent gateway는 API key proxy가 아니라 loop-level routing policy” — provider abstraction, fallback, cost/latency policy, harness-agnostic integration을 repo architecture 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-gateway, llm-routing, cost-optimization, github-repo]
+- status: idea
+
+### 2026-07-08 — hoop: MCP·LLM·DB·container 앞단의 wire-level policy gateway
+- type: tech
+- source: https://github.com/hoophq/hoop
+- why-now: agent가 MCP server뿐 아니라 데이터베이스와 컨테이너까지 만지는 환경에서는 프로토콜별 보안 정책을 흩어두기보다 gateway에서 일관되게 강제해야 한다.
+- angle: “agent 보안 경계는 prompt guardrail보다 wire-level enforcement에 가깝다” — MCP/LLM/DB/container 공통 정책, low-latency enforcement, audit log를 agent infra 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-security, gateway, mcp, infrastructure]
+- status: idea

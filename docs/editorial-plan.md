@@ -151,6 +151,11 @@
 | 아이디어 | 미정 | [논문 리뷰] CLAP — domain agent post-training을 폐루프 release control로 운영하기 | paper-review | AI 평가/운영 | | arXiv 2607.01846 — offline/application mismatch, adapter release gate, rollback 기준 |
 | 아이디어 | 미정 | [논문 리뷰] Reasoning effort, not tool access — agentic code generation에서 진짜 신뢰도를 사는 것 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.02436 — tool access ablation, reasoning budget, first-try reliability |
 | 발행완료 | 2026-07-07 | open-multi-agent: goal을 task DAG로 쪼개는 TypeScript multi-agent orchestration | tool | Agent/MCP 실전 | | `2026-07-07-open-multi-agent-task-dag-orchestration.mdx` — 자동 발행 완료, GitHub repo 기반 — coordinator, task DAG, provider abstraction, failure/retry policy |
+| 아이디어 | 미정 | [논문 리뷰] LLM-as-a-Verifier — verification을 LLM scaling axis로 다루기 | paper-review | AI 평가/운영 | | arXiv 2607.05391 — solution verifier, reward signal, regression gate, tool trajectory QA를 agent 실행 검증 substrate로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] CompactionRL — long-horizon agent context 압축을 RL 루프에 넣기 | paper-review | 논문 리뷰 | | arXiv 2607.05378 — context compaction trigger, state 보존, rollout continuation을 long-running agent runtime 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SovereignPA-Bench — personal agent의 consent와 intent 평가 | paper-review | AI 평가/운영 | | arXiv 2607.05363 — evolving intent, consent constraint, platform mediation, audit trail을 user-owned agent governance 관점으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] EdgeBench — environment interaction에서 agent scaling law 찾기 | paper-review | AI 평가/운영 | | arXiv 2607.05155 — real-world task interaction log와 environment learning curve를 agent post-training 운영 관점으로 설명 |
+| 아이디어 | 미정 | bitrouter: agentic loop를 위한 LLM gateway와 router 설계 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — provider abstraction, fallback, cost/latency policy, harness-agnostic integration |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
