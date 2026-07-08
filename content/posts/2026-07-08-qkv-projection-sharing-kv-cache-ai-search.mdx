@@ -1,0 +1,334 @@
+---
+title: "[AI Search] QKV Projection Sharing: Transformer는 정말 Q, K, V 세 개가 모두 필요할까"
+date: "2026-07-08"
+category: "paper-review"
+tags: ["AI Search", "Transformer", "QKV", "KV cache", "edge-ai", "attention", "LLM inference"]
+summary: "Do Transformers Need Three Projections? 논문을 AI Search stack 관점에서 읽는다. Query, Key, Value projection을 일부 공유해도 품질을 크게 잃지 않으면서 KV cache를 줄일 수 있는지, Q-K=V가 왜 실용적인 절충점인지, GQA/MQA와 결합하면 on-device·edge search serving에 어떤 의미가 생기는지 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 16
+math: false
+---
+
+<Paper
+  title="Do Transformers Need Three Projections? Systematic Study of QKV Variants"
+  authors="Ali Kayyam, Anusha Madan Gopal, M Anthony Lewis"
+  year="2026"
+  venue="arXiv"
+  arxiv="2606.04032"
+/>
+
+## 한 줄 요약
+
+이 논문은 Transformer attention의 Q, K, V projection을 반드시 세 개로 따로 둘 필요가 있는지 묻는다. 결론은 꽤 실용적이다. **Key와 Value를 공유하는 Q-K=V 구조는 300M language model에서 KV cache를 50% 줄이면서 validation perplexity degradation을 3.1%로 유지했고, GQA/MQA 같은 head sharing과 결합하면 cache 절감 폭이 87.5%에서 96.9%까지 커진다.**
+
+AI Search 관점에서는 “retrieval 품질”보다 한 층 아래의 문제다. 검색된 긴 context를 누가 읽을 것인가, 그 모델을 어디에서 돌릴 수 있는가, long-context serving cost를 얼마나 버틸 수 있는가에 대한 논문이다.
+
+```text
+retrieval / reranking / context assembly
+  ↓
+long-context reader / answer model / agent runtime
+  ↓
+KV cache memory, latency, device boundary
+```
+
+앞선 Gemma 4 글에서 long-context와 edge deployment를 봤다면, 이번 논문은 그 runtime cost 중에서도 **attention projection과 KV cache**를 정면으로 건드린다.
+
+## 왜 이 논문이 AI Search에 중요한가
+
+AI Search stack에서 비용은 retrieval 단계에서만 생기지 않는다. 실제 제품에서는 검색 결과를 모아서 모델에 넣는 순간부터 serving 문제가 시작된다.
+
+- query가 길어질수록 prompt processing 비용이 커진다.
+- top-k context가 많아질수록 sequence length가 길어진다.
+- multi-turn agent가 되면 이전 대화와 tool result도 같이 들고 간다.
+- streaming answer를 위해 autoregressive generation을 하면 KV cache가 계속 쌓인다.
+
+그래서 long-context AI Search의 병목은 종종 “문서를 잘 찾느냐”가 아니라 **찾은 문서를 읽는 모델을 얼마나 싸게 오래 돌릴 수 있느냐**가 된다.
+
+이 논문이 흥미로운 이유는 attention을 완전히 새로 만들지 않는다는 점이다. Linear attention, state-space model, block sparse attention처럼 큰 구조 변경을 하는 대신, 기존 softmax attention 안에서 질문한다.
+
+> Q, K, V projection을 정말 모두 독립적으로 학습해야 할까?
+
+이 질문은 작아 보이지만, 제품 관점에서는 꽤 크다. 만약 Key와 Value를 공유해도 품질이 크게 안 떨어진다면 autoregressive inference에서 저장해야 하는 cache가 줄어든다. 즉 모델 architecture의 작은 weight tying이 serving memory boundary를 바꿀 수 있다.
+
+## 기본 문제: Q, K, V는 각자 무슨 역할인가
+
+Transformer attention은 보통 입력 hidden state에서 세 projection을 만든다.
+
+| Projection | 직관적 역할 | Inference에서의 의미 |
+| --- | --- | --- |
+| Query | 지금 token이 무엇을 찾는가 | 현재 step에서 계산 |
+| Key | 과거 token들이 어떤 주소를 갖는가 | generation 동안 cache |
+| Value | 과거 token들의 실제 내용 | generation 동안 cache |
+
+Autoregressive generation에서는 과거 token의 K와 V를 매 step 다시 계산하지 않기 위해 KV cache에 저장한다. 그래서 긴 context, 큰 batch, 많은 layer, 많은 head가 있는 모델에서는 KV cache가 매우 커진다.
+
+이 논문은 세 가지 projection sharing variant를 비교한다.
+
+| Variant | 의미 | Cache 관점 |
+| --- | --- | --- |
+| Q=K-V | Query와 Key 공유, Value는 별도 | K와 V를 여전히 둘 다 저장해야 함 |
+| Q-K=V | Key와 Value 공유, Query는 별도 | K 하나만 저장하면 됨 |
+| Q=K=V | Query, Key, Value 모두 공유 | K 하나만 저장하지만 제약이 큼 |
+
+여기서 실무적으로 중요한 후보는 Q-K=V다. Q=K-V는 projection 수는 줄지만 K와 V cache가 둘 다 필요해서 inference memory 이득이 제한적이다. Q=K=V는 cache는 줄지만 너무 강한 제약 때문에 language modeling에서 품질 손실이 크다.
+
+## 핵심 아이디어: Projection sharing은 head sharing과 다른 축이다
+
+LLM inference 최적화에서 익숙한 기법은 GQA와 MQA다.
+
+- MHA: head마다 K, V를 따로 둔다.
+- GQA: 여러 query head가 일부 K/V head를 공유한다.
+- MQA: 모든 query head가 하나의 K/V head를 공유한다.
+
+이들은 주로 **head dimension 쪽 공유**다. 반면 이 논문이 보는 projection sharing은 **Q, K, V projection 자체의 공유**다.
+
+```text
+head sharing:
+  여러 attention head가 K/V head를 공유한다
+
+projection sharing:
+  K projection과 V projection의 weight를 공유한다
+```
+
+두 축은 서로 대체 관계가 아니라 보완 관계다. 논문에서도 이 점을 강조한다. Q-K=V만 쓰면 50% cache reduction이고, 여기에 GQA-4를 결합하면 87.5%, MQA를 결합하면 96.9%까지 줄어든다.
+
+이건 AI Search serving에서 꽤 큰 의미가 있다. 긴 context를 읽는 answer model을 cloud GPU에서만 돌릴지, edge/on-device 후보로 내릴 수 있을지는 종종 cache memory에서 갈린다.
+
+## 실험 범위: 장난감 실험만 한 논문은 아니다
+
+논문은 projection sharing을 synthetic task에서만 본 게 아니라 꽤 넓게 본다.
+
+| 영역 | 실험 내용 |
+| --- | --- |
+| Synthetic | Reverse, Sort, Sub, Swap, Copy |
+| Vision | MNIST, Fashion-MNIST, CIFAR-10, CIFAR-100, TinyImageNet, anomaly detection |
+| Language modeling | SlimPajama 10B tokens로 300M, 1.2B parameter model 학습 |
+| Downstream | ARC-C, ARC-E, HellaSwag, PIQA, WinoGrande 5-shot |
+| Inference benchmark | 1.2B model, A100, bf16 forward/generation benchmark |
+
+논문의 주장은 “모든 task에서 세 projection이 필요 없다”라기보다, **특히 Key와 Value 공유는 예상보다 강하고, cache 절감이라는 명확한 실용 이득이 있다**에 가깝다.
+
+## 300M language model 결과: Q-K=V가 제일 흥미롭다
+
+300M parameter model을 SlimPajama 10B tokens로 학습한 결과는 다음처럼 요약된다.
+
+| Model | Validation PPL | QKV 대비 PPL degradation | Cache reduction | 해석 |
+| --- | ---: | ---: | ---: | --- |
+| QKV | 5.11 | 0% | 0% | baseline |
+| Q-K=V | 5.27 | 3.1% | 50% | projection sharing의 핵심 후보 |
+| Q=K-V | 5.36 | 4.9% | 0% | 품질도 더 나쁘고 cache 이득도 없음 |
+| Q=K=V | 6.41 | 25.4% | 50% | 너무 강한 제약 |
+| GQA-4 | 5.15 | 0.7% | 75% | 품질 좋은 head sharing baseline |
+| MQA | 5.19 | 1.5% | 93.8% | 강한 cache 절감 |
+| Q-GQA-4 | 5.32 | 3.9% | 87.5% | projection sharing + head sharing |
+| Q-MQA | 5.36 | 4.8% | 96.9% | aggressive edge 후보 |
+
+이 표에서 핵심은 두 가지다.
+
+첫째, Q-K=V는 단독으로 GQA/MQA보다 품질-효율 Pareto가 압도적으로 좋다고 말하기는 어렵다. GQA-4와 MQA는 이미 굉장히 강한 baseline이다.
+
+둘째, 그런데 Q-K=V는 **GQA/MQA와 결합 가능한 별도 축**이다. 그래서 “GQA를 쓰면 projection sharing은 필요 없다”가 아니라, “더 줄여야 하는 deployment에서는 둘을 같이 쓸 수 있다”가 된다.
+
+## KV cache 숫자로 보면 더 직관적이다
+
+논문 Table 7은 32K context 기준 KV cache requirement를 보여준다.
+
+| Model | Cache에 저장하는 것 | Token당 cache | 32K context cache | Reduction |
+| --- | --- | ---: | ---: | ---: |
+| QKV | K + V | 80 KB | 2.62 GB | 0% |
+| Q=K-V | K + V | 80 KB | 2.62 GB | 0% |
+| Q-K=V | K only | 40 KB | 1.31 GB | 50% |
+| GQA-4 | K + V | 20 KB | 0.66 GB | 75% |
+| MQA | K + V | 5 KB | 0.16 GB | 93.8% |
+| Q-GQA-4 | K only | 10 KB | 0.33 GB | 87.5% |
+| Q-MQA | K only | 2.5 KB | 0.08 GB | 96.9% |
+
+AI Search에서는 이 숫자가 바로 제품 제약으로 이어진다.
+
+```text
+더 많은 retrieved chunks
+더 긴 conversation memory
+더 많은 concurrent users
+더 작은 GPU / edge device
+```
+
+이 네 가지는 대부분 KV cache와 싸운다. 답변 품질이 조금 떨어지는 대신 cache를 절반 이하로 줄일 수 있다면, 특정 제품에서는 충분히 선택 가능한 trade-off가 된다.
+
+## 1.2B scale에서도 경향은 유지된다
+
+논문은 300M에서 끝내지 않고 1.2B parameter model도 SlimPajama 10B tokens로 학습한다. 결과는 다음과 같다.
+
+| Model | PPL | QKV 대비 degradation | Params | Cache |
+| --- | ---: | ---: | ---: | ---: |
+| QKV | 5.004 | 0.00% | 1,215M | 5,900 MB |
+| Q-K=V | 5.128 | 2.48% | 1,123M | 2,950 MB |
+| GQA-8 | 5.030 | 0.52% | 1,077M | 1,408 MB |
+| MQA | 5.057 | 1.06% | 1,036M | 176 MB |
+| Q-GQA-8 | 5.158 | 3.08% | 1,054M | 704 MB |
+| Q-MQA | 5.212 | 4.16% | 1,033M | 88 MB |
+
+여기서도 Q-K=V는 QKV 대비 cache를 절반으로 줄인다. Q-MQA는 cache가 5,900MB에서 88MB로 줄어든다. 물론 PPL degradation은 커지지만, 4.16% 수준이다.
+
+흥미로운 건 downstream 5-shot 결과다. 1.2B model에서 Q-K=V는 평균 accuracy가 QKV 36.40 대비 35.99로, 평균 0.41%p 차이에 그친다. Perplexity 차이가 downstream task 차이로 그대로 커지지는 않았다는 이야기다.
+
+물론 benchmark 평균이 제품 품질을 보장하진 않는다. 그래도 이 결과는 “PPL이 조금 나빠졌으니 실사용도 반드시 크게 나빠진다”는 단순한 해석을 경계하게 만든다.
+
+## 왜 Q-K=V는 되고, Q=K-V는 애매할까
+
+논문의 해석은 꽤 명확하다.
+
+Q-K=V는 Key와 Value를 같은 representational space에 두는 제약이다. 저자들은 keys와 values가 유사한 representation space를 공유할 수 있고, attention이 low-rank regime에서 동작하기 때문에 이 공유가 생각보다 잘 버틴다고 설명한다.
+
+반면 Q=K-V는 Query와 Key를 공유한다. 이 경우 attention score가 더 대칭적인 구조를 띠면서 **directionality**가 깨질 수 있다. 언어 모델의 causal attention에서는 방향성이 중요하다. 지금 token이 과거 token을 어떻게 참조할지의 관계가 단순한 유사도 대칭으로만 표현되면 부족해진다.
+
+논문은 synthetic/vision 쪽에서는 2D positional encoding을 더해 이런 symmetry를 완화하는 variant도 실험한다. 하지만 causal language modeling의 실용 후보로는 결국 Q-K=V가 더 중요하다.
+
+내가 보기엔 이 포인트가 이 논문의 제일 좋은 부분이다. “projection 수를 줄였다”가 아니라, **어떤 projection을 공유해야 serving 이득과 품질 보존이 동시에 생기는지**를 분리해서 보여준다.
+
+## Parameter와 compute 절감은 덤에 가깝다
+
+Projection sharing은 parameter 수도 줄인다. 300M model 기준으로 attention parameter는 QKV 83.97M에서 Q-K=V 62.98M으로 줄고, Q=K=V는 41.98M까지 줄어든다.
+
+하지만 전체 model parameter로 보면 감소 폭은 제한적이다.
+
+| Component | QKV | Q-K=V | Q=K=V |
+| --- | ---: | ---: | ---: |
+| Total | 305.53M | 284.54M | 263.55M |
+| Attention | 83.97M | 62.98M | 41.98M |
+| MLP | 167.87M | 167.87M | 167.87M |
+| Embedding | 53.61M | 53.61M | 53.61M |
+
+MACs도 마찬가지다. Sequence length 2048 기준 total inference MACs는 QKV 792.69G, Q-K=V 749.74G로 5.4% 정도 줄어든다. MLP와 LM head가 큰 비중을 차지하기 때문이다.
+
+그래서 이 논문을 “parameter compression 논문”으로 읽으면 조금 싱겁다. 핵심은 parameter 수보다 **KV cache memory**다.
+
+## AI Search Stack에서의 위치
+
+이 논문은 AI Search stack에서 retrieval algorithm 논문이 아니다. 하지만 long-context reader, reranker, agent runtime을 실제 배포하려면 중요한 하위 계층이다.
+
+```text
+[Data / Documents]
+  ↓
+[Chunking / Parsing / Language ID / Entity extraction]
+  ↓
+[Filter index / Sparse retrieval / Dense retrieval / Late interaction]
+  ↓
+[Reranking / Context assembly]
+  ↓
+[Long-context model serving]
+  - KV cache
+  - batching
+  - latency
+  - memory budget
+  - edge/on-device deployment
+  ↓
+[Answer / Agent action]
+```
+
+QKV projection sharing은 위 그림에서 long-context model serving에 들어간다. 특히 다음 상황에서 의미가 커진다.
+
+| 제품 상황 | 왜 중요해지는가 |
+| --- | --- |
+| 사내 문서 검색 | 긴 문서 여러 개를 evidence로 넣어야 함 |
+| 고객센터 assistant | concurrent session이 많아 KV cache 총량이 커짐 |
+| mobile/on-device search | GPU memory가 작고 privacy boundary가 중요함 |
+| agentic search | tool result와 대화 state가 길게 누적됨 |
+| long-context reranker | 많은 candidate를 한 번에 읽는 구조에서 memory 압박이 큼 |
+
+논문 Table 10의 추천도 이런 관점으로 읽을 수 있다.
+
+| Scenario | 논문 추천 | Cache reduction | PPL degradation |
+| --- | --- | ---: | ---: |
+| Cloud quality | GQA-4 | 75% | 0.7% |
+| Edge balanced | Q-K=V | 50% | 3.1% |
+| Edge aggressive | Q-GQA-4 | 87.5% | 3.9% |
+| IoT/Mobile | Q-MQA | 96.9% | 4.8% |
+
+즉 cloud에서 품질이 최우선이면 GQA 계열이 더 자연스럽고, edge나 mobile처럼 cache budget이 빡빡하면 projection sharing 조합이 의미가 생긴다.
+
+## 실무적으로 생각해볼 점
+
+### 1. “Long context 지원”보다 “Long context serving 가능성”이 중요하다
+
+모델 카드에 32K, 128K context가 적혀 있어도 실제 제품에서 concurrent user를 감당하지 못하면 feature가 아니다. KV cache를 줄이는 architecture는 context length 스펙을 제품 기능으로 바꾸는 데 필요하다.
+
+### 2. Projection sharing은 model selection의 새로운 체크포인트가 될 수 있다
+
+지금은 모델을 볼 때 보통 parameter size, benchmark, context length, quantization, license를 본다. 앞으로는 attention 구조도 더 자주 봐야 할 것 같다.
+
+```text
+MHA인가 GQA인가 MQA인가
+KV cache quantization이 있는가
+sliding/local attention을 쓰는가
+K/V sharing 같은 projection-level tying이 있는가
+```
+
+AI Search 모델을 고를 때 이런 항목은 latency와 cost를 직접 바꾼다.
+
+### 3. Fine-tuning과 domain adaptation에서는 다시 확인해야 한다
+
+이 논문은 SlimPajama 10B tokens 학습과 표준 benchmark를 중심으로 본다. 특정 domain search, 예를 들어 법률, 세무, 의료, 코드베이스 search에서 Q-K=V가 같은 trade-off를 보일지는 별도 검증이 필요하다.
+
+특히 domain-specific long-context task는 일반 PPL보다 evidence selection, citation fidelity, contradiction handling이 중요하다. Cache 절감 모델을 쓸 때는 다음 평가가 같이 필요하다.
+
+- retrieved evidence coverage
+- citation accuracy
+- distractor robustness
+- long-document needle retrieval
+- multi-hop question answering
+- refusal / uncertainty calibration
+
+### 4. Reranker와 answer model의 요구사항은 다를 수 있다
+
+Reranker는 후보 간 미묘한 차이를 비교해야 하고, answer model은 종합과 설명을 잘해야 한다. Q-K=V가 둘 다에 적합한지는 별도 문제다. Cache 절감이 큰 구조는 answer model에는 좋지만, fine-grained reranking에서는 품질 손실이 더 민감하게 나타날 수도 있다.
+
+그래서 실무에서는 이런 식의 role별 배치가 현실적일 수 있다.
+
+```text
+high-quality cloud model:
+  final answer / hard query / evaluation
+
+Q-K=V or Q-GQA model:
+  long-context draft answer / private local search / edge summarization
+
+MQA or Q-MQA model:
+  mobile assistant / cheap background processing / high-concurrency serving
+```
+
+## 한계와 열린 질문
+
+논문 자체도 limitation을 명시한다. 내가 보기에 중요한 한계는 다음이다.
+
+첫째, scale이 아직 제한적이다. 1.2B까지 확인했지만, 7B, 30B, 70B급에서 같은 trade-off가 유지되는지는 별도 문제다. 특히 대형 모델일수록 attention representation의 redundancy가 커져 더 잘 버틸 수도 있고, 반대로 고급 reasoning에서 손실이 커질 수도 있다.
+
+둘째, training budget이 10B tokens다. 현대 LLM pretraining 기준으로는 작은 편이다. 더 긴 학습에서 projection sharing variant가 baseline을 따라잡을지, gap이 벌어질지는 추가 검증이 필요하다.
+
+셋째, benchmark가 실제 AI Search task를 직접 측정하지는 않는다. ARC, HellaSwag, PIQA 같은 downstream task는 useful signal이지만, enterprise search에서 중요한 citation faithfulness나 retrieved context grounding을 바로 보여주진 않는다.
+
+넷째, architecture 변경은 ecosystem 비용이 있다. Q-K=V를 실제 serving stack에 넣으려면 kernel, cache layout, checkpoint conversion, fine-tuning recipe, inference engine 지원이 따라와야 한다. 논문은 code를 공개했지만, production adoption은 별개의 문제다.
+
+## 제 해석
+
+이 논문은 “Transformer attention을 혁명적으로 바꿨다”기보다는, 우리가 너무 당연하게 받아들인 QKV 분리를 다시 비용 관점에서 뜯어본다. 그리고 그 결과가 꽤 제품적이다.
+
+내가 특히 좋게 본 점은 Q=K-V, Q-K=V, Q=K=V를 한꺼번에 비교하면서 **projection sharing의 위치별 의미**를 분리했다는 것이다. projection 수만 줄이는 것은 충분하지 않다. cache에 실제로 무엇을 저장해야 하는지가 중요하다. 그래서 Q-K=V가 가장 실용적이다.
+
+AI Search stack에서는 앞으로 retrieval 품질 개선만큼이나 “검색된 context를 읽는 모델의 serving 구조”가 중요해질 가능성이 크다. Vector DB, late interaction, reranker가 아무리 좋아도, 최종 reader가 긴 context를 비싸게만 읽을 수 있다면 제품화는 어렵다.
+
+그 관점에서 Q-K=V는 작은 아이디어지만 좋은 질문을 던진다.
+
+> 검색 시스템의 병목이 context length와 KV cache라면, 모델 architecture에서 무엇을 공유해도 품질을 유지할 수 있을까?
+
+이 질문은 Gemma 4의 long-context/edge deployment 이야기와도 자연스럽게 이어진다. AI Search가 더 개인화되고, 더 local/private해지고, 더 agentic해질수록 이런 memory-efficient attention 구조의 중요성은 커질 것이다.
+
+## 정리
+
+- 이 논문은 Transformer attention의 Q, K, V projection sharing을 체계적으로 비교한다.
+- 핵심 후보는 Key와 Value를 공유하는 Q-K=V다.
+- 300M model에서 Q-K=V는 50% KV cache reduction과 3.1% PPL degradation을 보인다.
+- GQA/MQA와 결합하면 cache reduction은 87.5%에서 96.9%까지 커진다.
+- 1.2B model에서도 Q-K=V는 cache를 절반으로 줄이고, downstream 5-shot 평균 accuracy 하락은 0.41%p 수준으로 보고된다.
+- Parameter와 compute 절감도 있지만, 이 논문의 진짜 포인트는 KV cache memory다.
+- AI Search에서는 long-context reader, edge/private search, high-concurrency agent serving의 하위 인프라 아이디어로 읽는 게 가장 유용하다.
+
+다음 글에서는 이 흐름을 이어서, 모델 내부의 attention/runtime 최적화가 retrieval stack의 설계 선택과 어떻게 맞물리는지 더 살펴볼 수 있다.

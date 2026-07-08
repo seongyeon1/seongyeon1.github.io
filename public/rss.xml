@@ -6,7 +6,22 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 07 Jul 2026 12:29:51 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 08 Jul 2026 08:48:57 GMT</lastBuildDate>
+    <item>
+      <title>[AI Search] QKV Projection Sharing: Transformer는 정말 Q, K, V 세 개가 모두 필요할까</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-08-qkv-projection-sharing-kv-cache-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-08-qkv-projection-sharing-kv-cache-ai-search/</guid>
+      <description>Do Transformers Need Three Projections? 논문을 AI Search stack 관점에서 읽는다. Query, Key, Value projection을 일부 공유해도 품질을 크게 잃지 않으면서 KV cache를 줄일 수 있는지, Q-K=V가 왜 실용적인 절충점인지, GQA/MQA와 결합하면 on-device·edge search serving에 어떤 의미가 생기는지 정리한다.</description>
+      <pubDate>Wed, 08 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>Transformer</category>
+      <category>QKV</category>
+      <category>KV cache</category>
+      <category>edge-ai</category>
+      <category>attention</category>
+      <category>LLM inference</category>
+    </item>
     <item>
       <title>[AI Search] Darwin Gödel Machine: 스스로 진화하는 Agent를 어떻게 평가할 것인가</title>
       <link>https://seongyeon1.github.io/blog/2026-07-07-darwin-godel-machine-self-improving-agent-ai-search/</link>
