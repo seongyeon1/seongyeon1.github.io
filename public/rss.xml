@@ -6,7 +6,22 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 08 Jul 2026 08:48:57 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 08 Jul 2026 08:58:31 GMT</lastBuildDate>
+    <item>
+      <title>[AI Search] Language Models Need Sleep: 긴 컨텍스트를 잠자는 동안 압축하는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-08-language-models-need-sleep-ai-search/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-08-language-models-need-sleep-ai-search/</guid>
+      <description>Language Models Need Sleep 논문을 AI Search stack 관점에서 읽는다. 긴 컨텍스트를 매번 attention cache에 들고 가는 대신, eviction 직전에 여러 번의 offline recurrent pass로 SSM fast weights에 통합하는 sleep 메커니즘이 왜 long-context reasoning과 retrieval-augmented agent runtime에 중요한지 정리한다.</description>
+      <pubDate>Wed, 08 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>long-context</category>
+      <category>SSM</category>
+      <category>fast weights</category>
+      <category>memory consolidation</category>
+      <category>LLM inference</category>
+      <category>reasoning</category>
+    </item>
     <item>
       <title>[AI Search] QKV Projection Sharing: Transformer는 정말 Q, K, V 세 개가 모두 필요할까</title>
       <link>https://seongyeon1.github.io/blog/2026-07-08-qkv-projection-sharing-kv-cache-ai-search/</link>
