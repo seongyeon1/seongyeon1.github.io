@@ -2593,3 +2593,94 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-security, gateway, mcp, infrastructure]
 - status: idea
+
+### 2026-07-09 — [논문 리뷰] DynaKRAG: multi-hop RAG에서 evidence control을 학습 가능한 정책으로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2607.06507v1
+- why-now: multi-hop RAG가 query rewrite, iterative retrieval, evidence sufficiency 판단을 수작업 rule로 묶는 단계에서 벗어나, 단계별 evidence action을 학습·제어하는 방향으로 가고 있다.
+- angle: “RAG agent의 핵심은 더 많이 검색하는 것이 아니라 다음 evidence operation을 고르는 control policy” — missing fact, bridge entity, sufficiency signal을 agentic RAG runtime 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, multi-hop, evidence-control, retrieval]
+- status: idea
+
+### 2026-07-09 — [논문 리뷰] Doomed from the Start: 실패할 agent episode를 초기에 중단하는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.06503v1
+- why-now: multi-step LLM agent가 이미 실패 궤도에 들어간 뒤에도 긴 tool loop를 계속 돌며 비용을 태우는 문제가 production 운영에서 커지고 있다.
+- angle: “agent runtime에는 성공 예측보다 실패 조기 중단기가 필요하다” — internal representation probe, recall-controlled cascade, abort policy를 비용·품질 게이트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, runtime-policy, cost-optimization, failure-prediction]
+- status: idea
+
+### 2026-07-09 — [논문 리뷰] Danus: fact-graph memory로 수학 reasoning agent를 orchestration하기
+- type: paper
+- source: http://arxiv.org/abs/2607.06447v1
+- why-now: 수학·증명 agent가 research-level 문제까지 확장되면서, 병렬 proof attempt와 중간 lemma를 단순 transcript가 아니라 구조화된 fact graph로 관리해야 하는 요구가 생겼다.
+- angle: “reasoning agent memory는 채팅 로그가 아니라 증명 상태 그래프여야 한다” — fact-graph memory, parallel proof coordination, verifier boundary를 연구 에이전트 설계로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning-agent, math, memory, orchestration]
+- status: idea
+
+### 2026-07-09 — [논문 리뷰] FreqDepthKV: long-context LLM inference에서 주파수·깊이 기반 KV cache 압축하기
+- type: paper
+- source: http://arxiv.org/abs/2607.06519v1
+- why-now: long-context agent와 RAG serving은 KV cache 메모리·대역폭 비용이 병목이고, 무작정 token을 줄이면 retrieval evidence와 reasoning state를 잃기 쉽다.
+- angle: “KV cache 압축은 token eviction 문제가 아니라 layer-specific evidence 보존 문제” — frequency-guided depth sharing, robustness, agent/RAG inference 비용 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [kv-cache, long-context, inference, optimization]
+- status: idea
+
+### 2026-07-09 — [논문 리뷰] Data Analysis in the Wild: 현실 데이터 분석 agent benchmark 설계
+- type: paper
+- source: http://arxiv.org/abs/2607.06482v1
+- why-now: 데이터 분석 LLM benchmark가 작은 표 QA에 머무르면 multi-table, external knowledge, exploratory insight 같은 실제 분석 복잡도를 평가하지 못한다.
+- angle: “data analysis agent 평가는 정답 셀 찾기가 아니라 분석 workflow 전체를 재현해야 한다” — multi-tabular dataset, external knowledge, insight generation, verifier 설계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [data-analysis-agent, benchmark, eval, workflow]
+- status: idea
+
+### 2026-07-09 — oh-my-pi: hash-anchored edit와 LSP를 갖춘 terminal coding agent harness
+- type: tech
+- source: https://github.com/can1357/oh-my-pi
+- why-now: terminal coding agent가 늘면서 단순 shell wrapper보다 edit anchoring, LSP context, browser, subagent, tool harness를 한 런타임에서 안전하게 묶는 설계가 중요해졌다.
+- angle: “코딩 에이전트의 품질은 모델보다 수정 primitive와 repo intelligence에서 갈린다” — hash-anchored edits, optimized tool harness, LSP integration, subagent boundary를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, terminal-agent, lsp, github-repo]
+- status: idea
+
+### 2026-07-09 — Open Science: local-first AI research workbench를 에이전트 desktop으로 보기
+- type: tech
+- source: https://github.com/ai4s-research/open-science
+- why-now: 연구 에이전트가 논문 검색과 코드 실행을 넘어서 reproducible desktop, local-first data boundary, model-agnostic workflow를 요구하는 방향으로 확장되고 있다.
+- angle: “연구용 agent는 챗봇이 아니라 재현 가능한 workbench여야 한다” — local-first 저장소, 실험 재현성, 과학 워크플로 자동화, human-in-the-loop 경계를 repo 구조 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [research-agent, local-first, scientific-workflow, github-repo]
+- status: idea

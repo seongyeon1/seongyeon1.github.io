@@ -156,6 +156,10 @@
 | 아이디어 | 미정 | [논문 리뷰] SovereignPA-Bench — personal agent의 consent와 intent 평가 | paper-review | AI 평가/운영 | | arXiv 2607.05363 — evolving intent, consent constraint, platform mediation, audit trail을 user-owned agent governance 관점으로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] EdgeBench — environment interaction에서 agent scaling law 찾기 | paper-review | AI 평가/운영 | | arXiv 2607.05155 — real-world task interaction log와 environment learning curve를 agent post-training 운영 관점으로 설명 |
 | 아이디어 | 미정 | bitrouter: agentic loop를 위한 LLM gateway와 router 설계 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — provider abstraction, fallback, cost/latency policy, harness-agnostic integration |
+| 아이디어 | 미정 | [논문 리뷰] DynaKRAG — multi-hop RAG evidence control policy | paper-review | Agentic RAG | | arXiv 2607.06507 — missing fact, bridge entity, sufficiency signal을 agentic RAG runtime 설계로 풀기 |
+| 아이디어 | 미정 | [논문 리뷰] Doomed from the Start — 실패할 agent episode 조기 중단 | paper-review | AI 평가/운영 | | arXiv 2607.06503 — internal representation probe와 recall-controlled abort cascade를 agent 비용·품질 게이트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Danus — fact-graph memory로 수학 reasoning agent orchestration | paper-review | 논문 리뷰 | | arXiv 2607.06447 — fact-graph memory, parallel proof coordination, verifier boundary를 연구 에이전트 설계로 해석 |
+| 아이디어 | 미정 | oh-my-pi: hash-anchored edit와 LSP를 갖춘 terminal coding agent harness | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — hash-anchored edits, LSP context, browser/subagent/tool harness를 coding agent runtime 패턴으로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
