@@ -2605,7 +2605,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agentic-rag, multi-hop, evidence-control, retrieval]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-09-dynakrag-multihop-rag-evidence-control.mdx
 
 ### 2026-07-09 — [논문 리뷰] Doomed from the Start: 실패할 agent episode를 초기에 중단하는 법
 - type: paper
