@@ -160,6 +160,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Doomed from the Start — 실패할 agent episode 조기 중단 | paper-review | AI 평가/운영 | | arXiv 2607.06503 — internal representation probe와 recall-controlled abort cascade를 agent 비용·품질 게이트로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] Danus — fact-graph memory로 수학 reasoning agent orchestration | paper-review | 논문 리뷰 | | arXiv 2607.06447 — fact-graph memory, parallel proof coordination, verifier boundary를 연구 에이전트 설계로 해석 |
 | 아이디어 | 미정 | oh-my-pi: hash-anchored edit와 LSP를 갖춘 terminal coding agent harness | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — hash-anchored edits, LSP context, browser/subagent/tool harness를 coding agent runtime 패턴으로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] Structural Trajectory Analysis — noisy agent trace에서 root cause 뽑기 | paper-review | AI 평가/운영 | | arXiv 2607.07702 — 장기 실행 agent trace를 구조화해 root cause graph와 policy patch 우선순위를 뽑는 QA 루프 |
+| 아이디어 | 미정 | [논문 리뷰] SkillCenter — source-grounded agent skill library 운영법 | paper-review | Agent/MCP 실전 | | arXiv 2607.07676 — 21만 개 skill library를 기준으로 schema, source grounding, retrieval/retirement, harness 적용 체크리스트 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Agentic Data Environments — 데이터베이스 앞에 agent-safe 작업 환경 만들기 | paper-review | Agent/MCP 실전 | | arXiv 2607.07397 — DB tool 권한, mutation boundary, rollback, query sandbox, auditability를 agent infra로 해석 |
+| 아이디어 | 미정 | eval-view: agent regression test를 tool-call diff와 snapshot으로 운영하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — LangGraph/CrewAI/OpenAI/Anthropic agent의 tool-call diff, snapshot, CI regression gate 설계 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

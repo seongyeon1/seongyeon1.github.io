@@ -2685,3 +2685,107 @@
 - suggested-category: tutorial
 - suggested-tags: [research-agent, local-first, scientific-workflow, github-repo]
 - status: idea
+
+### 2026-07-10 — [논문 리뷰] Structural Trajectory Analysis: noisy agent trace에서 root cause 뽑기
+- type: paper
+- source: http://arxiv.org/abs/2607.07702v1
+- why-now: 장기 실행 agent 최적화가 reflection과 trace mining에 기대기 시작했지만, 실제 실행 로그는 중복·노이즈·이질성이 커서 그대로 policy 개선 신호로 쓰기 어렵다.
+- angle: “agent 디버깅은 실패 transcript 읽기가 아니라 구조화된 trajectory causal extraction 문제” — trace clustering, root-cause graph, policy patch 우선순위를 운영 QA 루프로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, trace-analysis, root-cause-analysis, optimization]
+- status: idea
+
+### 2026-07-10 — [논문 리뷰] SkillCenter: 21만 개 source-grounded agent skill library가 던지는 질문
+- type: paper
+- source: http://arxiv.org/abs/2607.07676v1
+- why-now: agent skill이 prompt snippet 수준을 넘어 source-grounded operational knowledge library로 커지면서, skill 품질·중복·보안·유지보수 기준이 중요해졌다.
+- angle: “agent skill library는 많은 예제가 아니라 검증 가능한 운영 지식 베이스여야 한다” — skill schema, source grounding, retrieval/retirement, 팀 harness 적용 체크리스트로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, knowledge-base, source-grounding, harness]
+- status: idea
+
+### 2026-07-10 — [논문 리뷰] Institutional Red-Teaming: multi-agent 안전성은 배포 규칙도 실험해야 한다
+- type: paper
+- source: http://arxiv.org/abs/2607.07695v1
+- why-now: multi-agent 시스템의 안전성은 모델 성능만이 아니라 어떤 배포 규칙과 상호작용 제약을 두느냐에 따라 달라지므로, rule 자체를 causal하게 평가하는 방법이 필요해졌다.
+- angle: “red-team 대상은 모델뿐 아니라 deployment rule이어야 한다” — rule ablation, consequence allocation benchmark, multi-agent governance를 운영 실험 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, red-teaming, governance, safety]
+- status: idea
+
+### 2026-07-10 — [논문 리뷰] Beyond Attack-Success Rate: tool-using agent 공격 피해를 action severity로 채점하기
+- type: paper
+- source: http://arxiv.org/abs/2607.07474v1
+- why-now: agent red-team benchmark가 “공격 성공/실패” 이진 지표만 보면 실제 피해 수준, tool action 위험도, 방어 우선순위를 놓치기 쉽다.
+- angle: “agent 보안 평가는 jailbreak 성공률보다 실행된 action의 harm grade가 핵심” — tool-call trajectory, severity rubric, sandbox gate와 regression report 설계를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, red-teaming, tool-use, eval]
+- status: idea
+
+### 2026-07-10 — [논문 리뷰] Agentic Data Environments: 데이터베이스 앞에 agent-safe 작업 환경 만들기
+- type: paper
+- source: http://arxiv.org/abs/2607.07397v1
+- why-now: 에이전트가 데이터베이스를 직접 읽고 쓰는 자동화가 늘면서, 실패 비용을 제한하는 트랜잭션·권한·검증 환경 설계가 agent infra의 핵심 문제가 됐다.
+- angle: “DB를 tool로 열어주기 전에 agentic data environment를 설계하자” — mutation boundary, rollback, query sandbox, auditability를 데이터 플랫폼 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-infra, database, safety, tool-use]
+- status: idea
+
+### 2026-07-10 — [논문 리뷰] Atomic Actions to SOPs: agent tool을 절차 단위로 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2607.07321v1
+- why-now: file I/O·검색 같은 원자 tool만 제공하면 agent가 반복 workflow를 매번 재발명해 비용과 오류가 커지고, SOP 형태의 고수준 tool 최적화가 필요해지고 있다.
+- angle: “tool-use 최적화는 tool을 더 많이 주는 게 아니라 반복 절차를 안전한 SOP로 승격하는 문제” — atomic action, workflow mining, tool abstraction, regression 검증을 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-tools, workflow, tool-optimization, automation]
+- status: idea
+
+### 2026-07-10 — Remnic: provenance와 boundary가 있는 user-aware agent memory
+- type: tech
+- source: https://github.com/joshuaswarren/remnic
+- why-now: 개인화 agent가 메모리를 무작정 저장·검색하면 privacy, stale fact, correction handling이 엉키기 쉬워 scoped memory와 provenance가 실무 요구사항으로 올라왔다.
+- angle: “agent memory는 vector search가 아니라 scope·provenance·correction protocol” — MCP/HTTP access, retrieval quality, boundary policy, eval을 repo architecture 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, provenance, mcp, github-repo]
+- status: idea
+
+### 2026-07-10 — eval-view: agent regression test를 tool-call diff와 snapshot으로 운영하기
+- type: tech
+- source: https://github.com/hidai25/eval-view
+- why-now: LangGraph, CrewAI, OpenAI, Anthropic 기반 agent가 늘면서 답변 텍스트뿐 아니라 tool call과 trace 변화까지 CI에서 비교하는 regression testing이 필요해졌다.
+- angle: “agent eval은 평균 점수보다 행동 diff를 읽을 수 있어야 한다” — snapshot, tool-call diff, CI gate, 실패 triage를 agent QA 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, regression-test, tool-use, github-repo]
+- status: idea
