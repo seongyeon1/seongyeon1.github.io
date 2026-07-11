@@ -168,7 +168,7 @@
 | 아이디어 | 미정 | [논문 리뷰] WebSwarm — recursive multi-agent web search orchestration | paper-review | 논문 리뷰 | | arXiv 2607.08662 — 단일 search loop 대신 task decomposition, recursive expansion, evidence-grounded aggregation으로 research agent 설계 |
 | 아이디어 | 미정 | [논문 리뷰] Token-Flow Firewall — persistent agent의 semantic runtime auditing | paper-review | 논문 리뷰 | | arXiv 2607.08395 — memory/tool/retrieval token flow가 privileged sink로 가기 전 위험 흐름을 차단하는 agent 보안 아키텍처 |
 | 아이디어 | 미정 | [논문 리뷰] ProjAgent — repo-level coding agent의 procedural retrieval | paper-review | 개발자 AI 워크플로 | | arXiv 2607.08691 — identifier/semantic similarity를 넘어 절차적으로 비슷한 repo 함수를 찾아 code generation context로 쓰는 법 |
-| 아이디어 | 미정 | Prismor: rogue tool call을 실행 전에 잡는 agent runtime firewall | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — Claude Code/Codex/framework SDK 앞에서 dangerous command, secret leak, prompt injection을 pre-tool-call policy로 막기 |
+| 발행완료 | 2026-07-11 | Prismor: rogue tool call을 실행 전에 잡는 agent runtime firewall | tool | 개발자 AI 워크플로 | | `content/posts/2026-07-11-prismor-agent-runtime-firewall.mdx` — 자동 발행 완료, GitHub repo 기반 — Claude Code/Codex/framework SDK 앞에서 dangerous command, secret leak, prompt injection을 pre-tool-call policy로 막기 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

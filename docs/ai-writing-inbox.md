@@ -2866,7 +2866,8 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [agent-security, tool-use, runtime-firewall, github-repo]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-11-prismor-agent-runtime-firewall.mdx
 
 ### 2026-07-11 — mcp-gateway-registry: MCP server chaos를 governed registry로 묶기
 - type: tech

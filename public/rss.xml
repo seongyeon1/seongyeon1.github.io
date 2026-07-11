@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 09 Jul 2026 02:08:34 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 11 Jul 2026 01:47:49 GMT</lastBuildDate>
+    <item>
+      <title>Prismor: rogue tool call을 실행 전에 잡는 agent runtime firewall</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-11-prismor-agent-runtime-firewall/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-11-prismor-agent-runtime-firewall/</guid>
+      <description>Prismor를 통해 코딩 에이전트 보안을 prompt 필터가 아니라 실행 직전 policy enforcement 문제로 본다.</description>
+      <pubDate>Sat, 11 Jul 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>agent-security</category>
+      <category>tool-use</category>
+      <category>runtime-firewall</category>
+      <category>coding-agent</category>
+    </item>
     <item>
       <title>[논문 리뷰] DynaKRAG — multi-hop RAG를 evidence control 문제로 보기</title>
       <link>https://seongyeon1.github.io/blog/2026-07-09-dynakrag-multihop-rag-evidence-control/</link>
