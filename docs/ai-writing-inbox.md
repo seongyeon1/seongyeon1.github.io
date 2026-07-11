@@ -2789,3 +2789,94 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-eval, regression-test, tool-use, github-repo]
 - status: idea
+
+### 2026-07-11 — [논문 리뷰] Remember When It Matters: long-horizon agent의 behavioral state decay 막기
+- type: paper
+- source: http://arxiv.org/abs/2607.08716v1
+- why-now: 긴 tool trajectory에서 task requirement, prior attempt, open subgoal이 context 밖으로 밀리며 행동에 반영되지 않는 실패가 production agent의 핵심 병목이 되고 있다.
+- angle: “메모리는 passive retrieval이 아니라 필요할 때 끼어드는 runtime intervention” — 별도 memory agent, reminder injection, silent decision, harness plug-in boundary를 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, long-horizon, context-management, runtime]
+- status: idea
+
+### 2026-07-11 — [논문 리뷰] WebSwarm: 깊고 넓은 웹 리서치를 recursive multi-agent orchestration으로 풀기
+- type: paper
+- source: http://arxiv.org/abs/2607.08662v1
+- why-now: 단일 ReAct-style search agent는 긴 trajectory와 제한된 context 때문에 depth와 coverage를 동시에 확보하기 어렵고, research agent는 recursive delegation이 필요해지고 있다.
+- angle: “웹 검색 agent는 하나의 긴 loop가 아니라 증거 기반으로 확장되는 search tree” — task decomposition, recursive expansion, collaboration adaptation, evidence-grounded aggregation을 설계 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, web-search, research-agent, orchestration]
+- status: idea
+
+### 2026-07-11 — [논문 리뷰] Token-Flow Firewall: persistent agent의 자연어 흐름을 runtime에서 감사하기
+- type: paper
+- source: http://arxiv.org/abs/2607.08395v1
+- why-now: persistent agent에서는 memory update, tool argument, retrieved file, component message 같은 자연어 token flow가 장기 상태와 privileged sink로 전파되며 공격면을 키운다.
+- angle: “agent 보안은 prompt filter가 아니라 semantic flow firewall” — memory/tool/retrieval 사이의 risky flow를 privileged sink 전에 차단하는 runtime auditing 패턴으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, runtime-audit, tool-use, persistent-agent]
+- status: idea
+
+### 2026-07-11 — [논문 리뷰] ProjAgent: repository-level code generation에 procedural similarity 검색 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2607.08691v1
+- why-now: repo-level coding agent가 identifier/semantic similarity만으로 context를 찾으면 다른 파일의 유사 절차 구현을 놓치기 쉬워, 절차 단위 retrieval signal이 중요해지고 있다.
+- angle: “코딩 agent의 RAG는 비슷한 단어가 아니라 비슷한 절차를 찾아야 한다” — reasoning step decomposition, procedural retrieval, conventional semantic retrieval과의 결합을 개발자 워크플로로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, repository-level, retrieval, code-generation]
+- status: idea
+
+### 2026-07-11 — [논문 리뷰] UniClawBench: proactive agent 평가를 capability-driven benchmark로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2607.08768v1
+- why-now: proactive agent benchmark가 sandboxed single-turn task와 scenario taxonomy에 치우치면 real-world tool use 실패 원인을 capability 단위로 분해하기 어렵다.
+- angle: “agent benchmark는 시나리오 이름보다 실패 capability를 드러내야 한다” — skill usage, environment understanding, proactive decision 등 capability-driven taxonomy를 QA report 설계로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [proactive-agent, benchmark, eval, real-world-task]
+- status: idea
+
+### 2026-07-11 — Prismor: rogue tool call을 실행 전에 잡는 agent runtime firewall
+- type: tech
+- source: https://github.com/PrismorSec/prismor
+- why-now: Claude Code, Codex, framework SDK 기반 개발자 에이전트가 shell·file·network tool을 직접 만지면서 dangerous command, secret leak, prompt injection을 실행 직전에 막는 방어층이 필요해졌다.
+- angle: “agent security는 모델 응답 검열보다 pre-tool-call policy enforcement” — command risk scoring, secret detection, framework integration, 개발 워크플로 삽입 지점을 repo architecture 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-security, tool-use, runtime-firewall, github-repo]
+- status: idea
+
+### 2026-07-11 — mcp-gateway-registry: MCP server chaos를 governed registry로 묶기
+- type: tech
+- source: https://github.com/agentic-community/mcp-gateway-registry
+- why-now: 팀마다 MCP server를 흩어 붙이면 OAuth, tool discovery, audit, 접근 제어가 분산되어 autonomous agent와 coding assistant 운영 리스크가 커진다.
+- angle: “MCP 도입의 다음 문제는 server 개수가 아니라 registry와 gateway governance” — OAuth/Keycloak·Entra 통합, dynamic tool discovery, unified access, audit log를 enterprise agent infra 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, gateway, registry, agent-infra]
+- status: idea
