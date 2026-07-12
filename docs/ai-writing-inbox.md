@@ -2985,3 +2985,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-harness, long-horizon, coding-agent, github-repo]
 - status: idea
+
+### 2026-07-13 — [논문 리뷰] AgentLens: coding agent 평가는 production trajectory review로 봐야 한다
+- type: paper
+- source: http://arxiv.org/abs/2607.06624v1
+- why-now: coding agent가 실제 repo 작업에 투입되면서 benchmark pass rate보다 production trace에서 어떤 결정이 실패를 만들었는지 리뷰하는 평가법이 중요해졌다.
+- angle: “코딩 agent eval은 문제 풀이 점수가 아니라 trajectory review workflow” — task selection, human/LLM review, failure taxonomy, CI regression gate를 팀 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, evaluation, trajectory-review, production]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] WebRetriever: web agent 평가에서 efficiency와 coverage를 같이 보기
+- type: paper
+- source: http://arxiv.org/abs/2607.06118v1
+- why-now: web browsing agent가 research, QA, 업무 자동화에 들어오면서 정답률뿐 아니라 검색 depth, 페이지 방문 비용, evidence coverage를 함께 측정해야 한다.
+- angle: “웹 agent benchmark는 답을 맞혔나보다 어떻게 evidence를 모았나가 중요하다” — large-scale task design, 효율성 metric, verifier, browser/RAG agent QA를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [web-agent, benchmark, evaluation, retrieval]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] MCP Security-Aware Tool Descriptions: tool 설명으로 taint-style 취약점 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2607.07461v1
+- why-now: MCP server가 agent tool 표준처럼 확산되면서 tool description 자체가 data flow, trust boundary, sink 위험을 모델에 알려주는 보안 인터페이스가 되고 있다.
+- angle: “MCP 보안은 sandbox만이 아니라 tool schema와 description 설계 문제” — taint-style vulnerability, security-aware description, approval UI, server author 체크리스트로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, agent-security, tool-use, taint-analysis]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] Unicode TAG-Block Concealment: MCP approval UI의 보이지 않는 payload 문제
+- type: paper
+- source: http://arxiv.org/abs/2607.05744v1
+- why-now: agent tool approval 화면이 사용자가 보는 문자열과 모델·server가 처리하는 문자열의 불일치를 놓치면 숨은 metadata payload가 권한 승인 경계를 우회할 수 있다.
+- angle: “human approval은 UI에 보이는 텍스트와 실제 tool payload의 fidelity가 맞아야 의미 있다” — Unicode TAG block, approval-view gap, MCP server 테스트를 보안 QA로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, prompt-injection, approval-ui, agent-security]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] SMetric: serving agents를 위한 session-centric scheduling
+- type: paper
+- source: http://arxiv.org/abs/2607.08565v1
+- why-now: agent serving은 단발 요청이 아니라 multi-turn session과 tool wait가 섞인 workload라 일반 LLM batching metric만으로 latency와 fairness를 설명하기 어렵다.
+- angle: “agent inference 최적화는 token throughput보다 session 균형이 먼저다” — session-centric scheduling, queue fairness, tool latency, serving SLO를 inference 운영 관점으로 소개한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-serving, inference, scheduling, latency]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] PolyUQuest: heterogeneous graph 위에서 verifiable Web RAG 만들기
+- type: paper
+- source: http://arxiv.org/abs/2607.08269v1
+- why-now: Web RAG가 문서 chunk 검색만으로 복잡한 구조형 질문을 처리하기 어려워지면서 heterogeneous graph와 verifiable evidence path를 결합하는 설계가 주목된다.
+- angle: “RAG의 다음 병목은 검색 recall이 아니라 구조화된 evidence path 검증” — graph schema, web evidence, verifier, agentic RAG benchmark 설계로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, web-rag, graph, verification]
+- status: idea
+
+### 2026-07-13 — mcp-observatory: MCP server를 agent에 붙이기 전 테스트·보안·모니터링하기
+- type: tech
+- source: https://github.com/KryptosAI/mcp-observatory
+- why-now: MCP server를 빠르게 붙이는 팀은 늘었지만, tool schema 품질, prompt-injection surface, secret leak, runtime monitoring을 배포 전에 검증하는 절차는 아직 약하다.
+- angle: “MCP server도 API처럼 contract test와 security scan을 통과해야 한다” — server discovery, test suite, security checks, monitoring을 agent infra 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-security, observability, github-repo]
+- status: idea
+
+### 2026-07-13 — PantheonOS: 데이터 사이언스용 distributed agent harness 살펴보기
+- type: tech
+- source: https://github.com/aristoteleo/PantheonOS
+- why-now: 데이터 분석 agent는 notebook 한 셀 자동화보다 dataset, experiment, artifact, distributed worker를 함께 관리하는 harness가 필요해지고 있다.
+- angle: “data science agent는 chat UI보다 experiment OS에 가깝다” — evolvable agent framework, distributed execution, artifact lifecycle, human-in-the-loop 분석 워크플로를 repo architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [data-science-agent, agent-harness, distributed, github-repo]
+- status: idea

@@ -174,6 +174,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Quantization Effects — low-bit LLM 평가는 accuracy보다 behavior drift를 봐야 한다 | paper-review | AI 추론 최적화 | | arXiv 2607.08734 — correctness agreement, output distribution shift, serving QA, fallback policy 체크리스트 |
 | 아이디어 | 미정 | Heurist Agent Framework: reasoning·memory·MCP·agent-as-a-service를 한 런타임에 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — reasoning loop, tool registry, memory, MCP, deployment interface를 framework 선택 기준으로 정리 |
 | 아이디어 | 미정 | DeerFlow: long-horizon research·coding agent harness의 구성 요소 뜯어보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — planner, sandbox, memory, subagent routing, artifact generation 경계를 repo architecture로 분석 |
+| 아이디어 | 미정 | [논문 리뷰] AgentLens — coding agent 평가는 production trajectory review로 봐야 한다 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.06624 — production trace review, failure taxonomy, CI regression gate를 coding agent 평가 운영법으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] MCP Security-Aware Tool Descriptions — tool 설명으로 taint-style 취약점 줄이기 | paper-review | Agent/MCP 실전 | | arXiv 2607.07461 — MCP tool schema·description을 trust boundary와 data-flow 보안 인터페이스로 설계 |
+| 아이디어 | 미정 | [논문 리뷰] WebRetriever — web agent 평가에서 efficiency와 coverage를 같이 보기 | paper-review | AI 평가/운영 | | arXiv 2607.06118 — web task benchmark, evidence coverage, browsing cost, verifier를 agent QA metric으로 정리 |
+| 아이디어 | 미정 | mcp-observatory: MCP server를 agent에 붙이기 전 테스트·보안·모니터링하기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP server contract test, security scan, prompt-injection/secret leak 점검, monitoring 체크리스트 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
