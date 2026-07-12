@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 12 Jul 2026 00:37:08 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 12 Jul 2026 01:42:45 GMT</lastBuildDate>
     <item>
       <title>AI 기본기: 모델링 관점에서 다시 짜는 학습 로드맵</title>
       <link>https://seongyeon1.github.io/blog/2026-07-12-ai-fundamentals-modeling-roadmap/</link>
@@ -19,6 +19,19 @@
       <category>deep-learning</category>
       <category>LLM</category>
       <category>agent</category>
+    </item>
+    <item>
+      <title>TencentDB Agent Memory: AI 에이전트의 기억을 계층화한다는 것</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-12-tencentdb-agent-memory-layered-local-memory/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-12-tencentdb-agent-memory-layered-local-memory/</guid>
+      <description>TencentDB Agent Memory를 통해 에이전트 메모리를 단순 벡터 검색이 아니라 계층형 장기 기억과 심볼릭 단기 기억의 런타임 문제로 바라본다.</description>
+      <pubDate>Sun, 12 Jul 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>agent-memory</category>
+      <category>local-first</category>
+      <category>AI-agent</category>
+      <category>TencentDB</category>
+      <category>OpenClaw</category>
     </item>
     <item>
       <title>Prismor: rogue tool call을 실행 전에 잡는 agent runtime firewall</title>
