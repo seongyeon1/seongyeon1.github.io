@@ -169,6 +169,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Token-Flow Firewall — persistent agent의 semantic runtime auditing | paper-review | 논문 리뷰 | | arXiv 2607.08395 — memory/tool/retrieval token flow가 privileged sink로 가기 전 위험 흐름을 차단하는 agent 보안 아키텍처 |
 | 아이디어 | 미정 | [논문 리뷰] ProjAgent — repo-level coding agent의 procedural retrieval | paper-review | 개발자 AI 워크플로 | | arXiv 2607.08691 — identifier/semantic similarity를 넘어 절차적으로 비슷한 repo 함수를 찾아 code generation context로 쓰는 법 |
 | 발행완료 | 2026-07-11 | Prismor: rogue tool call을 실행 전에 잡는 agent runtime firewall | tool | 개발자 AI 워크플로 | | `content/posts/2026-07-11-prismor-agent-runtime-firewall.mdx` — 자동 발행 완료, GitHub repo 기반 — Claude Code/Codex/framework SDK 앞에서 dangerous command, secret leak, prompt injection을 pre-tool-call policy로 막기 |
+| 아이디어 | 미정 | [논문 리뷰] Workflow as Knowledge — LLM workflow를 실행 로그가 아니라 지식 그래프로 다루기 | paper-review | Agent/MCP 실전 | | arXiv 2607.08740 — symbolic workflow, checkpoint provenance, human approval edge, workflow memory를 agent runtime 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] IdeaGene-Bench — 연구 에이전트가 논문 계보를 이해하는지 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.08758 — mechanism inheritance, limitation repair, lineage-grounded generation, evidence trail 기반 research agent 평가 |
+| 아이디어 | 미정 | [논문 리뷰] Quantization Effects — low-bit LLM 평가는 accuracy보다 behavior drift를 봐야 한다 | paper-review | AI 추론 최적화 | | arXiv 2607.08734 — correctness agreement, output distribution shift, serving QA, fallback policy 체크리스트 |
+| 아이디어 | 미정 | Heurist Agent Framework: reasoning·memory·MCP·agent-as-a-service를 한 런타임에 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — reasoning loop, tool registry, memory, MCP, deployment interface를 framework 선택 기준으로 정리 |
+| 아이디어 | 미정 | DeerFlow: long-horizon research·coding agent harness의 구성 요소 뜯어보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — planner, sandbox, memory, subagent routing, artifact generation 경계를 repo architecture로 분석 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

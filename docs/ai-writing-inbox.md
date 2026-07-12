@@ -2881,3 +2881,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, gateway, registry, agent-infra]
 - status: idea
+
+### 2026-07-12 — [논문 리뷰] Workflow as Knowledge: LLM workflow를 실행 로그가 아니라 지식 그래프로 다루기
+- type: paper
+- source: http://arxiv.org/abs/2607.08740v1
+- why-now: LLM 앱이 tool use, retrieval, branch, checkpoint, human approval을 명시 workflow로 관리하기 시작하면서 실행 상태와 재사용 가능한 절차 지식을 분리하는 설계가 중요해졌다.
+- angle: “workflow는 YAML이 아니라 agent가 배우고 재사용할 semantic artifact” — symbolic workflow, checkpoint provenance, human approval edge, workflow memory를 agent runtime 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-workflow, tool-use, semantic-memory, orchestration]
+- status: idea
+
+### 2026-07-12 — [논문 리뷰] IdeaGene-Bench: 연구 에이전트가 논문 계보를 이해하는지 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.08758v1
+- why-now: AI research assistant가 단순 검색·요약을 넘어 “이 아이디어가 어떤 선행 연구를 물려받고 무엇을 고쳤는가”를 추적해야 하는 단계로 가고 있다.
+- angle: “좋은 research agent는 citation graph가 아니라 idea lineage를 읽어야 한다” — mechanism inheritance, limitation repair, lineage-grounded generation, evidence trail을 평가 harness 관점으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, benchmark, scientific-discovery, evaluation]
+- status: idea
+
+### 2026-07-12 — [논문 리뷰] Quantization Effects: low-bit LLM 평가는 accuracy보다 behavior drift를 봐야 한다
+- type: paper
+- source: http://arxiv.org/abs/2607.08734v1
+- why-now: post-training quantization은 배포 기본기가 됐지만 perplexity와 평균 accuracy만 보면 calibration, answer distribution, reasoning behavior 변화가 감춰질 수 있다.
+- angle: “양자화 검증은 성능 숫자 하나가 아니라 행동 동등성 테스트” — correctness agreement, output distribution shift, serving QA, fallback policy를 추론 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [quantization, inference, llm-evaluation, model-serving]
+- status: idea
+
+### 2026-07-12 — [논문 리뷰] Latent Memory Palace: control agent의 reasoning을 latent planning으로 넣기
+- type: paper
+- source: http://arxiv.org/abs/2607.08724v1
+- why-now: LLM의 test-time reasoning을 continuous control policy로 옮기려면 자연어 CoT가 아니라 행동 공간에 맞는 latent deliberation 구조가 필요하다.
+- angle: “embodied/control agent의 생각은 텍스트가 아니라 latent rollout일 수 있다” — autoregressive variational inference, adaptive deliberation, control policy scaling을 agent architecture 관점으로 소개한다.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [embodied-agent, reasoning, control, architecture]
+- status: idea
+
+### 2026-07-12 — [논문 리뷰] SolarChain-Eval: cyber-physical agent는 물리 제약까지 평가해야 한다
+- type: paper
+- source: http://arxiv.org/abs/2607.08681v1
+- why-now: 에이전트가 에너지 시장·설비·로봇 같은 cyber-physical 환경에 들어가면 task score만으로는 물리적으로 불가능하거나 위험한 행동을 걸러낼 수 없다.
+- angle: “agent eval은 정답 채점에서 physics-constrained trustworthiness로 확장된다” — invalid data exploit, physical constraint verifier, economic utility와 safety trade-off를 평가 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, cyber-physical, trustworthiness, benchmark]
+- status: idea
+
+### 2026-07-12 — Heurist Agent Framework: reasoning·memory·MCP·agent-as-a-service를 한 런타임에 묶기
+- type: tech
+- source: https://github.com/heurist-network/heurist-agent-framework
+- why-now: production agent framework가 단순 tool calling wrapper에서 memory, deep research, MCP, multi-interface serving까지 포함한 application runtime으로 확장되고 있다.
+- angle: “agent framework 선택 기준은 API 예쁘냐가 아니라 runtime surface를 어디까지 책임지느냐” — reasoning loop, tool registry, memory, MCP, deployment interface를 architecture checklist로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, mcp, memory, deployment]
+- status: idea
+
+### 2026-07-12 — GitHub Agentic Workflows MCP Gateway: GitHub 작업을 MCP gateway로 통제하기
+- type: tech
+- source: https://github.com/github/gh-aw-mcpg
+- why-now: GitHub repo 안에서 agentic workflow가 늘수록 issue, PR, CI, code search 같은 권한 있는 작업을 MCP gateway 뒤에서 표준화·감사하는 패턴이 필요하다.
+- angle: “GitHub automation tool을 직접 주지 말고 MCP gateway에서 권한과 audit boundary를 잡자” — tool discovery, GitHub auth, workflow delegation, repository governance를 개발자 AI 워크플로로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [github, mcp, agent-workflow, governance]
+- status: idea
+
+### 2026-07-12 — DeerFlow: long-horizon research·coding agent harness의 구성 요소 뜯어보기
+- type: tech
+- source: https://github.com/bytedance/deer-flow
+- why-now: 장기 실행 agent는 검색·코딩·작성·검증을 하나의 긴 prompt로 밀어붙이는 대신 sandbox, memory, tool, skill, subagent, message gateway를 조합한 harness가 필요해지고 있다.
+- angle: “super-agent보다 중요한 건 long-horizon harness의 부품 경계” — planner, sandbox, memory, subagent routing, artifact generation을 repo architecture 중심으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-harness, long-horizon, coding-agent, github-repo]
+- status: idea
