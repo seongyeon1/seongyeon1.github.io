@@ -3089,3 +3089,94 @@
 - suggested-category: tutorial
 - suggested-tags: [data-science-agent, agent-harness, distributed, github-repo]
 - status: idea
+
+### 2026-07-13 — [논문 리뷰] When the Judge Changes: LLM-as-judge 교체가 평가 숫자를 흔드는 방식
+- type: paper
+- source: http://arxiv.org/abs/2607.08535v1
+- why-now: LLM-as-judge가 agent eval과 생성형 AI QA의 기본 부품이 됐지만, evaluator model만 바뀌어도 같은 후보 응답의 점수가 움직이는 measurement-validity 문제가 커지고 있다.
+- angle: “평가 모델도 측정 장비라서 calibration과 교체 리스크를 관리해야 한다” — judge replacement ambiguity, rank stability, evaluator drift monitor를 agent regression suite 운영법으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-as-judge, evaluation, calibration, agent-eval]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] Relaxed Speculative Decoding: lossless를 포기하면 inference latency를 얼마나 줄일 수 있나
+- type: paper
+- source: http://arxiv.org/abs/2607.08690v1
+- why-now: speculative decoding은 LLM serving 비용 절감의 표준 후보지만, 완전 lossless 검증은 rejection overhead 때문에 실제 latency 이득이 제한될 수 있다.
+- angle: “추론 최적화도 정확도·분포 보존·latency 사이의 운영 정책 문제” — relaxed acceptance, resampling trade-off, serving QA gate를 production inference 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [speculative-decoding, inference, latency, model-serving]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] DominoTree: block-diffusion draft를 tree speculative decoding으로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2607.08642v1
+- why-now: LLM inference 병목이 커질수록 draft model의 품질과 verification 효율을 동시에 높이는 tree-structured speculative decoding 설계가 중요해지고 있다.
+- angle: “draft token을 한 줄로 뽑지 말고 조건부 후보 tree로 검증한다” — block-diffusion drafter, conditional tree expansion, acceptance efficiency를 serving architecture로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [speculative-decoding, inference, decoding, serving]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] MAESTRO: MoE LLM에서 나쁜 expert를 pruning하는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.08601v1
+- why-now: sparsely-activated MoE 모델은 token당 활성 파라미터는 적어도 전체 expert bank가 메모리를 차지하므로 serving 메모리와 품질을 함께 다루는 pruning 방법이 필요하다.
+- angle: “MoE 최적화는 router만이 아니라 expert bank의 운영 비용을 줄이는 문제” — bad expert 식별, pruning 기준, quality-memory trade-off를 추론 인프라 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [moe, inference, pruning, model-compression]
+- status: idea
+
+### 2026-07-13 — [논문 리뷰] Resample or Reroute: test-time resampling과 LLM router의 비용 균형
+- type: paper
+- source: http://arxiv.org/abs/2607.08665v1
+- why-now: 여러 LLM을 섞어 쓰는 production gateway에서는 per-request model routing뿐 아니라 동일 모델 재샘플링이 품질·비용 균형에 어떤 역할을 하는지 따져야 한다.
+- angle: “LLM router의 선택지는 모델 교체만이 아니라 같은 모델을 다시 뽑는 것” — budget-aware model selection, oracle gap, retry/resample policy를 LLM gateway 운영법으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-routing, inference, cost-optimization, serving]
+- status: idea
+
+### 2026-07-13 — Chidori: durable·replayable agent run을 기본값으로 만든 프레임워크
+- type: tech
+- source: https://github.com/ThousandBirdsInc/chidori
+- why-now: 장기 실행 agent는 중간 실패, human interrupt, tool retry, state replay를 피할 수 없어 “한 번 실행하고 로그만 남기는” runtime보다 durable execution 모델이 필요하다.
+- angle: “production agent framework의 핵심은 예쁜 API보다 replay와 resume semantics” — run state, checkpoint, replay, failure recovery를 LangGraph류 durable execution과 비교해 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, durable-execution, replay, workflow]
+- status: idea
+
+### 2026-07-13 — AssetOpsBench: Industry 4.0 agent를 benchmark와 orchestration으로 같이 보기
+- type: tech
+- source: https://github.com/IBM/AssetOpsBench
+- why-now: domain-specific agent는 일반 웹/코딩 benchmark만으로 평가하기 어렵고, 산업 설비 운영처럼 tool·sensor·maintenance workflow가 있는 환경에서는 task harness 자체가 제품 품질을 좌우한다.
+- angle: “도메인 agent 평가는 benchmark와 framework가 분리되지 않는다” — asset operation task, orchestration layer, domain verifier, maintenance workflow를 enterprise agent 설계 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [domain-agent, benchmark, orchestration, industry-4]
+- status: idea

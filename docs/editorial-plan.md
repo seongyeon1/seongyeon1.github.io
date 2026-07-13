@@ -178,6 +178,10 @@
 | 아이디어 | 미정 | [논문 리뷰] MCP Security-Aware Tool Descriptions — tool 설명으로 taint-style 취약점 줄이기 | paper-review | Agent/MCP 실전 | | arXiv 2607.07461 — MCP tool schema·description을 trust boundary와 data-flow 보안 인터페이스로 설계 |
 | 아이디어 | 미정 | [논문 리뷰] WebRetriever — web agent 평가에서 efficiency와 coverage를 같이 보기 | paper-review | AI 평가/운영 | | arXiv 2607.06118 — web task benchmark, evidence coverage, browsing cost, verifier를 agent QA metric으로 정리 |
 | 아이디어 | 미정 | mcp-observatory: MCP server를 agent에 붙이기 전 테스트·보안·모니터링하기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP server contract test, security scan, prompt-injection/secret leak 점검, monitoring 체크리스트 |
+| 아이디어 | 미정 | [논문 리뷰] When the Judge Changes — LLM-as-judge 교체가 평가 숫자를 흔드는 방식 | paper-review | AI 평가/운영 | | arXiv 2607.08535 — evaluator replacement ambiguity, rank stability, judge drift monitor를 agent regression suite로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Relaxed Speculative Decoding — lossless를 포기하면 inference latency를 얼마나 줄일 수 있나 | paper-review | AI 추론 최적화 | | arXiv 2607.08690 — relaxed acceptance, resampling trade-off, serving QA gate를 production inference 정책으로 정리 |
+| 아이디어 | 미정 | Chidori: durable·replayable agent run을 기본값으로 만든 프레임워크 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — checkpoint, replay, resume, failure recovery를 production agent runtime 선택 기준으로 소개 |
+| 아이디어 | 미정 | AssetOpsBench: Industry 4.0 agent를 benchmark와 orchestration으로 같이 보기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — domain task harness, orchestration layer, verifier, maintenance workflow를 enterprise agent 평가 패턴으로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
