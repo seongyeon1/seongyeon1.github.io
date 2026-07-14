@@ -3180,3 +3180,107 @@
 - suggested-category: tutorial
 - suggested-tags: [domain-agent, benchmark, orchestration, industry-4]
 - status: idea
+
+### 2026-07-14 — [논문 리뷰] Agora: agent task allocation을 auction mechanism으로 설계하기
+- type: paper
+- source: http://arxiv.org/abs/2607.09600v1
+- why-now: multi-agent/runtime orchestration이 “어떤 tool·expert를 부를까”에서 “성능 변동성과 비용을 함께 최적화하는 market design” 문제로 넘어가고 있다.
+- angle: “agent router를 rule-based dispatcher가 아니라 incentive-compatible allocator로 본다” — expert/tool bidding, cost-quality trade-off, task allocation policy를 production agent harness 설계로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, task-allocation, tool-routing, agent-orchestration]
+- status: idea
+
+### 2026-07-14 — [논문 리뷰] SLBench: agent skill 파일의 논리 관계를 테스트로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2607.09016v1
+- why-now: AGENTS.md, skill, MCP tool description처럼 agent가 읽는 절차 지식이 늘면서 precondition·constraint·fallback을 실제로 지키는지 평가하는 harness가 필요해졌다.
+- angle: “skill은 문서가 아니라 executable contract가 되어야 한다” — SkillLogic relation taxonomy, skill-derived test generation, repo guidance regression suite를 coding agent 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, evaluation, coding-agent, regression-test]
+- status: idea
+
+### 2026-07-14 — [논문 리뷰] Reason Less, Verify More: tool agent 정책 위반을 deterministic gate로 잡기
+- type: paper
+- source: http://arxiv.org/abs/2607.07405v1
+- why-now: tool-using agent는 성공처럼 보이는 잘못된 state transition을 만들 수 있고, self-report나 tool schema만으로는 silent policy violation을 잡기 어렵다.
+- angle: “agent에게 더 생각하라고 하기보다 상태 전이 앞에 검증기를 둔다” — policy-permissive tool 환경, deterministic pre/post gate, audit log를 agent runtime safety pattern으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent-safety, policy-gate, verification]
+- status: idea
+
+### 2026-07-14 — [논문 리뷰] Forged Reasoning Attacks: agent memory poisoning의 다음 공격면
+- type: paper
+- source: http://arxiv.org/abs/2607.05029v1
+- why-now: persistent memory를 쓰는 personal/coding agent가 늘면서 사실 저장소뿐 아니라 “이전 reasoning history” 자체가 공격 대상이 되는 문제가 현실적인 운영 리스크가 됐다.
+- angle: “memory RAG 보안은 fact 검증만으로 끝나지 않는다” — FARMA 공격, rationale provenance, memory write gate, reasoning-history quarantine을 agent memory 설계 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, memory-poisoning, security, provenance]
+- status: idea
+
+### 2026-07-14 — [논문 리뷰] AgentKGV: knowledge graph fact verification을 agentic RAG로 돌리기
+- type: paper
+- source: http://arxiv.org/abs/2607.09092v1
+- why-now: 자동 구축 knowledge graph의 factual error를 줄이려면 단발 검색보다 routing·query rewriting·evidence verification을 결합한 agentic RAG 운영 방식이 필요하다.
+- angle: “KG QA를 offline cleaning이 아니라 agentic verification pipeline으로 본다” — dynamic routing, iterative query rewriting, two-stage training, verifier loop를 data quality infra 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, knowledge-graph, fact-verification, retrieval]
+- status: idea
+
+### 2026-07-14 — Future AGI: agent eval·observability·simulation을 한 플랫폼으로 묶기
+- type: tech
+- source: https://github.com/future-agi/future-agi
+- why-now: agent 앱이 PoC를 넘어서면 tracing, eval dataset, simulation, gateway, guardrail을 흩어진 도구로 운영하기 어렵고 CI regression까지 연결된 platform layer가 필요해진다.
+- angle: “agent 품질 관리는 prompt playground가 아니라 release engineering” — traces, evals, simulations, datasets, guardrails를 하나의 release gate로 묶는 운영 패턴을 소개한다.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, observability, guardrails, release-engineering]
+- status: idea
+
+### 2026-07-14 — Superset: AI agents era를 위한 local code editor/orchestrator
+- type: tech
+- source: https://github.com/superset-sh/superset
+- why-now: Claude Code, Codex 같은 CLI coding agent가 늘면서 여러 agent run을 한 머신에서 병렬 실행·감시·리뷰하는 workspace 계층이 새 병목이 되고 있다.
+- angle: “IDE의 다음 역할은 코드를 직접 쓰는 것보다 agent 작업장을 운영하는 것” — multi-agent session, 작업 격리, diff review, local orchestration UX를 coding agent workflow로 분석한다.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, developer-workflow, orchestration, code-editor]
+- status: idea
+
+### 2026-07-14 — remnic: user-aware agent를 위한 scoped memory와 provenance
+- type: tech
+- source: https://github.com/joshuaswarren/remnic
+- why-now: personal agent가 사용자별 장기 기억을 다룰수록 scope, correction, provenance, retrieval quality, MCP/HTTP access boundary를 명시적으로 설계해야 한다.
+- angle: “agent memory를 vector DB가 아니라 governance surface로 본다” — scoped memory, provenance, correction workflow, evals, MCP access를 user-aware agent 아키텍처 관점으로 정리한다.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, provenance, mcp, personal-agent]
+- status: idea

@@ -182,6 +182,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Relaxed Speculative Decoding — lossless를 포기하면 inference latency를 얼마나 줄일 수 있나 | paper-review | AI 추론 최적화 | | arXiv 2607.08690 — relaxed acceptance, resampling trade-off, serving QA gate를 production inference 정책으로 정리 |
 | 아이디어 | 미정 | Chidori: durable·replayable agent run을 기본값으로 만든 프레임워크 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — checkpoint, replay, resume, failure recovery를 production agent runtime 선택 기준으로 소개 |
 | 아이디어 | 미정 | AssetOpsBench: Industry 4.0 agent를 benchmark와 orchestration으로 같이 보기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — domain task harness, orchestration layer, verifier, maintenance workflow를 enterprise agent 평가 패턴으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Agora — agent task allocation을 auction mechanism으로 설계하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.09600 — expert/tool bidding, cost-quality trade-off, incentive-compatible allocation을 agent router 설계로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] SLBench — agent skill 파일의 논리 관계를 테스트로 바꾸기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.09016 — precondition·constraint·fallback을 executable contract와 regression test로 만드는 운영법 |
+| 아이디어 | 미정 | [논문 리뷰] Reason Less, Verify More — tool agent 정책 위반을 deterministic gate로 잡기 | paper-review | Agent/MCP 실전 | | arXiv 2607.07405 — silent wrong state, deterministic pre/post gate, audit log 기반 runtime safety pattern |
+| 아이디어 | 미정 | [논문 리뷰] Forged Reasoning Attacks — agent memory poisoning의 다음 공격면 | paper-review | 논문 리뷰 | | arXiv 2607.05029 — reasoning-history poisoning, rationale provenance, memory write gate, quarantine 설계 |
+| 아이디어 | 미정 | Future AGI: agent eval·observability·simulation을 한 플랫폼으로 묶기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — traces, evals, simulations, datasets, guardrails를 agent release gate로 묶는 법 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
