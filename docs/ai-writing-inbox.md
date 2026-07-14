@@ -3205,7 +3205,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent-skills, evaluation, coding-agent, regression-test]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-14-slbench-skill-logic-agent-skills.mdx
 
 ### 2026-07-14 — [논문 리뷰] Reason Less, Verify More: tool agent 정책 위반을 deterministic gate로 잡기
 - type: paper

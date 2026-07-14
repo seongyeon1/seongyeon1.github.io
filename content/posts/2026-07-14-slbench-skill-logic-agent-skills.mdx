@@ -1,0 +1,199 @@
+---
+title: "[논문 리뷰] SLBench — agent skill 파일을 실행 가능한 계약으로 테스트하기"
+date: "2026-07-14"
+category: "paper-review"
+tags: ["agent-skills", "evaluation", "coding-agent", "regression-test"]
+summary: "Agent skill은 문서가 아니라 precondition·constraint·fallback을 지켜야 하는 실행 계약이다."
+---
+
+<Paper
+  title="SLBench: Evaluating How LLM Agents Follow Logical Relations in Skills"
+  authors="Xuan Chen et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2607.09016"
+/>
+
+## 한 줄 요약
+
+SLBench는 agent가 읽는 skill 파일을 “좋은 설명 문서”가 아니라 **실행 중 지켜야 하는 논리 관계의 계약**으로 보고, 그 관계를 테스트 케이스로 바꾸는 benchmark다.
+
+핵심 메시지는 단순하다. 요즘 coding agent와 desktop agent에는 `AGENTS.md`, skill, MCP tool description, workflow 문서가 계속 붙는다. 그런데 agent가 그 문서를 읽었다고 해서 precondition, constraint, fallback을 실제 행동에서 지킨다는 보장은 없다. SLBench는 이 빈틈을 정면으로 찌른다.
+
+내 의견으로는 이 논문은 “agent에게 더 자세한 지시를 쓰자”보다 한 단계 더 실용적이다. 지시는 늘어날수록 사람이 검토하기 어렵고, 모델은 낮은 salience의 조건을 쉽게 놓친다. 그래서 skill은 사람이 읽는 문서가 아니라 **테스트 가능한 configuration artifact**로 다뤄야 한다.
+
+## 왜 지금 중요한가
+
+Agent skill은 재사용 가능한 절차 지식이다. 예를 들면 다음과 같은 내용이다.
+
+- 특정 파일을 수정하기 전에 백업을 만들어라.
+- credential이나 개인 정보를 외부 서비스로 보내지 마라.
+- 실패하면 cleanup 명령을 실행하라.
+- 사용자가 명시적으로 승인하기 전에는 destructive action을 하지 마라.
+- 특정 tool은 특정 precondition이 만족될 때만 써라.
+
+문제는 이런 조건이 자연어 문서 안에 섞여 있다는 점이다. 문서가 길어지고 skill이 여러 개 조합되면 agent는 “무엇을 해야 하는가”는 대충 따라가도 “무엇을 하면 안 되는가”, “실패 시 무엇을 복구해야 하는가”를 놓치기 쉽다.
+
+이건 사소한 UX 문제가 아니다. 논문 초록 기준으로 SLBench 평가에서 Codex와 Claude Code 계열 agent는 여섯 개 LLM backbone 조합에서 최대 70% unsafe rate를 보였고, 위반은 privacy leak, unsafe configuration change, incomplete cleanup 같은 실제 운영 리스크로 이어졌다고 보고한다. 숫자의 세부 해석은 본문 검토가 더 필요하지만, 방향성은 충분히 현실적이다. skill-following 실패는 benchmark toy problem이 아니라 production agent의 신뢰성 문제다.
+
+## SkillLogic: skill 안의 논리 관계를 꺼내기
+
+논문은 SkillLogic이라는 프레임워크를 제안한다. 목표는 skill 파일에서 자연어로 적힌 논리 관계를 찾아내고, 이를 실행 가능한 테스트로 바꾸는 것이다.
+
+초록에서 명시한 대표 관계는 세 가지다.
+
+### 1. Preconditions
+
+Precondition은 어떤 행동을 하기 전에 반드시 만족해야 하는 조건이다.
+
+예를 들어 “배포 명령은 테스트가 통과한 뒤에만 실행한다”는 skill이 있다면, agent가 테스트 실패 상태에서 deploy tool을 호출하는 순간 위반이다.
+
+실무적으로는 이 관계가 가장 중요하다. agent가 좋은 결과를 낸 것처럼 보여도 precondition을 건너뛰면 운영 시스템에서는 실패로 봐야 한다. “잘 됐으니 괜찮다”가 아니라 “허용된 경로로 잘 됐는가”를 봐야 한다.
+
+### 2. Constraints
+
+Constraint는 허용된 행동의 수행 방식을 제한한다.
+
+예를 들어 “로그를 요약하되 개인정보는 포함하지 않는다”, “설정 파일은 변경하되 secret 값은 출력하지 않는다” 같은 조건이다. 행동 자체는 허용되지만, argument나 output이 조건을 위반할 수 있다.
+
+이 부분은 MCP tool description과도 연결된다. tool schema만으로는 “이 argument는 untrusted input에서 왔는가”, “이 output은 privileged sink로 가도 되는가”를 충분히 표현하기 어렵다. skill의 constraint를 별도 테스트로 만들 수 있어야 한다.
+
+### 3. Fallbacks
+
+Fallback은 실패했을 때의 복구 행동이다.
+
+예를 들어 “마이그레이션 실패 시 rollback을 실행하고 임시 파일을 제거한다” 같은 규칙이다. 많은 agent 평가는 성공 trajectory만 본다. 하지만 실제 운영에서는 실패 후 cleanup을 안 해서 더 큰 문제가 생긴다.
+
+이 논문이 fallback을 skill relation으로 다루는 점은 꽤 마음에 든다. 장기 실행 agent에서 실패는 예외가 아니라 기본 경로다. 그러면 fallback은 문서 하단의 참고사항이 아니라 테스트 대상이어야 한다.
+
+## SLBench가 보는 실패 모드
+
+논문은 5,000개 이상의 공개 skill을 스캔했고, 그중 70%가 하나 이상의 logical relation을 포함한다고 보고한다. 이후 high-confidence, high-impact, locally testable relation을 골라 86개 실행 가능한 benchmark case를 구성했다.
+
+여기서 중요한 설계 선택은 “locally testable”이다. agent benchmark는 외부 SaaS, 실제 credential, 복잡한 UI 상태에 의존하면 재현성이 무너진다. SLBench는 skill relation을 로컬에서 검증 가능한 작업으로 바꾸려는 방향을 잡는다.
+
+실패 모드는 대략 이렇게 볼 수 있다.
+
+- precondition 누락: 승인·검증·상태 확인 없이 tool 실행
+- constraint 위반: 금지된 파일/값/개인정보를 출력 또는 수정
+- fallback 누락: 실패 후 cleanup, rollback, report를 수행하지 않음
+- relation conflict 미해결: 여러 skill의 조건이 충돌할 때 더 안전한 쪽을 고르지 못함
+- salience 문제: skill에 조건이 적혀 있지만 긴 작업 맥락에서 잊힘
+
+마지막이 특히 중요하다. 사람은 “문서에 써놨는데 왜 안 지켜?”라고 말하기 쉽다. 하지만 agent runtime 관점에서는 지시가 context 안에 존재하는 것과 행동 선택 시점에 영향력을 갖는 것은 다르다.
+
+## 실무 agent harness로 번역하기
+
+SLBench를 그대로 팀 workflow에 넣기는 어렵더라도, 설계 원칙은 바로 가져올 수 있다.
+
+### 1. Skill을 Markdown이 아니라 contract로 저장한다
+
+Skill 문서는 사람이 읽기 편해야 하지만, 핵심 조건은 구조화된 형태로도 있어야 한다.
+
+```yaml title="skill-contract.yaml"
+name: deploy-preview
+preconditions:
+  - id: tests-pass
+    check: "npm run typecheck && npm run build"
+    required_before: "deploy"
+constraints:
+  - id: no-secret-output
+    applies_to: ["logs", "tool_arguments", "summary"]
+    rule: "must_not_contain_secret_like_values"
+fallbacks:
+  - on: "deploy_failed"
+    must_run: ["rollback_preview", "cleanup_temp_files"]
+```
+
+이 정도만 있어도 agent에게 자연어로 “주의해”라고 말하는 것보다 낫다. runtime gate, test generator, review checklist가 같은 source of truth를 볼 수 있기 때문이다.
+
+### 2. Agent 실행 로그를 contract와 대조한다
+
+Skill-following 평가는 최종 답변만 보면 안 된다. tool call trace를 봐야 한다.
+
+```ts title="skill-contract-check.ts"
+type ToolCall = {
+  name: string;
+  args: Record<string, unknown>;
+  timestamp: string;
+};
+
+type SkillViolation = {
+  relationId: string;
+  severity: "low" | "medium" | "high";
+  evidence: string;
+};
+
+function checkPreconditions(calls: ToolCall[]): SkillViolation[] {
+  const deployIndex = calls.findIndex((call) => call.name === "deploy");
+  const buildPassedIndex = calls.findIndex(
+    (call) => call.name === "build" && call.args["status"] === "passed",
+  );
+
+  if (deployIndex >= 0 && (buildPassedIndex < 0 || buildPassedIndex > deployIndex)) {
+    return [
+      {
+        relationId: "tests-pass",
+        severity: "high",
+        evidence: "deploy was called before a passing build was observed",
+      },
+    ];
+  }
+
+  return [];
+}
+```
+
+완벽한 verifier가 아니어도 된다. 중요한 건 agent 평가를 “응답이 그럴듯한가”에서 “허용된 상태 전이를 했는가”로 옮기는 것이다.
+
+### 3. Skill relation을 regression test로 만든다
+
+새 skill을 추가하거나 기존 skill을 고치면, 최소한 아래 질문에 답해야 한다.
+
+- 이 skill의 precondition은 무엇인가?
+- 어떤 action argument가 constraint 대상인가?
+- 실패 시 반드시 실행해야 하는 fallback은 무엇인가?
+- 이 조건을 위반하는 synthetic task를 만들 수 있는가?
+- 위반 여부를 tool trace에서 판정할 수 있는가?
+
+이 체크리스트가 없으면 skill library는 시간이 갈수록 위험한 자연어 덩어리가 된다. 특히 여러 agent가 같은 skill repository를 공유한다면 더 그렇다.
+
+## SLGuard: inference-time scaffold의 의미
+
+논문은 SLGuard라는 lightweight inference-time scaffold가 targeted case에서 violation을 63% 줄였다고 보고한다. 초안 단계에서는 구현 세부를 더 확인해야 하지만, 방향은 납득된다.
+
+핵심은 모델을 다시 학습시키지 않고도 skill relation을 실행 시점에 더 잘 드러내는 것이다. 예를 들면 다음과 같은 scaffold가 가능하다.
+
+- 현재 task에서 관련 있는 precondition만 뽑아 action 전 checklist로 주입
+- tool call 직전에 constraint를 짧은 gate prompt 또는 deterministic checker로 확인
+- 실패 event가 발생하면 fallback 후보를 별도 action queue로 올림
+- skill text 전체 대신 relation summary를 active context로 유지
+
+여기서 조심할 점도 있다. 모든 relation을 매번 prompt에 넣으면 다시 salience 문제가 생긴다. 좋은 scaffold는 조건을 많이 외치는 게 아니라 **현재 action boundary에 필요한 조건만 좁혀서 보여주는 것**이어야 한다.
+
+## 한계와 주의할 점
+
+이 논문을 읽을 때 과대해석하면 안 되는 부분도 있다.
+
+첫째, 86개 benchmark case는 출발점이지 전체 agent skill 생태계를 대표한다고 보기에는 작다. 특히 실제 팀의 사내 workflow, cloud permission, multi-service rollback은 더 복잡하다.
+
+둘째, public skill에서 뽑은 relation은 비교적 명시적인 조건일 가능성이 높다. 진짜 어려운 문제는 문서에 암묵적으로 깔린 조직 규칙, 보안 정책, domain constraint를 어떻게 추출하느냐다.
+
+셋째, deterministic test로 만들 수 없는 relation도 많다. “사용자 의도를 충분히 확인하라”, “위험한 변경은 보수적으로 처리하라” 같은 규칙은 정량화가 어렵다. 그렇다고 포기할 필요는 없다. 최소한 high-risk action에 대해서는 approximate checker와 human review gate를 둘 수 있다.
+
+## 내 생각
+
+SLBench의 좋은 점은 agent 안전성을 추상적인 alignment 문제가 아니라 repo와 skill 운영 문제로 끌어내린다는 데 있다.
+
+앞으로 coding agent harness를 설계할 때 `AGENTS.md`나 skill 파일은 README처럼 관리하면 안 된다. 더 정확히는 다음 세 가지가 필요하다.
+
+1. **Schema**: skill의 precondition, constraint, fallback을 구조화한다.
+2. **Trace**: agent가 실제로 어떤 action sequence를 실행했는지 남긴다.
+3. **Verifier**: skill relation을 trace와 대조해 regression test로 돌린다.
+
+내 취향으로는 “agent에게 reasoning을 더 시키자”보다 이 방향이 더 믿을 만하다. 모델이 조건을 스스로 기억하길 기대하지 말고, 조건을 runtime artifact로 만들어야 한다. 문서가 아니라 계약으로.
+
+## 참고 자료
+
+- arXiv: [SLBench: Evaluating How LLM Agents Follow Logical Relations in Skills](https://arxiv.org/abs/2607.09016)
+- 논문 후보 메모: `docs/ai-writing-inbox.md`의 “2026-07-14 — [논문 리뷰] SLBench: agent skill 파일의 논리 관계를 테스트로 바꾸기”
