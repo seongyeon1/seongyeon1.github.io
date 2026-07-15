@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 15 Jul 2026 00:55:25 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 15 Jul 2026 15:55:48 GMT</lastBuildDate>
+    <item>
+      <title>AI 모델 압축을 12살도 이해할 수 있게 설명하기 — BF16 가중치를 줄이는 방법</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-16-lossless-model-compression-bf16/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-16-lossless-model-compression-bf16/</guid>
+      <description>GLM-5.2 753B 모델을 대상으로 한 lossless weight compression 실험을 바탕으로, AI 모델의 가중치를 왜 줄일 수 있고 무엇을 아직 조심해서 봐야 하는지 쉽게 설명한다.</description>
+      <pubDate>Thu, 16 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>model-compression</category>
+      <category>BF16</category>
+      <category>LLM</category>
+      <category>inference</category>
+      <category>AI기본기</category>
+    </item>
     <item>
       <title>AI 기본기 2: 손실함수와 목적함수 — 모델은 정말 우리가 원하는 것을 배우는가</title>
       <link>https://seongyeon1.github.io/blog/2026-07-15-ai-fundamentals-loss-objective/</link>
