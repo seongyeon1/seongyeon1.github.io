@@ -1,0 +1,324 @@
+---
+title: "AI 기본기 2: 손실함수와 목적함수 — 모델은 정말 우리가 원하는 것을 배우는가"
+date: "2026-07-15"
+category: "concept"
+tags: ["AI기본기", "machine-learning", "loss-function", "objective", "LLM"]
+summary: "MSE, cross-entropy, maximum likelihood, next-token prediction, contrastive loss를 하나의 관점으로 연결해 AI 모델이 무엇을 최적화하는지 이해한다."
+series: "AI 기본기"
+seriesOrder: 2
+math: true
+---
+
+## 한 줄 요약
+
+AI 모델을 이해할 때 가장 먼저 물어야 할 질문은 “어떤 모델을 쓰는가?”가 아니라 **무엇을 줄이거나 키우도록 학습시키는가?**다. 손실함수는 모델에게 주는 성적표이고, 목적함수는 그 성적표를 기준으로 어떤 행동을 강화할지 정하는 계약이다.
+
+지난 글에서는 LinkedIn에 공유된 AI 학습자료 목록을 바탕으로 `AI 기본기` 시리즈의 로드맵을 잡았다. 이번 글부터는 실제 개념으로 들어간다. 첫 주제는 **loss function과 objective**다.
+
+<Callout type="note">
+모델은 “정답을 이해하도록” 학습되는 것이 아니라, 우리가 정의한 수치 목표를 개선하도록 학습된다. 이 차이를 놓치면 모델 성능, 평가, RAG, agent 설계가 전부 흐릿해진다.
+</Callout>
+
+## 손실함수와 목적함수는 무엇이 다른가
+
+실무에서는 loss function, objective function, cost function을 비슷하게 쓰는 경우가 많다. 하지만 학습을 이해하려면 약간 구분해 보는 게 좋다.
+
+- **손실함수(loss function)**: 하나의 예측이 얼마나 틀렸는지 재는 함수
+- **비용함수(cost function)**: 데이터셋 전체에서 손실을 평균내거나 합친 값
+- **목적함수(objective function)**: 최적화하려는 전체 목표. 손실뿐 아니라 regularization, reward, constraint가 포함될 수 있음
+
+예를 들어 회귀 모델에서 평균제곱오차를 줄인다고 해보자.
+
+$$
+\text{MSE} = \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2
+$$
+
+이 식은 “예측값이 정답과 가까워지면 좋다”는 기준을 만든다. 하지만 이것만으로는 우리가 진짜 원하는 모든 것을 표현하지 못한다.
+
+예를 들어 집값 예측 모델을 만든다고 하면, 실제 제품에서 원하는 것은 단순 평균 오차 최소화가 아닐 수 있다.
+
+- 고가 주택에서 큰 오차를 더 심각하게 볼 수 있다.
+- 특정 지역에 대한 편향을 줄여야 할 수 있다.
+- 예측값뿐 아니라 불확실성까지 제공해야 할 수 있다.
+- 모델이 설명 가능해야 할 수 있다.
+
+이 요구들은 순수 MSE에는 들어 있지 않다. 즉 **최적화 가능한 목표**와 **비즈니스 또는 사용자 관점의 진짜 목표** 사이에는 항상 간격이 있다.
+
+이 간격을 objective mismatch라고 부를 수 있다.
+
+## 지도학습은 “정답 맞히기”가 아니라 “분포 맞추기”에 가깝다
+
+분류 문제를 생각해 보자. 고양이, 강아지, 자동차 중 하나를 맞히는 모델이 있다. 많은 입문 설명에서는 모델이 정답 label을 맞힌다고 말하지만, 실제로 모델은 보통 각 class에 대한 확률분포를 출력한다.
+
+```text
+고양이: 0.72
+강아지: 0.21
+자동차: 0.07
+```
+
+그리고 cross-entropy loss는 정답 class의 확률을 높이도록 학습시킨다.
+
+정답 class가 $y$이고 모델이 그 class에 부여한 확률이 $p_y$라면 단일 샘플의 cross-entropy는 다음처럼 볼 수 있다.
+
+$$
+L = -\log p_y
+$$
+
+이 식이 중요한 이유는 간단하다.
+
+- 정답 class 확률이 `1.0`에 가까우면 loss가 `0`에 가까워진다.
+- 정답 class 확률이 낮으면 loss가 급격히 커진다.
+- 모델은 단순히 “맞음/틀림”이 아니라 확률을 얼마나 자신 있게 배치했는지까지 평가받는다.
+
+<Callout type="tip">
+Cross-entropy를 “분류용 loss”로만 외우지 말고, 모델이 정답 class에 높은 likelihood를 주도록 만드는 objective로 이해하는 게 좋다. 이 관점이 LLM의 next-token prediction까지 그대로 이어진다.
+</Callout>
+
+## Maximum likelihood: 모델이 데이터를 그럴듯하게 설명하게 만들기
+
+많은 딥러닝 학습은 maximum likelihood estimation 관점으로 볼 수 있다. 말은 어렵지만 핵심은 이렇다.
+
+> 관측된 데이터를 가장 그럴듯하게 만들도록 모델 파라미터를 고른다.
+
+모델 파라미터를 $\theta$, 데이터셋을 $D$라고 하면 likelihood는 다음과 같이 쓸 수 있다.
+
+$$
+P(D \mid \theta)
+$$
+
+이 값을 최대화하는 $\theta$를 찾는 것이 maximum likelihood다. 실제 학습에서는 곱셈이 너무 작아지는 문제와 계산 편의 때문에 log-likelihood를 쓴다.
+
+$$
+\theta^* = \arg\max_{\theta} \sum_{i=1}^{n}\log P(y_i \mid x_i; \theta)
+$$
+
+딥러닝에서는 보통 이것을 negative log-likelihood로 바꿔서 최소화한다.
+
+$$
+L(\theta) = -\sum_{i=1}^{n}\log P(y_i \mid x_i; \theta)
+$$
+
+여기서 cross-entropy와 maximum likelihood가 연결된다. 분류 모델에서 softmax가 class 확률분포를 만들고, 정답 class의 negative log likelihood를 줄이면 cross-entropy loss를 줄이는 것과 같은 형태가 된다.
+
+즉 분류 모델은 단순히 label을 외우는 게 아니라, 주어진 입력에서 정답 label의 확률을 높이는 방향으로 파라미터를 조정한다.
+
+## LLM의 next-token prediction도 같은 이야기다
+
+LLM 학습의 기본 objective는 보통 causal language modeling이다. 문맥이 주어졌을 때 다음 token의 확률을 높인다.
+
+문장 token이 다음처럼 있다고 하자.
+
+```text
+인공지능은 / 데이터를 / 통해 / 패턴을 / 학습한다
+```
+
+모델은 각 위치에서 다음 token을 예측한다.
+
+```text
+인공지능은 -> 데이터를
+인공지능은 데이터를 -> 통해
+인공지능은 데이터를 통해 -> 패턴을
+인공지능은 데이터를 통해 패턴을 -> 학습한다
+```
+
+수식으로는 대략 다음과 같다.
+
+$$
+P(x_1, x_2, ..., x_T) = \prod_{t=1}^{T} P(x_t \mid x_{<t})
+$$
+
+학습에서는 실제 다음 token의 negative log-likelihood를 줄인다.
+
+$$
+L = -\sum_{t=1}^{T}\log P(x_t \mid x_{<t})
+$$
+
+여기서 자주 생기는 오해가 있다.
+
+> “LLM은 다음 단어 맞히기만 하는데 왜 추론을 하는 것처럼 보일까?”
+
+next-token prediction이 단순해 보이는 것은 objective의 문장이 짧아서 그렇다. 실제로는 엄청나게 다양한 문맥에서 다음 token 분포를 맞추려면, 모델은 문법, 사실, 스타일, 코드 패턴, 질의응답 형식, 추론 절차의 흔적까지 내부 표현으로 압축해야 한다.
+
+하지만 동시에 한계도 명확하다. pretraining objective는 “진실을 말하라”가 아니라 “훈련 데이터에서 이어질 법한 token에 높은 확률을 주라”에 가깝다. 그래서 instruction tuning, RLHF, RLAIF, tool use, retrieval, evaluation이 추가로 필요해진다.
+
+## Regression의 MSE와 classification의 cross-entropy는 무엇이 다른가
+
+MSE와 cross-entropy의 차이는 단순히 회귀용, 분류용의 차이가 아니다. 두 loss는 예측을 바라보는 가정이 다르다.
+
+### MSE: 숫자 거리의 오차를 줄인다
+
+MSE는 예측값과 정답값의 거리, 특히 제곱 거리를 줄인다.
+
+```python title="mse_example.py"
+def mse(y_true, y_pred):
+    errors = [(t - p) ** 2 for t, p in zip(y_true, y_pred)]
+    return sum(errors) / len(errors)
+```
+
+MSE는 큰 오차에 더 큰 penalty를 준다. 그래서 연속값 예측에 자연스럽다. 하지만 outlier에 민감하고, 정답이 하나의 숫자로 잘 표현된다는 가정을 깔고 있다.
+
+### Cross-entropy: 정답 class의 확률을 높인다
+
+Cross-entropy는 모델의 출력분포와 정답분포 사이의 차이를 줄인다.
+
+```python title="cross_entropy_intuition.py"
+import math
+
+# 정답 class에 모델이 준 확률
+p_correct = 0.8
+loss = -math.log(p_correct)
+print(loss)
+```
+
+정답 class 확률이 낮을수록 loss가 커진다. 이 loss는 확률분포를 학습하는 문제에 적합하다.
+
+이 차이는 LLM에도 중요하다. LLM은 다음 token을 하나의 숫자로 회귀하는 것이 아니라, vocabulary 전체에 대한 확률분포를 만든다. 그래서 next-token prediction은 기본적으로 classification 문제의 거대한 버전처럼 볼 수 있다.
+
+## Contrastive loss: embedding 공간을 만드는 방식
+
+AI 기본기에서 embedding을 이해하려면 contrastive learning도 알아야 한다. 검색, 추천, RAG, multimodal model에서 embedding은 거의 항상 핵심 부품이다.
+
+embedding 모델의 목표는 단순히 벡터를 만드는 것이 아니다.
+
+- 비슷한 의미의 입력은 가까이 둔다.
+- 다른 의미의 입력은 멀리 둔다.
+- downstream task에서 retrieval이나 clustering이 잘 되도록 공간을 만든다.
+
+예를 들어 query와 positive document, negative document가 있다고 하자.
+
+```text
+query: "Transformer attention 설명"
+positive: "Self-attention은 query, key, value로 token 간 관계를 계산한다."
+negative: "서울의 오늘 날씨는 맑다."
+```
+
+contrastive objective는 query와 positive의 similarity를 높이고, query와 negative의 similarity를 낮춘다.
+
+개념적으로는 다음과 같다.
+
+$$
+L = -\log \frac{\exp(sim(q, d^+) / \tau)}{\exp(sim(q, d^+) / \tau) + \sum_j \exp(sim(q, d_j^-) / \tau)}
+$$
+
+여기서 $\tau$는 temperature다. temperature는 similarity 차이를 얼마나 날카롭게 볼지 조절한다.
+
+이 objective를 쓰면 embedding space는 “문장 의미를 예쁘게 압축한 공간”이 아니라 **positive와 negative를 구분하도록 학습된 검색 공간**이 된다.
+
+<Callout type="warning">
+Embedding 모델을 쓸 때 “벡터가 의미를 담는다”라고만 이해하면 위험하다. 어떤 positive pair와 negative pair로 학습됐는지에 따라 가까움의 의미가 달라진다. 검색용 embedding, 문장 유사도용 embedding, 코드 검색용 embedding은 같은 공간 감각을 공유하지 않을 수 있다.
+</Callout>
+
+## Objective mismatch: 모델은 점수를 올리지만 제품은 실패할 수 있다
+
+손실함수를 이해해야 하는 가장 실무적인 이유는 objective mismatch 때문이다.
+
+모델이 학습에서 최적화한 목표와 제품에서 필요한 목표가 다르면, offline metric은 좋아지는데 사용자 경험은 나빠질 수 있다.
+
+### 예시 1. 추천 시스템
+
+클릭률을 높이는 objective로 추천 모델을 학습시키면 모델은 클릭받기 쉬운 콘텐츠를 선호한다. 하지만 사용자가 장기적으로 만족하는 콘텐츠와 즉시 클릭하는 콘텐츠는 다를 수 있다.
+
+### 예시 2. RAG 시스템
+
+retrieval 모델이 top-k recall을 높이도록 학습되었다고 해도, 최종 답변 품질이 좋아진다는 보장은 없다. 검색 결과가 너무 길거나, 서로 충돌하거나, generation 모델이 evidence를 제대로 사용하지 못하면 RAG 전체는 실패한다.
+
+### 예시 3. LLM 평가
+
+LLM을 “정답 문자열 일치”로만 평가하면, reasoning이 맞지만 표현이 다른 답을 낮게 평가할 수 있다. 반대로 그럴듯한 문장으로 정답처럼 보이지만 실제 근거가 부족한 답을 놓칠 수도 있다.
+
+### 예시 4. Agent
+
+agent를 final answer success만으로 평가하면, 중간에 위험한 tool call을 했는지, 불필요한 비용을 썼는지, 운 좋게 맞힌 것인지 알 수 없다. agent의 objective는 답변 정확도뿐 아니라 action safety, cost, latency, recoverability까지 포함해야 한다.
+
+즉 objective는 모델 학습의 문제가 아니라 시스템 설계의 문제다.
+
+## Regularization: 모델에게 “너무 자유롭지 말라”고 말하기
+
+목적함수에는 손실만 들어가지 않는다. 모델이 너무 복잡해지지 않도록 제한하는 항을 추가할 수 있다.
+
+대표적으로 L2 regularization은 파라미터 크기에 penalty를 준다.
+
+$$
+J(\theta) = L(\theta) + \lambda \lVert \theta \rVert_2^2
+$$
+
+여기서 $\lambda$는 regularization 강도다.
+
+이 식은 모델에게 이렇게 말하는 것과 비슷하다.
+
+> 훈련 데이터 loss를 줄이는 건 좋지만, 파라미터를 너무 크게 만들어서 외우는 방식은 벌점을 주겠다.
+
+딥러닝에서는 weight decay, dropout, early stopping, data augmentation도 넓은 의미에서 일반화를 돕는 장치다. 중요한 점은 이것들도 모두 objective 또는 optimization process에 영향을 준다는 것이다.
+
+좋은 모델은 train loss를 가장 낮춘 모델이 아니라, 보지 못한 데이터에서도 잘 작동하는 모델이다.
+
+## 작은 구현으로 감 잡기
+
+아래 코드는 같은 예측 문제라도 objective를 어떻게 보느냐에 따라 계산이 달라지는지 보여주는 최소 예시다.
+
+```python title="losses_from_scratch.py"
+import math
+
+
+def mse(y_true, y_pred):
+    return sum((t - p) ** 2 for t, p in zip(y_true, y_pred)) / len(y_true)
+
+
+def cross_entropy(probs, target_index):
+    return -math.log(probs[target_index])
+
+
+# 회귀: 실제값과 예측값의 거리
+print(mse([3.0, 5.0], [2.5, 5.5]))
+
+# 분류: 정답 class에 부여한 확률
+print(cross_entropy([0.1, 0.8, 0.1], target_index=1))
+
+# LLM next-token prediction도 결국 다음 token class에 대한 CE로 볼 수 있다.
+vocab_probs = {
+    "데이터": 0.62,
+    "날씨": 0.04,
+    "자동차": 0.02,
+}
+print(-math.log(vocab_probs["데이터"]))
+```
+
+이 코드는 장난감 예시지만 감각은 중요하다.
+
+- 회귀는 숫자 거리의 오차를 줄인다.
+- 분류는 정답 class의 확률을 높인다.
+- LLM은 vocabulary 전체에서 실제 다음 token의 확률을 높인다.
+
+## AI 기본기를 공부할 때 이 관점을 어떻게 쓰면 좋은가
+
+앞으로 논문이나 프레임워크를 볼 때 아래 질문을 먼저 던져보면 좋다.
+
+1. **입력과 출력은 무엇인가?**
+   - 이미지, token, 문서, query, action trajectory 중 무엇을 모델링하는가?
+2. **모델이 내놓는 것은 값인가, 분포인가, ranking인가?**
+   - 숫자 예측, class 확률, token 분포, embedding similarity, reward score는 서로 다르다.
+3. **학습 signal은 어디서 오는가?**
+   - label, self-supervised next token, human preference, tool result, environment reward 중 무엇인가?
+4. **loss가 줄어들면 진짜 목표도 좋아지는가?**
+   - metric과 사용자 가치 사이의 간격을 확인해야 한다.
+5. **어떤 실패를 벌점으로 주지 못하고 있는가?**
+   - hallucination, unsafe action, latency, 비용, 편향은 loss에 없으면 모델이 자동으로 신경 쓰지 않는다.
+
+이 질문은 ML 입문, 딥러닝, LLM, RAG, agent를 모두 관통한다.
+
+## 다음 편 예고: 표현 학습과 embedding
+
+손실함수를 이해하면 다음 질문은 자연스럽게 representation으로 넘어간다.
+
+모델은 loss를 줄이기 위해 내부에 어떤 표현을 만들까? embedding layer는 왜 단순 lookup table처럼 보이는데 의미 공간이 될까? contrastive learning은 어떻게 가까움과 멂을 학습시킬까? Transformer의 hidden state는 token의 어떤 정보를 담을까?
+
+다음 글에서는 **표현 학습과 embedding**을 다룬다. AI를 “데이터에서 패턴을 배운다”라고 말할 때, 그 패턴이 실제로 어떤 벡터 표현으로 만들어지는지 보는 편이다.
+
+## 참고 자료
+
+- LinkedIn AI 학습자료 모음: [#AI학습자료](https://www.linkedin.com/posts/soulai_aiukrswdsuyrzo-share-7481275919882416128-eFUj/)
+- Simon J.D. Prince, [Understanding Deep Learning](https://udlbook.github.io/udlbook/)
+- Chip Huyen, [Designing Machine Learning Systems](https://huyenchip.com/machine-learning-systems-design/toc.html)
+- Jay Alammar and Maarten Grootendorst, [Hands-On Large Language Models](https://www.oreilly.com/library/view/hands-on-large-language/9781098150952/)
+- Google Machine Learning Crash Course, [Classification: Cross-Entropy](https://developers.google.com/machine-learning/crash-course/classification/cross-entropy)
+- Stanford CS229 notes, [Supervised Learning and Generalization](https://cs229.stanford.edu/)

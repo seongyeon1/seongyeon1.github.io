@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 14 Jul 2026 01:35:04 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 15 Jul 2026 00:55:25 GMT</lastBuildDate>
+    <item>
+      <title>AI 기본기 2: 손실함수와 목적함수 — 모델은 정말 우리가 원하는 것을 배우는가</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-15-ai-fundamentals-loss-objective/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-15-ai-fundamentals-loss-objective/</guid>
+      <description>MSE, cross-entropy, maximum likelihood, next-token prediction, contrastive loss를 하나의 관점으로 연결해 AI 모델이 무엇을 최적화하는지 이해한다.</description>
+      <pubDate>Wed, 15 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>machine-learning</category>
+      <category>loss-function</category>
+      <category>objective</category>
+      <category>LLM</category>
+    </item>
     <item>
       <title>[논문 리뷰] SLBench — agent skill 파일을 실행 가능한 계약으로 테스트하기</title>
       <link>https://seongyeon1.github.io/blog/2026-07-14-slbench-skill-logic-agent-skills/</link>
