@@ -187,6 +187,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Reason Less, Verify More — tool agent 정책 위반을 deterministic gate로 잡기 | paper-review | Agent/MCP 실전 | | arXiv 2607.07405 — silent wrong state, deterministic pre/post gate, audit log 기반 runtime safety pattern |
 | 아이디어 | 미정 | [논문 리뷰] Forged Reasoning Attacks — agent memory poisoning의 다음 공격면 | paper-review | 논문 리뷰 | | arXiv 2607.05029 — reasoning-history poisoning, rationale provenance, memory write gate, quarantine 설계 |
 | 아이디어 | 미정 | Future AGI: agent eval·observability·simulation을 한 플랫폼으로 묶기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — traces, evals, simulations, datasets, guardrails를 agent release gate로 묶는 법 |
+| 아이디어 | 미정 | [논문 리뷰] MM-ToolSandBox — visual tool-calling agent 평가 환경 | paper-review | AI 평가/운영 | | arXiv 2607.11818 — 500+ tools, 16개 domain, visual grounding/stateful sandbox를 agent QA harness로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] Distributed Backdoors — multi-agent harm은 한 메시지씩 보면 놓친다 | paper-review | 논문 리뷰 | | arXiv 2607.11751 — local monitor blind spot, compositional harm, cross-agent trace audit 기반 runtime firewall 설계 |
+| 아이디어 | 미정 | [논문 리뷰] RAGU — multi-step GraphRAG engine을 작게 운영하기 | paper-review | Agentic RAG | | arXiv 2607.11683 — compact domain LLM, graph refinement, entity/relation 정제를 production RAG 운영법으로 정리 |
+| 아이디어 | 미정 | Litefuse — agent observability와 evaluation을 가볍게 붙이는 법 | tutorial | AI 평가/운영 | | GitHub repo 기반 — trace schema, eval dataset, failure triage, CI regression gate를 작은 팀용 QA stack으로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

@@ -3285,3 +3285,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-memory, provenance, mcp, personal-agent]
 - status: idea
+
+### 2026-07-15 — [논문 리뷰] MM-ToolSandBox: visual tool-calling agent 평가 환경
+- type: paper
+- source: http://arxiv.org/abs/2607.11818v1
+- why-now: 이미지·비디오 기반 agent가 실제 앱과 도구를 호출하는 흐름으로 확장되면서, 텍스트 tool-use benchmark만으로는 시각 grounding과 stateful execution 실패를 잡기 어렵다.
+- angle: “visual agent 평가는 VQA 점수가 아니라 tool state transition 검증이다” — 500+ tools, 16개 domain, visual grounding, stateful sandbox를 agent QA harness 관점으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [visual-agent, tool-use, benchmark, evaluation]
+- status: idea
+
+### 2026-07-15 — [논문 리뷰] RAGU: multi-step GraphRAG engine을 작게 운영하기
+- type: paper
+- source: http://arxiv.org/abs/2607.11683v1
+- why-now: GraphRAG는 강력하지만 KG 생성 노이즈와 큰 모델 의존 때문에 운영 비용이 커서, compact domain-adapted LLM과 multi-step graph refinement 패턴이 실무적으로 중요해졌다.
+- angle: “GraphRAG를 한 번에 추출하는 파이프라인이 아니라 반복 정제 엔진으로 본다” — entity/relation refinement, domain adaptation, retrieval step 설계를 production RAG 운영법으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [graphrag, rag, knowledge-graph, retrieval]
+- status: idea
+
+### 2026-07-15 — [논문 리뷰] Inside the Unfair Judge: LLM-as-judge bias를 mechanistic하게 보기
+- type: paper
+- source: http://arxiv.org/abs/2607.11871v1
+- why-now: agent eval과 LLM-as-judge가 CI gate로 들어오면서 prompt-level mitigation만으로는 judge bias drift를 설명하거나 안정적으로 고치기 어렵다.
+- angle: “평가자는 프롬프트가 아니라 모델 내부 표현까지 봐야 한다” — scoring bias의 activation-level account, judge 교체 리스크, regression monitor를 agent 평가 운영 관점으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-as-judge, evaluation, mechanistic-interpretability, bias]
+- status: idea
+
+### 2026-07-15 — [논문 리뷰] Distributed Backdoors: multi-agent harm은 한 메시지씩 보면 놓친다
+- type: paper
+- source: http://arxiv.org/abs/2607.11751v1
+- why-now: multi-agent와 tool-use 시스템의 안전망이 step-local monitor에 머무르면, 여러 agent·tool call에 분산된 공격을 탐지하지 못하는 구조적 blind spot이 생긴다.
+- angle: “agent 보안 모니터는 메시지 단위가 아니라 trajectory composition 단위여야 한다” — local monitor failure, compositional harm, cross-agent trace audit를 runtime firewall 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, security, backdoor, runtime-monitoring]
+- status: idea
+
+### 2026-07-15 — [논문 리뷰] Metacognition in LLMs: agent가 자기 상태를 아는 능력
+- type: paper
+- source: http://arxiv.org/abs/2607.11881v1
+- why-now: 장기 실행 agent에는 confidence calibration, uncertainty report, self-correction, memory control처럼 “자기 인지”가 runtime policy와 evaluation의 핵심 기능으로 들어오고 있다.
+- angle: “metacognition을 철학적 개념이 아니라 agent control surface로 번역한다” — monitoring, control, self-evaluation, tool-use fallback을 agent harness 요구사항으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [metacognition, agent-evaluation, reasoning, self-correction]
+- status: idea
+
+### 2026-07-15 — Litefuse: agent observability와 evaluation을 가볍게 붙이는 법
+- type: tech
+- source: https://github.com/litefuse/litefuse
+- why-now: agent 앱이 늘면서 trace 저장, eval run, release regression을 LangSmith류 대형 플랫폼 없이 self-hosted/lightweight하게 운영하려는 수요가 커지고 있다.
+- angle: “agent 관측성은 로그 수집이 아니라 release gate다” — trace schema, eval dataset, failure triage, CI 연결을 작은 팀용 agent QA stack으로 소개한다.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-observability, evals, tracing, release-engineering]
+- status: idea
+
+### 2026-07-15 — judgeval: agent continuous-improvement stack을 평가 루프로 만들기
+- type: tech
+- source: https://github.com/JudgmentLabs/judgeval
+- why-now: agent 품질 개선이 단발 prompt tweak에서 environment data, eval, monitoring을 연결한 continuous improvement loop로 이동하고 있다.
+- angle: “eval framework를 점수표가 아니라 개선 루프의 데이터 파이프라인으로 본다” — environment data, online monitoring, evaluator design, regression threshold를 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, monitoring, continuous-improvement, llmops]
+- status: idea
+
+### 2026-07-15 — osaurus: macOS native agent harness에서 배울 수 있는 것
+- type: tech
+- source: https://github.com/osaurus-ai/osaurus
+- why-now: 로컬 실행·persistent memory·오프라인 모델·권한 경계를 갖춘 desktop agent harness가 Claude/Codex류 클라우드 CLI와 다른 설계 공간을 보여주고 있다.
+- angle: “desktop agent runtime은 UI가 아니라 trust boundary 설계다” — native macOS sandbox, local model, persistent memory, cryptographic identity를 personal agent 아키텍처 패턴으로 분석한다.
+- difficulty: medium
+- freshness: 4
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [desktop-agent, agent-harness, local-first, memory]
+- status: idea
