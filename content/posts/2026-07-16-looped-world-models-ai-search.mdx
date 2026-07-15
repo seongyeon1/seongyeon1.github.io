@@ -1,0 +1,182 @@
+---
+title: "[AI Search] Looped World Models: World Model에 반복 계산 깊이를 넣는 법"
+date: "2026-07-16"
+category: "paper-review"
+tags: ["AI Search", "world-model", "looped-transformer", "adaptive-computation", "agent", "simulation"]
+summary: "Looped World Models 논문을 AI Search stack 관점에서 읽는다. 모델 크기를 계속 키우는 대신, parameter-shared transformer block을 반복 적용해 latent environment state를 정제하고 transition 난이도에 따라 계산 깊이를 조절하는 아이디어를 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 18
+math: false
+---
+
+<Paper
+  title="Looped World Models"
+  authors="Hongyuan Adam Lu et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2606.18208"
+/>
+
+## 한 줄 요약
+
+Looped World Models, 줄여서 LoopWM은 world model의 다음 상태 예측을 한 번의 고정-depth forward pass로 끝내지 않고, **같은 transformer block을 여러 번 반복 적용해 latent state를 점진적으로 정제하는 구조**다.
+
+AI Search 관점에서 이 논문은 검색 모델 자체라기보다, agent가 검색 결과와 tool result를 바탕으로 “앞으로 무슨 일이 일어날지”를 내부적으로 시뮬레이션하는 **simulation layer**에 가깝다.
+
+```text
+retrieval / tool observation
+  ↓
+state representation
+  ↓
+world model transition
+  ↓
+planning / action selection
+```
+
+여기서 논문이 던지는 질문은 단순하다.
+
+> transition마다 같은 계산량을 쓰는 게 맞나?
+
+쉬운 상태 변화는 얕게 계산하고, 어려운 상태 변화는 같은 파라미터를 반복해서 더 깊게 계산하자는 것이다.
+
+## 왜 AI Search에 중요한가
+
+AI Search를 검색창으로만 보면 이 논문은 멀어 보인다. 하지만 agentic search로 보면 꽤 직접적이다.
+
+검색 agent는 단순히 문서를 찾는 것이 아니라, 다음 행동의 결과를 예측해야 한다.
+
+- 이 API를 호출하면 어떤 상태가 바뀔까?
+- 이 문서를 근거로 다음 쿼리를 어떻게 바꾸면 좋을까?
+- 이 tool output을 믿고 다음 단계로 가도 될까?
+- 긴 작업에서 지금의 작은 오류가 뒤에서 어떻게 커질까?
+
+이건 retrieval이라기보다 **state transition modeling**이다. LoopWM은 이 transition 계산에 “반복 깊이”라는 축을 추가한다.
+
+## 핵심 아이디어: 파라미터는 공유하고 계산 깊이는 늘린다
+
+일반적인 transformer world model은 depth를 늘리면 파라미터도 늘어난다. LoopWM은 다른 선택을 한다.
+
+```text
+기존 방식:
+  layer1 → layer2 → layer3 → ... → output
+  깊이를 늘리면 파라미터도 같이 증가
+
+LoopWM:
+  shared block R
+  R → R → R → ... → output
+  같은 block을 반복 적용
+```
+
+논문은 이 방식을 **iterative latent depth**라고 본다. 모델 크기, 학습 데이터, context length와 별개의 scaling axis다.
+
+논문 초록의 강한 주장도 여기에 있다. LoopWM은 conventional approach 대비 최대 **100배 parameter efficiency**를 보인다고 주장한다. 정확히 말하면 “같은 일을 더 작은 모델로 할 수 있다”는 쪽에 가깝다.
+
+## adaptive computation: 모든 step이 같은 난이도는 아니다
+
+World model에서 어려운 부분은 long-horizon rollout이다. 한 step의 작은 예측 오류가 다음 step의 입력이 되고, 그 오류가 다시 커진다.
+
+LoopWM은 반복 block을 고정 횟수로만 돌리는 게 아니라, transition complexity에 따라 depth를 조절하는 early-exit 계열 아이디어를 넣는다.
+
+쉬운 transition:
+
+```text
+R → R → exit
+```
+
+어려운 transition:
+
+```text
+R → R → R → R → R → exit
+```
+
+AI Search runtime으로 바꾸면 이렇다.
+
+| 상황 | 필요한 계산 |
+| --- | --- |
+| 단순 fact lookup 후 다음 질의 생성 | 얕은 transition |
+| tool result가 충돌하거나 상태가 모호함 | 더 깊은 transition |
+| multi-step 계획에서 오류가 누적될 위험 | 반복 refine 필요 |
+
+## 실험에서 확인한 포인트
+
+논문은 ScienceWorld와 AlfWorld 같은 embodied / interactive task에서 world modelling 성능을 본다. 특히 ScienceWorld 결과에서 저자들은 약 1B parameter급 LoopWM이 Claude Opus 4.6 Max baseline보다 평균 EM에서 **21.2%p** 앞섰고, Lifespan task에서는 **0%에서 100%**로 개선되는 극단적인 사례를 보고한다.
+
+물론 이 숫자는 그대로 “LoopWM이 Claude보다 낫다”로 읽으면 안 된다. 비교 대상, task formulation, 평가 방식이 world modelling용으로 설계되어 있기 때문이다. 그래도 중요한 신호는 있다.
+
+> 작은 모델이라도 transition 구조가 맞으면, 큰 범용 모델보다 특정 상태 예측 task에서 더 효율적일 수 있다.
+
+AlfWorld에서도 저자들은 약 1B parameter라는 작은 크기에도 BLEU 계열 metric에서 강하고, EM과 Token F1에서도 상위권이라고 보고한다.
+
+## AI Search stack에서의 위치
+
+저는 이 논문을 retrieval model의 다음 편이라기보다, **검색 agent runtime의 internal simulator**로 읽는다.
+
+```text
+1. 문서와 tool result를 찾는다
+2. 현재 작업 상태를 latent state로 만든다
+3. 다음 action 후보를 world model로 rollout한다
+4. rollout이 불확실한 후보에는 더 많은 loop를 쓴다
+5. 가장 안전하거나 가치 있는 action을 선택한다
+```
+
+이 관점에서는 “검색 품질”도 단순 Recall@k가 아니다. 좋은 검색 결과는 agent가 다음 상태를 더 잘 예측하게 만드는 관측값이어야 한다.
+
+## 실무적으로 생각해볼 점
+
+### 1. agent planning에서 “계산 깊이 budget”을 분리해야 한다
+
+지금 많은 agent system은 모든 step에 비슷한 LLM call budget을 쓴다. 하지만 실제로는 step마다 난이도가 다르다.
+
+- 쉬운 step: 빠른 모델, 짧은 reasoning
+- 위험 step: verifier, simulator, 반복 critique
+- 상태 변경 step: 더 깊은 planning
+
+LoopWM의 메시지는 이와 잘 맞는다. 모델 크기만 키우기보다, **어디에 반복 계산을 쓸지**를 runtime policy로 둬야 한다.
+
+### 2. world model은 text prediction과 다르다
+
+검색 agent가 필요한 world model은 “그럴듯한 다음 문장”이 아니라 “action 이후 상태 변화”를 맞춰야 한다.
+
+그래서 문서 검색과 action simulation 사이에 별도 평가가 필요하다.
+
+- tool call 이후 state diff 예측
+- multi-step plan의 failure mode 예측
+- user-visible side effect 예측
+- rollback 가능성 예측
+
+### 3. 반복 depth는 latency와 trade-off다
+
+Loop는 공짜가 아니다. 같은 block을 반복 적용하므로 inference compute는 늘어난다. 다만 파라미터와 memory footprint를 늘리지 않고 depth를 얻는다는 점이 다르다.
+
+production agent에서는 “항상 loop 많이”가 아니라, uncertainty나 risk에 따라 loop budget을 써야 한다.
+
+## 한계와 조심할 점
+
+- 논문은 world modelling task 중심이다. 일반 웹 검색이나 RAG 품질로 바로 연결되지는 않는다.
+- “100배 parameter efficiency”는 특정 비교 설정의 주장이다. 모든 task에서 작은 looped model이 큰 LLM을 대체한다는 뜻은 아니다.
+- 반복 계산은 latency를 늘릴 수 있다. 실시간 interactive agent에서는 early-exit policy가 핵심이다.
+- 세계 상태를 latent로 안정적으로 유지하는 것은 여전히 어렵다. 검색 결과가 noisy하면 simulator도 흔들린다.
+
+## 제 해석
+
+이 논문에서 제일 중요한 문장은 “world model을 더 크게 만들자”가 아니라, **world simulation에 iterative latent depth라는 새로운 scaling axis를 추가하자**다.
+
+AI Search도 비슷하다. 검색 품질을 올리는 방법이 항상 더 큰 embedding model, 더 긴 context, 더 많은 retrieved document일 필요는 없다. 때로는 찾은 정보를 바탕으로 내부 상태를 더 오래 정제하는 쪽이 낫다.
+
+검색 agent가 진짜로 유용해지려면, 다음 세 가지가 같이 필요하다.
+
+1. 좋은 관측값을 찾는 retrieval
+2. 관측값을 신뢰 가능한 상태로 바꾸는 state construction
+3. 그 상태에서 다음 행동을 예측하는 world model
+
+LoopWM은 세 번째 축에 대한 꽤 직접적인 제안이다.
+
+## 정리
+
+Looped World Models는 world model의 계산을 “깊은 고정 모델”에서 “작은 공유 block의 반복 refinement”로 바꾼다. AI Search stack에서는 agentic search의 planning, tool-use, long-horizon task execution을 위한 simulation layer로 읽을 수 있다.
+
+다음 글에서는 작은 모델이 verifiable reasoning에서 어디까지 갈 수 있는지, **VibeThinker-3B**를 이어서 본다.
+
+## 참고 자료
+
+- arXiv: [Looped World Models](https://arxiv.org/abs/2606.18208)

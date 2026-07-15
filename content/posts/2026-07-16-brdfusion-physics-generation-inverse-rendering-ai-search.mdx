@@ -1,0 +1,213 @@
+---
+title: "[AI Search] BRDFusion: 물리 기반 렌더링과 생성 모델을 함께 쓰는 도시 장면 이해"
+date: "2026-07-16"
+category: "paper-review"
+tags: ["AI Search", "BRDFusion", "inverse-rendering", "computer-vision", "generative-model", "simulation"]
+summary: "BRDFusion 논문을 AI Search stack 관점에서 읽는다. 도시 주행 영상에서 geometry, material, HDR lighting을 분해하고, 물리 기반 controllability와 생성 모델의 photorealism을 결합해 relighting, night simulation, object insertion을 가능하게 하는 구조를 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 21
+math: false
+---
+
+<Paper
+  title="BRDFusion: Physics Meets Generation for Urban Scene Inverse Rendering"
+  authors="Yi-Ruei Liu et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2606.17049"
+/>
+
+## 한 줄 요약
+
+BRDFusion은 도시 주행 영상에서 **geometry, material, lighting을 물리적으로 분해하는 inverse rendering**과, 결과 영상을 더 자연스럽게 만드는 **generative refinement**를 결합한 framework다.
+
+AI Search 관점에서 보면 이 논문은 multimodal search의 한 단계 더 깊은 버전이다. 이미지를 “비슷한 이미지”로 찾는 수준을 넘어, 장면을 **편집 가능하고 시뮬레이션 가능한 구조적 representation**으로 바꾸려는 시도다.
+
+## 왜 AI Search에 중요한가
+
+이미지·비디오 검색은 보통 embedding으로 시작한다.
+
+```text
+image / video
+  ↓
+embedding
+  ↓
+similarity search
+```
+
+하지만 자율주행, AR/VR, robotics, 도시 시뮬레이션에서는 이 정도로 부족하다.
+
+사용자는 이렇게 묻는다.
+
+- 이 거리를 밤으로 바꾸면 어떻게 보일까?
+- 새 가로등을 추가하면 그림자가 어떻게 생길까?
+- 이 위치에 차량을 넣으면 조명과 반사가 자연스러울까?
+- 다른 viewpoint에서 같은 scene을 볼 수 있을까?
+
+이건 검색이 아니라 **controllable scene understanding**이다. BRDFusion은 바로 그 지점에 있다.
+
+## 문제: 물리는 controllable하지만 artifact가 있고, 생성 모델은 예쁘지만 제어가 어렵다
+
+논문은 기존 패러다임을 두 갈래로 본다.
+
+| 접근 | 장점 | 약점 |
+| --- | --- | --- |
+| physically-based inverse rendering | geometry, material, lighting을 명시적으로 제어 가능 | reconstruction artifact, rendering artifact |
+| generative rendering / diffusion | 보기 좋은 영상 생성 | consistency와 precise control 부족 |
+
+BRDFusion의 목표는 둘 중 하나를 고르는 것이 아니라, 둘을 결합하는 것이다.
+
+> 물리 모델은 제어 가능한 scene property를 제공하고, 생성 모델은 ambiguous optimization과 visual artifact를 줄인다.
+
+## 핵심 아이디어: inverse와 forward 모두 hybrid로 만든다
+
+BRDFusion은 크게 두 방향으로 동작한다.
+
+### 1. inverse rendering
+
+입력은 multi-view urban video다. 여기서 scene을 다음 요소로 분해한다.
+
+- geometry
+- normal
+- depth
+- albedo
+- roughness
+- metallic
+- HDR environment lighting
+
+이런 explicit property가 있어야 relighting이나 object insertion을 제어할 수 있다.
+
+### 2. forward rendering
+
+새로운 lighting이나 viewpoint, object insertion을 적용할 때는 물리 모델이 기본 rendering을 제공한다. 그 다음 generative model이 denoise하고 artifact를 보정한다.
+
+```text
+scene properties + target lighting
+  ↓
+physically-based rendering
+  ↓
+generative refinement
+  ↓
+photorealistic controllable video
+```
+
+이 구조가 좋은 이유는 각 모델이 잘하는 일을 나누기 때문이다. 물리 모델은 constraint를, 생성 모델은 perceptual realism을 맡는다.
+
+## 실험 설정
+
+논문은 real-world와 synthetic dataset을 함께 쓴다.
+
+- real-world: Waymo Open Dataset의 주행 장면. 각 scene에서 50 consecutive single-camera frame을 쓰고, 10번째 frame마다 test로 둔다.
+- synthetic: 6개 urban scene을 Blender Cycles로 렌더링한다. 각 scene은 46 training frame과 51 testing frame을 갖고, sunny, cloudy, sunset 등 4개 environment map을 사용한다.
+
+비교 대상은 UrbanIR, InvRGB+L 같은 physically-based inverse rendering method와, Gen3C + DiffusionRenderer 조합이다.
+
+## 주요 결과
+
+정량 표 자체는 synthetic inverse rendering, novel view synthesis, novel view relighting을 나눠 여러 metric으로 비교한다. 중요한 해석은 다음이다.
+
+- UrbanIR은 dynamic scene reconstruction에서 약하다.
+- InvRGB+L은 material을 잘못 예측하거나 overly smooth한 G-buffer를 만들 수 있다.
+- Gen3C + DiffusionRenderer는 photorealism은 만들지만, scene property의 consistency와 controllability가 약하다.
+- BRDFusion은 inverse rendering 품질과 forward rendering 품질을 동시에 노린다.
+
+Ablation도 설득력 있다.
+
+| 제거한 요소 | 관찰 |
+| --- | --- |
+| PBR optimization 제거 | view / temporal consistency가 약해지고 material, geometry, lighting disentanglement가 흔들림 |
+| generative prior 제거 | inverse rendering이 매우 ill-posed라 catastrophic failure 가능 |
+| generative rendering 제거 | 물리적 property는 유지되지만 final visual artifact 보정이 약해짐 |
+
+즉 논문의 메시지는 단순하다.
+
+> controllability만으로는 부족하고, photorealism만으로도 부족하다. 둘을 묶어야 editable scene representation이 된다.
+
+## AI Search stack에서의 위치
+
+BRDFusion은 검색 시스템 안에서 다음 레이어에 해당한다.
+
+```text
+raw video
+  ↓
+scene decomposition
+  ↓
+structured index
+  ↓
+query / edit / simulation
+```
+
+예를 들어 “비 오는 밤에 횡단보도 근처에서 헤드라이트 반사가 강한 장면”을 찾고 싶다면, 단순 video embedding보다 구조적 속성이 필요하다.
+
+- lighting condition
+- material roughness
+- road surface
+- dynamic object
+- viewpoint
+- shadow / reflection
+
+BRDFusion류의 representation은 이런 query를 가능하게 만든다.
+
+## 실무적으로 생각해볼 점
+
+### 1. multimodal search는 embedding만으로 끝나지 않는다
+
+이미지 검색에서 embedding은 좋은 시작점이다. 하지만 편집과 시뮬레이션이 필요한 domain에서는 structured scene property가 필요하다.
+
+검색 index도 이렇게 갈 수 있다.
+
+```text
+vector embedding + scene graph + material / lighting metadata + temporal consistency
+```
+
+### 2. 생성 모델은 verifier가 아니라 보정기일 수 있다
+
+BRDFusion에서 generative model은 모든 것을 마음대로 생성하는 주체가 아니다. 물리 모델이 만든 controllable rendering을 보정하고 denoise한다.
+
+이 역할 분리가 중요하다. production에서는 생성 모델에게 모든 것을 맡기면 consistency가 깨질 수 있다. 반대로 물리 모델만 쓰면 artifact가 남는다.
+
+### 3. AI Search의 “답변”이 simulation이 될 수 있다
+
+도시 장면 검색에서 답은 문장이 아니라 edited video일 수 있다.
+
+- 다른 시간대 simulation
+- object insertion
+- relighting
+- novel view rendering
+
+이런 출력은 검색과 생성, 물리 모델이 합쳐진 결과다.
+
+## 한계와 조심할 점
+
+논문도 한계를 명시한다.
+
+- emissive material을 명시적으로 모델링하지 않기 때문에, headlights나 streetlights가 켜진 nighttime sequence decomposing은 어렵다.
+- 다른 3D reconstruction method처럼 관측되지 않은 영역에서는 floater가 생길 수 있다.
+- generative model의 catastrophic failure가 생기면 scene decomposition 자체가 틀릴 수 있다.
+- 실험은 특정 driving video와 synthetic setup 중심이다. 모든 도시 장면, 모든 weather, 모든 sensor setup으로 일반화하려면 추가 검증이 필요하다.
+
+## 제 해석
+
+BRDFusion은 “물리 vs 생성” 논쟁을 꽤 현실적으로 정리한다.
+
+물리는 제어 가능하지만 지저분하고, 생성 모델은 예쁘지만 마음대로다. 실제 application은 둘 다 필요하다.
+
+AI Search에서도 같은 패턴이 반복된다.
+
+- symbolic filter vs dense embedding
+- exact provenance vs natural language generation
+- deterministic verifier vs creative synthesis
+- structured scene property vs visual embedding
+
+한쪽만으로는 부족하고, 서로의 약점을 보완하는 hybrid architecture가 점점 중요해진다.
+
+## 정리
+
+BRDFusion은 urban video를 editable하고 controllable한 scene representation으로 바꾸기 위해 physics-based rendering과 generative model을 결합한다. AI Search stack에서는 multimodal retrieval을 넘어 **simulation-ready scene index**로 가는 방향을 보여준다.
+
+다음 글에서는 local ordinance corpus인 **LOCUS**를 통해 법률 AI에서 데이터 접근성과 corpus construction 문제를 본다.
+
+## 참고 자료
+
+- arXiv: [BRDFusion](https://arxiv.org/abs/2606.17049)
+- Project: [BRDFusion project page](https://shigon255.github.io/brdfusion-page/)

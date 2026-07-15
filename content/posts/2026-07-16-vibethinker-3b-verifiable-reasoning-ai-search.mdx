@@ -1,0 +1,202 @@
+---
+title: "[AI Search] VibeThinker-3B: 작은 모델은 어디까지 검증 가능한 추론을 할 수 있나"
+date: "2026-07-16"
+category: "paper-review"
+tags: ["AI Search", "VibeThinker", "small-language-model", "verifiable-reasoning", "RL", "distillation"]
+summary: "VibeThinker-3B 논문을 AI Search stack 관점에서 읽는다. 3B dense model이 curriculum SFT, multi-domain RL, offline self-distillation, claim-level test-time scaling으로 수학·코딩 같은 검증 가능한 추론 task에서 어디까지 갈 수 있는지 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 19
+math: false
+---
+
+<Paper
+  title="VibeThinker-3B: Exploring the Frontier of Verifiable Reasoning in Small Language Models"
+  authors="Sen Xu et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2606.16140"
+/>
+
+## 한 줄 요약
+
+VibeThinker-3B는 **3B parameter dense model도 수학·코딩처럼 정답 검증이 가능한 영역에서는 frontier급 reasoning 성능에 접근할 수 있다**는 기술 보고서다.
+
+AI Search 관점에서 이 논문은 “작은 모델 하나로 범용 지능을 만들자”가 아니라, 검색·agent system 안에 넣을 수 있는 **작고 빠른 verifiable reasoning core**의 가능성을 보여준다.
+
+## 왜 AI Search에 중요한가
+
+AI Search stack에는 항상 큰 모델만 필요한 게 아니다.
+
+검색 시스템 안에는 작지만 자주 호출되는 reasoning 작업이 많다.
+
+- 검색 결과가 질문에 맞는지 판별하기
+- 코드나 수식의 intermediate answer 검증하기
+- query rewrite 후보 중 실패할 것을 걸러내기
+- tool output의 형식과 조건 충족 여부 확인하기
+- RAG 답변의 claim을 evidence와 대조하기
+
+이런 작업은 open-domain 지식보다 **검증 가능한 구조**가 중요하다. VibeThinker-3B가 흥미로운 이유가 여기에 있다. 논문은 verifiable reasoning은 작은 parameter budget 안에 압축될 수 있고, 반대로 open-domain knowledge는 훨씬 넓은 parameter coverage를 요구한다고 본다.
+
+논문에서는 이를 **Parametric Compression-Coverage Hypothesis**라고 부른다.
+
+## 핵심 아이디어: Spectrum-to-Signal post-training
+
+VibeThinker-3B는 base model을 그대로 쓰는 논문이 아니다. 강하게 post-training한 결과다.
+
+큰 흐름은 다음과 같다.
+
+```text
+base model
+  ↓
+curriculum SFT
+  ↓
+multi-domain reasoning RL
+  ↓
+offline self-distillation
+  ↓
+claim-level test-time scaling
+```
+
+### 1. curriculum SFT
+
+SFT 단계에서는 math, code, STEM reasoning, instruction following을 섞어 안정적인 cold-start policy를 만든다. 논문은 seed query 중에서도 신뢰 가능한 supervision이 있는 것만 고르고, strong teacher model로 여러 reasoning trace를 생성해 multi-path distillation을 한다.
+
+중요한 점은 단일 정답 풀이만 주입하지 않는다는 것이다. 다양한 풀이 경로를 보존해 이후 RL이 탐색할 수 있는 solution spectrum을 만든다.
+
+### 2. multi-domain RL
+
+RL은 순차적으로 진행된다.
+
+```text
+Math RL → Code RL → STEM RL
+```
+
+수학은 symbolic derivation과 multi-step search를 강화하고, 코드는 실행 가능한 logic과 boundary case를 강화한다. STEM은 지식 활용과 과학적 추론으로 일반화한다.
+
+### 3. offline self-distillation
+
+각 RL stage에서 나온 좋은 reasoning trajectory를 다시 모아 distillation한다. 이건 “RL로 찾아낸 좋은 경로를 모델 내부에 다시 압축한다”에 가깝다.
+
+## 결과: 3B인데 꽤 공격적인 숫자
+
+논문이 보고한 핵심 숫자는 다음과 같다.
+
+| Benchmark | VibeThinker-3B |
+| --- | ---: |
+| AIME25 | 91.4 |
+| AIME26 | 94.3 |
+| HMMT25 | 89.3 |
+| BruMO25 | 93.8 |
+| IMO-AnswerBench | 76.4 |
+| LiveCodeBench v6 Pass@1 | 80.2 |
+| OJBench | 38.6 |
+| IFEval | 93.4 |
+| IFBench | 74.5 |
+
+논문은 여기에 Claim-Level Reliability Assessment, 줄여서 CLR이라는 test-time scaling을 더하면 AIME26이 **97.1**, HMMT25가 **95.4**, BruMO25가 **99.2**, IMO-AnswerBench가 **80.6**까지 오른다고 보고한다.
+
+또 2026년 4월 25일부터 5월 31일까지의 unseen LeetCode weekly / biweekly contest에서는 **123 / 128** first-attempt Python submission이 통과해 **96.1% acceptance rate**를 보였다고 한다.
+
+## CLR: 답을 많이 뽑는 것보다 claim을 검증한다
+
+흥미로운 부분은 test-time scaling 방식이다. 단순히 sample을 많이 뽑고 majority vote만 하는 게 아니라, candidate reasoning에서 claim을 뽑고 그 claim을 검증한다.
+
+```text
+candidate trajectories 생성
+  ↓
+중요 claim 추출
+  ↓
+claim별 verifier로 참/거짓 판정
+  ↓
+불안정한 답 penalize
+```
+
+AI Search와 연결하면 이건 RAG answer verification과 거의 같은 모양이다. 답변 전체를 “좋아 보인다”로 평가하지 않고, claim 단위로 쪼개 evidence와 대조한다.
+
+## AI Search stack에서의 위치
+
+저는 VibeThinker-3B를 큰 reader model의 대체재라기보다, **search pipeline 곳곳에 붙는 verifier / reasoner**로 보는 게 맞다고 생각한다.
+
+```text
+candidate retrieval
+  ↓
+small reasoner: relevance / constraint check
+  ↓
+reranking
+  ↓
+small reasoner: claim decomposition
+  ↓
+large reader or answer generator
+  ↓
+small reasoner: final verification
+```
+
+작은 모델이 잘 맞는 영역은 다음과 같다.
+
+| 역할 | 왜 작은 reasoning model이 유리한가 |
+| --- | --- |
+| query constraint checker | 자주 호출되고 정답 판정 가능 |
+| code / math verifier | 실행·채점 가능한 signal이 있음 |
+| answer claim splitter | 큰 모델 호출 전에 비용 절감 |
+| self-correction loop | 반복 호출해야 하므로 latency와 cost 중요 |
+
+## 실무적으로 생각해볼 점
+
+### 1. “작은 모델은 무조건 약하다”는 가정이 흔들린다
+
+3B 모델이 모든 면에서 frontier LLM을 이긴다는 뜻은 아니다. 하지만 특정한 verifiable reasoning 영역에서는 작은 모델도 충분히 강한 core가 될 수 있다.
+
+제품에서는 이게 중요하다. 모든 verification을 100B급 모델에게 맡기면 비용 구조가 버티기 어렵다.
+
+### 2. 데이터보다 signal 설계가 중요하다
+
+논문 제목은 모델 크기를 말하지만, 실제 핵심은 post-training pipeline이다.
+
+- 신뢰 가능한 seed query
+- executable evaluation
+- multi-path reasoning trace
+- domain별 RL
+- 좋은 trajectory 재압축
+- claim-level verifier
+
+즉 “작은 모델”의 성능은 작은 모델 자체보다 **검증 가능한 학습 신호를 얼마나 잘 만들었는가**에 달려 있다.
+
+### 3. knowledge-heavy task와 reasoning-heavy task를 분리해야 한다
+
+논문이 제안하는 Compression-Coverage 관점은 실무 routing에도 유용하다.
+
+- verifiable reasoning: 작은 전문 모델로 처리 가능
+- long-tail knowledge: retrieval과 큰 reader 필요
+- factual QA: retrieval coverage가 핵심
+- math / code / constraint: verifier와 search가 핵심
+
+하나의 LLM에 다 넣으려 하지 말고, task 성격에 따라 routing하는 편이 낫다.
+
+## 한계와 조심할 점
+
+- 보고서 성격이 강하고, benchmark 중심이다. production workload에서 그대로 재현된다고 보면 위험하다.
+- verifiable reasoning에서 강한 것이 open-domain 대화나 지식 업무의 강함을 의미하지는 않는다.
+- 성능은 고품질 SFT, RL, distillation, test-time scaling 전체 파이프라인의 결과다. base 3B 모델만으로 같은 결론을 내리면 안 된다.
+- claim-level scaling은 추가 추론 비용이 있다. 작은 모델이라도 여러 trajectory와 verifier를 돌리면 latency budget이 필요하다.
+
+## 제 해석
+
+이 논문의 실무적 메시지는 “3B가 큰 모델을 대체한다”가 아니다.
+
+더 정확히는 이거다.
+
+> 검증 가능한 추론은 작고 촘촘한 reasoning core로 압축할 수 있다. 그러면 큰 모델은 모든 걸 직접 풀기보다, 검색·생성·판단 중 정말 필요한 부분에만 쓰면 된다.
+
+AI Search 시스템을 만들 때도 같은 구조가 좋아 보인다. retrieval은 evidence coverage를 맡고, 작은 reasoning model은 constraint와 claim 검증을 맡고, 큰 모델은 마지막 synthesis와 애매한 판단을 맡는다.
+
+## 정리
+
+VibeThinker-3B는 작은 모델의 한계를 낭만적으로 과장하기보다, **verifiable task에서 작은 모델을 어떻게 훈련하고 검증해야 하는지**를 보여준다. AI Search stack에서는 cheap verifier, reasoning filter, claim checker로 특히 가치가 있다.
+
+다음 글에서는 데이터 분석과 멀티모달 스토리텔링을 end-to-end로 묶는 **Data Journalist Agent**를 본다.
+
+## 참고 자료
+
+- arXiv: [VibeThinker-3B](https://arxiv.org/abs/2606.16140)
+- GitHub: [WeiboAI/VibeThinker](https://github.com/WeiboAI/VibeThinker)
+- Hugging Face: [WeiboAI/VibeThinker-3B](https://huggingface.co/WeiboAI/VibeThinker-3B)

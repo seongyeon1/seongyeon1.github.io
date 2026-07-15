@@ -1,0 +1,212 @@
+---
+title: "[AI Search] Data Journalist Agent: 데이터에서 검증 가능한 멀티모달 스토리까지"
+date: "2026-07-16"
+category: "paper-review"
+tags: ["AI Search", "data-agent", "journalism", "verifiability", "multimodal", "provenance"]
+summary: "Data Journalist Agent, Data2Story 논문을 AI Search stack 관점에서 읽는다. raw dataset을 기사형 웹 스토리로 바꾸는 multi-agent newsroom 구조와 Inspector 기반 provenance, human evaluation, machine-checkable verifiability를 정리한다."
+series: "AI Search Technology Meetup"
+seriesOrder: 20
+math: false
+---
+
+<Paper
+  title="Data Journalist Agent: Transforming Data into Verifiable Multimodal Stories"
+  authors="Kevin Qinghong Lin et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2606.11176"
+/>
+
+## 한 줄 요약
+
+Data Journalist Agent, 또는 Data2Story는 raw dataset을 받아서 **분석, 배경 조사, narrative angle, 시각화, 인터랙티브 웹 기사, claim 검증까지 한 번에 수행하는 multi-agent newsroom**이다.
+
+AI Search 관점에서 이 논문은 “예쁜 차트 만드는 agent”가 아니라, 검색과 분석 결과를 **검증 가능한 multimodal story**로 바꾸는 end-to-end evidence pipeline으로 읽어야 한다.
+
+## 왜 AI Search에 중요한가
+
+검색 시스템의 마지막 출력은 점점 “답변 문장”만이 아니다.
+
+사용자는 다음을 원한다.
+
+- 숫자의 출처
+- 계산 재현 가능성
+- 왜 이 관점으로 해석했는지
+- 차트와 지도, 인터랙션
+- 주장별 근거 링크
+- 읽을 만한 이야기 구조
+
+Data2Story는 이 전체 과정을 newsroom metaphor로 묶는다. 단순히 데이터를 분석하는 agent와, 웹페이지를 디자인하는 agent를 붙인 것이 아니라, **claim-level traceability**를 중심에 둔다.
+
+## 문제: 데이터 분석 결과는 있어도 신뢰 가능한 이야기는 어렵다
+
+논문은 데이터 저널리즘을 “raw information을 non-expert가 이해하고 신뢰할 수 있는 story로 바꾸는 일”로 본다.
+
+이 과정에는 여러 역할이 필요하다.
+
+```text
+dataset 이해
+  ↓
+배경 검색
+  ↓
+통계 분석
+  ↓
+angle 선택
+  ↓
+시각화 / 인터랙션 설계
+  ↓
+기사 작성
+  ↓
+claim 검증
+```
+
+기존 data science agent는 분석에는 강하지만 기사로 읽히는 출력에는 약하다. 반대로 design agent는 멋진 웹페이지를 만들 수 있지만, 숫자와 claim의 근거가 약할 수 있다.
+
+Data2Story는 이 둘 사이에 **Inspector**를 둔다.
+
+## 핵심 아이디어: Inspector가 모든 claim을 근거에 묶는다
+
+논문이 강조하는 첫 번째 기여는 evidence-grounded claim이다.
+
+Inspector는 개별 role이 만든 중간 결과를 추적해, 기사에 들어가는 숫자와 주장과 asset이 어디서 왔는지 연결한다.
+
+```text
+문장: "A 지역의 증가율은 42.5%다"
+  ↳ raw dataset row / column
+  ↳ 실행된 Python 또는 R code
+  ↳ 외부 reference URL
+  ↳ 생성된 chart asset
+```
+
+이건 RAG citation보다 강한 형태다. 단순히 “이 문단은 이 문서를 참고했다”가 아니라, **visible claim이 data, code, reference 중 어디에 grounded되는지**를 본다.
+
+## 두 번째 아이디어: multimodal story를 기본값으로 둔다
+
+Data2Story는 text report만 만들지 않는다. 독자가 무엇을 보고 싶어 할지 추론한 뒤, topic에 맞는 매체를 선택한다.
+
+예를 들어:
+
+- 지리 데이터: zoom 가능한 interactive map
+- 음악 데이터: audio clip
+- 시간 변화: animated chart
+- 선택 실험: interactive demo
+
+이 부분이 AI Search에 중요한 이유는, 검색 결과도 점점 “문서 몇 개”가 아니라 **사용자가 탐색할 수 있는 설명 인터페이스**가 되기 때문이다.
+
+## 평가: 18개 기사, 53명 평가, computer-use judge, verifier
+
+논문은 Data2Story를 18개 data article에 대해 평가한다. 각 샘플은 원래 사람이 쓴 expert article과 pair로 비교된다.
+
+평가는 네 축이다.
+
+| 평가 축 | 의미 |
+| --- | --- |
+| angle coverage | 인간 기사와 agent 기사의 관점이 얼마나 겹치고 다른가 |
+| human rubric | 53명의 참가자가 visual, pacing, transparency, claim alignment, insight를 평가 |
+| computer-use judge | 브라우저를 실제로 조작하는 agent가 interactive article을 평가 |
+| verifiability | coding verifier가 claim을 data/code/reference와 대조 |
+
+여기서 computer-use judge를 쓴 점이 재미있다. 정적인 screenshot만 보는 judge는 interactive article의 hover, scroll, click, animation을 놓칠 수 있기 때문이다.
+
+## 주요 결과
+
+논문이 보고한 결과 중 실무적으로 중요한 숫자는 다음과 같다.
+
+- Data2Story는 18개 paired article에서 human article과 비슷한 writing volume을 보인다. 평균 단어 수는 Data2Story **1305**, human **1557**이다.
+- agent article은 문장이 더 많고 더 짧다. 문장 수는 **1.45배**, 문장 길이는 **0.77배**다.
+- human article angle 중 Data2Story가 커버한 비율은 약 **50.4%**, 반대로 agent angle이 human article에 매핑되는 비율은 **35.1%**다.
+- human evaluation에서 Data2Story 평균은 **4.21**, human article 평균은 **3.38**로 보고된다.
+- 가장 큰 차이는 Transparency에서 **+1.49**다.
+- 53명 중 **39명**이 Data2Story를 선호했고, **13명**이 human version을, **1명**이 tie를 선택했다.
+- visible claim의 **93%**가 traceable evidence binding을 가진다고 보고한다. human article은 code가 없기 때문에 text-only audit으로는 약 **25%**만 binding된다.
+
+이 결과를 “agent가 기자를 이겼다”로 읽으면 과하다. 논문도 human journalist가 editorial angle, creative design, presentation에서는 여전히 강하다고 말한다.
+
+핵심은 transparency와 auditability다.
+
+## AI Search stack에서의 위치
+
+Data2Story는 검색의 마지막 단계를 바꾼다.
+
+```text
+search / retrieval
+  ↓
+data analysis
+  ↓
+claim graph
+  ↓
+multimodal presentation
+  ↓
+verifier
+```
+
+RAG 답변이 한 문단으로 끝나지 않고, interactive report나 dashboard article이 되어야 할 때 이런 구조가 필요하다.
+
+특히 enterprise search에서는 중요하다.
+
+- 보고서 자동 생성
+- 고객 데이터 분석 요약
+- 시장 조사 리포트
+- product analytics narrative
+- compliance / audit report
+
+이런 출력은 “그럴듯한 요약”보다 “근거를 따라갈 수 있는 구조”가 훨씬 중요하다.
+
+## 실무적으로 생각해볼 점
+
+### 1. citation보다 provenance가 필요하다
+
+많은 RAG 시스템은 문장 옆에 source link를 붙이면 충분하다고 생각한다. 하지만 data-driven claim에서는 부족하다.
+
+숫자는 다음을 가져야 한다.
+
+- 어떤 raw data에서 왔는가
+- 어떤 filtering이 적용됐는가
+- 어떤 code가 계산했는가
+- 어떤 chart가 이를 표현했는가
+- claim이 과장되지 않았는가
+
+Data2Story의 Inspector는 이 방향을 잘 보여준다.
+
+### 2. agent output은 article이 아니라 artifact다
+
+최종 산출물이 웹페이지라면, 평가도 텍스트 similarity가 아니라 artifact 품질을 봐야 한다.
+
+- 사용자가 scroll하며 이해할 수 있는가
+- interactive element가 작동하는가
+- chart encoding이 오해를 만들지 않는가
+- claim이 data와 맞는가
+- reference가 살아 있는가
+
+### 3. human의 역할은 angle과 judgment다
+
+논문이 좋았던 점은 “기자를 대체한다”고 말하지 않는 것이다. agent는 계산, 그래픽, provenance를 자동화한다. 인간은 angle, editorial judgment, 맥락 선택을 맡는다.
+
+실무에서도 이 구분이 현실적이다.
+
+## 한계와 조심할 점
+
+- 평가는 18개 article에 한정된다. news domain 전체로 일반화하기에는 작다.
+- human-written article은 원래 code와 provenance를 공개하지 않는 경우가 많아, verifiability 비교는 구조적으로 agent에 유리할 수 있다.
+- Data2Story가 잘하는 것은 transparency와 auditability이지, 항상 더 좋은 editorial thesis를 만든다는 뜻은 아니다.
+- computer-use agent judge는 흥미롭지만, human 독자의 실제 체류 시간이나 이해도와 완전히 같지는 않다.
+
+## 제 해석
+
+이 논문은 AI Search의 output layer가 어디로 갈지 보여준다.
+
+좋은 AI Search는 “답을 찾았다”에서 끝나지 않는다. 사용자가 믿고 공유할 수 있는 **검증 가능한 artifact**를 만들어야 한다.
+
+그 artifact는 문장, 차트, 지도, 코드, citation, verifier result가 서로 연결된 형태일 가능성이 높다. Data2Story는 그 방향을 newsroom metaphor로 잘 구현한 사례다.
+
+## 정리
+
+Data Journalist Agent는 검색, 분석, 생성, 디자인, 검증을 하나의 multi-agent pipeline으로 묶는다. AI Search stack에서는 answer generation의 다음 단계, 즉 **evidence-grounded multimodal reporting layer**로 볼 수 있다.
+
+다음 글에서는 물리 기반 렌더링과 생성 모델을 결합한 **BRDFusion**을 본다.
+
+## 참고 자료
+
+- arXiv: [Data Journalist Agent](https://arxiv.org/abs/2606.11176)
+- Project: [data2story.github.io](https://data2story.github.io)
+- Code: [QinghongLin/data2story-skill](https://github.com/QinghongLin/data2story-skill)
