@@ -3389,3 +3389,107 @@
 - suggested-category: tutorial
 - suggested-tags: [desktop-agent, agent-harness, local-first, memory]
 - status: idea
+
+### 2026-07-16 — [논문 리뷰] Complexity-Aware Agents: 쉬운 작업에 과한 reasoning을 쓰지 않는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.13034v1
+- why-now: LLM agent가 multi-step workflow에서 파일 재읽기, tool 재호출, max-context-first 실행을 기본값으로 삼으면서 단순 작업에도 비용과 latency를 과소비하는 문제가 커지고 있다.
+- angle: “좋은 agent는 더 많이 생각하는 agent가 아니라 작업 복잡도에 맞춰 reasoning·context·tool budget을 조절하는 runtime” — complexity classifier, effort routing, abort/escalation policy를 agent harness 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, reasoning-budget, cost-optimization, orchestration]
+- status: idea
+
+### 2026-07-16 — [논문 리뷰] PalmClaw: mobile-first on-device agent framework의 설계 포인트
+- type: paper
+- source: http://arxiv.org/abs/2607.13027v1
+- why-now: agent가 데스크톱/서버를 넘어 스마트폰 로컬 환경에서 tool call, 앱 조작, privacy boundary를 다뤄야 하는 요구가 늘고 있다.
+- angle: “온디바이스 agent는 작은 서버 agent가 아니라 권한·배터리·앱 sandbox·개인정보 경계가 다른 runtime” — native mobile tool interface, local execution, fallback policy를 personal agent 관점으로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mobile-agent, on-device, tool-use, privacy]
+- status: idea
+
+### 2026-07-16 — [논문 리뷰] MemOps: long-horizon conversation memory를 lifecycle operation으로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.12893v1
+- why-now: 장기 기억 agent가 늘었지만 기존 benchmark는 downstream QA 정확도에 치우쳐 저장·갱신·삭제·충돌 해결 같은 lifecycle operation을 직접 평가하지 못한다.
+- angle: “agent memory 평가는 무엇을 기억했나보다 memory operation이 안전하게 수행됐나를 봐야 한다” — create/update/delete/retrieve, conflict resolution, regression suite를 개인 비서 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, long-horizon, evaluation, lifecycle]
+- status: idea
+
+### 2026-07-16 — [논문 리뷰] No-Reference LLM Judges: 정답 없는 평가에서 generous bias를 줄이는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.12885v1
+- why-now: agent output, open-ended report, code review comment처럼 reference answer가 없는 평가가 CI gate로 들어오면서 LLM judge의 관대함이 품질 신호를 흐릴 수 있다.
+- angle: “LLM-as-judge를 쓸 때 reference 없음은 편의가 아니라 calibration risk” — rubric anchoring, adversarial counterexamples, judge drift monitor를 agent eval 운영 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-as-judge, evaluation, calibration, agent-qa]
+- status: idea
+
+### 2026-07-16 — [논문 리뷰] Multi-Agent Debate는 언제 실패하는가: debate loop의 co-failure 진단
+- type: paper
+- source: http://arxiv.org/abs/2510.20963v2
+- why-now: multi-agent debate가 reasoning 향상과 supervision 기법으로 자주 쓰이지만, agent들이 같은 오류를 공유하거나 debate가 오히려 bias를 증폭하는 실패 조건을 운영적으로 알아야 한다.
+- angle: “agent를 여러 명 붙이면 검증이 되는 게 아니라 실패 상관관계를 관리해야 한다” — 역할 다양성, evidence grounding, stopping condition, judge independence를 debate harness 설계로 정리한다.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, debate, evaluation, reasoning]
+- status: idea
+
+### 2026-07-16 — hud-python: agent RL environment와 eval을 한 번 정의해 재사용하기
+- type: tech
+- source: https://github.com/hud-evals/hud-python
+- why-now: agentic RL과 eval이 가까워지면서 같은 task environment를 학습, 회귀 테스트, benchmark 리포트에 재사용하는 runtime abstraction이 필요해지고 있다.
+- angle: “agent eval은 점수 계산 스크립트가 아니라 environment contract” — task definition, rollout, reward/evaluator 재사용, CI regression suite를 agentic RL 운영 루프로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, reinforcement-learning, environment, github-repo]
+- status: idea
+
+### 2026-07-16 — remnic: user-aware agent를 위한 scoped memory와 provenance 운영
+- type: tech
+- source: https://github.com/joshuaswarren/remnic
+- why-now: personal agent가 사용자별 장기 기억을 다룰수록 범위(scope), 출처(provenance), correction workflow, retrieval quality를 memory layer가 직접 책임져야 한다.
+- angle: “agent memory를 벡터 검색 기능이 아니라 governance API로 본다” — scoped memory, provenance, correction boundary, MCP/HTTP access를 user-aware agent architecture로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, provenance, personal-agent, mcp]
+- status: idea
+
+### 2026-07-16 — AssetOpsBench: Industry 4.0 agent를 benchmark와 orchestration으로 같이 보기
+- type: tech
+- source: https://github.com/IBM/AssetOpsBench
+- why-now: 산업 자산 운영 agent는 일반 web benchmark와 달리 IoT, work order, maintenance procedure, domain safety가 얽혀 있어 domain-specific task harness와 multi-agent orchestration이 함께 필요하다.
+- angle: “enterprise agent 평가는 범용 리더보드가 아니라 도메인 workflow simulator와 verifier에서 시작한다” — 460+ scenarios, specialist agents, MCP 기반 orchestration blueprint를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [domain-agent, agent-benchmark, industry40, orchestration]
+- status: idea
