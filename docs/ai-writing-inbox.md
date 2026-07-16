@@ -3401,7 +3401,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent, reasoning-budget, cost-optimization, orchestration]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-16-complexity-aware-agents-reasoning-budget.mdx
 
 ### 2026-07-16 — [논문 리뷰] PalmClaw: mobile-first on-device agent framework의 설계 포인트
 - type: paper

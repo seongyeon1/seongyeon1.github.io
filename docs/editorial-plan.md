@@ -191,7 +191,7 @@
 | 아이디어 | 미정 | [논문 리뷰] Distributed Backdoors — multi-agent harm은 한 메시지씩 보면 놓친다 | paper-review | 논문 리뷰 | | arXiv 2607.11751 — local monitor blind spot, compositional harm, cross-agent trace audit 기반 runtime firewall 설계 |
 | 아이디어 | 미정 | [논문 리뷰] RAGU — multi-step GraphRAG engine을 작게 운영하기 | paper-review | Agentic RAG | | arXiv 2607.11683 — compact domain LLM, graph refinement, entity/relation 정제를 production RAG 운영법으로 정리 |
 | 아이디어 | 미정 | Litefuse — agent observability와 evaluation을 가볍게 붙이는 법 | tutorial | AI 평가/운영 | | GitHub repo 기반 — trace schema, eval dataset, failure triage, CI regression gate를 작은 팀용 QA stack으로 소개 |
-| 아이디어 | 미정 | [논문 리뷰] Complexity-Aware Agents — 쉬운 작업에 과한 reasoning을 쓰지 않는 법 | paper-review | Agent/MCP 실전 | | arXiv 2607.13034 — 작업 복잡도별 reasoning·context·tool budget 조절과 effort routing을 agent harness 설계로 정리 |
+| 발행완료 | 2026-07-16 | [논문 리뷰] Complexity-Aware Agents — 쉬운 작업에 과한 reasoning을 쓰지 않는 법 | paper-review | Agent/MCP 실전 | | `content/posts/2026-07-16-complexity-aware-agents-reasoning-budget.mdx` — 자동 발행 완료, arXiv 2607.13034, 작업 복잡도별 reasoning·context·tool budget 조절과 effort routing을 agent harness 설계로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] MemOps — long-horizon memory를 lifecycle operation으로 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.12893 — create/update/delete/retrieve, conflict resolution, memory regression suite 설계 |
 | 아이디어 | 미정 | [논문 리뷰] No-Reference LLM Judges — 정답 없는 평가에서 generous bias 줄이기 | paper-review | AI 평가/운영 | | arXiv 2607.12885 — rubric anchoring, calibration, judge drift monitor를 agent eval 운영 체크리스트로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] PalmClaw — mobile-first on-device agent framework의 설계 포인트 | paper-review | Agent/MCP 실전 | | arXiv 2607.13027 — native mobile tool interface, 앱 sandbox, privacy boundary를 personal agent runtime 관점으로 해석 |

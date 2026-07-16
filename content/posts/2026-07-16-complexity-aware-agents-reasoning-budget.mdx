@@ -1,0 +1,187 @@
+---
+title: "[논문 리뷰] Complexity-Aware Agents — 쉬운 작업에 과한 reasoning을 쓰지 않는 법"
+date: "2026-07-16"
+category: "paper-review"
+tags: ["agent", "reasoning-budget", "cost-optimization", "orchestration"]
+summary: "E3는 agent가 먼저 작업 복잡도를 추정하고, 최소 경로로 실행한 뒤 실패할 때만 범위를 넓히는 실행 정책이다."
+---
+
+<Paper
+  title="Do AI Agents Know When a Task Is Simple? Toward Complexity-Aware Reasoning and Execution"
+  authors="Junjie Yin, Xinyu Feng"
+  year="2026"
+  venue="arXiv"
+  arxiv="2607.13034"
+/>
+
+## 한 줄 요약
+
+이 논문은 LLM agent가 단순 작업에도 파일과 의존성을 과하게 다시 읽는 문제를 **execution redundancy**로 정의하고, 먼저 작업 난이도와 필요한 범위를 추정한 뒤 최소 실행 경로부터 시도하는 E3(Estimate, Execute, Expand)를 제안한다.
+
+핵심 메시지는 꽤 현실적이다. 좋은 agent는 “항상 더 많이 생각하는 agent”가 아니다. 좋은 agent는 작업이 쉬울 때 쉬운 방식으로 끝내고, 검증이 실패했을 때만 더 넓은 context와 비싼 tool call로 확장한다.
+
+개인적으로 이 방향이 마음에 든다. 요즘 coding agent 하네스는 context를 많이 넣고 tool을 많이 붙이면 더 안전해질 것처럼 설계되는 경우가 많다. 하지만 운영 관점에서는 과한 탐색도 실패다. latency, token cost, rate limit, review noise를 모두 태운다.
+
+## 문제: max-context-first가 기본값이 되면 안 된다
+
+논문이 비판하는 기본 패턴은 **maximum-context-first**다.
+
+예를 들어 “버튼 label 하나 바꿔줘” 같은 작업을 받았는데 agent가 다음을 전부 수행한다고 해보자.
+
+- repo 구조 전체 훑기
+- 관련 없어 보이는 파일까지 재검색
+- 이미 읽은 dependency 다시 열기
+- 테스트 전체 suite 실행
+- 변경 범위보다 훨씬 큰 context를 prompt에 적재
+
+물론 안전해 보인다. 하지만 실제로는 단순한 one-line edit을 작은 코드베이스 감사(audit)로 바꾼다. 이 논문은 이런 낭비를 단순 비용 문제가 아니라 agent 실행 정책의 결함으로 본다.
+
+여기서 중요한 구분은 “context를 적게 쓰자”가 아니다. **필요한 만큼만 먼저 쓰고, 실패 신호가 있을 때 확장하자**다. 무조건 가볍게 가자는 이야기가 아니라, 작업 복잡도에 맞춰 실행 범위를 조절하자는 이야기다.
+
+## 최소 충분 실행과 ACRR
+
+논문은 작업을 대략 `task = (query, environment, verifier)`로 본다. agent는 사용자 요청(query)을 받고, 환경(environment) 안에서 행동하고, 검증기(verifier)로 성공 여부를 확인한다.
+
+여기서 이상적인 실행은 **minimum-sufficient execution**이다. 성공에 필요한 최소 정보와 최소 행동으로 끝내는 경로다. 이 개념 자체는 실무 개발자가 이미 하고 있는 일에 가깝다.
+
+- 작은 CSS 수정이면 해당 컴포넌트와 스냅샷 정도만 본다.
+- API 계약 변경이면 schema, caller, integration test까지 본다.
+- DB migration이면 rollback, data shape, 배포 순서까지 본다.
+
+문제는 agent가 이 감각을 잘 못 갖는다는 점이다. 그래서 논문은 Agent Cognitive Redundancy Ratio(ACRR)를 둔다. 직관적으로 말하면 **실제 실행 비용이 oracle minimum보다 얼마나 과한가**를 보는 비율이다.
+
+이 지표는 마음에 든다. agent 평가가 “맞혔나?”만 보면 과도하게 비싼 성공과 깔끔한 성공을 구분하지 못한다. production agent에서는 둘이 전혀 다르다. 같은 정답이어도 10초짜리 실행과 3분짜리 실행은 제품 품질이 다르다.
+
+## E3: Estimate, Execute, Expand
+
+E3는 이름 그대로 세 단계다.
+
+### 1. Estimate
+
+먼저 작업의 초기 operating point를 추정한다. 논문은 난이도, scope, 필요한 resource, confidence 같은 축을 잡는다. 실무적으로 번역하면 이런 질문이다.
+
+- 이 작업은 단일 파일 수정인가, cross-file 변경인가?
+- read-only 조사인가, mutation이 필요한가?
+- 빠른 local verification으로 충분한가?
+- 실패하면 어떤 범위로 확장해야 하나?
+
+이 단계가 빠지면 agent는 “일단 다 읽자”로 기울기 쉽다. 반대로 추정 단계가 있으면 처음부터 budget을 걸 수 있다.
+
+### 2. Execute
+
+초기 추정에 맞춰 최소 실행 경로를 탄다. coding agent라면 보통 `locate -> edit -> verify` 정도다.
+
+여기서 핵심은 “검증 가능한 최소 경로”다. 그냥 대충 수정하고 끝내자는 게 아니다. 작은 범위로 수정하되, 성공 여부는 반드시 확인한다. 즉 비용 절감은 verification을 빼서 만드는 것이 아니라 **scope를 줄여서** 만든다.
+
+### 3. Expand
+
+검증이 실패하면 그때 범위를 넓힌다.
+
+- 관련 파일 추가 검색
+- caller/callee 확인
+- 더 큰 테스트 실행
+- dependency나 config 확인
+- 사람 승인 또는 더 강한 model로 escalate
+
+이 구조가 max-context-first와 다르다. max-context-first는 불확실성을 “먼저 많이 읽기”로 처리한다. E3는 불확실성을 “작게 실행하고 검증 실패 시 확장”으로 처리한다.
+
+## 실험 결과: 숫자는 좋지만 해석은 조심해야 한다
+
+논문은 MSE-Bench라는 deterministic benchmark를 만든다. 121개 edit task를 capability-controlled simulator에서 돌리고, 각 task에 대해 oracle minimum-sufficient trajectory를 둔다. 그래서 정책별 redundancy를 비교할 수 있다.
+
+초록과 본문 요약 기준 핵심 결과는 다음과 같다.
+
+- E3는 가장 강한 baseline과 같은 100% 성공률을 냈다고 보고한다.
+- 비용은 85% 절감, token은 91% 절감, inspected files는 92% 줄였다고 한다.
+- adaptive retrieval baseline 대비로도 16% 개선을 보였다고 한다.
+- held-out instruction wording과 cost weighting sweep에서도 효과가 유지됐다고 주장한다.
+- companion harness인 LLM-Case에서는 실제 gpt-4o agent가 real open-source library를 수정하고 pytest로 grading하는 case study를 수행했다.
+
+다만 이 숫자를 “모든 coding agent에서 85% 절감 가능”으로 읽으면 안 된다. 저자들도 명시적으로 말하듯 주 실험은 실제 LLM 호출이 아니라 capability-controlled simulator다. 이 선택은 장점과 단점이 뚜렷하다.
+
+장점은 trajectory shape만 깨끗하게 볼 수 있다는 것이다. 모델이 실수해서 실패했는지, 정책이 context를 과하게 썼는지 섞이지 않는다. 단점은 실제 모델의 불안정성, tool latency, repo complexity, partial observability를 충분히 반영하지 못한다는 것이다.
+
+그래서 이 논문은 “새 agent SOTA”라기보다 **agent runtime 정책을 평가하는 controlled probe**로 읽는 편이 맞다.
+
+## 실무 적용: agent harness에 effort router를 넣자
+
+이 논문을 바로 제품에 적용한다면 거창한 새 framework보다 작은 runtime policy부터 넣는 게 낫다.
+
+### 1. 작업 시작 전에 complexity label을 붙인다
+
+Agent가 본격 실행하기 전에 작업을 분류한다.
+
+```text
+scope: single-file | cross-file | repo-level | external-system
+risk: read-only | local-mutation | external-side-effect
+evidence_needed: none | local-test | integration-test | human-approval
+budget: cheap | normal | expensive
+```
+
+이 label은 완벽할 필요가 없다. 중요한 건 default를 “무한 탐색”이 아니라 “가설 있는 시작점”으로 바꾸는 것이다.
+
+### 2. budget을 prompt가 아니라 runtime에서 강제한다
+
+“가능하면 적게 읽어” 같은 지시는 약하다. runtime에서 제한해야 한다.
+
+- 초기 단계 file read 최대 N개
+- 같은 파일 재읽기 제한
+- search widening 조건 명시
+- expensive test 실행 전 lightweight check 우선
+- external side effect 전 approval gate
+
+Agent가 스스로 절약하길 기대하면 안 된다. 비용 정책은 harness가 강제해야 한다.
+
+### 3. 검증 실패를 expansion trigger로 삼는다
+
+Context 확장은 막연한 불안 때문에 하는 게 아니라 구체적인 실패 신호가 있을 때 해야 한다.
+
+- patch가 적용되지 않음
+- typecheck 실패
+- local test 실패
+- symbol을 찾지 못함
+- 사용자의 요구와 diff가 불일치
+- policy precondition 미충족
+
+이렇게 trigger를 정의하면 agent 행동이 훨씬 감사 가능해진다. “왜 갑자기 repo 전체를 읽었는가?”에 답할 수 있어야 한다.
+
+### 4. 성공률과 비용을 같이 기록한다
+
+Agent eval dashboard에 success만 있으면 부족하다. 최소한 다음을 같이 기록해야 한다.
+
+- 읽은 파일 수
+- tool call 수
+- 중복 read/search 수
+- verification까지 걸린 시간
+- token 사용량
+- 실패 후 expansion 횟수
+- 사람이 review해야 하는 diff 크기
+
+이 지표가 있어야 “더 똑똑한 agent”와 “더 부산스러운 agent”를 구분할 수 있다.
+
+## 한계와 주의점
+
+이 논문의 가장 큰 한계는 주 실험이 simulator라는 점이다. 저자들도 이 점을 숨기지 않는다. simulator는 oracle을 만들기 좋지만, 실제 repo에서는 “처음엔 쉬워 보였는데 알고 보니 cross-file invariant가 깨지는 작업”이 많다.
+
+따라서 E3를 그대로 쓰면 안 되고, 다음 방어 장치가 필요하다.
+
+- 추정 confidence가 낮으면 더 넓게 시작한다.
+- 보안·데이터 삭제·결제·배포처럼 side effect가 큰 작업은 cheap path를 금지한다.
+- 단순 작업이라도 verifier가 약하면 expansion threshold를 낮춘다.
+- hidden dependency가 많은 repo에서는 ownership map이나 dependency graph를 같이 쓴다.
+
+특히 coding agent에서 “최소 실행”은 “최소 검증”이 아니다. 비용을 아끼려다 검증을 줄이면 그냥 위험한 자동화가 된다. 줄일 것은 불필요한 context 탐색이지, 성공 확인 절차가 아니다.
+
+## 내 의견
+
+이 논문은 화려한 agent architecture 논문보다 실무에 더 가까운 문제를 찌른다. 지금 agent 제품의 체감 품질을 망치는 건 종종 reasoning 부족이 아니라 **effort control 부족**이다.
+
+작은 작업에 큰 사고를 치는 agent도 문제지만, 작은 작업에 큰 비용을 쓰는 agent도 문제다. 둘 다 runtime이 작업의 크기를 모른다는 같은 뿌리에서 나온다.
+
+앞으로 production agent harness에는 model router만큼이나 **effort router**가 중요해질 가능성이 크다. 어떤 모델을 쓸지보다 먼저, 이 작업에 어느 정도 context, tool, verification budget을 쓸지 결정해야 한다. E3는 그 방향을 깔끔한 형태로 정리한 초안에 가깝다.
+
+## 참고 자료
+
+- arXiv: [Do AI Agents Know When a Task Is Simple? Toward Complexity-Aware Reasoning and Execution](https://arxiv.org/abs/2607.13034)
+- PDF: [arXiv PDF](https://arxiv.org/pdf/2607.13034v1)
+- Code/benchmark: [Do-AI-Agents-Know-When-a-Task-Is-Simple-Toward-Complexity-Aware-Reasoning-and-Execution](https://github.com/eejyin/Do-AI-Agents-Know-When-a-Task-Is-Simple-Toward-Complexity-Aware-Reasoning-and-Execution)

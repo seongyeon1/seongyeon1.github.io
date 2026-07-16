@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 16 Jul 2026 01:34:36 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 16 Jul 2026 02:04:24 GMT</lastBuildDate>
     <item>
       <title>AI 기본기 3: 표현 학습과 임베딩 — 모델은 세상을 어떤 좌표계로 바꾸는가</title>
       <link>https://seongyeon1.github.io/blog/2026-07-16-ai-fundamentals-representation-embedding/</link>
@@ -33,6 +33,18 @@
       <category>computer-vision</category>
       <category>generative-model</category>
       <category>simulation</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] Complexity-Aware Agents — 쉬운 작업에 과한 reasoning을 쓰지 않는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-16-complexity-aware-agents-reasoning-budget/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-16-complexity-aware-agents-reasoning-budget/</guid>
+      <description>E3는 agent가 먼저 작업 복잡도를 추정하고, 최소 경로로 실행한 뒤 실패할 때만 범위를 넓히는 실행 정책이다.</description>
+      <pubDate>Thu, 16 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>reasoning-budget</category>
+      <category>cost-optimization</category>
+      <category>orchestration</category>
     </item>
     <item>
       <title>[AI Search] Data Journalist Agent: 데이터에서 검증 가능한 멀티모달 스토리까지</title>
