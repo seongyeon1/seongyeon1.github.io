@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 15 Jul 2026 16:09:26 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 16 Jul 2026 01:34:36 GMT</lastBuildDate>
+    <item>
+      <title>AI 기본기 3: 표현 학습과 임베딩 — 모델은 세상을 어떤 좌표계로 바꾸는가</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-16-ai-fundamentals-representation-embedding/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-16-ai-fundamentals-representation-embedding/</guid>
+      <description>원-핫 인코딩, dense embedding, hidden representation, contrastive learning을 연결해 딥러닝이 데이터를 벡터 공간으로 바꾸는 방식을 이해한다.</description>
+      <pubDate>Thu, 16 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>deep-learning</category>
+      <category>embedding</category>
+      <category>representation-learning</category>
+      <category>RAG</category>
+    </item>
     <item>
       <title>[AI Search] BRDFusion: 물리 기반 렌더링과 생성 모델을 함께 쓰는 도시 장면 이해</title>
       <link>https://seongyeon1.github.io/blog/2026-07-16-brdfusion-physics-generation-inverse-rendering-ai-search/</link>

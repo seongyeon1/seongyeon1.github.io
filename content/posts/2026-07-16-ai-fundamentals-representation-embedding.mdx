@@ -1,0 +1,369 @@
+---
+title: "AI 기본기 3: 표현 학습과 임베딩 — 모델은 세상을 어떤 좌표계로 바꾸는가"
+date: "2026-07-16"
+category: "concept"
+tags: ["AI기본기", "deep-learning", "embedding", "representation-learning", "RAG"]
+summary: "원-핫 인코딩, dense embedding, hidden representation, contrastive learning을 연결해 딥러닝이 데이터를 벡터 공간으로 바꾸는 방식을 이해한다."
+series: "AI 기본기"
+seriesOrder: 3
+math: true
+---
+
+## 한 줄 요약
+
+딥러닝의 핵심은 단순히 더 큰 모델을 쓰는 것이 아니라, 원본 데이터를 **학습 가능한 표현 공간**으로 바꾸는 데 있다. 임베딩은 단어·문장·이미지·문서를 숫자 벡터로 바꾸는 기술이지만, 더 정확히는 모델이 문제를 풀기 좋은 좌표계를 학습하는 과정이다.
+
+지난 글에서는 손실함수와 목적함수를 봤다. 모델은 우리가 정한 objective를 줄이거나 키우는 방향으로 학습된다. 이번 글에서는 그 objective가 실제로 무엇을 바꾸는지 본다. 답은 대체로 **표현(representation)** 이다.
+
+<Callout type="note">
+AI를 제대로 이해하려면 “벡터로 바꾼다”에서 멈추면 안 된다. 어떤 정보는 보존하고, 어떤 정보는 버리며, 어떤 입력끼리 가까워지도록 학습되는지까지 봐야 한다.
+</Callout>
+
+## 표현이란 무엇인가
+
+머신러닝에서 표현은 데이터를 모델이 계산할 수 있는 형태로 바꾼 것이다.
+
+예를 들어 아래 세 문장이 있다고 하자.
+
+```text
+A: 고양이가 소파 위에서 잔다
+B: 강아지가 바닥에서 잔다
+C: 자동차가 고속도로를 달린다
+```
+
+사람은 A와 B가 둘 다 동물과 행동에 관한 문장이고, C는 다른 주제라는 걸 바로 안다. 하지만 모델 입장에서는 문자열 그대로는 계산하기 어렵다. 그래서 문장을 숫자 배열로 바꿔야 한다.
+
+가장 단순한 방식은 원-핫 인코딩이다.
+
+```text
+고양이 = [1, 0, 0, 0, 0]
+강아지 = [0, 1, 0, 0, 0]
+자동차 = [0, 0, 1, 0, 0]
+잔다   = [0, 0, 0, 1, 0]
+달린다 = [0, 0, 0, 0, 1]
+```
+
+원-핫 인코딩은 명확하지만 큰 문제가 있다.
+
+- 모든 단어 사이의 거리가 거의 똑같다.
+- “고양이”와 “강아지”가 “고양이”와 “자동차”보다 가깝다는 정보를 담지 못한다.
+- vocabulary가 커지면 벡터 차원도 커진다.
+- 단어의 의미, 문맥, 관계가 표현되지 않는다.
+
+즉 원-핫은 식별자는 되지만 의미 공간은 아니다.
+
+## 임베딩은 학습된 lookup table에서 시작한다
+
+딥러닝에서 embedding layer는 처음 보면 싱겁다. 사실상 정수 ID를 벡터로 바꾸는 lookup table이기 때문이다.
+
+```python title="embedding_lookup.py"
+import torch
+import torch.nn as nn
+
+vocab_size = 5
+embedding_dim = 3
+
+embedding = nn.Embedding(vocab_size, embedding_dim)
+
+# token id: 고양이=0, 강아지=1, 자동차=2
+token_ids = torch.tensor([0, 1, 2])
+vectors = embedding(token_ids)
+print(vectors.shape)  # torch.Size([3, 3])
+```
+
+하지만 중요한 건 이 table의 값이 고정되어 있지 않다는 점이다. 학습 과정에서 loss를 줄이기 위해 embedding vector가 계속 업데이트된다.
+
+처음에는 랜덤한 좌표다.
+
+```text
+고양이 = [ 0.12, -0.44,  0.31]
+강아지 = [-0.08,  0.21, -0.17]
+자동차 = [ 0.55,  0.02,  0.40]
+```
+
+학습이 진행되면 objective에 유용한 방향으로 좌표가 바뀐다. 언어 모델이라면 비슷한 문맥에서 등장하는 단어들이 비슷한 역할을 하도록, 검색 모델이라면 query와 관련 문서가 가까워지도록, 추천 모델이라면 사용자와 아이템의 상호작용을 설명하기 좋도록 공간이 재배치된다.
+
+<Callout type="tip">
+임베딩을 “의미를 담은 벡터”라고만 외우지 말고 “loss를 줄이는 방향으로 조정된 좌표”라고 이해하는 편이 더 정확하다.
+</Callout>
+
+## 좋은 표현은 무엇을 보존하고 무엇을 버릴지 결정한다
+
+표현 학습에서 가장 중요한 질문은 이것이다.
+
+> 이 task를 풀기 위해 입력의 어떤 성질을 남겨야 하는가?
+
+예를 들어 이미지 분류 모델이 고양이와 강아지를 구분해야 한다면, 픽셀 하나하나의 절대 위치보다 귀 모양, 눈, 털 패턴, 얼굴 구조 같은 특징이 중요하다. 반대로 OCR 모델이라면 작은 획의 위치와 방향이 중요해진다.
+
+문장 임베딩도 마찬가지다.
+
+```text
+문장 1: 고양이가 소파 위에서 잔다
+문장 2: 소파 위에서 자는 고양이
+문장 3: 고양이가 소파를 긁는다
+```
+
+문장 1과 2는 표면 순서가 다르지만 의미가 비슷하다. 좋은 semantic embedding은 둘을 가깝게 둬야 한다. 하지만 문장 3은 같은 단어가 많이 겹쳐도 행동이 다르다. task에 따라 멀리 둬야 할 수 있다.
+
+여기서 표현 학습의 본질이 나온다.
+
+- 단어 overlap을 보존할 것인가?
+- 문장 의미를 보존할 것인가?
+- 사실 관계를 보존할 것인가?
+- 검색 intent를 보존할 것인가?
+- 스타일이나 톤을 보존할 것인가?
+
+모든 것을 완벽히 보존하는 하나의 embedding은 없다. 좋은 표현은 목적에 맞게 정보를 압축한다.
+
+## Hidden representation: 모델 내부의 중간 좌표계
+
+임베딩은 입력층에만 있는 개념이 아니다. 딥러닝 모델의 각 layer는 입력을 조금씩 다른 표현으로 바꾼다.
+
+간단한 MLP를 보자.
+
+```python title="hidden_representation.py"
+import torch
+import torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(4, 8),
+    nn.ReLU(),
+    nn.Linear(8, 3),
+)
+
+x = torch.randn(1, 4)
+hidden = model[1](model[0](x))
+logits = model[2](hidden)
+```
+
+여기서 `hidden`은 원본 입력도 아니고 최종 예측도 아니다. 하지만 모델이 최종 예측을 만들기 위해 만든 중간 표현이다.
+
+딥러닝이 강력한 이유는 사람이 직접 feature를 설계하지 않아도, 여러 layer를 거치며 점점 task에 맞는 representation을 만들 수 있기 때문이다.
+
+```text
+원본 입력
+  ↓
+낮은 수준 특징
+  ↓
+중간 패턴
+  ↓
+task에 가까운 추상 표현
+  ↓
+최종 예측
+```
+
+CNN에서는 초반 layer가 edge나 texture를 잡고, 뒤쪽 layer가 object part나 class-level 특징을 잡는 식으로 설명할 수 있다. Transformer에서는 초반 layer가 token/local pattern을, 뒤쪽 layer가 더 넓은 문맥과 task 관련 구조를 담는 경향이 있다.
+
+물론 이 설명은 단순화다. 하지만 중요한 직관은 맞다. **모델은 입력을 한 번에 답으로 바꾸는 것이 아니라, 여러 단계의 표현 변환을 통해 답을 만든다.**
+
+## 비선형성이 없으면 깊은 모델도 선형 모델이다
+
+표현 학습에서 activation function이 중요한 이유도 여기 있다.
+
+만약 여러 개의 linear layer만 쌓으면 어떻게 될까?
+
+$$
+y = W_3(W_2(W_1x))
+$$
+
+행렬 곱은 다시 하나의 행렬 곱으로 합칠 수 있다.
+
+$$
+y = W'x
+$$
+
+즉 아무리 layer를 많이 쌓아도 전체는 하나의 선형 변환에 가깝다. 복잡한 표현을 만들기 어렵다.
+
+그래서 ReLU, GELU 같은 비선형 activation이 들어간다.
+
+```python title="nonlinearity.py"
+import torch
+import torch.nn.functional as F
+
+x = torch.tensor([-2.0, -0.5, 0.0, 1.0, 3.0])
+print(F.relu(x))
+# tensor([0., 0., 0., 1., 3.])
+```
+
+비선형성은 모델이 단순한 직선 경계가 아니라, 구부러진 decision boundary와 복잡한 feature 조합을 학습할 수 있게 해준다.
+
+이 관점에서 딥러닝은 “큰 행렬 계산”이 아니라 **비선형 표현 변환을 여러 번 쌓는 방식**이다.
+
+## LLM에서 embedding은 token 의미만 담지 않는다
+
+LLM을 보면 embedding 이야기가 더 흥미로워진다. LLM은 입력 token을 embedding으로 바꾼 뒤, Transformer block을 여러 번 통과시킨다.
+
+처음 token embedding은 대략 “이 token이 무엇인가”에 가깝다. 하지만 attention과 feed-forward layer를 거친 뒤의 hidden state는 단순 token 의미보다 훨씬 많은 정보를 담는다.
+
+예를 들어 문장 마지막 위치의 hidden state는 다음 token을 예측하기 위해 앞 문맥을 압축해야 한다.
+
+```text
+입력: 인공지능은 데이터를 통해 패턴을
+다음 token 후보: 학습한다 / 먹는다 / 운전한다
+```
+
+모델이 `학습한다`에 높은 확률을 주려면, 마지막 hidden representation은 단순히 `패턴을`이라는 token만 보는 것이 아니라 앞의 `인공지능은 데이터를 통해`라는 문맥까지 반영해야 한다.
+
+그래서 LLM 내부 표현은 다음 정보를 섞는다.
+
+- token 자체의 의미
+- 앞뒤 문맥에서의 역할
+- 문법적 관계
+- 다음 token 분포를 예측하는 데 필요한 단서
+- instruction이나 대화 형식에서 기대되는 응답 패턴
+
+이게 “문맥화된 표현(contextual representation)”이다.
+
+같은 단어라도 문맥에 따라 표현이 달라진다.
+
+```text
+은행에 돈을 맡겼다
+강가의 은행나무를 보았다
+```
+
+전통적인 고정 word embedding에서는 `은행`이 하나의 벡터에 가까웠지만, Transformer 기반 모델에서는 문맥에 따라 hidden state가 달라진다. 이 차이가 LLM 이해의 핵심 중 하나다.
+
+## Contrastive learning: 가까움과 멀어짐을 학습한다
+
+지난 글에서 contrastive loss를 살짝 봤다. 이번에는 표현 학습 관점에서 다시 보자.
+
+검색용 embedding 모델은 보통 query와 positive document를 가깝게, negative document를 멀게 만드는 방식으로 학습된다.
+
+```text
+query: "RAG chunking 전략"
+positive: "RAG에서 chunk size와 overlap은 검색 recall과 context precision에 영향을 준다."
+negative: "GPU 드라이버 설치 방법을 정리한다."
+```
+
+이때 모델이 학습하는 것은 자연어의 모든 의미가 아니다. 더 정확히는 **검색 task에서 유용한 유사도**다.
+
+개념적으로 similarity는 cosine similarity로 볼 수 있다.
+
+$$
+\text{cosine}(a, b) = \frac{a \cdot b}{\|a\|\|b\|}
+$$
+
+그리고 contrastive objective는 positive의 similarity를 높이고 negative의 similarity를 낮춘다.
+
+$$
+L = -\log \frac{\exp(sim(q, d^+) / \tau)}{\exp(sim(q, d^+) / \tau) + \sum_j \exp(sim(q, d_j^-) / \tau)}
+$$
+
+여기서 중요한 건 negative다. 어떤 negative를 주느냐에 따라 embedding space가 달라진다.
+
+- 쉬운 negative만 있으면 모델은 표면적인 주제 차이만 배운다.
+- 어려운 negative가 있으면 미묘한 intent 차이를 배운다.
+- 잘못된 negative가 있으면 실제로는 관련 있는 문서를 멀리 밀어낼 수 있다.
+
+<Callout type="warning">
+Embedding 모델의 품질은 모델 이름만으로 결정되지 않는다. 어떤 데이터로, 어떤 positive/negative pair로, 어떤 objective로 학습됐는지가 검색 품질을 크게 좌우한다.
+</Callout>
+
+## RAG에서 임베딩은 병목이 된다
+
+RAG를 처음 배울 때는 보통 이렇게 이해한다.
+
+```text
+질문 → 관련 문서 검색 → LLM에 넣기 → 답변 생성
+```
+
+틀린 설명은 아니지만, 실무에서는 검색 단계가 전체 품질을 좌우하는 경우가 많다. 이유는 간단하다. LLM은 context에 없는 정보를 안정적으로 답하기 어렵고, context에 잘못된 문서가 들어오면 그럴듯하게 틀릴 수 있다.
+
+RAG에서 embedding은 최소 세 가지 선택과 연결된다.
+
+### 1. 무엇을 하나의 chunk로 볼 것인가
+
+문서를 너무 작게 자르면 의미가 끊긴다. 너무 크게 자르면 검색은 맞았지만 필요한 문장이 묻힌다.
+
+```text
+작은 chunk: 정확한 문장 검색에는 유리하지만 맥락 부족
+큰 chunk: 맥락은 풍부하지만 노이즈 증가
+```
+
+Chunking은 단순 전처리가 아니라 표현 학습과 맞물리는 모델링 선택이다. embedding 모델은 chunk를 하나의 벡터로 압축하기 때문에, chunk 안의 여러 주제가 섞이면 벡터도 애매해진다.
+
+### 2. 어떤 similarity를 신뢰할 것인가
+
+Dense embedding은 의미적으로 비슷한 문서를 잘 찾지만, 정확한 키워드나 ID, 숫자, 에러 메시지에는 약할 수 있다. 반대로 sparse retrieval은 exact match에 강하지만 표현이 다른 같은 의미를 놓칠 수 있다.
+
+그래서 실무 RAG는 dense retrieval, sparse retrieval, reranking을 조합하는 경우가 많다.
+
+```text
+1차 검색: dense + sparse로 recall 확보
+2차 rerank: cross-encoder나 LLM으로 precision 보정
+생성 단계: 근거 문서와 함께 답변
+```
+
+### 3. 질문과 문서가 같은 공간에 있는가
+
+Query와 document를 같은 embedding 모델로 넣는 bi-encoder 구조는 빠르다. 하지만 query는 짧고 intent 중심이며, document는 길고 정보 중심이다. 둘을 같은 공간에 잘 정렬하려면 학습 데이터가 중요하다.
+
+이 문제 때문에 검색 모델은 단순 sentence similarity 모델과 다르게 학습되는 경우가 많다.
+
+## 표현 공간을 볼 때 던져야 할 질문
+
+AI 시스템을 설계할 때 embedding을 쓰게 되면 다음 질문을 던져야 한다.
+
+| 질문 | 왜 중요한가 |
+| --- | --- |
+| 이 embedding은 어떤 task로 학습됐나? | 유사도의 의미가 task에 따라 달라진다 |
+| positive/negative pair는 어떻게 구성됐나? | 가까움과 멀어짐의 기준을 결정한다 |
+| 입력 길이와 chunk 단위는 적절한가? | 벡터 하나가 담는 정보량을 결정한다 |
+| domain mismatch가 있는가? | 일반 embedding이 사내 문서·법률·코드 검색에 약할 수 있다 |
+| dense만 쓸 것인가, hybrid로 갈 것인가? | 정확한 키워드와 의미 검색의 tradeoff가 있다 |
+| reranker가 필요한가? | retrieval recall과 최종 context precision을 분리할 수 있다 |
+
+이 질문들은 “어떤 embedding 모델이 제일 좋아요?”보다 훨씬 실용적이다. 좋은 모델은 항상 task, 데이터, latency, 비용, 평가 방식과 함께 결정된다.
+
+## 작은 코드로 보는 embedding similarity
+
+마지막으로 아주 작은 예제를 보자. 실제 모델을 부르지 않고도 embedding similarity의 감각을 잡을 수 있다.
+
+```python title="toy_embedding_similarity.py"
+import math
+
+vectors = {
+    "고양이": [0.9, 0.1, 0.2],
+    "강아지": [0.85, 0.12, 0.25],
+    "자동차": [0.05, 0.9, 0.1],
+}
+
+def cosine(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = math.sqrt(sum(x * x for x in a))
+    norm_b = math.sqrt(sum(y * y for y in b))
+    return dot / (norm_a * norm_b)
+
+print(cosine(vectors["고양이"], vectors["강아지"]))
+print(cosine(vectors["고양이"], vectors["자동차"]))
+```
+
+이 toy example에서는 고양이와 강아지가 가깝고 자동차는 멀다. 하지만 실제 embedding에서는 이 좌표가 사람이 손으로 정한 것이 아니라, 학습 데이터와 objective를 통해 만들어진다.
+
+그래서 embedding을 해석할 때는 항상 이렇게 물어야 한다.
+
+> 이 가까움은 누가, 어떤 데이터와 objective로 학습시킨 가까움인가?
+
+## 이번 글의 핵심 정리
+
+- 표현은 데이터를 모델이 계산할 수 있는 형태로 바꾼 것이다.
+- 원-핫 인코딩은 식별에는 좋지만 의미 관계를 담기 어렵다.
+- 임베딩은 학습 가능한 lookup table에서 시작하지만, objective에 의해 의미 있는 좌표계로 조정된다.
+- 딥러닝 모델의 각 layer는 입력을 다른 hidden representation으로 변환한다.
+- 비선형 activation이 있어야 깊은 모델이 복잡한 표현을 만들 수 있다.
+- LLM의 hidden state는 token 자체보다 문맥화된 정보를 담는다.
+- 검색용 embedding은 “보편적 의미”가 아니라 positive와 negative를 구분하는 task-specific 공간이다.
+- RAG 품질은 embedding, chunking, retrieval, reranking 선택에 크게 좌우된다.
+
+## 다음 편 예고
+
+다음 글에서는 Transformer와 attention으로 넘어간다. 특히 self-attention을 “문장 안의 token들이 서로를 참고하는 기법” 정도로 끝내지 않고, Query·Key·Value가 어떤 모델링 가정을 담고 있는지, 왜 scaling과 softmax가 필요한지, multi-head가 어떤 표현 공간을 만드는지까지 연결해서 볼 예정이다.
+
+## 참고 자료
+
+- 이상선, LinkedIn AI 학습자료 모음
+- Simon J.D. Prince, *Understanding Deep Learning*
+- Chip Huyen, *Designing Machine Learning Systems*
+- Jay Alammar & Maarten Grootendorst, *Hands-On Large Language Models*
+- Made With ML
+- Pinecone, vector database and embedding learning resources
