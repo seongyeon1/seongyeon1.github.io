@@ -3598,3 +3598,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, document-ai, rag, github-repo]
 - status: idea
+
+### 2026-07-18 — [논문 리뷰] SearchOS-V1: deep search agent의 진행 상태를 공유 메모리로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2607.15257v1
+- why-now: web search가 agent 기본 능력이 되면서 실패한 검색을 반복하거나 evidence coverage를 놓치는 문제가 비용·품질 병목으로 커지고 있다.
+- angle: “검색 agent의 핵심은 query 생성이 아니라 progress state 관리” — relational schema completion, shared state, multi-agent search collaboration, evidence-grounded aggregation을 research agent 런타임 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [search-agent, deep-research, state-management, evaluation]
+- status: idea
+
+### 2026-07-18 — [논문 리뷰] MCPEvol-Bench: MCP server 변화에 agent가 적응하는지 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.14642v1
+- why-now: MCP가 tool infra 표준처럼 확산되지만 실제 server는 schema, 기능, 응답 형식이 계속 바뀌며 agent의 tool-use 안정성을 흔든다.
+- angle: “agent 평가는 고정 tool list가 아니라 진화하는 tool landscape에서 해야 한다” — MCP mutation operator, backward compatibility, regression suite, tool description drift를 운영 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [mcp, tool-use, agent-eval, regression-test]
+- status: idea
+
+### 2026-07-18 — [논문 리뷰] SEED: agentic RL에서 trajectory를 hindsight skill로 증류하기
+- type: paper
+- source: http://arxiv.org/abs/2607.14777v1
+- why-now: long-horizon tool agent 학습은 episode-level reward만으로 중간 의사결정 신호가 부족해 on-policy trajectory를 더 잘 재사용하는 방법이 필요하다.
+- angle: “agent RL의 데이터 flywheel은 성공/실패 로그를 hindsight skill로 바꾸는 과정” — trajectory analysis, self-evolving distillation, skill library, policy update loop를 post-training 관점으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, post-training, trajectory, distillation]
+- status: idea
+
+### 2026-07-18 — [논문 리뷰] SmartRAG: 모바일 온디바이스 RAG를 네 개 모듈로 쪼개기
+- type: paper
+- source: http://arxiv.org/abs/2607.14661v1
+- why-now: 개인 비서 agent가 모바일로 내려오면 privacy, offline, latency 요구 때문에 서버형 RAG나 단순 모델 압축만으로는 부족하다.
+- angle: “온디바이스 RAG는 작은 LLM 하나가 아니라 perception·memory·focus·thinking 역할 분리 문제” — native graph memory, continual NER, edge resource budget을 personal agent 아키텍처로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [on-device-ai, rag, mobile-agent, memory]
+- status: idea
+
+### 2026-07-18 — [논문 리뷰] D-Cut: batched speculative decoding에서 검증 깊이를 동적으로 자르기
+- type: paper
+- source: http://arxiv.org/abs/2607.14647v1
+- why-now: speculative decoding은 단일 요청에서는 빨라도 높은 동시성 serving에서는 rejected draft token 검증 비용이 오히려 latency를 키울 수 있다.
+- angle: “LLM serving 최적화는 draft를 길게 뽑는 경쟁이 아니라 batch 전체의 verification budget 배분 문제” — adaptive pruning, acceptance probability, throughput/latency trade-off를 inference 운영 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [speculative-decoding, inference, serving, latency]
+- status: idea
+
+### 2026-07-18 — [논문 리뷰] Cost-Aware Security Agents: success rate 말고 비용 대비 성공을 보자
+- type: paper
+- source: http://arxiv.org/abs/2607.15263v1
+- why-now: 보안 agent는 reasoning step, tool call, telemetry query가 모두 비용이며 “무제한 budget에서 최고 성공률”은 운영 배포 판단에 부족하다.
+- angle: “security agent benchmark는 exploit 성공률보다 inference spend와 tool spend를 함께 봐야 한다” — offensive/defensive task, fixed-cost comparison, budget-aware agent routing을 DevSecOps 운영 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [security-agent, evaluation, cost-optimization, devsecops]
+- status: idea
+
+### 2026-07-18 — Microsoft MCP catalog: 공식 MCP server 묶음으로 보는 enterprise tool integration
+- type: tech
+- source: https://github.com/microsoft/mcp
+- why-now: MCP server가 개별 PoC에서 enterprise data access와 tool integration 계층으로 이동하면서, 공식 server catalog와 운영 패턴을 기준으로 삼을 필요가 생겼다.
+- angle: “MCP 도입은 server 하나 붙이기가 아니라 catalog·auth·data boundary·versioning 운영 문제” — Microsoft 공식 MCP server 구현들을 기준으로 agent tool platform 체크리스트를 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, enterprise-ai, tool-integration, github-repo]
+- status: idea
+
+### 2026-07-18 — Agent Substrate: agent runtime의 core system abstraction 살펴보기
+- type: tech
+- source: https://github.com/agent-substrate/substrate
+- why-now: agent framework가 늘수록 모델 wrapper보다 state, tools, permissions, run lifecycle을 담는 공통 substrate 설계가 더 중요해지고 있다.
+- angle: “agent를 앱 기능으로 보지 말고 substrate 위에서 돌아가는 workload로 본다” — runtime core, state boundary, tool integration, orchestration abstraction을 repo architecture 중심으로 소개한다.
+- difficulty: medium
+- freshness: 4
+- practicality: 4
+- confidence: 3
+- suggested-category: tutorial
+- suggested-tags: [agent-runtime, orchestration, framework, github-repo]
+- status: idea

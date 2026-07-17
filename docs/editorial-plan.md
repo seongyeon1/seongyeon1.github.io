@@ -200,6 +200,11 @@
 | 아이디어 | 미정 | [논문 리뷰] AgentCheck — MCP agent failure를 reproduce-intervene-mitigate 루프로 관리하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.11098 — tool timeout/stale result/description poisoning을 재현 가능한 regression case와 mitigation workbench로 운영 |
 | 아이디어 | 미정 | [논문 리뷰] Harness Handbook — evolving agent harness를 읽고 고치는 법 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.13285 — prompt/state/tool/orchestration harness를 가독성·탐색성·편집성 있는 configuration substrate로 다루기 |
 | 아이디어 | 미정 | jcode: hash-anchored edits와 LSP를 갖춘 coding agent harness | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — hash-anchored edit, LSP context, subagent/tool routing을 coding agent runtime architecture로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] MCPEvol-Bench — MCP server 변화에 agent가 적응하는지 평가하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.14642 — MCP mutation operator, tool description drift, backward compatibility, regression suite 설계 |
+| 아이디어 | 미정 | [논문 리뷰] SearchOS-V1 — deep search agent의 진행 상태를 공유 메모리로 만들기 | paper-review | 논문 리뷰 | | arXiv 2607.15257 — relational schema completion, shared state, multi-agent search collaboration, evidence-grounded aggregation |
+| 아이디어 | 미정 | [논문 리뷰] SEED — agentic RL에서 trajectory를 hindsight skill로 증류하기 | paper-review | 논문 리뷰 | | arXiv 2607.14777 — on-policy trajectory를 hindsight skill로 바꾸는 post-training 데이터 flywheel |
+| 아이디어 | 미정 | [논문 리뷰] D-Cut — batched speculative decoding에서 검증 깊이를 동적으로 자르기 | paper-review | AI 추론 최적화 | | arXiv 2607.14647 — batch 전체 verification budget, adaptive pruning, serving latency/throughput trade-off |
+| 아이디어 | 미정 | Microsoft MCP catalog: 공식 MCP server 묶음으로 보는 enterprise tool integration | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — catalog, auth, data boundary, versioning을 agent tool platform 운영 체크리스트로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
