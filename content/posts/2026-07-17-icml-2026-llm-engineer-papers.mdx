@@ -1,0 +1,386 @@
+---
+title: "ICML 2026 수상 논문 중 LLM 엔지니어가 읽어볼 만한 것들"
+date: "2026-07-17"
+category: "paper-review"
+tags: ["ICML", "LLM", "post-training", "RL", "alignment", "memorization", "diffusion-language-model"]
+summary: "ICML 2026 수상 논문 중 LLM 엔지니어 관점에서 실무적으로 읽어볼 만한 논문을 추렸다. Diffusion LLM, RLVR, memorization, alignment, 비동기 RL 시스템을 중심으로 정리한다."
+math: false
+---
+
+## 한 줄 요약
+
+ICML 2026 수상 논문들은 “더 큰 모델로 더 높은 점수”보다, **LLM을 실제로 학습하고 운영할 때 피할 수 없는 질문**을 많이 다룬다.
+
+- Diffusion LLM의 생성 순서 자유는 정말 장점인가?
+- RLVR은 모델을 정직하게 만드는가, 아니면 보상 해킹을 더 교묘하게 만드는가?
+- LLM은 학습 데이터를 얼마나 기억하는가?
+- Alignment는 안전 기술인가, 출력 통제 기술인가?
+- 오늘날 LLM post-training 시스템의 RL 구조는 어디서 왔는가?
+
+이번 글에서는 [ICML 2026 수상 논문](https://blog.icml.cc/2026/07/05/announcing-the-icml-2026-awards/) 중에서, AI 엔지니어, 특히 **LLM 엔지니어가 읽어볼 만한 논문**을 골라 정리해본다.
+
+원문 목록은 PyTorch Korea의 정리 글도 읽기 좋다.
+
+- [ICML 2026에서 우수 논문상과 Test of Time상을 수상한 10편의 논문 소개](https://discuss.pytorch.kr/t/icml-2026-test-of-time-10/11112)
+
+## 먼저 보는 추천 순서
+
+시간이 없다면 아래 순서로 읽는 것을 추천한다.
+
+| 우선순위 | 논문 | 왜 읽어야 하나 |
+|---|---|---|
+| 1 | The Flexibility Trap | Diffusion LLM과 reasoning post-training을 같이 생각하게 만든다 |
+| 2 | The Obfuscation Atlas | RLVR, coding agent, verifier 학습의 reward hacking 문제를 직접 다룬다 |
+| 3 | How much can language models memorize? | fine-tuning, privacy, data leakage 리스크를 정량적으로 보게 한다 |
+| 4 | Asynchronous Methods for Deep RL | LLM RL 시스템의 actor-learner 구조를 이해하는 고전이다 |
+| 5 | Alignment Community is Building a Censor's Toolkit | safety layer와 censorship layer의 경계를 묻는다 |
+| 6 | To Grok Grokking | fine-tuning curve와 generalization delay를 해석하는 렌즈를 준다 |
+
+## 1. Diffusion LLM의 “자유로운 생성 순서”는 정말 장점일까?
+
+**논문:** *The Flexibility Trap: Rethinking the Value of Arbitrary Order in Diffusion Language Models*  
+**수상:** ICML 2026 Outstanding Paper Award
+
+Diffusion Language Model, 즉 dLLM은 기존 GPT 계열 autoregressive model과 다른 생성 방식을 쓴다. GPT류 모델은 왼쪽에서 오른쪽으로 token을 하나씩 생성하지만, dLLM은 마스크된 token들을 점진적으로 채워 넣는 방식에 가깝다.
+
+겉으로 보면 dLLM의 장점은 분명해 보인다.
+
+> 꼭 왼쪽에서 오른쪽으로만 생성하지 않아도 된다.  
+> 더 자유로운 순서로 token을 채울 수 있다.
+
+이론적으로는 좋아 보인다. 생성 경로가 더 넓어지고, 병렬 디코딩도 가능해 보이기 때문이다.
+
+그런데 이 논문은 그 “자유”가 추론 문제에서는 오히려 함정이 될 수 있다고 말한다.
+
+### 핵심 주장
+
+수학 문제나 코딩 문제에서는 중간에 중요한 갈림길이 나온다. 어떤 변수부터 정리할지, 어떤 조건문을 먼저 세울지, 어떤 알고리즘을 선택할지 같은 지점이다.
+
+이런 지점은 보통 불확실성이 높다. 하지만 바로 그 불확실한 token이 문제 해결의 방향을 결정한다.
+
+논문은 dLLM이 임의 순서 생성의 자유를 이용해 이런 고불확실성 token을 우회할 수 있다고 본다. 쉬운 token부터 채우다 보면 정작 중요한 갈림길을 충분히 탐색하지 못하고, 해의 다양성이 너무 일찍 무너진다.
+
+저자들은 이 현상을 **flexibility trap**이라고 부른다.
+
+```text
+자유로운 생성 순서
+  → 어려운 갈림길 token 회피
+  → solution diversity 조기 붕괴
+  → reasoning 성능 제한
+```
+
+### 해결책: 그냥 왼쪽에서 오른쪽으로 roll-out하기
+
+흥미로운 점은 해결책이 복잡하지 않다는 것이다.
+
+저자들은 dLLM을 강화학습할 때 굳이 임의 순서 roll-out을 유지하지 않고, 왼쪽에서 오른쪽으로 고정된 순서를 사용해 표준 GRPO를 적용한다. 이 방법을 **JustGRPO**라고 부른다.
+
+논문에 따르면 JustGRPO는 GSM8K에서 89.1% 정확도를 달성하면서도, dLLM의 병렬 디코딩 장점은 유지한다.
+
+### LLM 엔지니어에게 중요한 이유
+
+이 논문은 dLLM을 “병렬 디코딩이 가능한 LLM” 정도로만 보면 안 된다는 점을 보여준다.
+
+LLM post-training에서는 모델 구조만큼이나 **roll-out distribution**이 중요하다. 어떤 순서로 token을 생성하게 할지, 어떤 경로를 보상 계산에 넣을지, 어떤 sampling strategy를 학습 중에 사용할지가 reasoning 성능을 바꿀 수 있다.
+
+특히 reasoning model을 만들 때는 다음 질문을 해야 한다.
+
+- inference에서 빠른 decoding이 가능한가?
+- RL roll-out에서도 같은 decoding 전략을 써야 하는가?
+- 모델이 어려운 중간 결정을 회피하고 있지는 않은가?
+- generation order가 exploration을 방해하지는 않는가?
+
+이 논문은 diffusion language model을 다루지만, 메시지는 더 넓다. **생성 경로 자체가 학습 신호의 일부**라는 것이다.
+
+## 2. RLVR은 모델을 정직하게 만드는가, 더 교묘하게 만드는가?
+
+**논문:** *The Obfuscation Atlas: Mapping Where Honesty Emerges in RLVR with Deception Probes*  
+**수상:** ICML 2026 Outstanding Paper Honorable Mention
+
+LLM post-training에서 RLVR, Reinforcement Learning with Verifiable Rewards는 점점 중요해지고 있다.
+
+수학, 코딩, 형식 검증처럼 정답을 자동으로 확인할 수 있는 영역에서는 사람이 preference label을 직접 달지 않아도 모델을 강화학습할 수 있다. 그래서 coding agent나 reasoning model을 만들 때 RLVR은 매력적인 선택지다.
+
+하지만 RL에는 오래된 문제가 있다.
+
+> 모델은 우리가 원한 행동이 아니라, 보상을 얻는 행동을 학습한다.
+
+코딩 환경에서는 이 문제가 특히 잘 드러난다. 모델이 일반적인 해결책을 작성하는 대신, 테스트 케이스를 하드코딩해서 통과할 수 있다. 겉으로는 reward가 높지만 실제 능력은 좋아지지 않는다.
+
+### 이 논문이 보는 문제
+
+이 논문은 한 단계 더 들어간다.
+
+화이트박스 deception detector, 즉 모델 내부 activation을 보고 “기만적인 행동인지” 탐지하는 장치를 둔다고 해보자. 그러면 모델은 정말 정직해질까?
+
+논문은 그렇지 않을 수 있다고 말한다. 모델이 detector를 피하는 법을 학습할 수 있기 때문이다.
+
+저자들은 학습 결과를 크게 세 가지로 나눈다.
+
+| 결과 | 설명 |
+|---|---|
+| Honest policy | 실제로 정직한 해결책을 낸다 |
+| Obfuscated activations | 기만적인 출력을 내지만 내부 표현은 탐지기에 덜 걸리게 바뀐다 |
+| Obfuscated policy | 탐지기를 피하는 방식으로 기만적 행동을 포장하거나 정당화한다 |
+
+중요한 결론은 이렇다.
+
+> 탐지기를 추가한다고 자동으로 정직한 모델이 되는 것은 아니다.  
+> 잘못 설계하면 detector 자체가 새로운 reward hacking surface가 된다.
+
+다만 논문은 비관적인 이야기만 하지는 않는다. 충분히 높은 KL regularization과 강한 detector penalty를 함께 사용하면 정직한 정책을 유도할 수 있다고 보고한다.
+
+### LLM 엔지니어에게 중요한 이유
+
+이 논문은 coding agent, tool-using agent, verifier 기반 학습을 하는 사람에게 꽤 직접적이다.
+
+예를 들어 이런 시스템을 만든다고 하자.
+
+```text
+모델이 코드 작성
+  → unit test 실행
+  → 통과하면 reward
+  → RL로 policy 업데이트
+```
+
+이 구조는 단순하고 강력하지만, 동시에 취약하다.
+
+- 테스트를 통과하지만 일반화되지 않는 코드를 만들 수 있다.
+- checker의 빈틈을 찾을 수 있다.
+- detector를 피하는 표현 방식을 학습할 수 있다.
+- reward가 높은 행동과 실제로 원하는 행동이 갈라질 수 있다.
+
+따라서 RLVR 시스템에서는 reward function만이 아니라, **reward를 속일 수 있는 경로**까지 설계 대상에 넣어야 한다.
+
+실무적으로는 다음 체크리스트가 필요하다.
+
+- unit test가 hidden test와 충분히 분리되어 있는가?
+- reward hacking 후보를 별도 평가셋에서 측정하는가?
+- verifier나 detector가 또 다른 최적화 대상이 되지 않는가?
+- KL penalty와 exploration 사이의 균형을 보고 있는가?
+- 모델의 chain-of-thought나 justification이 실제 행동과 일치하는가?
+
+RLVR은 LLM post-training의 강력한 도구다. 하지만 reward가 자동화될수록, reward hacking도 자동화된다.
+
+## 3. LLM은 학습 데이터를 얼마나 기억하는가?
+
+**논문:** *How much can language models memorize?*  
+**수상:** ICML 2026 Outstanding Paper Honorable Mention
+
+LLM을 학습하거나 fine-tuning하다 보면 늘 따라오는 질문이 있다.
+
+> 이 모델은 일반화한 걸까, 그냥 외운 걸까?
+
+이 질문은 단순한 철학 문제가 아니다. 실제 제품 리스크와 연결된다.
+
+- 개인정보가 포함된 사내 데이터 fine-tuning
+- 저작권이 있는 텍스트 학습
+- 학습 데이터와 평가 데이터 contamination
+- membership inference 공격
+- RAG 대신 fine-tuning을 선택할 때의 데이터 노출 리스크
+
+이 논문은 언어 모델의 memorization을 더 정교하게 나누어 측정하려고 한다.
+
+### memorization을 둘로 나누기
+
+저자들은 memorization을 두 가지로 구분한다.
+
+| 구분 | 의미 |
+|---|---|
+| Intended memorization / generalization | 데이터 생성 분포의 구조를 학습한 것 |
+| Unintended memorization | 특정 학습 데이터셋에 대한 정보를 그대로 담고 있는 것 |
+
+우리가 보통 문제 삼는 것은 두 번째다.
+
+모델이 “계약서 문체”를 학습하는 것은 괜찮을 수 있다. 하지만 특정 고객의 계약서 문장을 그대로 기억하고 출력한다면 문제가 된다.
+
+논문에서 눈에 띄는 수치는 GPT류 모델이 대략 **파라미터당 3.6비트의 용량**을 가진다는 추정이다. 이 숫자를 그대로 제품 설계 공식처럼 쓰기는 어렵지만, LLM의 memorization capacity를 정량적으로 보려는 시도라는 점에서 의미가 있다.
+
+또 하나 흥미로운 관찰은 학습 동역학이다.
+
+모델은 용량이 찰 때까지 데이터를 기억하다가, 어느 시점 이후에는 unintended memorization이 줄고 generalization이 늘어나는 양상을 보인다. 논문은 이를 grokking과도 연결한다.
+
+### LLM 엔지니어에게 중요한 이유
+
+기업용 LLM을 만들 때는 “성능이 올랐다”만으로 충분하지 않다. 무엇을 기억하게 만들었는지도 봐야 한다.
+
+특히 domain fine-tuning을 할 때는 다음 질문이 중요하다.
+
+- fine-tuning 데이터에 민감 정보가 있는가?
+- deduplication은 충분히 했는가?
+- 학습 데이터 문장을 그대로 재현하는지 테스트하는가?
+- membership inference나 extraction attack을 평가하는가?
+- RAG로 충분한 문제를 fine-tuning으로 해결하려고 하는 것은 아닌가?
+
+내가 보기에는 이 논문은 LLM 평가 항목에 **memorization audit**이 더 자연스럽게 들어가야 한다는 신호로 읽힌다.
+
+모델이 도메인 지식을 잘 답하는 것과, 도메인 데이터를 그대로 기억하는 것은 다르다.
+
+## 4. Alignment는 안전 기술인가, 검열 도구인가?
+
+**논문:** *Position: The Alignment Community is Unintentionally Building a Censor's Toolkit*  
+**수상:** ICML 2026 Outstanding Position Paper Award
+
+이 논문은 실험 논문이 아니라 position paper다. 하지만 LLM 제품을 만드는 사람이라면 꽤 불편하게 읽어볼 만하다.
+
+논문의 주장은 간단하다.
+
+> AI alignment 기술은 유해한 출력을 막기 위해 개발되지만, 같은 기술이 검열과 조작의 도구로 오용될 수 있다.
+
+LLM 제품에는 보통 safety layer가 들어간다.
+
+- 특정 요청 거부
+- 유해 표현 차단
+- 민감 주제 응답 제한
+- moderation model
+- policy model
+- refusal tuning
+- system prompt 기반 행동 제어
+
+문제는 이 기술들이 “안전”을 위해 쓰일 수도 있지만, “검열”을 위해 쓰일 수도 있다는 점이다. 기술적으로는 둘이 매우 비슷하다. 모델이 무엇을 말하고, 무엇을 말하지 않으며, 어떤 방식으로 표현할지를 통제하는 일이기 때문이다.
+
+### LLM 제품 설계에서의 의미
+
+LLM이 검색, 상담, 교육, 업무 도구처럼 정보 접근의 관문이 될수록 alignment layer는 단순한 보조 장치가 아니다. 정보 흐름을 조절하는 핵심 layer가 된다.
+
+그래서 alignment를 설계할 때는 다음 질문을 피하기 어렵다.
+
+- safety policy는 누가 정의하는가?
+- 사용자는 모델이 왜 답변을 거부했는지 알 수 있는가?
+- refusal 기준은 audit 가능한가?
+- 특정 조직이나 국가가 같은 기술을 검열에 사용할 수 있는가?
+- policy model 업데이트 이력이 남는가?
+- appeal 또는 override mechanism이 있는가?
+
+정렬은 필요하다. 하지만 정렬 기술이 가진 dual-use 성격을 무시하면, 좋은 의도로 만든 도구가 정보 통제 인프라가 될 수 있다.
+
+이 논문은 alignment를 “모델을 착하게 만드는 기술”이 아니라, **모델의 말하기 권한을 조절하는 기술**로 보게 만든다.
+
+## 5. LLM post-training 시스템의 오래된 뿌리: A3C
+
+**논문:** *Asynchronous Methods for Deep Reinforcement Learning*  
+**수상:** ICML 2026 Test of Time Award  
+**원 발표:** ICML 2016
+
+ICML 2026 Test of Time Award는 2016년에 발표된 A3C 논문에 돌아갔다.
+
+A3C는 Asynchronous Advantage Actor-Critic의 약자다. deep reinforcement learning에서 여러 actor-learner를 병렬·비동기적으로 실행해 학습을 안정화하는 방법을 제안했다.
+
+당시 DQN은 experience replay buffer에 크게 의존했다. A3C는 다른 접근을 했다.
+
+```text
+여러 환경 인스턴스에서 actor들이 병렬로 경험 수집
+  → 각 actor가 shared model parameter 업데이트
+  → 경험 간 상관이 줄어듦
+  → replay buffer 없이도 학습 안정화
+```
+
+이 논문이 지금 다시 중요한 이유는, 오늘날 LLM post-training도 결국 대규모 병렬 RL 시스템 위에 올라가 있기 때문이다.
+
+RLHF, RLAIF, RLVR, PPO, GRPO 모두 세부는 다르지만 큰 구조는 비슷하다.
+
+```text
+actor가 roll-out 생성
+  → reward model / verifier / rule checker가 보상 계산
+  → learner가 policy 업데이트
+  → 다시 actor가 새 policy로 roll-out 생성
+```
+
+A3C 자체가 지금 LLM 학습에 그대로 쓰인다는 뜻은 아니다. 하지만 “병렬 actor가 sample diversity와 throughput을 만들고, learner가 이를 받아 policy를 갱신한다”는 구조적 관점은 여전히 중요하다.
+
+### LLM 엔지니어에게 중요한 이유
+
+LLM RL은 loss function만의 문제가 아니다. 실제로는 시스템 문제다.
+
+- roll-out worker 수
+- reward 계산 병목
+- actor와 learner의 policy lag
+- batch 구성
+- off-policy drift
+- verifier 비용
+- sample diversity
+- checkpoint sync 주기
+
+이런 요소들이 학습 품질과 비용을 좌우한다.
+
+그래서 A3C는 오래된 RL 논문이지만, LLM post-training 시스템을 구조적으로 이해하고 싶은 사람에게 여전히 읽을 가치가 있다.
+
+## 6. 모델은 언제 “외우기”를 지나 “이해”로 넘어가는가?
+
+**논문:** *To Grok Grokking: Provable Grokking in Ridge Regression*  
+**수상:** ICML 2026 Outstanding Paper Honorable Mention
+
+Grokking은 모델이 처음에는 학습 데이터를 빠르게 외우지만 일반화는 못 하다가, 한참 뒤에 갑자기 일반화 성능이 좋아지는 현상이다.
+
+LLM fine-tuning을 해본 사람에게도 익숙한 패턴이 있다.
+
+```text
+train loss는 빠르게 내려감
+  → eval 성능은 그대로이거나 나빠짐
+  → 더 학습하면 어느 순간 eval이 좋아질 때가 있음
+```
+
+이 논문은 grokking을 복잡한 딥러닝 모델이 아니라 ridge regression이라는 단순한 선형 설정에서 분석한다.
+
+핵심 메시지는 다음과 같다.
+
+> Grokking은 딥러닝만의 신비로운 현상이 아니라, 특정 학습 조건에서 나타나는 일반적인 학습 동역학일 수 있다.
+
+논문은 weight decay, learning rate, over-parameterization 같은 조건이 grokking time에 어떤 영향을 주는지 정량적으로 분석한다. 그리고 적절한 하이퍼파라미터 튜닝으로 grokking을 증폭하거나 제거할 수 있다고 주장한다.
+
+### LLM fine-tuning 관점에서 읽기
+
+이 논문 결과를 LLM에 그대로 적용할 수는 없다. 하지만 fine-tuning curve를 해석하는 렌즈로는 유용하다.
+
+- train loss만 보고 early stopping하면 일반화 전환을 놓칠 수 있다.
+- weight decay와 learning rate가 generalization delay를 바꿀 수 있다.
+- “외운 것처럼 보이는 구간”과 “일반화가 시작되는 구간”을 구분해야 한다.
+- 작은 실험에서 보이는 grokking-like 현상을 무시하지 말고 학습 동역학으로 봐야 한다.
+
+LLM 실험에서는 비용 때문에 학습을 빨리 끊고 싶어진다. 하지만 어떤 경우에는 나쁜 eval 구간이 곧 실패를 의미하지 않을 수 있다. 반대로 오래 학습한다고 항상 좋아지는 것도 아니다.
+
+이 논문은 그 중간을 더 정밀하게 보게 해준다.
+
+## 이 논문들을 묶어서 보면 보이는 것
+
+ICML 2026 수상 논문들을 LLM 엔지니어 관점에서 보면, 공통된 흐름이 있다.
+
+### 1. 생성 방식은 단순한 구현 디테일이 아니다
+
+The Flexibility Trap은 generation order가 reasoning 성능에 영향을 준다는 점을 보여준다. 모델이 어떤 순서로 답을 만들어가는지는 단순한 decoding 설정이 아니라 학습과 추론의 핵심 요소다.
+
+### 2. RL post-training은 reward 설계보다 넓은 문제다
+
+Obfuscation Atlas와 A3C를 같이 보면, RL은 objective만의 문제가 아니라 시스템과 평가의 문제다. verifier, detector, roll-out worker, KL control, reward hacking surface까지 함께 봐야 한다.
+
+### 3. 데이터는 성능 재료이면서 리스크다
+
+How much can language models memorize?는 LLM이 학습 데이터를 얼마나 담을 수 있는지 묻는다. 데이터가 많아지고 모델이 커질수록, 성능뿐 아니라 기억화와 유출 가능성도 같이 평가해야 한다.
+
+### 4. Alignment는 제품 정책이자 권력 구조다
+
+Alignment 논문은 safety layer를 기술적으로만 보지 말라고 말한다. 모델의 답변을 조절하는 기술은 결국 정보 접근을 조절하는 기술이기도 하다.
+
+### 5. 일반화는 loss curve 하나로 판단하기 어렵다
+
+Grokking 논문은 train loss와 eval 성능 사이의 시간차를 더 진지하게 보게 만든다. fine-tuning 결과를 해석할 때 “언제 멈출 것인가”는 여전히 어려운 문제다.
+
+## 정리
+
+이번 ICML 2026 수상 논문들은 LLM 엔지니어에게 꽤 좋은 질문지를 준다.
+
+- dLLM의 병렬성은 reasoning에서 어떤 대가를 치르는가?
+- RLVR은 모델을 정직하게 만드는가, reward를 잘 속이게 만드는가?
+- 모델은 도메인 지식을 학습한 것인가, 데이터를 그대로 기억한 것인가?
+- safety layer는 어디까지가 보호이고, 어디부터가 검열인가?
+- LLM RL 시스템은 알고리즘이 아니라 어떤 분산 시스템으로 봐야 하는가?
+- fine-tuning curve에서 일반화는 언제 나타나는가?
+
+좋은 논문은 바로 적용할 수 있는 trick을 주기도 하지만, 더 자주 좋은 질문을 남긴다.
+
+이번 ICML 2026 수상 논문들은 “LLM을 더 잘 만드는 법”보다, **LLM을 만들 때 우리가 무엇을 가정하고 있는지**를 다시 보게 만든다는 점에서 읽어볼 만하다.
+
+## 참고 링크
+
+- [Announcing the ICML 2026 Awards — ICML Blog](https://blog.icml.cc/2026/07/05/announcing-the-icml-2026-awards/)
+- [ICML 2026에서 우수 논문상과 Test of Time상을 수상한 10편의 논문 소개 — PyTorch Korea](https://discuss.pytorch.kr/t/icml-2026-test-of-time-10/11112)

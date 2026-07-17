@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 17 Jul 2026 02:33:55 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 17 Jul 2026 13:47:13 GMT</lastBuildDate>
     <item>
       <title>AI 기본기 4: Transformer와 Self-Attention — 문맥을 직접 비교하는 모델</title>
       <link>https://seongyeon1.github.io/blog/2026-07-17-ai-fundamentals-transformer-attention/</link>
@@ -19,6 +19,21 @@
       <category>attention</category>
       <category>LLM</category>
       <category>deep-learning</category>
+    </item>
+    <item>
+      <title>ICML 2026 수상 논문 중 LLM 엔지니어가 읽어볼 만한 것들</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-17-icml-2026-llm-engineer-papers/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-17-icml-2026-llm-engineer-papers/</guid>
+      <description>ICML 2026 수상 논문 중 LLM 엔지니어 관점에서 실무적으로 읽어볼 만한 논문을 추렸다. Diffusion LLM, RLVR, memorization, alignment, 비동기 RL 시스템을 중심으로 정리한다.</description>
+      <pubDate>Fri, 17 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>ICML</category>
+      <category>LLM</category>
+      <category>post-training</category>
+      <category>RL</category>
+      <category>alignment</category>
+      <category>memorization</category>
+      <category>diffusion-language-model</category>
     </item>
     <item>
       <title>AI 기본기 3: 표현 학습과 임베딩 — 모델은 세상을 어떤 좌표계로 바꾸는가</title>
