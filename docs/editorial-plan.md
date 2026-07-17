@@ -196,6 +196,10 @@
 | 아이디어 | 미정 | [논문 리뷰] No-Reference LLM Judges — 정답 없는 평가에서 generous bias 줄이기 | paper-review | AI 평가/운영 | | arXiv 2607.12885 — rubric anchoring, calibration, judge drift monitor를 agent eval 운영 체크리스트로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] PalmClaw — mobile-first on-device agent framework의 설계 포인트 | paper-review | Agent/MCP 실전 | | arXiv 2607.13027 — native mobile tool interface, 앱 sandbox, privacy boundary를 personal agent runtime 관점으로 해석 |
 | 아이디어 | 미정 | hud-python — agent RL environment와 eval을 한 번 정의해 재사용하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — environment API, rollout, reward/evaluator 재사용, CI regression suite를 agentic RL 운영 루프로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] TRACE — long-horizon agent의 turn-level credit assignment | paper-review | 논문 리뷰 | | arXiv 2607.13988 — final outcome reward를 turn별 dense supervision으로 바꾸는 agent post-training/eval harness 설계 |
+| 아이디어 | 미정 | [논문 리뷰] AgentCheck — MCP agent failure를 reproduce-intervene-mitigate 루프로 관리하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.11098 — tool timeout/stale result/description poisoning을 재현 가능한 regression case와 mitigation workbench로 운영 |
+| 아이디어 | 미정 | [논문 리뷰] Harness Handbook — evolving agent harness를 읽고 고치는 법 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.13285 — prompt/state/tool/orchestration harness를 가독성·탐색성·편집성 있는 configuration substrate로 다루기 |
+| 아이디어 | 미정 | jcode: hash-anchored edits와 LSP를 갖춘 coding agent harness | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — hash-anchored edit, LSP context, subagent/tool routing을 coding agent runtime architecture로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

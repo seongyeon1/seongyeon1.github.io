@@ -3494,3 +3494,107 @@
 - suggested-category: tutorial
 - suggested-tags: [domain-agent, agent-benchmark, industry40, orchestration]
 - status: idea
+
+### 2026-07-17 — [논문 리뷰] TRACE: long-horizon agent의 turn-level credit assignment
+- type: paper
+- source: http://arxiv.org/abs/2607.13988v1
+- why-now: multi-turn tool agent가 수십~수백 단계 trajectory를 만들면서 final outcome reward만으로는 어느 turn이 성공/실패에 기여했는지 학습하기 어려워지고 있다.
+- angle: “agent post-training의 병목은 더 긴 rollout이 아니라 turn별 credit assignment” — reward estimation, tool trajectory logging, dense supervision을 agent RL 운영 설계로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, reinforcement-learning, credit-assignment, post-training]
+- status: idea
+
+### 2026-07-17 — [논문 리뷰] Do Agent Optimizers Compound?: Terminal-Bench 2.0으로 continual optimization 보기
+- type: paper
+- source: http://arxiv.org/abs/2607.14004v1
+- why-now: agent optimizer 논문들은 보통 고정 benchmark에서 한 번 개선된 숫자를 보여주지만, 실제 배포에서는 실패 사례가 계속 쌓이고 optimizer를 반복 적용한다.
+- angle: “agent 최적화는 one-shot leaderboard gain이 아니라 recursive maintenance loop” — optimizer compounding, regression, benchmark leakage, harness update policy를 개발자 agent 운영법으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, terminal-bench, optimization, regression]
+- status: idea
+
+### 2026-07-17 — [논문 리뷰] DeepStress: poor-quality evidence로 deep search agent를 스트레스 테스트하기
+- type: paper
+- source: http://arxiv.org/abs/2607.13920v1
+- why-now: deep search agent가 정상 benchmark에서는 좋아 보여도 실제 웹/문서 검색에서는 저품질 근거, 오염된 문서, 불완전 evidence에 자주 노출된다.
+- angle: “research agent 평가는 좋은 검색 결과에서의 정확도보다 나쁜 evidence를 만났을 때의 복구력” — evidence perturbation, robustness metric, retrieval QA gate를 설계한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [search-agent, robustness, retrieval, evaluation]
+- status: idea
+
+### 2026-07-17 — [논문 리뷰] Experience Memory Graph: agent 실패 경험을 one-shot error correction으로 재사용하기
+- type: paper
+- source: http://arxiv.org/abs/2607.13884v1
+- why-now: long-horizon agent는 같은 유형의 실수를 반복하기 쉬운데, 단순 trajectory 저장이나 self-reflection만으로는 실패 원인과 복구 전략을 구조화하기 어렵다.
+- angle: “agent memory는 성공 기록보다 실패-복구 graph가 더 가치 있을 수 있다” — state/action/observation graph, error localization, reusable correction pattern을 memory system 설계로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, error-correction, long-horizon, graph]
+- status: idea
+
+### 2026-07-17 — [논문 리뷰] AgentCheck: MCP agent failure를 reproduce-intervene-mitigate 루프로 관리하기
+- type: paper
+- source: http://arxiv.org/abs/2607.11098v3
+- why-now: MCP tool description poisoning, timeout, stale result 같은 배포 중 tool failure는 “한 번 실패했다”가 아니라 재현 가능한 regression case로 관리되어야 한다.
+- angle: “agent QA는 prompt 평가가 아니라 failure workbench 운영” — controlled reproduction, intervention test, mitigation confirmation을 MCP 기반 agent release gate로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [mcp, agent-eval, tool-use, failure-analysis]
+- status: idea
+
+### 2026-07-17 — [논문 리뷰] Harness Handbook: evolving agent harness를 읽고 고치는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.13285v1
+- why-now: agent 성능이 foundation model뿐 아니라 prompt construction, state management, tool invocation, orchestration harness에 의존하면서 harness 자체의 가독성·탐색성·편집성이 중요해졌다.
+- angle: “agent harness는 코드와 문서 사이의 configuration substrate” — navigable harness map, editable boundary, coding agent가 안전하게 harness를 수정하는 workflow를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, coding-agent, maintainability, developer-workflow]
+- status: idea
+
+### 2026-07-17 — jcode: hash-anchored edits와 LSP를 갖춘 coding agent harness
+- type: tech
+- source: https://github.com/1jehuang/jcode
+- why-now: 터미널 coding agent가 diff를 안정적으로 적용하고 repo symbol context를 읽으려면 단순 shell wrapper가 아니라 edit anchoring, LSP, browser/tool harness가 결합된 runtime이 필요하다.
+- angle: “coding agent UX의 핵심은 채팅창이 아니라 수정 안정성과 context toolchain” — hash-anchored edit, LSP context, subagent/tool routing을 repo architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, lsp, agent-harness, github-repo]
+- status: idea
+
+### 2026-07-17 — pdf-reader-mcp: evidence-first 문서 도구를 MCP로 제공하기
+- type: tech
+- source: https://github.com/SylphxAI/pdf-reader-mcp
+- why-now: agent가 PDF 보고서·논문·계약서에서 답을 만들 때 OCR, visual crop, page provenance, citation grounding이 없으면 hallucination과 감사 실패가 커진다.
+- angle: “문서 MCP server는 텍스트 추출기가 아니라 evidence pipeline” — visual crop, OCR provenance, trust report, benchmark-gated extraction을 RAG/agent 문서 처리 패턴으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, document-ai, rag, github-repo]
+- status: idea
