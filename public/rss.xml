@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 16 Jul 2026 02:04:24 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 17 Jul 2026 02:33:55 GMT</lastBuildDate>
+    <item>
+      <title>AI 기본기 4: Transformer와 Self-Attention — 문맥을 직접 비교하는 모델</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-17-ai-fundamentals-transformer-attention/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-17-ai-fundamentals-transformer-attention/</guid>
+      <description>RNN의 순차 처리 병목에서 출발해 self-attention, Q·K·V, scaled dot-product attention, multi-head attention, positional encoding을 모델링 관점에서 이해한다.</description>
+      <pubDate>Fri, 17 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>transformer</category>
+      <category>attention</category>
+      <category>LLM</category>
+      <category>deep-learning</category>
+    </item>
     <item>
       <title>AI 기본기 3: 표현 학습과 임베딩 — 모델은 세상을 어떤 좌표계로 바꾸는가</title>
       <link>https://seongyeon1.github.io/blog/2026-07-16-ai-fundamentals-representation-embedding/</link>

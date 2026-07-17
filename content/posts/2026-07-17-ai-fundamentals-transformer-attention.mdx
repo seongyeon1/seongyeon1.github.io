@@ -1,0 +1,433 @@
+---
+title: "AI 기본기 4: Transformer와 Self-Attention — 문맥을 직접 비교하는 모델"
+date: "2026-07-17"
+category: "concept"
+tags: ["AI기본기", "transformer", "attention", "LLM", "deep-learning"]
+summary: "RNN의 순차 처리 병목에서 출발해 self-attention, Q·K·V, scaled dot-product attention, multi-head attention, positional encoding을 모델링 관점에서 이해한다."
+series: "AI 기본기"
+seriesOrder: 4
+math: true
+---
+
+## 한 줄 요약
+
+Transformer의 핵심은 “문장을 왼쪽에서 오른쪽으로 차례대로 읽는 모델”에서 벗어나, 각 token이 다른 모든 token을 **직접 비교**하며 문맥 표현을 다시 계산한다는 데 있다. Self-attention은 단어 사이의 관계를 고정된 규칙이 아니라 학습 가능한 유사도와 가중합으로 만든다.
+
+지난 글에서는 임베딩과 표현 학습을 봤다. 이번 글에서는 그 표현들이 Transformer 안에서 어떻게 서로를 바라보고, 섞이고, 업데이트되는지 본다. LLM을 이해하려면 여기서 “attention 공식 외우기”가 아니라 **왜 이런 구조가 sequence modeling의 기본 엔진이 됐는지**까지 내려가야 한다.
+
+<Callout type="note">
+Transformer를 “attention 쓰는 모델”이라고만 기억하면 얕다. 더 중요한 질문은 “각 token의 표현을 업데이트할 때 어떤 token을 얼마나 참고할지 모델이 스스로 계산한다”는 점이다.
+</Callout>
+
+## RNN의 병목: 문맥을 순서대로 압축해야 한다
+
+Transformer 이전의 대표적인 sequence 모델은 RNN, LSTM, GRU 계열이었다. 이 모델들은 문장을 순서대로 읽으면서 hidden state를 업데이트한다.
+
+```text
+나는 → 어제 → 카페에서 → 친구를 → 만났다
+```
+
+RNN 관점에서는 대략 이런 흐름이다.
+
+```text
+h1 = f("나는", h0)
+h2 = f("어제", h1)
+h3 = f("카페에서", h2)
+h4 = f("친구를", h3)
+h5 = f("만났다", h4)
+```
+
+이 구조는 자연스럽다. 문장은 순서가 있으니까. 하지만 큰 병목이 있다.
+
+1. **긴 거리 의존성**: 앞쪽 정보가 뒤쪽까지 전달되려면 hidden state를 여러 번 거쳐야 한다.
+2. **순차 처리**: 다음 state는 이전 state가 계산되어야 만들 수 있으므로 병렬화가 어렵다.
+3. **정보 압축**: 과거 문맥을 제한된 hidden state에 계속 눌러 담아야 한다.
+
+예를 들어 이런 문장을 보자.
+
+```text
+The book that the students who studied all night borrowed from the library was surprisingly useful.
+```
+
+`book`과 `was useful`의 관계를 이해하려면 중간에 끼어 있는 긴 수식어구를 지나야 한다. RNN은 이 관계를 hidden state 체인으로 전달해야 한다. Transformer는 다르게 접근한다.
+
+> 각 token이 필요한 token을 직접 보게 하면 안 될까?
+
+이 질문에서 self-attention이 출발한다.
+
+## Self-attention: token이 token을 직접 바라본다
+
+Self-attention은 같은 sequence 안의 token들이 서로를 참고해 각 token의 표현을 다시 계산하는 방식이다.
+
+문장이 다음과 같다고 하자.
+
+```text
+고양이가 소파 위에서 잔다
+```
+
+각 token은 처음에는 embedding vector로 시작한다.
+
+```text
+고양이가 → x1
+소파     → x2
+위에서   → x3
+잔다     → x4
+```
+
+Self-attention layer를 지나면 각 token 표현은 다른 token들을 참고한 새 표현으로 바뀐다.
+
+```text
+고양이가 → z1 = 소파, 위에서, 잔다를 참고해 업데이트된 표현
+소파     → z2 = 고양이가, 위에서, 잔다를 참고해 업데이트된 표현
+위에서   → z3 = 고양이가, 소파, 잔다를 참고해 업데이트된 표현
+잔다     → z4 = 고양이가, 소파, 위에서를 참고해 업데이트된 표현
+```
+
+중요한 점은 모든 token을 똑같이 평균내는 게 아니라는 것이다. `잔다`는 `고양이가`를 많이 참고할 수 있고, `위에서`는 `소파`를 많이 참고할 수 있다. 어떤 token을 얼마나 참고할지는 학습된다.
+
+<Callout type="tip">
+Self-attention을 “문장 내부 검색”처럼 생각하면 감이 온다. 각 token이 query를 던지고, 다른 token들이 key로 응답하며, 최종적으로 value를 섞어 새 표현을 만든다.
+</Callout>
+
+## Q, K, V는 왜 나눌까
+
+Attention 공식에서 가장 많이 나오는 세 글자가 Q, K, V다.
+
+- **Query**: 지금 token이 찾고 싶은 정보의 방향
+- **Key**: 각 token이 “나는 이런 정보다”라고 내놓는 색인
+- **Value**: 실제로 가져와서 섞을 내용
+
+각 입력 token vector $x$는 세 개의 다른 선형 변환을 거쳐 Q, K, V가 된다.
+
+$$
+Q = XW_Q, \quad K = XW_K, \quad V = XW_V
+$$
+
+왜 굳이 셋으로 나눌까? 검색 시스템으로 비유하면 이해하기 쉽다.
+
+```text
+Query: 사용자가 입력한 검색어
+Key: 문서가 검색될 때 쓰이는 색인 표현
+Value: 실제로 사용자에게 보여줄 문서 내용
+```
+
+검색어와 색인은 비교하기 좋은 공간에 있어야 하고, 최종으로 가져올 내용은 또 다른 표현일 수 있다. Attention도 마찬가지다. 어떤 token을 참고할지 계산하는 표현(Q, K)과, 참고한 뒤 섞을 내용(V)을 분리하면 모델이 더 유연해진다.
+
+예를 들어 `bank`라는 단어가 있다고 하자.
+
+```text
+I sat by the bank of the river.
+I deposited money in the bank.
+```
+
+두 문장에서 같은 `bank`라도 참고해야 할 주변 단어가 다르다. 첫 문장에서는 `river`가, 두 번째 문장에서는 `money`가 의미를 결정한다. Self-attention은 현재 token의 query와 주변 token의 key를 비교해 어떤 문맥을 더 볼지 조절한다.
+
+## Scaled dot-product attention
+
+Transformer의 기본 attention은 다음 공식으로 계산된다.
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+$$
+
+이 식을 한 줄씩 풀면 다음과 같다.
+
+### 1. $QK^T$: token 사이의 유사도 계산
+
+$QK^T$는 각 query가 각 key와 얼마나 잘 맞는지 계산한다.
+
+```text
+          key: 고양이   소파   위에서   잔다
+query: 고양이   0.8    0.2    0.1    0.6
+query: 소파     0.1    0.9    0.7    0.2
+query: 위에서   0.1    0.8    0.9    0.3
+query: 잔다     0.7    0.2    0.3    0.9
+```
+
+이 값이 attention score다. 아직 확률은 아니다. 그냥 “얼마나 참고할 만한가”에 가까운 점수다.
+
+### 2. $\sqrt{d_k}$로 나누기: softmax가 너무 날카로워지는 것을 막는다
+
+벡터 차원 $d_k$가 커지면 dot product 값의 크기도 커지기 쉽다. 그러면 softmax가 한두 token에만 과하게 몰릴 수 있다.
+
+$$
+\text{softmax}([1, 2, 3]) \quad \text{vs} \quad \text{softmax}([10, 20, 30])
+$$
+
+두 번째는 거의 마지막 값 하나만 선택하는 것처럼 된다. Attention이 너무 초반부터 날카로워지면 학습이 불안정해질 수 있다. 그래서 $\sqrt{d_k}$로 나눠 score의 스케일을 조정한다.
+
+### 3. softmax: 참고 비율로 바꾼다
+
+Score를 softmax에 넣으면 각 query가 다른 token들을 얼마나 볼지 확률 분포가 된다.
+
+```text
+query: 잔다 → [고양이 0.42, 소파 0.08, 위에서 0.13, 잔다 0.37]
+```
+
+이제 `잔다`의 표현을 업데이트할 때 `고양이`와 자기 자신을 많이 참고하게 된다.
+
+### 4. $\times V$: value를 가중합한다
+
+마지막으로 attention weight로 value vector들을 섞는다.
+
+$$
+z_i = \sum_j \alpha_{ij} v_j
+$$
+
+여기서 $\alpha_{ij}$는 token $i$가 token $j$를 얼마나 참고하는지다. 결과적으로 각 token은 주변 문맥을 반영한 새 표현 $z_i$를 얻는다.
+
+## 코드로 보는 attention의 모양
+
+아래 코드는 scaled dot-product attention의 가장 작은 형태다.
+
+```python title="scaled_dot_product_attention.py"
+import torch
+import torch.nn.functional as F
+
+
+def attention(Q, K, V):
+    d_k = Q.size(-1)
+    scores = Q @ K.transpose(-2, -1) / (d_k ** 0.5)
+    weights = F.softmax(scores, dim=-1)
+    output = weights @ V
+    return output, weights
+
+
+# batch=1, seq_len=4, dim=8
+Q = torch.randn(1, 4, 8)
+K = torch.randn(1, 4, 8)
+V = torch.randn(1, 4, 8)
+
+output, weights = attention(Q, K, V)
+print(output.shape)   # torch.Size([1, 4, 8])
+print(weights.shape)  # torch.Size([1, 4, 4])
+```
+
+여기서 `weights.shape == [1, 4, 4]`라는 점이 중요하다. sequence 길이가 4면 각 token이 4개 token 전체를 보는 matrix가 생긴다. 즉 attention은 token별 표현을 만들기 위해 **token 간 관계 행렬**을 계산한다.
+
+## Masked self-attention: LLM은 미래 token을 보면 안 된다
+
+Encoder-style Transformer는 문장 전체를 볼 수 있다. 하지만 GPT 같은 decoder-only language model은 다음 token을 예측해야 하므로 미래 token을 보면 안 된다.
+
+예를 들어 학습 중 입력이 다음과 같다고 하자.
+
+```text
+나는 오늘 점심에 김치찌개를 먹었다
+```
+
+`점심에` 위치에서 다음 token을 예측할 때 뒤의 `김치찌개를`, `먹었다`를 보면 cheating이다. 그래서 causal mask를 씌운다.
+
+```text
+        나는  오늘  점심에  김치찌개를  먹었다
+나는      O    X     X       X        X
+오늘      O    O     X       X        X
+점심에    O    O     O       X        X
+김치찌개를 O    O     O       O        X
+먹었다    O    O     O       O        O
+```
+
+이 mask 덕분에 각 token은 자기 자신과 과거 token만 볼 수 있다. LLM의 next-token prediction은 이 causal self-attention 위에서 돌아간다.
+
+<Callout type="warning">
+“Transformer는 모든 token을 한 번에 본다”는 말은 절반만 맞다. BERT 같은 encoder는 양방향으로 볼 수 있지만, GPT 같은 decoder-only 모델은 causal mask 때문에 미래 token을 보지 못한다.
+</Callout>
+
+## Multi-head attention: 하나의 관점으로는 부족하다
+
+Single attention head는 하나의 similarity space에서 token 관계를 본다. 하지만 문장에는 여러 종류의 관계가 섞여 있다.
+
+```text
+철수가 영희에게 책을 빌려주었다.
+```
+
+이 문장에는 적어도 여러 관계가 있다.
+
+- 누가 행동했는가? → 철수
+- 누구에게 했는가? → 영희
+- 무엇을 했는가? → 책을 빌려주었다
+- 조사와 어순은 어떤 역할을 하는가? → `가`, `에게`, `을`
+
+Multi-head attention은 Q, K, V를 여러 head로 나눠 각각 다른 관계를 학습하게 한다.
+
+```text
+Head 1: 주어-동사 관계에 민감
+Head 2: 목적어-동사 관계에 민감
+Head 3: 위치/순서 정보에 민감
+Head 4: 의미적으로 가까운 단어에 민감
+```
+
+물론 실제 head가 이렇게 깔끔하게 해석되는 것은 아니다. 하지만 모델링 관점에서는 중요하다. 하나의 attention map만 쓰는 대신 여러 attention map을 병렬로 만들고, 결과를 합쳐 더 풍부한 표현을 만든다.
+
+$$
+\text{MultiHead}(Q,K,V) = \text{Concat}(head_1, \dots, head_h)W_O
+$$
+
+여기서 각 head는 다음과 같다.
+
+$$
+head_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
+$$
+
+즉 multi-head attention은 “여러 종류의 관계 그래프를 동시에 학습한다”에 가깝다.
+
+## Positional encoding: attention만으로는 순서를 모른다
+
+Self-attention만 보면 token들의 순서 정보가 사라진다. Attention은 기본적으로 token 집합 사이의 관계를 계산한다. 그래서 다음 두 문장의 token set이 같다면 순서를 구분하기 어렵다.
+
+```text
+고양이가 강아지를 쫓았다
+강아지가 고양이를 쫓았다
+```
+
+한국어는 조사 덕분에 어느 정도 구분되지만, 순서 정보는 여전히 중요하다. Transformer는 token embedding에 위치 정보를 더한다.
+
+$$
+\text{input} = \text{token embedding} + \text{positional encoding}
+$$
+
+원 논문에서는 sinusoidal positional encoding을 사용했다.
+
+$$
+PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d_{model}}}\right)
+$$
+
+$$
+PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d_{model}}}\right)
+$$
+
+요즘 LLM에서는 RoPE 같은 다른 위치 표현도 많이 쓴다. 세부 방식은 달라도 핵심은 같다. Attention이 token 간 관계를 계산할 수 있게 하되, 그 관계가 **어떤 위치의 token 사이에서 생긴 관계인지** 알려줘야 한다.
+
+## Feed-forward, residual, layer norm까지 있어야 Transformer block이다
+
+Attention만 있으면 Transformer block이 완성되는 것은 아니다. 실제 block에는 보통 다음 요소들이 함께 들어간다.
+
+```text
+입력 x
+  ↓
+Self-Attention
+  ↓
+Residual connection + LayerNorm
+  ↓
+Feed-Forward Network
+  ↓
+Residual connection + LayerNorm
+  ↓
+출력
+```
+
+각 요소의 역할은 다르다.
+
+| 구성요소 | 역할 | 직관 |
+| --- | --- | --- |
+| Self-attention | token 간 정보 교환 | 다른 token을 보고 문맥 업데이트 |
+| Feed-forward network | token별 비선형 변환 | 섞인 정보를 각 위치에서 다시 가공 |
+| Residual connection | 원래 표현 보존과 gradient 흐름 | 너무 깊어져도 학습 가능하게 함 |
+| Layer normalization | activation scale 안정화 | layer마다 값 분포를 정돈 |
+
+Attention은 token 사이를 섞고, feed-forward network는 각 token 위치에서 표현을 더 가공한다. Residual과 normalization은 깊은 모델을 안정적으로 학습하게 만든다.
+
+## Encoder, decoder, decoder-only
+
+Transformer 구조는 목적에 따라 조금씩 달라진다.
+
+### Encoder-only: 이해에 강한 구조
+
+BERT 같은 encoder-only 모델은 양방향 self-attention을 사용한다. 문장 전체를 보고 각 token의 표현을 만든다. 분류, token tagging, embedding 추출 같은 이해 중심 task에 잘 맞는다.
+
+```text
+입력 전체를 양방향으로 봄 → 문맥화된 표현 생성
+```
+
+### Encoder-decoder: 입력을 읽고 출력을 생성하는 구조
+
+원래 Transformer 논문은 기계번역을 위한 encoder-decoder 구조였다. Encoder가 source 문장을 읽고, decoder가 target 문장을 생성한다. Decoder는 자기 과거 token을 보고, cross-attention으로 encoder 출력을 참고한다.
+
+```text
+source sentence → encoder → memory
+                           ↓
+target prefix → decoder + cross-attention → next token
+```
+
+번역, 요약처럼 입력과 출력이 분리된 sequence-to-sequence task에 자연스럽다.
+
+### Decoder-only: LLM의 기본 구조
+
+GPT 계열은 decoder-only 구조를 쓴다. Causal self-attention으로 이전 token들만 보고 다음 token을 예측한다.
+
+```text
+prompt tokens → causal Transformer blocks → next-token distribution
+```
+
+요즘 LLM이 decoder-only를 많이 쓰는 이유는 단순하다. 텍스트 생성 objective와 구조가 잘 맞고, pretraining 데이터를 next-token prediction 형태로 대규모화하기 쉽다.
+
+## 왜 Transformer가 LLM의 엔진이 되었나
+
+Transformer가 강력해진 이유는 attention 하나만으로 설명되지 않는다. 몇 가지 조건이 맞물렸다.
+
+### 1. 병렬화가 쉽다
+
+RNN은 token을 순서대로 처리해야 하지만, Transformer는 학습 시 sequence 전체의 attention을 matrix 연산으로 계산할 수 있다. GPU/TPU에 잘 맞는다. 모델과 데이터가 커질수록 이 차이는 커진다.
+
+### 2. 긴 거리 관계를 직접 연결한다
+
+Attention에서는 멀리 떨어진 token도 한 번의 attention score로 연결될 수 있다. 정보가 hidden state 체인을 여러 번 통과하지 않아도 된다.
+
+### 3. 표현을 layer마다 다시 구성한다
+
+각 layer는 token 간 관계를 다시 계산하고 표현을 업데이트한다. 낮은 layer에서는 표면적 패턴을, 높은 layer에서는 더 추상적인 문맥 관계를 잡을 수 있다.
+
+### 4. Scaling과 잘 맞았다
+
+Transformer는 대규모 데이터, 큰 모델, 긴 학습과 잘 맞았다. 물론 attention의 계산량은 sequence length에 대해 $O(n^2)$라서 긴 context에서는 비용 문제가 생긴다. 그래서 sparse attention, linear attention, sliding window, KV cache 최적화 같은 연구가 계속 나온다.
+
+## 실무 관점에서 꼭 잡아야 할 감각
+
+Transformer를 공부할 때 다음 감각을 갖고 있으면 LLM 논문과 시스템 글이 훨씬 잘 읽힌다.
+
+### Attention weight는 설명 그 자체가 아니다
+
+Attention weight가 높다고 항상 “모델이 그 단어를 이유로 판단했다”는 뜻은 아니다. Attention은 내부 계산의 일부이지, 완전한 explanation 도구는 아니다. 시각화는 도움이 되지만 과해석하면 위험하다.
+
+### Context length는 공짜가 아니다
+
+Self-attention은 기본적으로 token 수가 늘면 attention matrix가 커진다.
+
+$$
+\text{attention\ matrix\ size} = n \times n
+$$
+
+Context를 길게 넣으면 더 많은 정보를 줄 수 있지만, 계산량·메모리·retrieval noise·position extrapolation 문제가 같이 온다. RAG나 long-context 설계에서 “그냥 다 넣자”가 자주 실패하는 이유다.
+
+### KV cache는 추론 속도의 핵심이다
+
+LLM이 한 token씩 생성할 때 매번 과거 token의 K, V를 다시 계산하면 비효율적이다. 그래서 inference에서는 이전 token들의 key/value를 cache한다. 흔히 말하는 KV cache가 이것이다.
+
+```text
+이전 token들의 K,V 저장 → 새 token의 Q만 계산 → 과거 K,V와 attention
+```
+
+이 감각이 있으면 serving에서 batch, context length, memory 사용량이 왜 중요한지 이해하기 쉬워진다.
+
+## 이번 글의 핵심 정리
+
+Transformer와 self-attention은 다음 흐름으로 이해하면 된다.
+
+1. RNN은 문맥을 순차 hidden state에 압축해야 했다.
+2. Self-attention은 각 token이 다른 token을 직접 참고하게 만든다.
+3. Q, K, V는 “무엇을 찾는가 / 무엇으로 검색되는가 / 무엇을 가져오는가”를 분리한다.
+4. $QK^T$는 token 간 유사도, softmax는 참고 비율, $V$와의 곱은 문맥 정보의 가중합이다.
+5. Multi-head attention은 여러 관계 공간을 병렬로 학습한다.
+6. Positional encoding은 attention에 순서 정보를 넣는다.
+7. Decoder-only Transformer는 causal mask 위에서 next-token prediction을 수행한다.
+8. Transformer는 병렬화, 긴 거리 연결, scaling 친화성 때문에 LLM의 기본 엔진이 되었다.
+
+<Callout type="note">
+다음 편에서는 LLM 학습으로 넘어간다. Transformer가 문맥 표현을 계산하는 엔진이라면, next-token prediction은 그 엔진을 어떤 학습 신호로 훈련시키는지에 대한 이야기다.
+</Callout>
+
+## 참고 자료
+
+- Vaswani et al., [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- Jay Alammar, [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
+- Hugging Face, [The Transformer Architecture](https://huggingface.co/learn/llm-course/chapter1/4)
+- Sebastian Raschka, [Build a Large Language Model From Scratch](https://www.manning.com/books/build-a-large-language-model-from-scratch)
