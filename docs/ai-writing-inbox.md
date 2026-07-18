@@ -3703,3 +3703,94 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-runtime, orchestration, framework, github-repo]
 - status: idea
+
+### 2026-07-19 — [논문 리뷰] Bridge Evidence: multi-step agentic search에서 진짜 유용한 근거란 무엇인가
+- type: paper
+- source: http://arxiv.org/abs/2607.15253v1
+- why-now: agentic search/RAG가 단일 retrieval 점수로 문서를 고르는 동안, 실제 multi-step 탐색에서는 다음 질문을 열어주는 bridge evidence가 성패를 좌우한다는 문제가 커지고 있다.
+- angle: “RAG 근거 평가는 reader에게 바로 도움이 되나가 아니라 다음 탐색 상태를 얼마나 바꾸나를 봐야 한다” — static utility와 causal utility의 차이를 search agent planner 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-search, rag, retrieval, evidence]
+- status: idea
+
+### 2026-07-19 — [논문 리뷰] AutoSynthesis: meta-analysis를 multi-agent evidence pipeline으로 자동화하기
+- type: paper
+- source: http://arxiv.org/abs/2607.15247v1
+- why-now: 연구 에이전트가 단순 논문 검색을 넘어 포함/제외 기준, 데이터 추출, 통계 합성까지 수행하는 end-to-end evidence synthesis로 확장되고 있다.
+- angle: “research agent는 검색 요약기가 아니라 근거 합성 워크플로 엔진이어야 한다” — screening, extraction, verifier, human review boundary를 과학/의료 QA 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, evidence-synthesis, multi-agent, eval]
+- status: idea
+
+### 2026-07-19 — [논문 리뷰] When Words Are Safe But Actions Kill: embodied agent 안전성은 텍스트 필터로 충분할까
+- type: paper
+- source: http://arxiv.org/abs/2607.15218v1
+- why-now: LLM이 로봇·실험 장비·물리 환경 planner로 들어가면 문장 자체는 안전해 보여도 실제 action grounding 단계에서 위험이 발생할 수 있다.
+- angle: “agent safety는 금지 문구 분류가 아니라 action-state risk space 문제” — hidden-state risk probe, physical danger, tool/robot safety gate를 embodied agent 런타임으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [embodied-agent, safety, risk-detection, tool-use]
+- status: idea
+
+### 2026-07-19 — [논문 리뷰] Plover: GUI agent를 plan-centric interaction으로 조종하기
+- type: paper
+- source: http://arxiv.org/abs/2607.15193v1
+- why-now: 실제 GUI 자동화는 동적 UI, 팝업, 상태 drift 때문에 단순 vision-action loop가 사용자 의도를 잃기 쉽고, 계획을 조작 가능한 인터페이스로 드러내는 패턴이 필요하다.
+- angle: “GUI agent UX는 자동 클릭보다 plan을 보여주고 고칠 수 있게 만드는 것” — plan representation, user steering, recovery loop를 desktop/browser agent 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [gui-agent, planning, human-in-the-loop, agent-ux]
+- status: idea
+
+### 2026-07-19 — [논문 리뷰] OmniaBench: general AI agent benchmark를 scenario 다양성으로 다시 보기
+- type: paper
+- source: http://arxiv.org/abs/2607.14989v1
+- why-now: agent benchmark가 특정 tool 환경이나 task 유형에 과적합되기 쉬워, 실제 범용성을 보려면 시나리오·상호작용·검증 방식을 넓혀야 한다는 요구가 커지고 있다.
+- angle: “일반 에이전트 평가는 평균 점수보다 scenario coverage map이 먼저” — task taxonomy, tool ecosystem, failure mode 분석을 agent regression suite 설계로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-benchmark, evaluation, tool-use, general-agent]
+- status: idea
+
+### 2026-07-19 — heym: prompt와 visual canvas를 오가는 self-hosted agent workflow builder
+- type: tech
+- source: https://github.com/heymrun/heym
+- why-now: agent workflow가 코드-only framework와 no-code canvas 사이에서 갈라지는 가운데, RAG·MCP·HITL·observability·eval을 한 self-hosted surface에 묶는 시도가 늘고 있다.
+- angle: “agent builder의 핵심은 드래그앤드롭이 아니라 runtime governance” — workflow graph, human-in-the-loop, trace/eval, token cost tracking을 작은 팀 운영 패턴으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-workflow, mcp, observability, self-hosted]
+- status: idea
+
+### 2026-07-19 — android-agent: 실제 Android 기기를 조작하는 open-source device automation framework
+- type: tech
+- source: https://github.com/ghost-in-the-droid/android-agent
+- why-now: computer-use agent가 브라우저를 넘어 모바일 앱 조작으로 확장되면서, ADB 기반 실제 기기 제어·Python skill·대시보드가 결합된 harness가 실무적으로 중요해지고 있다.
+- angle: “mobile agent harness는 screenshot parser가 아니라 device control plane” — ADB 권한, skill API, real-device feedback, privacy boundary를 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mobile-agent, android, device-automation, github-repo]
+- status: idea

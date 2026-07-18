@@ -205,6 +205,10 @@
 | 아이디어 | 미정 | [논문 리뷰] SEED — agentic RL에서 trajectory를 hindsight skill로 증류하기 | paper-review | 논문 리뷰 | | arXiv 2607.14777 — on-policy trajectory를 hindsight skill로 바꾸는 post-training 데이터 flywheel |
 | 아이디어 | 미정 | [논문 리뷰] D-Cut — batched speculative decoding에서 검증 깊이를 동적으로 자르기 | paper-review | AI 추론 최적화 | | arXiv 2607.14647 — batch 전체 verification budget, adaptive pruning, serving latency/throughput trade-off |
 | 아이디어 | 미정 | Microsoft MCP catalog: 공식 MCP server 묶음으로 보는 enterprise tool integration | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — catalog, auth, data boundary, versioning을 agent tool platform 운영 체크리스트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Bridge Evidence — multi-step agentic search에서 진짜 유용한 근거란 무엇인가 | paper-review | Agentic RAG | | arXiv 2607.15253 — static retrieval utility와 causal utility를 구분해 search agent의 evidence selection/planning을 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Plover — GUI agent를 plan-centric interaction으로 조종하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.15193 — plan representation, user steering, recovery loop를 desktop/browser agent UX 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] AutoSynthesis — meta-analysis를 multi-agent evidence pipeline으로 자동화하기 | paper-review | AI 평가/운영 | | arXiv 2607.15247 — screening, extraction, verifier, human review boundary를 research agent evidence synthesis로 해석 |
+| 아이디어 | 미정 | heym: prompt와 visual canvas를 오가는 self-hosted agent workflow builder | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — RAG, MCP, HITL, observability, eval, token cost tracking을 작은 팀용 runtime governance로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
