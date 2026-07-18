@@ -1,0 +1,320 @@
+---
+title: "AI 기본기 5: Next-Token Prediction과 Instruction Tuning — LLM은 무엇을 배우고 무엇을 맞춰 가는가"
+date: "2026-07-18"
+category: "concept"
+tags: ["AI기본기", "LLM", "pretraining", "instruction-tuning", "RLHF"]
+summary: "Causal language modeling, next-token prediction, pretraining, instruction tuning, RLHF/RLAIF를 하나의 학습 파이프라인으로 연결해 LLM이 실제로 무엇을 최적화하는지 이해한다."
+series: "AI 기본기"
+seriesOrder: 5
+math: true
+---
+
+## 한 줄 요약
+
+LLM은 처음부터 “도움이 되는 비서”로 학습되는 것이 아니다. 먼저 거대한 텍스트에서 **다음 token을 잘 예측하는 모델**로 학습되고, 그 다음 instruction tuning과 preference learning을 거치며 사람이 원하는 응답 형식과 행동에 맞춰진다. 즉 LLM 학습은 하나의 objective가 아니라 **pretraining → instruction tuning → alignment**로 이어지는 여러 목표의 누적이다.
+
+지난 글에서는 Transformer와 self-attention을 봤다. Transformer는 각 token이 다른 token을 직접 참고해 문맥 표현을 업데이트하는 구조였다. 이번 글에서는 그 구조 위에 어떤 학습 목표를 얹으면 GPT류 LLM이 되는지 본다.
+
+<Callout type="note">
+LLM을 “다음 단어 맞히는 모델”이라고만 말하면 절반만 맞다. pretraining 단계에서는 맞지만, 우리가 제품에서 쓰는 ChatGPT류 모델은 instruction tuning, preference optimization, safety tuning을 거친 모델이다.
+</Callout>
+
+## 1. Language model은 문장 확률을 쪼개서 본다
+
+언어 모델의 기본 목표는 텍스트 sequence에 확률을 부여하는 것이다. 문장이 다음 token들로 이루어졌다고 하자.
+
+```text
+x1, x2, x3, ..., xT
+```
+
+언어 모델은 전체 sequence의 확률을 조건부 확률들의 곱으로 분해할 수 있다.
+
+$$
+p(x_1, x_2, ..., x_T) = \prod_{t=1}^{T} p(x_t \mid x_{<t})
+$$
+
+이 식의 의미는 간단하다.
+
+- 첫 token을 보고 다음 token의 확률분포를 예측한다.
+- 앞의 token들을 보고 그 다음 token의 확률분포를 예측한다.
+- 이 과정을 문장 끝까지 반복한다.
+
+예를 들어 모델이 아래 문장을 본다고 하자.
+
+```text
+인공지능은 데이터를 통해 ___
+```
+
+모델은 빈칸에 들어갈 token 후보에 확률을 준다.
+
+```text
+학습한다: 0.42
+발전한다: 0.18
+예측한다: 0.09
+...
+```
+
+학습 데이터의 실제 다음 token이 `학습한다`라면, 모델은 그 token의 확률을 높이는 방향으로 업데이트된다.
+
+## 2. Next-token prediction은 cross-entropy의 반복이다
+
+지난 글에서 cross-entropy는 정답 class의 확률을 높이도록 만드는 loss라고 했다. LLM에서도 원리는 같다. 단지 class가 `고양이/강아지/자동차`가 아니라 vocabulary 안의 token 전체일 뿐이다.
+
+단일 위치 $t$에서 정답 token이 $x_t$이고, 모델이 그 token에 부여한 확률이 $p_\theta(x_t \mid x_{<t})$라면 loss는 다음처럼 볼 수 있다.
+
+$$
+L_t = -\log p_\theta(x_t \mid x_{<t})
+$$
+
+전체 sequence에 대해서는 각 위치의 loss를 더하거나 평균낸다.
+
+$$
+L = -\sum_{t=1}^{T} \log p_\theta(x_t \mid x_{<t})
+$$
+
+이것이 causal language modeling objective다. 여기서 `causal`이라는 말은 미래 token을 보면 안 된다는 뜻에 가깝다. 모델은 항상 과거 context만 보고 다음 token을 맞혀야 한다.
+
+<Callout type="tip">
+Next-token prediction을 단순 암기 문제로 보면 LLM을 과소평가하게 된다. 실제로는 문법, 사실 지식, 스타일, 추론 패턴, 코드 패턴, 대화 관습이 모두 “다음 token을 잘 맞히기 위한 압축” 안에 들어간다.
+</Callout>
+
+## 3. 왜 단순 objective에서 복잡한 능력이 나오는가
+
+여기서 중요한 질문이 나온다.
+
+> 다음 token만 예측하는데 왜 번역, 요약, 코딩, 추론 같은 능력이 생길까?
+
+이걸 마법처럼 설명할 필요는 없다. 학습 데이터 안의 텍스트는 단순한 단어 나열이 아니라, 사람이 문제를 풀고 설명하고 논쟁하고 코드를 작성한 흔적이다.
+
+예를 들어 인터넷에는 이런 패턴이 많다.
+
+```text
+질문: 두 숫자를 더하는 파이썬 함수를 작성해줘.
+답변: def add(a, b): return a + b
+```
+
+```text
+문제: 다음 문장을 영어로 번역하라.
+정답: ...
+```
+
+```text
+증명: 먼저 가정 A를 두고, 다음으로 B를 보이면...
+```
+
+모델은 다음 token을 예측하는 과정에서 이런 패턴을 통계적으로 압축한다. 그래서 특정 prompt를 주면, 그 prompt 뒤에 이어질 법한 코드, 번역문, 설명, 추론 과정을 생성한다.
+
+하지만 여기에는 중요한 한계가 있다.
+
+- 모델은 “진실”을 직접 최적화하지 않는다.
+- 모델은 “도움이 됨”을 직접 최적화하지 않는다.
+- 모델은 “안전함”을 직접 최적화하지 않는다.
+- 모델은 학습 데이터의 패턴을 바탕으로 그럴듯한 continuation을 만든다.
+
+그래서 pretraining만 끝난 base model은 우리가 기대하는 챗봇처럼 행동하지 않을 수 있다. 질문에 답하기보다 문서를 이어 쓰거나, instruction을 무시하거나, 위험한 내용도 그대로 이어갈 수 있다.
+
+## 4. Pretraining은 foundation을 만든다
+
+Pretraining은 LLM의 기본 지식과 언어 능력을 만드는 단계다. 대규모 corpus를 넣고 next-token loss를 줄인다.
+
+이 단계에서 모델이 배우는 것은 크게 네 가지로 볼 수 있다.
+
+| 학습되는 것 | 설명 | 예시 |
+| --- | --- | --- |
+| 언어 패턴 | 문법, 문체, 문장 구조 | 자연스러운 한국어/영어 생성 |
+| 세계 지식 | 텍스트에 반복적으로 등장한 사실 관계 | 수도, 역사, 기술 개념 |
+| 형식 패턴 | 코드, 표, JSON, 논문 형식 | 함수 작성, markdown 생성 |
+| 문제 풀이 흔적 | 사람이 남긴 풀이 과정과 설명 | 수학 풀이, 디버깅 설명 |
+
+여기서 corpus 품질이 매우 중요하다. 모델은 데이터에서 본 것을 압축하므로, 데이터가 중복·오염·저품질이면 그 패턴도 함께 배운다. 반대로 좋은 코드, 좋은 설명, 검증된 문서, 다양한 언어와 도메인이 들어가면 모델의 기본 능력이 넓어진다.
+
+다만 pretraining은 비용이 매우 크다. 대부분의 실무 조직은 foundation model을 처음부터 pretrain하지 않는다. 대신 이미 학습된 모델을 가져와 fine-tuning, RAG, tool use, prompt, evaluation으로 원하는 제품 행동을 만든다.
+
+## 5. Instruction tuning은 “문서 이어쓰기”를 “요청 따르기”로 바꾼다
+
+Base model에게 이런 prompt를 준다고 하자.
+
+```text
+서울에서 부산까지 가는 방법을 알려줘.
+```
+
+pretraining만 된 모델은 이 뒤에 어떤 텍스트가 이어질지 예측한다. 운이 좋으면 답변처럼 나오지만, 항상 “사용자의 요청을 성실하게 수행하라”는 행동 양식을 보장하지 않는다.
+
+Instruction tuning은 이 문제를 다룬다. 사람이 만든 instruction-response pair로 supervised fine-tuning을 한다.
+
+```text
+instruction: 서울에서 부산까지 가는 방법을 알려줘.
+response: KTX, SRT, 고속버스, 항공편을 선택할 수 있습니다...
+```
+
+이 단계에서 모델은 다음을 배운다.
+
+- 질문이 오면 답변 형식으로 응답하기
+- 명령을 분해해 단계적으로 처리하기
+- 사용자가 원하는 톤과 길이에 맞추기
+- “요약해줘”, “표로 정리해줘”, “코드로 작성해줘” 같은 instruction pattern 따르기
+
+즉 instruction tuning은 지식을 새로 주입하는 단계라기보다, base model의 언어 능력을 **사용자 요청을 따르는 인터페이스**로 재정렬하는 단계에 가깝다.
+
+<Callout type="warning">
+Instruction tuning을 많이 한다고 모든 사실 오류가 사라지지는 않는다. 모델의 factuality는 pretraining 데이터, retrieval, decoding, evaluation, tool use까지 같이 봐야 한다.
+</Callout>
+
+## 6. Preference learning은 “좋은 답변”의 기준을 더한다
+
+Supervised instruction tuning만으로는 애매한 경우가 많다. 같은 질문에 대한 답변 A와 B가 모두 그럴듯하지만, 사람은 하나를 더 선호할 수 있다.
+
+```text
+질문: 초보자에게 gradient descent를 설명해줘.
+
+답변 A: 수식 위주로 짧게 설명한다.
+답변 B: 언덕을 내려가는 비유와 작은 예제로 설명한다.
+```
+
+둘 다 틀리진 않지만, 초보자에게는 B가 더 나을 수 있다. 이런 선호를 학습하기 위해 preference data를 만든다. 사람 또는 AI evaluator가 여러 답변을 비교하고 더 나은 답을 고른다.
+
+RLHF는 이 선호 데이터를 이용해 reward model을 학습하고, 모델이 reward가 높은 답변을 더 자주 생성하도록 최적화한다. RLAIF는 사람 대신 AI feedback을 활용하는 변형으로 볼 수 있다.
+
+흐름을 단순화하면 이렇다.
+
+```text
+1. Prompt에 대해 여러 답변을 생성한다.
+2. 사람 또는 AI가 더 좋은 답변을 고른다.
+3. 선호 데이터로 reward model을 학습한다.
+4. LLM이 reward가 높은 응답을 내도록 추가 최적화한다.
+```
+
+여기서 reward는 진짜 사용자 만족을 완벽히 대표하지 않는다. 다시 objective mismatch가 생긴다. 모델은 사람이 좋아할 만한 답변을 내도록 학습되지만, 그 과정에서 과도하게 장황해지거나, 확신 있는 말투로 틀린 답을 하거나, 평가자가 선호하는 형식에 과적합할 수 있다.
+
+## 7. Base model, instruct model, chat model은 다르다
+
+실무에서 모델을 고를 때 이 구분은 꽤 중요하다.
+
+| 구분 | 주된 학습 | 잘하는 것 | 주의점 |
+| --- | --- | --- | --- |
+| Base model | next-token pretraining | 이어쓰기, domain adaptation 기반 | instruction following이 약할 수 있음 |
+| Instruct model | instruction-response SFT | 명령 따르기, 작업 수행 | 특정 포맷/스타일에 치우칠 수 있음 |
+| Chat model | instruction + preference + safety tuning | 대화, 거절, 도움말, tool 호출 인터페이스 | product policy와 모델 능력이 섞여 보일 수 있음 |
+
+RAG나 agent를 만들 때도 이 차이가 중요하다.
+
+- Base model은 특정 도메인 fine-tuning 실험에 유리할 수 있다.
+- Instruct model은 문서 기반 질의응답이나 요약에 바로 쓰기 좋다.
+- Chat model은 사용자-facing 제품에 맞지만, safety refusal이나 말투가 시스템 요구와 충돌할 수 있다.
+
+모델을 “성능 점수” 하나로 고르면 안 된다. 어떤 objective로 어떤 행동이 강화됐는지 봐야 한다.
+
+## 8. Decoding은 학습이 아니라 선택이다
+
+모델은 매 step마다 vocabulary 전체에 대한 확률분포를 만든다. 실제 출력은 그 분포에서 token을 어떻게 고르느냐에 달려 있다.
+
+대표적인 decoding 방식은 다음과 같다.
+
+| 방식 | 의미 | 결과 경향 |
+| --- | --- | --- |
+| Greedy decoding | 매번 확률이 가장 높은 token 선택 | 안정적이지만 단조로울 수 있음 |
+| Temperature sampling | 확률분포를 더 날카롭거나 평평하게 조정 | 낮으면 보수적, 높으면 다양함 |
+| Top-k sampling | 상위 k개 후보에서 샘플링 | 낮은 확률 후보 제거 |
+| Top-p sampling | 누적 확률 p 안의 후보에서 샘플링 | 상황별 후보 수 조정 |
+
+같은 모델이라도 temperature를 바꾸면 전혀 다른 답변이 나온다. 그래서 “모델이 안다/모른다”만 볼 게 아니라, sampling 설정, system prompt, context 구성까지 함께 봐야 한다.
+
+## 9. 실무적으로 중요한 연결점
+
+LLM 학습 파이프라인을 이해하면 제품 설계 판단이 더 선명해진다.
+
+### RAG에서는 pretraining의 한계를 인정해야 한다
+
+LLM은 학습 시점 이후의 정보나 사내 문서를 기본적으로 모른다. 이걸 fine-tuning으로 다 넣으려 하면 비용도 크고 업데이트도 어렵다. 그래서 RAG는 “모델 지식”이 아니라 “외부 evidence를 context로 넣는 방식”으로 문제를 푼다.
+
+하지만 RAG도 magic이 아니다. retrieval이 틀리면 모델은 틀린 context를 그럴듯하게 요약할 수 있다. next-token model은 evidence consistency를 직접 보장하지 않는다. 그래서 citation, reranking, answer verification이 필요하다.
+
+### Agent에서는 instruction following만으로 부족하다
+
+Agent는 답변만 하는 것이 아니라 tool을 호출하고 상태를 바꾸고 외부 시스템에 영향을 준다. Chat model이 instruction을 잘 따른다고 해서 agent로 안전하다는 뜻은 아니다.
+
+Agent 설계에서는 별도의 runtime 제어가 필요하다.
+
+- 어떤 tool을 노출할 것인가?
+- tool 호출 전후 상태를 어떻게 기록할 것인가?
+- 실행 가능한 action을 어디서 제한할 것인가?
+- 실패한 tool 결과를 모델이 어떻게 복구하게 할 것인가?
+- 최종 답변 전에 어떤 deterministic check를 둘 것인가?
+
+이건 모델 학습 objective만으로 해결되지 않는다. runtime, policy, evaluation의 문제다.
+
+### Fine-tuning은 지식 주입보다 행동 조정에 가깝게 봐야 한다
+
+작은 데이터셋으로 fine-tuning을 하면 모델이 특정 말투, 포맷, 작업 절차를 잘 따르게 만들 수 있다. 하지만 복잡한 최신 지식을 안정적으로 넣는 용도로는 RAG나 tool lookup이 더 나을 때가 많다.
+
+좋은 기준은 이렇다.
+
+- **자주 바뀌는 사실**: RAG/tool로 가져온다.
+- **반복되는 출력 형식**: instruction tuning 또는 prompt/template으로 잡는다.
+- **도메인별 판단 패턴**: 평가 데이터와 함께 fine-tuning을 검토한다.
+- **실행 안전성**: 모델이 아니라 runtime guardrail에 둔다.
+
+## 10. 흔한 오해 정리
+
+### 오해 1. “LLM은 다음 단어만 맞히므로 진짜 이해가 아니다”
+
+이 말은 너무 단순하다. next-token objective는 단순하지만, 좋은 예측을 하려면 세계 지식, 문맥 추적, 문체, 코드 구조, 추론 패턴을 압축해야 한다. 다만 그 능력이 인간의 이해와 같은 방식이라고 단정하면 안 된다.
+
+### 오해 2. “Alignment를 하면 hallucination이 사라진다”
+
+Alignment는 답변 선호와 안전성을 개선하지만, factuality를 완벽히 보장하지 않는다. 사실성은 retrieval, tool, calibration, verification이 함께 들어가야 한다.
+
+### 오해 3. “Fine-tuning하면 사내 지식이 모델에 들어간다”
+
+일부는 들어갈 수 있지만, 업데이트·삭제·출처 추적이 어렵다. 사내 문서 질의응답은 보통 RAG와 권한 제어가 더 안전하다.
+
+### 오해 4. “Temperature만 낮추면 정확해진다”
+
+Temperature를 낮추면 출력이 더 결정적이고 보수적으로 변할 수는 있지만, 틀린 확신도 더 안정적으로 반복될 수 있다. 정확도는 evidence와 evaluation으로 봐야 한다.
+
+## 작은 코드 감각: 다음 token loss는 어떻게 생겼나
+
+실제 구현은 framework가 처리하지만, 감각은 간단히 볼 수 있다.
+
+```python title="causal_lm_loss.py"
+import torch
+import torch.nn.functional as F
+
+# logits: [batch, seq_len, vocab_size]
+# input_ids: [batch, seq_len]
+logits = torch.randn(2, 5, 10000)
+input_ids = torch.randint(0, 10000, (2, 5))
+
+# t 위치의 출력으로 t+1 token을 맞히도록 한 칸 shift
+shift_logits = logits[:, :-1, :].contiguous()
+shift_labels = input_ids[:, 1:].contiguous()
+
+loss = F.cross_entropy(
+    shift_logits.view(-1, shift_logits.size(-1)),
+    shift_labels.view(-1),
+)
+
+print(loss.item())
+```
+
+핵심은 `shift`다. 모델은 현재까지의 token을 보고 다음 token을 맞힌다. Transformer decoder의 causal mask는 미래 token을 보지 못하게 막고, loss는 다음 token 예측이 얼마나 틀렸는지 계산한다.
+
+## 정리
+
+이번 글의 핵심은 세 가지다.
+
+1. **Pretraining**은 next-token prediction으로 언어·지식·형식·문제풀이 패턴을 압축한다.
+2. **Instruction tuning**은 base model을 사용자 요청을 따르는 모델로 재정렬한다.
+3. **Preference learning과 safety tuning**은 사람이 선호하는 답변과 정책에 맞도록 행동을 추가 조정한다.
+
+그래서 LLM을 볼 때는 “모델 크기”만 볼 게 아니라, 어떤 데이터와 어떤 objective를 거쳐 지금의 행동이 만들어졌는지 봐야 한다. 이 관점이 있어야 RAG, fine-tuning, agent, evaluation을 제대로 설계할 수 있다.
+
+다음 편에서는 이 흐름을 이어서 **fine-tuning, LoRA, quantization, distillation**을 본다. 이제 질문은 “LLM은 어떻게 학습되는가?”에서 “이미 학습된 LLM을 내 문제에 어떻게 맞출 것인가?”로 넘어간다.
+
+## 참고 자료
+
+- Stanford CS224N — Language Modeling and Neural Networks
+- OpenAI — Training language models to follow instructions with human feedback
+- Anthropic — Constitutional AI: Harmlessness from AI Feedback
+- Hugging Face — Causal language modeling guide
+- Sebastian Raschka — Build a Large Language Model From Scratch

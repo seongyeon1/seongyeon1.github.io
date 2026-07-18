@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 17 Jul 2026 13:47:13 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 18 Jul 2026 01:06:29 GMT</lastBuildDate>
+    <item>
+      <title>AI 기본기 5: Next-Token Prediction과 Instruction Tuning — LLM은 무엇을 배우고 무엇을 맞춰 가는가</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-18-ai-fundamentals-next-token-instruction-tuning/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-18-ai-fundamentals-next-token-instruction-tuning/</guid>
+      <description>Causal language modeling, next-token prediction, pretraining, instruction tuning, RLHF/RLAIF를 하나의 학습 파이프라인으로 연결해 LLM이 실제로 무엇을 최적화하는지 이해한다.</description>
+      <pubDate>Sat, 18 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>LLM</category>
+      <category>pretraining</category>
+      <category>instruction-tuning</category>
+      <category>RLHF</category>
+    </item>
     <item>
       <title>AI 기본기 4: Transformer와 Self-Attention — 문맥을 직접 비교하는 모델</title>
       <link>https://seongyeon1.github.io/blog/2026-07-17-ai-fundamentals-transformer-attention/</link>
