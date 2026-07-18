@@ -3623,7 +3623,8 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [mcp, tool-use, agent-eval, regression-test]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-18-mcpevol-bench-mcp-server-evolution.mdx
 
 ### 2026-07-18 — [논문 리뷰] SEED: agentic RL에서 trajectory를 hindsight skill로 증류하기
 - type: paper
