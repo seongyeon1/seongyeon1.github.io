@@ -1,0 +1,354 @@
+---
+title: "AI 기본기 6: Retrieval과 RAG — LLM에게 필요한 지식을 어떻게 찾아 줄 것인가"
+date: "2026-07-19"
+category: "concept"
+tags: ["AI기본기", "RAG", "retrieval", "embedding", "reranking"]
+summary: "Dense retrieval, sparse retrieval, bi-encoder, cross-encoder, reranking, chunking을 연결해 RAG가 단순 문서 주입이 아니라 검색 모델과 생성 모델의 결합 문제임을 이해한다."
+series: "AI 기본기"
+seriesOrder: 6
+math: true
+---
+
+## 한 줄 요약
+
+RAG는 “문서를 넣으면 LLM이 똑똑해진다”가 아니다. 더 정확히는 **질문을 검색 가능한 표현으로 바꾸고, 관련 문서를 찾고, 그 문서를 다시 언어 모델의 context로 넣는 시스템**이다. 그래서 RAG의 성능은 LLM 하나가 아니라 **retriever, chunking, reranker, prompt, generator**가 함께 만드는 결과다.
+
+지난 글에서는 LLM이 next-token prediction, instruction tuning, preference learning을 거쳐 만들어지는 과정을 봤다. 이번 글에서는 그 LLM이 모르는 최신 지식이나 사내 문서를 어떻게 연결할지 본다. 핵심은 retrieval이다.
+
+<Callout type="note">
+RAG를 이해할 때 가장 중요한 질문은 “어떤 벡터 DB를 쓸까?”가 아니라 “질문과 문서를 어떤 기준으로 같은 공간에 놓고, 어떤 실패를 줄일 것인가?”다.
+</Callout>
+
+## 1. 왜 LLM만으로는 부족한가
+
+LLM은 pretraining 시점의 텍스트 패턴을 압축한다. 그래서 범용 지식, 언어 능력, 추론 패턴은 강하지만 아래 상황에서는 한계가 뚜렷하다.
+
+- 학습 이후에 생긴 정보가 필요할 때
+- 회사 내부 문서, 계약서, 회의록처럼 공개 corpus에 없는 정보가 필요할 때
+- 답변의 출처를 확인해야 할 때
+- 모델 파라미터를 매번 다시 학습시키기 어려울 때
+- 답변마다 참조해야 하는 자료 범위가 달라질 때
+
+Fine-tuning으로 일부 해결할 수도 있지만, 모든 지식을 파라미터 안에 넣는 방식은 비싸고 느리며 갱신이 어렵다. RAG는 다른 선택지를 쓴다.
+
+> 지식은 외부 저장소에 두고, 질문 시점에 필요한 조각만 찾아서 LLM에게 제공한다.
+
+이 구조에서는 LLM이 “모든 것을 외워야 하는 모델”이 아니라, **찾아온 근거를 읽고 답변을 구성하는 generator**가 된다.
+
+## 2. RAG의 기본 파이프라인
+
+가장 단순한 RAG는 아래 순서로 동작한다.
+
+```text
+사용자 질문
+  ↓
+질문 embedding 생성
+  ↓
+문서 chunk embedding과 similarity search
+  ↓
+top-k chunk 선택
+  ↓
+선택된 chunk를 prompt context에 삽입
+  ↓
+LLM 답변 생성
+```
+
+수식으로 아주 단순화하면 retrieval은 질문 $q$와 문서 chunk $d_i$의 점수를 계산하는 문제다.
+
+$$
+score(q, d_i) = sim(f(q), g(d_i))
+$$
+
+여기서 $f$는 질문 encoder, $g$는 문서 encoder, $sim$은 cosine similarity나 dot product 같은 유사도 함수다.
+
+그리고 generator는 찾아온 문서 집합 $D_q$를 조건으로 답변 $y$를 만든다.
+
+$$
+p(y \mid q, D_q)
+$$
+
+RAG의 중요한 특징은 retrieval과 generation이 분리되어 있다는 점이다. retriever가 틀린 문서를 가져오면 generator가 아무리 좋아도 답변이 흔들린다. 반대로 좋은 문서를 가져와도 prompt가 나쁘거나 generator가 문서를 무시하면 성능이 나오지 않는다.
+
+## 3. Sparse retrieval: 단어가 겹치는 문서를 찾는다
+
+전통적인 검색은 단어 매칭에 강하다. 대표적으로 BM25 같은 sparse retrieval은 query와 document 사이에 겹치는 term을 기준으로 점수를 준다.
+
+장점은 명확하다.
+
+- 고유명사, 제품명, 에러 코드, 함수명 검색에 강하다.
+- 왜 검색되었는지 설명하기 쉽다.
+- embedding 모델 없이도 빠르게 구축할 수 있다.
+
+예를 들어 사용자가 `ERR_CONNECTION_RESET`이라는 에러를 검색한다면, 이 exact token이 포함된 문서를 찾는 것이 매우 중요하다. dense embedding이 의미적으로 비슷한 문서를 잘 찾더라도, 에러 코드를 놓치면 실무에서는 바로 실패다.
+
+하지만 sparse retrieval은 표현이 달라지면 약해진다.
+
+```text
+질문: "회원 탈퇴 후 데이터는 언제 삭제되나요?"
+문서: "계정 해지 시 개인정보는 30일 이내 파기됩니다."
+```
+
+두 문장은 의미상 가깝지만 단어가 많이 겹치지 않는다. 이런 경우에는 dense retrieval이 필요해진다.
+
+## 4. Dense retrieval: 의미가 가까운 문서를 찾는다
+
+Dense retrieval은 질문과 문서를 embedding vector로 바꾼 뒤, 벡터 공간에서 가까운 문서를 찾는다.
+
+```text
+질문: "환불은 언제까지 가능한가요?"
+문서 A: "결제 취소는 구매 후 7일 이내 가능합니다."
+문서 B: "배송지는 마이페이지에서 변경할 수 있습니다."
+```
+
+단어가 완전히 같지 않아도, embedding 모델이 `환불`, `결제 취소`, `구매 후 7일`을 가까운 의미로 표현하면 문서 A가 더 높은 점수를 받는다.
+
+이때 중요한 모델링 관점은 embedding이 단순 압축이 아니라 **검색 목적에 맞춘 representation**이라는 점이다. 좋은 retrieval embedding은 “문장 자체가 비슷한가?”보다 “질문에 답하는 문서인가?”를 잘 반영해야 한다.
+
+<Callout type="tip">
+범용 embedding 모델로 시작할 수는 있지만, 도메인 검색에서는 query-document pair, 클릭 로그, FAQ 매칭 데이터, 평가셋을 이용해 retrieval 품질을 따로 봐야 한다. RAG 실패의 상당수는 LLM이 아니라 retriever 문제다.
+</Callout>
+
+## 5. Bi-encoder와 cross-encoder의 tradeoff
+
+Retrieval 모델을 볼 때 자주 나오는 구분이 bi-encoder와 cross-encoder다.
+
+### Bi-encoder
+
+Bi-encoder는 질문과 문서를 따로 encoding한다.
+
+```text
+q → encoder → q_vector
+문서 chunk → encoder → d_vector
+similarity(q_vector, d_vector)
+```
+
+장점은 속도다. 문서 embedding을 미리 만들어 vector DB에 저장해 둘 수 있다. 사용자가 질문을 던지면 질문 embedding만 새로 만들고, nearest neighbor search로 빠르게 후보를 찾는다.
+
+단점은 질문과 문서가 encoding 단계에서 서로를 직접 보지 못한다는 점이다. 그래서 미묘한 조건, 부정 표현, 다중 제약을 잘못 볼 수 있다.
+
+### Cross-encoder
+
+Cross-encoder는 질문과 문서를 함께 넣고 relevance score를 계산한다.
+
+```text
+[질문, 문서 chunk] → encoder → relevance score
+```
+
+장점은 정확도다. 질문과 문서 token이 attention 안에서 직접 상호작용하므로 “이 문서가 이 질문에 정말 답하는가?”를 더 정밀하게 판단할 수 있다.
+
+단점은 느리다. 모든 문서에 대해 cross-encoder를 돌릴 수 없기 때문에 보통은 다음처럼 쓴다.
+
+```text
+1차 검색: bi-encoder로 top-50 후보 검색
+2차 정렬: cross-encoder로 top-50을 reranking
+최종 사용: top-5 chunk를 LLM context에 삽입
+```
+
+즉 실무 RAG에서는 **빠른 recall용 retriever**와 **정밀 precision용 reranker**를 나눠 설계하는 경우가 많다.
+
+## 6. Chunking은 전처리가 아니라 모델링 선택이다
+
+RAG 튜토리얼에서는 문서를 일정 길이로 자르는 chunking을 별것 아닌 전처리처럼 다루기도 한다. 하지만 chunking은 retrieval 품질을 크게 좌우한다.
+
+너무 작게 자르면 문제가 생긴다.
+
+- 문맥이 잘려서 chunk만 봐서는 의미가 부족하다.
+- 제목, 표, 앞뒤 조건이 사라진다.
+- LLM이 답변에 필요한 근거를 한 번에 못 본다.
+
+너무 크게 자르면 다른 문제가 생긴다.
+
+- embedding이 여러 주제를 한 벡터에 섞어 버린다.
+- 검색 결과는 맞지만 chunk 안에 불필요한 내용이 많아진다.
+- context window를 빨리 소모한다.
+
+좋은 chunking은 문서 구조를 반영한다.
+
+- 제목과 섹션 경계를 유지한다.
+- 표, 코드, 절차 문서는 의미 단위로 자른다.
+- chunk에 parent title이나 metadata를 붙인다.
+- FAQ는 질문-답변 쌍을 가능하면 함께 둔다.
+- 긴 문서는 parent-child retrieval을 고려한다.
+
+<Callout type="warning">
+“chunk size 1000, overlap 200” 같은 기본값은 출발점일 뿐이다. 정책 문서, API 문서, 회의록, 논문, 고객 FAQ는 각각 좋은 chunk 단위가 다르다.
+</Callout>
+
+## 7. RAG의 대표 실패 모드
+
+RAG는 LLM hallucination을 줄이는 데 도움이 되지만, 자동으로 정답을 보장하지 않는다. 실패는 여러 단계에서 생긴다.
+
+### 1. 검색 실패
+
+질문에 답할 문서가 있는데 retriever가 못 찾는다.
+
+```text
+질문: "SLA 위반 시 보상 기준은?"
+검색 결과: 일반 약관, 요금제 소개, 장애 공지
+필요 문서: 서비스 수준 계약서의 보상 조항
+```
+
+이 경우 LLM은 틀린 context 안에서 그럴듯한 답을 만들 수 있다.
+
+### 2. 부분 근거 실패
+
+관련 문서는 찾았지만 필요한 조건이 빠졌다.
+
+```text
+찾은 chunk: "환불은 7일 이내 가능합니다."
+놓친 chunk: "단, 엔터프라이즈 계약은 별도 약관을 따릅니다."
+```
+
+RAG 답변이 위험해지는 지점은 보통 이런 예외 조건이다.
+
+### 3. 충돌 문서 실패
+
+서로 다른 버전의 문서가 동시에 검색된다.
+
+```text
+구버전 문서: "API v1은 2026년까지 지원됩니다."
+신버전 문서: "API v1은 2025년 12월 종료됩니다."
+```
+
+검색 점수만으로는 최신성이나 권위가 반영되지 않을 수 있다. 이때는 metadata filtering, document freshness, source priority가 필요하다.
+
+### 4. 생성 실패
+
+좋은 문서를 가져왔는데 LLM이 문서를 무시하거나 과하게 일반화한다.
+
+이 문제는 prompt, citation instruction, answer format, refusal policy, evaluation으로 다뤄야 한다. retriever만 고쳐서는 해결되지 않는다.
+
+## 8. 작은 RAG 구현 감각
+
+아래는 RAG를 코드 감각으로 이해하기 위한 단순 pseudo-code다.
+
+```python title="simple_rag.py"
+def answer(question: str):
+    # 1. 질문을 검색용 벡터로 변환
+    q_vec = embed_query(question)
+
+    # 2. 빠른 1차 검색
+    candidates = vector_store.search(q_vec, top_k=50)
+
+    # 3. 질문-문서 쌍을 더 정밀하게 재정렬
+    reranked = reranker.rank(question, candidates)
+    contexts = reranked[:5]
+
+    # 4. 답변 생성용 prompt 구성
+    prompt = build_prompt(
+        question=question,
+        contexts=contexts,
+        instruction="주어진 근거에 없는 내용은 추측하지 말 것",
+    )
+
+    # 5. LLM 답변 생성
+    return llm.generate(prompt)
+```
+
+여기서 각 함수는 모델링 선택지를 숨기고 있다.
+
+- `embed_query`: 어떤 embedding 모델을 쓸 것인가?
+- `vector_store.search`: cosine similarity인가, dot product인가, hybrid search인가?
+- `reranker.rank`: cross-encoder를 쓸 것인가, LLM reranking을 쓸 것인가?
+- `build_prompt`: 근거 인용, 모르는 경우 거절, 답변 형식을 어떻게 강제할 것인가?
+- `llm.generate`: temperature, max token, structured output을 어떻게 둘 것인가?
+
+RAG의 품질은 이 선택지들의 곱이다.
+
+## 9. 평가: RAG는 end-to-end로 봐야 한다
+
+RAG 평가는 단순히 “답변이 좋아 보이는가?”로 끝내면 안 된다. 최소한 세 층으로 나눠 봐야 한다.
+
+### Retrieval 평가
+
+질문에 대해 정답 문서가 top-k 안에 들어왔는지 본다.
+
+- recall@k
+- precision@k
+- MRR
+- nDCG
+
+여기서 성능이 낮으면 generator를 바꿔도 한계가 있다.
+
+### Grounding 평가
+
+답변이 검색된 근거에 실제로 기반하는지 본다.
+
+- 답변 문장이 context에서 support되는가?
+- citation이 정확한 chunk를 가리키는가?
+- 근거에 없는 내용을 추가하지 않았는가?
+
+### Task 평가
+
+최종 사용자의 목적을 달성했는지 본다.
+
+- 고객 문의에 정확히 답했는가?
+- 정책 위반 답변을 피했는가?
+- 내부 업무자가 다음 action을 할 수 있을 만큼 구체적인가?
+
+RAG 시스템을 잘 만들려면 이 세 평가를 분리해야 한다. retrieval은 좋은데 답변이 나쁘면 prompt/generator 문제다. 답변 형식은 좋은데 근거가 틀리면 retriever나 corpus 문제가 먼저다.
+
+## 10. 실무 설계 체크리스트
+
+RAG를 설계할 때는 아래 질문을 먼저 던져보면 좋다.
+
+### Corpus
+
+- 어떤 문서가 authoritative source인가?
+- 오래된 문서와 최신 문서를 어떻게 구분할 것인가?
+- 권한별로 볼 수 있는 문서를 어떻게 제한할 것인가?
+- 문서가 업데이트되면 embedding index는 언제 갱신할 것인가?
+
+### Retrieval
+
+- dense, sparse, hybrid 중 무엇을 쓸 것인가?
+- query rewriting이 필요한가?
+- top-k는 몇 개가 적절한가?
+- reranking을 어디까지 적용할 것인가?
+
+### Generation
+
+- 답변에 citation을 붙일 것인가?
+- 근거가 부족할 때 “모른다”고 말하게 할 것인가?
+- context 충돌이 있을 때 최신 문서나 특정 source를 우선할 것인가?
+- structured output이 필요한가?
+
+### Evaluation
+
+- golden QA set이 있는가?
+- retrieval 실패와 generation 실패를 따로 로깅하는가?
+- 운영 중 사용자 피드백을 retriever 개선 데이터로 되돌릴 수 있는가?
+
+<Callout type="tip">
+좋은 RAG 프로젝트는 “챗봇 만들기”가 아니라 “검색 가능한 지식 시스템 만들기”에 가깝다. LLM은 마지막 표현 계층이고, 앞단의 문서 품질·검색·권한·평가가 실제 성능을 만든다.
+</Callout>
+
+## 11. 기본 논문과 자료를 어떻게 읽을 것인가
+
+RAG와 retrieval을 공부할 때는 아래 자료를 한 번에 외우려 하지 말고, 각각이 어떤 병목을 해결했는지 보면 좋다.
+
+- **Dense Passage Retrieval**: 질문과 passage를 dense vector로 바꿔 open-domain QA 검색 성능을 높이려는 접근이다.
+- **RAG**: parametric memory인 LLM과 non-parametric memory인 external documents를 결합해 지식 집약적 생성 문제를 풀려는 접근이다.
+- **ColBERT**: 문서 하나를 단일 벡터로 압축하지 않고 token-level late interaction으로 검색 정밀도를 높이려는 접근이다.
+- **Sentence-BERT**: 문장 embedding을 효율적으로 비교할 수 있게 Siamese/BERT 계열 구조를 활용한 접근이다.
+
+이 흐름을 보면 retrieval은 단순히 “벡터 DB에 넣기”가 아니라, **무엇을 한 벡터로 압축할지, 무엇을 나중에 더 정밀하게 비교할지**를 결정하는 모델링 문제라는 점이 보인다.
+
+## 정리
+
+이번 글의 핵심은 세 가지다.
+
+1. RAG는 LLM에 문서를 붙이는 기능이 아니라 retrieval과 generation을 결합한 시스템이다.
+2. 검색 품질은 embedding 모델, chunking, sparse/dense/hybrid search, reranking, metadata filtering에 의해 결정된다.
+3. RAG 평가는 retrieval, grounding, final task success를 분리해서 봐야 한다.
+
+AI 기본기를 구체적으로 공부하려면 LLM만 보면 부족하다. 실제 AI 제품에서는 지식이 모델 파라미터 안에만 있지 않다. 문서 저장소, 검색 index, 권한 시스템, 평가셋, feedback loop가 함께 모델의 능력을 만든다.
+
+다음 편에서는 prompting과 inference-time computation을 다룬다. Chain-of-Thought, self-consistency, structured output을 “프롬프트 팁”이 아니라 **추론 시점에 계산을 어떻게 더 쓰게 만들 것인가**라는 관점에서 볼 예정이다.
+
+## 참고 자료
+
+- Patrick Lewis et al., [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401), 2020.
+- Vladimir Karpukhin et al., [Dense Passage Retrieval for Open-Domain Question Answering](https://arxiv.org/abs/2004.04906), 2020.
+- Omar Khattab and Matei Zaharia, [ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT](https://arxiv.org/abs/2004.12832), 2020.
+- Nils Reimers and Iryna Gurevych, [Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks](https://arxiv.org/abs/1908.10084), 2019.
