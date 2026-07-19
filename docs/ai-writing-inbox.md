@@ -3794,3 +3794,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mobile-agent, android, device-automation, github-repo]
 - status: idea
+
+### 2026-07-20 — [논문 리뷰] Cost-Aware Security Agents: 공격·방어 agent 평가는 성공률만 보면 안 된다
+- type: paper
+- source: http://arxiv.org/abs/2607.15263v1
+- why-now: security agent benchmark가 generous inference budget에서의 최고 성공률을 강조하는 동안, 실제 운영에서는 tool 호출 비용·latency·실패 재시도·방어 비용까지 함께 봐야 한다.
+- angle: “보안 agent 평가는 pass/fail이 아니라 cost-quality frontier” — offensive/defensive task에서 budget, action count, escalation policy를 함께 추적하는 eval harness 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [security-agent, evaluation, cost-aware, tool-use]
+- status: idea
+
+### 2026-07-20 — [논문 리뷰] Can We Trust Item Response Theory for AI Evaluation?
+- type: paper
+- source: http://arxiv.org/abs/2607.15190v1
+- why-now: benchmark가 item-level 통계 모델로 모델 능력과 문제 난이도를 추정하는 사례가 늘고 있어, IRT 가정이 LLM 평가 데이터에서 깨지는 지점을 점검해야 한다.
+- angle: “LLM leaderboard를 문항반응이론으로 보정할 때 놓치는 것” — item independence, capability axis, rank stability를 agent/regression benchmark 운영 체크리스트로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [evaluation, benchmark, item-response-theory, llm-as-judge]
+- status: idea
+
+### 2026-07-20 — [논문 리뷰] MemPoison: persistent memory를 가진 LLM agent의 구조적 blind spot
+- type: paper
+- source: http://arxiv.org/abs/2607.14651v1
+- why-now: 장기 기억을 쓰는 personal/coding agent가 늘면서, 한 번 저장된 adversarial content가 뒤늦게 downstream 행동을 왜곡하는 persistent attack surface가 현실적인 운영 문제가 됐다.
+- angle: “memory write는 편의 기능이 아니라 보안 경계” — memory ingestion, quarantine, provenance, replay-based regression test를 agent runtime 보안 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, prompt-injection, security, runtime-monitoring]
+- status: idea
+
+### 2026-07-20 — [논문 리뷰] Bad Memory: agentic system memory에서 오는 prompt injection 위험 평가
+- type: paper
+- source: http://arxiv.org/abs/2607.14611v1
+- why-now: 메모리 파일·사용자 선호·knowledge base를 세션 밖 상태로 유지하는 agent가 보편화되며, retrieval 단계가 아니라 memory persistence 자체를 공격면으로 다루는 평가가 필요하다.
+- angle: “RAG injection과 memory injection은 실패 모드가 다르다” — memory trust boundary, preference poisoning, cross-session contamination을 personal agent QA checklist로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, prompt-injection, personal-agent, evaluation]
+- status: idea
+
+### 2026-07-20 — [논문 리뷰] SmartRAG: mobile device 위의 native graph-based RAG
+- type: paper
+- source: http://arxiv.org/abs/2607.14661v1
+- why-now: personal assistant가 모바일 온디바이스로 이동하면서 privacy·latency·offline 제약 안에서 RAG를 작게 운영하는 구조가 중요해지고 있다.
+- angle: “mobile RAG는 작은 vector DB가 아니라 native graph memory” — graph construction, on-device retrieval, privacy boundary, edge resource budget을 mobile agent 설계로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, mobile-agent, on-device-ai, graph-rag]
+- status: idea
+
+### 2026-07-20 — GitHub Agentic Workflows MCP Gateway: repo-native agent workflow 앞단의 MCP gateway
+- type: tech
+- source: https://github.com/github/gh-aw-mcpg
+- why-now: GitHub Agentic Workflows가 MCP 기반 tool integration으로 확장되면서, repository 작업을 agent에게 열어줄 때 gateway·권한·audit boundary를 어떻게 둘지가 핵심 운영 이슈가 됐다.
+- angle: “agentic workflow의 관문은 tool 목록이 아니라 gateway policy” — MCP gateway, repo permission, workflow trigger, trace/audit를 GitHub-native agent infra 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, github, agentic-workflow, gateway]
+- status: idea
+
+### 2026-07-20 — pydantic-deepagents: Pydantic AI 기반 self-hosted coding agent framework
+- type: tech
+- source: https://github.com/vstorm-co/pydantic-deepagents
+- why-now: Claude Code·Codex류 terminal coding agent를 self-hosted로 재구현하려는 수요가 늘면서, typed tool schema·sandbox·multi-agent team·checkpoint를 한 프레임워크로 묶는 패턴이 주목받고 있다.
+- angle: “coding agent framework의 기본 단위는 채팅 UI가 아니라 typed runtime” — Pydantic AI tool contract, sandboxed execution, skills, checkpoints, multi-agent orchestration을 repo architecture로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, pydantic-ai, sandbox, multi-agent]
+- status: idea
+
+### 2026-07-20 — wirken: agent 시대의 switchboard — credential vault와 hash-chained audit log
+- type: tech
+- source: https://github.com/gebruder/wirken
+- why-now: 여러 agent·채널·tool을 한 환경에서 운영할수록 credential 격리, per-session audit log, 승인 경계가 framework보다 더 중요한 infra 문제가 된다.
+- angle: “agent control plane은 orchestration보다 isolation과 audit가 먼저” — channel isolation, encrypted credential vault, hash-chained log, single-binary deployment를 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-infra, audit-log, credential-vault, github-repo]
+- status: idea
