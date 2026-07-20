@@ -1,0 +1,324 @@
+---
+title: "AI 기본기 7: Prompting과 Inference-time Computation — 추론할 때 모델에게 시간을 쓰게 만드는 법"
+date: "2026-07-20"
+category: "concept"
+tags: ["AI기본기", "prompting", "chain-of-thought", "in-context-learning", "LLM"]
+summary: "Prompting을 문장 꾸미기나 요령이 아니라, LLM 추론 시점에 추가 계산과 제약을 어떻게 배치하는지의 문제로 이해한다."
+series: "AI 기본기"
+seriesOrder: 7
+math: true
+---
+
+## 한 줄 요약
+
+Prompting은 “예쁘게 질문하는 법”이 아니다. 모델링 관점에서 보면 prompting은 **학습된 파라미터는 고정한 채, 입력 context와 decoding 절차를 바꿔 inference-time computation을 설계하는 일**이다. Chain-of-Thought, self-consistency, Tree of Thoughts, structured output은 모두 같은 질문으로 묶인다.
+
+> 모델을 다시 학습하지 않고도, 추론 시점에 어떤 계산 경로를 더 열어 줄 것인가?
+
+지난 글에서는 RAG가 외부 지식을 검색해 LLM의 context에 넣는 구조를 봤다. 이번 글에서는 검색된 context든 사용자 질문이든, 모델에게 들어가는 입력과 출력 제약을 어떻게 설계해야 실제 추론 능력이 나오는지 본다.
+
+<Callout type="note">
+이 글의 핵심은 prompt template 모음이 아니다. Prompting을 입력 설계, 예시 선택, 중간 reasoning token, sampling, verifier, output schema를 포함한 추론 시스템 설계로 본다.
+</Callout>
+
+## 1. 왜 prompting을 모델링 문제로 봐야 하나
+
+LLM은 decoder-only Transformer로 학습된 경우가 많다. 기본 objective는 대략 다음과 같다.
+
+$$
+p(x_t \mid x_{<t})
+$$
+
+즉 이전 token들을 보고 다음 token을 예측한다. 그런데 실제 사용자는 “다음 token”이 아니라 답을 원한다.
+
+```text
+사용자 질문: 우리 서비스의 이탈률이 왜 올랐는지 분석해줘.
+원하는 결과: 원인 후보, 근거, 확인 쿼리, 다음 액션
+모델이 하는 일: context를 조건으로 다음 token 분포를 반복 샘플링
+```
+
+여기서 gap이 생긴다. 모델은 답을 직접 최적화하지 않는다. 다음 token을 예측할 뿐이다. Prompting은 이 gap을 줄이기 위해 **context 안에 task definition, examples, constraints, intermediate reasoning affordance**를 넣는 작업이다.
+
+단순히 말투를 바꾸는 일이 아니라, 모델이 조건부 분포를 계산할 때 보는 입력을 바꾸는 일이다.
+
+$$
+p(y \mid x) \rightarrow p(y \mid x, c)
+$$
+
+여기서 $c$는 instruction, example, retrieved document, output schema, tool description, role, rubric 같은 모든 조건이다.
+
+## 2. In-context learning: gradient update 없이 무엇이 바뀌나
+
+In-context learning은 모델 파라미터를 업데이트하지 않고, prompt 안의 예시만으로 task를 수행하게 만드는 현상이다.
+
+예를 들어 sentiment classification을 fine-tuning하지 않고도 이렇게 줄 수 있다.
+
+```text
+리뷰: 배송은 빨랐지만 제품이 고장 나 있었다.
+감정: 부정
+
+리뷰: 가격 대비 품질이 좋고 재구매하고 싶다.
+감정: 긍정
+
+리뷰: 포장은 예뻤지만 사용법이 너무 어렵다.
+감정:
+```
+
+이때 모델의 weight는 변하지 않는다. 바뀌는 것은 **조건**이다. 모델은 prompt 안의 패턴을 보고 “이제 리뷰 뒤에 감정 label을 출력하는 분포를 따라야 한다”고 해석한다.
+
+실무적으로는 이게 매우 중요하다.
+
+- 매번 fine-tuning하지 않아도 새로운 task를 빠르게 줄 수 있다.
+- 예시 몇 개만으로 label space와 판단 기준을 암시할 수 있다.
+- 반대로 예시가 모호하거나 서로 충돌하면 모델도 흔들린다.
+
+Prompting을 잘한다는 것은 “친절하게 말하기”가 아니라, **모델이 task distribution을 추론할 만큼 충분하고 일관된 evidence를 context에 배치하는 것**이다.
+
+## 3. Chain-of-Thought: 중간 token을 왜 출력하게 하나
+
+Chain-of-Thought Prompting 논문은 큰 모델에게 몇 개의 중간 풀이 예시를 보여 주면 산술, 상식, symbolic reasoning task에서 성능이 크게 좋아질 수 있음을 보였다. 핵심은 모델에게 바로 답만 내라고 하지 않고, **중간 reasoning step을 token으로 펼치게 하는 것**이다.
+
+비교해보면 차이가 명확하다.
+
+```text
+직접 답변 prompt:
+Q: 카페에 컵이 12개 있었고 5개를 더 샀다. 그중 4개가 깨졌다. 몇 개가 남았나?
+A: 13
+
+Chain-of-Thought prompt:
+Q: 카페에 컵이 12개 있었고 5개를 더 샀다. 그중 4개가 깨졌다. 몇 개가 남았나?
+A: 처음에는 12개가 있었다. 5개를 더 사면 17개다. 4개가 깨졌으므로 13개가 남는다. 따라서 답은 13이다.
+```
+
+왜 이게 도움이 될까?
+
+모델은 한 번에 정답 token으로 점프할 수도 있지만, 복잡한 문제에서는 중간 상태를 token으로 외부화하면 다음 token 예측 문제가 더 쉬운 하위 문제들로 나뉜다.
+
+```text
+문제 이해 → 중간 변수 계산 → 조건 반영 → 최종 답
+```
+
+이 과정은 완벽한 “사고 과정” 그 자체라기보다, 모델이 생성하는 **visible computation trace**에 가깝다. 중요한 건 trace가 생기면 다음 step을 조건으로 삼을 수 있다는 점이다.
+
+<Callout type="warning">
+Chain-of-Thought는 만능이 아니다. 모델이 그럴듯한 중간 설명을 꾸며내도 최종 답이 틀릴 수 있고, 중간 reasoning을 그대로 사용자에게 노출하는 것이 보안·정책상 부적절한 경우도 있다. 그래서 제품에서는 내부 scratchpad, concise rationale, verifier, tool execution log를 구분해야 한다.
+</Callout>
+
+## 4. Self-consistency: 한 경로만 믿지 않는다
+
+일반적인 decoding은 greedy하게 가장 그럴듯한 token을 따라갈 수 있다. 문제는 복잡한 reasoning task에서는 초반에 잘못 든 길이 끝까지 이어질 수 있다는 점이다.
+
+Self-consistency는 Chain-of-Thought를 한 번만 생성하지 않고, 여러 reasoning path를 샘플링한 뒤 최종 답의 일관성을 본다.
+
+```text
+질문
+  ├─ reasoning path 1 → 답 A
+  ├─ reasoning path 2 → 답 B
+  ├─ reasoning path 3 → 답 A
+  ├─ reasoning path 4 → 답 A
+  └─ reasoning path 5 → 답 C
+
+최종 선택: 가장 일관되게 나온 답 A
+```
+
+모델링 관점에서는 하나의 argmax path에 의존하지 않고, latent reasoning path를 marginalize하는 쪽에 가깝다.
+
+$$
+p(a \mid x) = \sum_r p(a \mid r, x)p(r \mid x)
+$$
+
+여기서 $r$은 reasoning path다. 실제 구현은 완전한 확률 계산이 아니라 여러 샘플을 뽑아 majority vote나 verifier scoring을 적용하는 식으로 근사한다.
+
+실무에서는 비용과 latency가 문제다. 한 번 답하게 하는 것보다 5번, 10번 샘플링하는 방식은 비싸다. 그래서 self-consistency는 모든 요청에 기본 적용하기보다 아래 경우에 유용하다.
+
+- 수학·코딩·계획처럼 오답 비용이 큰 task
+- 답은 짧지만 추론 과정이 긴 task
+- 여러 후보를 만든 뒤 verifier가 선택할 수 있는 task
+- batch/offline evaluation에서 모델 능력을 측정할 때
+
+## 5. Tree of Thoughts: token이 아니라 생각 단위로 탐색한다
+
+Tree of Thoughts는 Chain-of-Thought를 더 일반화한다. 한 줄 reasoning을 왼쪽에서 오른쪽으로 계속 쓰는 대신, 중간 “thought” 후보를 만들고 평가하면서 탐색한다.
+
+```text
+상태 S0
+  ├─ thought A → 평가 낮음 → 중단
+  ├─ thought B → 평가 높음
+  │    ├─ thought B1 → 평가 중간
+  │    └─ thought B2 → 평가 높음 → 계속
+  └─ thought C → 평가 낮음 → 중단
+```
+
+이 방식은 LLM을 단순 generator가 아니라 **proposal model + evaluator + search controller**의 일부로 쓰는 구조다.
+
+- proposal: 다음 가능한 생각 후보를 만든다.
+- evaluation: 각 후보가 목표에 가까운지 점수화한다.
+- search: DFS, BFS, beam search처럼 탐색 전략을 정한다.
+
+중요한 차이는 추론이 더 이상 하나의 text stream만이 아니라는 점이다. Runtime이 여러 후보를 관리하고, 필요하면 되돌아가고, 일부 경로를 버린다. 이건 prompting이 agent로 넘어가는 중간 다리이기도 하다.
+
+## 6. Structured output: 답변도 interface contract다
+
+Prompting을 이야기할 때 자주 놓치는 부분이 output format이다. “JSON으로 답해줘” 정도로 끝내면 모델은 대체로 JSON 비슷한 것을 내지만, production에서는 그 정도로 부족하다.
+
+Structured output은 생성 결과를 다음 시스템이 소비할 수 있는 형태로 제한하는 문제다.
+
+```json
+{
+  "risk_level": "high | medium | low",
+  "reasons": ["..."],
+  "next_actions": [
+    {
+      "owner": "...",
+      "action": "...",
+      "deadline": "YYYY-MM-DD"
+    }
+  ]
+}
+```
+
+이건 UX 문제가 아니라 contract 문제다. Downstream system이 `risk_level`을 읽어 routing하고, `next_actions`를 ticket으로 만들고, `deadline`을 calendar와 연결한다면 format failure는 곧 시스템 장애가 된다.
+
+그래서 실무 prompting에서는 다음을 같이 설계해야 한다.
+
+- JSON schema 또는 tool schema
+- 허용 enum과 금지 값
+- 누락 가능 field와 required field
+- parsing 실패 시 retry 정책
+- schema는 맞지만 내용이 틀린 경우의 validation
+
+좋은 prompt는 “멋진 답변”을 만드는 문장이 아니라, 다음 단계가 안정적으로 실행될 수 있는 interface다.
+
+## 7. Prompt template은 재사용 가능한 프로그램에 가깝다
+
+LLM 애플리케이션에서 prompt template은 문자열이지만, 사실상 프로그램처럼 행동한다.
+
+```text
+System instruction
++ Task-specific instruction
++ Retrieved context
++ Few-shot examples
++ User input
++ Output schema
++ Safety constraints
+```
+
+각 부분은 서로 다른 역할을 한다.
+
+| 구성 요소 | 역할 | 실패 모드 |
+| --- | --- | --- |
+| System instruction | 전체 행동 범위 정의 | 너무 추상적이면 무시됨 |
+| Task instruction | 이번 요청의 목표 정의 | 모호하면 엉뚱한 답 생성 |
+| Retrieved context | 외부 근거 제공 | 관련 없는 문서가 들어오면 hallucination 증가 |
+| Few-shot examples | 판단 기준과 형식 암시 | 예시가 편향되면 출력도 편향 |
+| Output schema | downstream contract | schema mismatch, parsing failure |
+| Safety constraint | 금지 행동 제한 | runtime guardrail 없이 prompt만 믿으면 취약 |
+
+여기서 중요한 원칙은 **prompt가 커질수록 무조건 좋아지는 것이 아니라는 점**이다. Context가 길어지면 중요한 근거가 묻히고, 서로 충돌하는 instruction이 늘고, latency와 비용도 증가한다.
+
+## 8. 실무에서 prompting을 설계하는 체크리스트
+
+Prompt를 만들 때는 아래 순서로 생각하는 것이 좋다.
+
+### 1. Task의 정답 형태를 먼저 정한다
+
+모델에게 “분석해줘”라고 하기 전에, 분석 결과가 어떤 형태로 쓰일지 정해야 한다.
+
+- 사람이 읽는 보고서인가?
+- API가 파싱할 JSON인가?
+- 코드 patch인가?
+- tool 호출 계획인가?
+- 여러 후보 중 하나를 고르는 ranking인가?
+
+정답 형태가 모호하면 prompt도 모호해진다.
+
+### 2. 모델이 알아야 하는 정보와 추론해야 하는 정보를 분리한다
+
+RAG context, DB 조회 결과, 사용자 입력처럼 외부에서 제공해야 하는 사실과, 모델이 추론해야 하는 판단을 구분해야 한다.
+
+나쁜 prompt:
+
+```text
+이 고객이 이탈할 것 같은지 알려줘.
+```
+
+좋은 prompt:
+
+```text
+아래 고객 이벤트 로그와 최근 CS 기록만 근거로 이탈 위험도를 판단해줘.
+근거가 없는 추정은 쓰지 말고, 위험도는 high/medium/low 중 하나로만 선택해줘.
+```
+
+### 3. 중간 reasoning이 필요한지 판단한다
+
+모든 요청에 긴 Chain-of-Thought가 필요한 것은 아니다. 단순 요약이나 format 변환에는 오히려 불필요하다. 반대로 다단계 계산, 정책 판단, 코드 수정 계획에는 중간 상태를 갖게 하는 것이 유리하다.
+
+제품에서는 다음처럼 나눌 수 있다.
+
+- 내부 scratchpad: 모델이 계산에 쓰지만 사용자에게 그대로 노출하지 않음
+- brief rationale: 사용자가 검증할 수 있는 짧은 근거
+- tool trace: 실제 실행된 tool과 결과
+- final answer: 사용자에게 보여 줄 결론
+
+### 4. Decoding과 verifier를 같이 설계한다
+
+Prompt만 바꾸고 temperature, top-p, sampling 횟수, verifier를 생각하지 않으면 반쪽짜리다.
+
+- 창의적 후보 생성: temperature를 조금 올리고 여러 후보 생성
+- 정확한 추출: 낮은 temperature와 schema validation
+- 복잡한 추론: 여러 path 샘플링 후 verifier 또는 majority vote
+- 코드 생성: 테스트 실행 결과를 feedback으로 재입력
+
+즉 prompting은 문자열 설계가 아니라 **generation policy 설계**다.
+
+## 9. 흔한 오해
+
+### 오해 1. “좋은 prompt 하나”가 모든 문제를 해결한다
+
+Prompt는 중요하지만, 잘못된 retrieval, 부정확한 데이터, 부실한 evaluation, 허술한 runtime guardrail을 대신할 수 없다. Prompt는 시스템의 한 층일 뿐이다.
+
+### 오해 2. Chain-of-Thought를 길게 쓰면 항상 더 정확하다
+
+긴 reasoning은 비용을 늘리고, 때로는 모델이 틀린 전제를 더 길게 합리화하게 만든다. 복잡한 task에서는 verifier나 tool execution이 같이 필요하다.
+
+### 오해 3. JSON으로 답하라고 하면 structured output이 해결된다
+
+JSON처럼 보이는 문자열과 schema-valid object는 다르다. Production에서는 parser, retry, schema validation, semantic validation이 필요하다.
+
+### 오해 4. Prompt engineering은 곧 사라질 요령이다
+
+표현은 바뀌어도 문제는 남는다. 모델이 바뀌어도 instruction, context selection, output contract, tool interface, evaluation rubric은 계속 필요하다. 이름이 prompt engineering이든 context engineering이든, 본질은 **추론 시점의 조건과 제어를 설계하는 일**이다.
+
+## 10. 다음 편 예고: Agent와 tool use
+
+Prompting을 이해하면 agent가 갑자기 덜 신비로워진다. Agent는 결국 모델이 다음 token만 생성하는 대신, 어떤 시점에는 tool을 호출하고, observation을 다시 context에 넣고, 다음 action을 선택하는 구조다.
+
+```text
+Thought → Action → Observation → Thought → Action → Observation → Final
+```
+
+ReAct는 이 loop를 명시적으로 보여 준다. Toolformer는 tool 사용을 학습 데이터로 만드는 질문을 던진다. Google, Anthropic, OpenAI의 agent 가이드는 이 loop를 제품 시스템으로 운영할 때 필요한 workflow, guardrail, evaluation을 다룬다.
+
+그래서 다음 글에서는 agent를 “LLM에 도구 붙이기”가 아니라 **state, action, observation, policy, runtime control**의 문제로 볼 예정이다.
+
+## 정리
+
+Prompting은 얕은 팁이 아니다. 모델 파라미터를 바꾸지 않고도 입력 context, 예시, 중간 reasoning, sampling, verifier, output schema를 통해 추론 계산을 재배치하는 방법이다.
+
+핵심 질문은 네 가지다.
+
+1. 모델이 task를 이해할 만큼 충분한 조건을 context에 줬는가?
+2. 중간 reasoning이나 탐색이 필요한 문제인가?
+3. 여러 후보를 만들고 검증할 장치가 있는가?
+4. 출력이 다음 시스템이 소비할 수 있는 contract를 만족하는가?
+
+이 질문을 붙잡으면 prompting은 더 이상 “프롬프트 잘 쓰는 법”이 아니라, LLM 시스템의 inference layer를 설계하는 기술이 된다.
+
+## 참고 자료
+
+- LinkedIn 공유 자료: [AI를 체계적으로 배우기 위한 핵심 학습 자료 모음](https://www.linkedin.com/posts/soulai_aiukrswdsuyrzo-share-7481275919882416128-eFUj/)
+- Wei et al., [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)
+- Wang et al., [Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
+- Yao et al., [Tree of Thoughts: Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601)
+- OpenAI, [A practical guide to building agents](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf)
+- Anthropic, [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
