@@ -4003,3 +4003,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, document-ai, rag, github-repo]
 - status: idea
+
+### 2026-07-21 — [논문 리뷰] PagedWeight: MoE serving에서 expert weight와 KV cache를 같이 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2607.16184v1
+- why-now: MoE LLM serving은 expert weight 메모리와 KV cache가 동시에 GPU를 압박하는데, 긴 컨텍스트·agent trace가 늘수록 둘 중 하나만 최적화해서는 throughput/latency를 맞추기 어렵다.
+- angle: “MoE 추론 최적화는 weight quantization과 KV cache budget의 공동 스케줄링 문제” — runtime dynamic quantization, quality-aware precision, memory/throughput/accuracy trade-off를 production serving 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [moe, inference-optimization, kv-cache, quantization]
+- status: idea
+
+### 2026-07-21 — [논문 리뷰] When Do Multi-Agent Systems Help?: 정보 병목으로 보는 MAS 선택 기준
+- type: paper
+- source: http://arxiv.org/abs/2607.16133v1
+- why-now: multi-agent orchestration이 기본 옵션처럼 쓰이지만, 실제로 single-agent보다 언제 나은지에 대한 구조적 기준은 아직 약하다.
+- angle: “agent를 늘리는 건 parallelism이 아니라 information bottleneck 설계” — task decomposition, communication channel, redundant reasoning, failure propagation을 MAS 설계 판단표로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, agent-architecture, information-bottleneck, orchestration]
+- status: idea
+
+### 2026-07-21 — [논문 리뷰] The Honest Quorum Problem: agentic infrastructure의 epistemic BFT
+- type: paper
+- source: http://arxiv.org/abs/2607.16109v1
+- why-now: agentic validator와 multi-agent review loop가 늘수록 “다수가 동의했다”와 “정말 transition semantics를 이해했다” 사이의 차이가 시스템 안전성 문제가 된다.
+- angle: “agent quorum은 Byzantine fault tolerance보다 epistemic fault tolerance가 어렵다” — validator diversity, semantic execution check, collusion/ignorance boundary를 agent infra 안전 설계로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-infra, multi-agent, verification, byzantine-fault-tolerance]
+- status: idea
+
+### 2026-07-21 — [논문 리뷰] ToolVerse: massive tool environment에서 long-horizon agentic RL 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.15660v1
+- why-now: agentic RL은 toy tool set을 넘어 대규모·동적 tool environment에서 robustness와 long-horizon planning을 평가해야 하는 단계로 넘어가고 있다.
+- angle: “tool-use benchmark의 다음 병목은 tool 개수가 아니라 environment lifecycle” — tool discovery, state transition, reward, curriculum, regression suite를 agentic RL 운영 루프로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agentic-rl, benchmark, long-horizon-agent]
+- status: idea
+
+### 2026-07-21 — [논문 리뷰] Scalable LLM Agent Tool Access in the Cloud: MCP를 클라우드 규모로 운영하기
+- type: paper
+- source: http://arxiv.org/abs/2607.15593v1
+- why-now: MCP가 agent tool interface의 사실상 표준이 되면서, 단일 서버 demo가 아니라 legacy service wrapping, tool discovery, 권한, tenant isolation을 포함한 cloud-scale 운영 문제가 드러나고 있다.
+- angle: “MCP 운영은 server 만들기가 아니라 tool access plane 설계” — gateway, registry, auth boundary, compatibility layer, observability를 production agent infra 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, agent-infra, cloud, tool-access]
+- status: idea
+
+### 2026-07-21 — LightAgent: hooks·memory·guardrails를 갖춘 lightweight Python agent framework
+- type: tech
+- source: https://github.com/wanxingai/LightAgent
+- why-now: Python 팀이 무거운 orchestration stack 없이 tool calling, memory, tracing, lifecycle hook, multi-agent collaboration을 빠르게 붙이고 싶어 하는 수요가 커지고 있다.
+- angle: “작은 agent framework는 기능 수보다 extension point가 중요하다” — hook lifecycle, memory abstraction, guardrail, trace, workflow composition을 framework 선택 체크리스트로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, python, memory, guardrails]
+- status: idea
+
+### 2026-07-21 — Solace Agent Mesh: event-driven multi-agent system을 운영하는 방식
+- type: tech
+- source: https://github.com/SolaceLabs/solace-agent-mesh
+- why-now: multi-agent workflow가 request/response 체인에서 event-driven mesh로 확장되면, agent 간 메시징·backpressure·observability·real-world integration이 핵심 아키텍처 문제가 된다.
+- angle: “multi-agent orchestration은 graph runner가 아니라 event mesh일 수 있다” — agent message bus, event routing, tool/data integration, failure handling을 production MAS 패턴으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, event-driven, agent-framework, orchestration]
+- status: idea
+
+### 2026-07-21 — nocturne_memory: rollback 가능한 graph-like MCP memory server
+- type: tech
+- source: https://github.com/Dataojitori/nocturne_memory
+- why-now: agent memory를 vector store 하나로 두기보다 structured memory, rollback, visual inspection, MCP boundary로 관리하려는 움직임이 커지고 있다.
+- angle: “agent memory는 검색 품질보다 변경 이력과 되돌리기가 먼저” — graph-like memory model, rollback, inspection UI, MCP server contract를 persistent agent memory 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, mcp, graph-memory, github-repo]
+- status: idea

@@ -218,6 +218,11 @@
 | 아이디어 | 미정 | [논문 리뷰] On-Policy Delta Distillation — reasoning 모델 업데이트를 작게 증류하기 | paper-review | 논문 리뷰 | | arXiv 2607.15161 — on-policy trajectory, delta objective, regression risk, agent post-training release gate |
 | 아이디어 | 미정 | judgeval: agent 평가를 continuous-improvement stack으로 운영하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — dataset/evaluator/tracing, CI gate, production feedback loop를 작은 팀 agent QA workflow로 정리 |
 | 아이디어 | 미정 | pdf-reader-mcp: PDF를 agent용 evidence layer로 바꾸는 MCP 서버 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — visual crop, page evidence, structured extraction, citation boundary를 agent document tool 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] PagedWeight — MoE serving에서 expert weight와 KV cache를 같이 줄이기 | paper-review | AI 추론 최적화 | | arXiv 2607.16184 — dynamic quality-aware weight quantization, KV cache budget, memory/throughput/accuracy trade-off |
+| 아이디어 | 미정 | [논문 리뷰] When Do Multi-Agent Systems Help? — 정보 병목으로 보는 MAS 선택 기준 | paper-review | Agent/MCP 실전 | | arXiv 2607.16133 — task decomposition, communication bottleneck, single-agent vs multi-agent 선택 기준 |
+| 아이디어 | 미정 | [논문 리뷰] ToolVerse — massive tool environment에서 long-horizon agentic RL 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.15660 — tool discovery, environment lifecycle, reward/curriculum, regression suite 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Scalable LLM Agent Tool Access in the Cloud — MCP를 클라우드 규모로 운영하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.15593 — MCP gateway, registry, auth boundary, tenant isolation, observability |
+| 아이디어 | 미정 | LightAgent: hooks·memory·guardrails를 갖춘 lightweight Python agent framework | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — lifecycle hooks, memory abstraction, guardrail, tracing, workflow composition |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
