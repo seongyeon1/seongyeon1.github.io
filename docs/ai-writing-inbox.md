@@ -3898,3 +3898,108 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-infra, audit-log, credential-vault, github-repo]
 - status: idea
+
+
+### 2026-07-20 — [논문 리뷰] LongStraw: 고정 GPU 예산으로 2M+ long-context RL을 돌리는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.14952v1
+- why-now: agent와 RAG 시스템이 긴 실행 로그·대량 문서·tool trace를 한 번에 다루면서, context window 확장보다 post-training/RL 비용을 어떻게 통제할지가 실무 병목이 되고 있다.
+- angle: “긴 컨텍스트 모델은 window 크기가 아니라 학습 예산 설계가 핵심” — sequence packing, reward signal, GPU budget, serving-time context policy를 long-horizon agent 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-context, reinforcement-learning, agent-runtime, inference-cost]
+- status: idea
+
+### 2026-07-20 — [논문 리뷰] On-Policy Delta Distillation: reasoning 모델 업데이트를 작게 증류하기
+- type: paper
+- source: http://arxiv.org/abs/2607.15161v1
+- why-now: reasoning/model adaptation이 커질수록 매번 full distillation이나 RL을 반복하기 어렵고, 정책 변화량(delta)을 어떻게 안정적으로 옮길지가 배포 비용 문제가 된다.
+- angle: “모델 개선은 새 모델 전체가 아니라 행동 변화량을 배포하는 문제” — on-policy trajectory, delta objective, regression risk, agent post-training release gate로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [distillation, reasoning-model, post-training, evaluation]
+- status: idea
+
+### 2026-07-20 — [논문 리뷰] T^2MLR: Transformer 중간층에 temporal recurrence를 넣으면 무엇이 달라지나
+- type: paper
+- source: http://arxiv.org/abs/2607.15178v1
+- why-now: 긴 컨텍스트와 streaming inference에서 attention만 키우는 방식의 비용이 커지며, recurrence를 transformer 내부에 다시 넣는 아키텍처 실험이 중요해지고 있다.
+- angle: “RNN의 귀환이 아니라 context state를 어디에 둘 것인가” — temporal middle-layer recurrence, memory/state update, latency와 품질 trade-off를 agent runtime memory 관점으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [transformer, architecture, recurrence, long-context]
+- status: idea
+
+### 2026-07-20 — [논문 리뷰] In-Place Tokenizer Expansion: 사전학습 LLM의 tokenizer를 다시 키우기
+- type: paper
+- source: http://arxiv.org/abs/2607.15232v1
+- why-now: 도메인 특화 LLM·다국어 확장·코드/수식 토큰 최적화에서 tokenizer를 바꾸고 싶지만, 기존 checkpoint를 버리지 않는 방법이 점점 중요해지고 있다.
+- angle: “tokenizer는 전처리 부품이 아니라 모델 ABI” — embedding 확장, vocabulary migration, compatibility, downstream fine-tuning 위험을 모델 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tokenizer, llm-training, model-architecture, domain-adaptation]
+- status: idea
+
+### 2026-07-20 — [논문 리뷰] SciDiagramEdit: 논문 revision으로 과학 다이어그램 편집을 학습하기
+- type: paper
+- source: http://arxiv.org/abs/2607.15272v1
+- why-now: 연구·기술 문서 작성에서 LLM이 텍스트뿐 아니라 도식 수정까지 도와야 하는데, 실제 논문 revision은 “무엇을 왜 고쳤는지”가 남아 있는 희소한 멀티모달 학습 신호다.
+- angle: “AI writing assistant의 다음 병목은 문장 생성이 아니라 figure edit trace” — paper revision data, diagram instruction, multimodal edit model을 기술 블로그/논문 작성 자동화 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multimodal, scientific-writing, diagram-editing, dataset]
+- status: idea
+
+### 2026-07-20 — judgeval: agent 평가를 continuous-improvement stack으로 운영하기
+- type: tech
+- source: https://github.com/JudgmentLabs/judgeval
+- why-now: agent 품질 관리는 일회성 benchmark보다 trace 수집, evaluator, regression gate, 개선 루프가 함께 돌아가는 운영 스택으로 이동하고 있다.
+- angle: “agent eval은 점수표가 아니라 릴리즈 파이프라인” — dataset/evaluator/tracing, CI gate, production feedback loop를 작은 팀의 agent QA workflow로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, observability, regression-test, github-repo]
+- status: idea
+
+### 2026-07-20 — hope-agent: 기억과 목표를 가진 cross-device desktop AI agent
+- type: tech
+- source: https://github.com/shiwenwen/hope-agent
+- why-now: 개인용 agent가 단일 채팅창을 넘어 데스크톱·NAS·클라우드에서 장기 목표와 메모리를 유지하는 상주형 assistant로 확장되고 있다.
+- angle: “personal agent runtime은 UI보다 lifecycle이 어렵다” — memory, autonomous goal loop, cross-device orchestration, local/cloud boundary를 framework architecture로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 3
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, desktop-agent, memory, orchestration]
+- status: idea
+
+### 2026-07-20 — pdf-reader-mcp: PDF를 agent용 evidence layer로 바꾸는 MCP 서버
+- type: tech
+- source: https://github.com/SylphxAI/pdf-reader-mcp
+- why-now: RAG/agent가 PDF를 단순 텍스트 덤프로 읽으면 표·도표·페이지 provenance가 사라져 답변 검증이 어려워지고, 문서 tool 자체가 evidence-first 인터페이스를 가져야 한다.
+- angle: “PDF MCP의 핵심은 OCR이 아니라 provenance-preserving extraction” — visual crop, page evidence, structured extraction, citation boundary를 agent document tool 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, document-ai, rag, github-repo]
+- status: idea

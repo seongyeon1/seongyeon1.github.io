@@ -214,6 +214,10 @@
 | 아이디어 | 미정 | [논문 리뷰] SmartRAG — mobile device 위의 native graph-based RAG | paper-review | Agentic RAG | | arXiv 2607.14661 — on-device graph memory, privacy, latency, offline 제약을 mobile assistant RAG 설계로 연결 |
 | 아이디어 | 미정 | GitHub Agentic Workflows MCP Gateway — repo-native agent workflow 앞단의 gateway | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP gateway, repo permission, workflow trigger, trace/audit boundary 운영 패턴 |
 | 아이디어 | 미정 | wirken: agent 시대의 switchboard — credential vault와 hash-chained audit log | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — channel isolation, encrypted credential vault, per-session audit log를 agent control plane으로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] LongStraw — 고정 GPU 예산으로 2M+ long-context RL을 돌리는 법 | paper-review | AI 추론 최적화 | | arXiv 2607.14952 — sequence packing, reward signal, GPU budget, serving-time context policy를 long-horizon agent 운영 관점으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] On-Policy Delta Distillation — reasoning 모델 업데이트를 작게 증류하기 | paper-review | 논문 리뷰 | | arXiv 2607.15161 — on-policy trajectory, delta objective, regression risk, agent post-training release gate |
+| 아이디어 | 미정 | judgeval: agent 평가를 continuous-improvement stack으로 운영하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — dataset/evaluator/tracing, CI gate, production feedback loop를 작은 팀 agent QA workflow로 정리 |
+| 아이디어 | 미정 | pdf-reader-mcp: PDF를 agent용 evidence layer로 바꾸는 MCP 서버 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — visual crop, page evidence, structured extraction, citation boundary를 agent document tool 설계로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
