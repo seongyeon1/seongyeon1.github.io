@@ -6,7 +6,22 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 21 Jul 2026 01:12:24 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 21 Jul 2026 15:55:46 GMT</lastBuildDate>
+    <item>
+      <title>도메인 사전으로 Retriever 성능을 올리는 법 — 동의어 치환을 넘어 Concept Registry로</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-22-domain-dictionary-retriever/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-22-domain-dictionary-retriever/</guid>
+      <description>특정 도메인에서 retriever recall을 높이기 위해 단어사전, 매핑테이블, 온톨로지를 어떻게 설계하고 검색 파이프라인에 적용해야 하는지 기존 연구와 실무 패턴을 바탕으로 정리한다.</description>
+      <pubDate>Wed, 22 Jul 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>retrieval</category>
+      <category>RAG</category>
+      <category>search</category>
+      <category>BM25</category>
+      <category>dense retrieval</category>
+      <category>ontology</category>
+      <category>query expansion</category>
+    </item>
     <item>
       <title>AI 기본기 8: Agent와 Tool Use — LLM을 실행 가능한 시스템으로 바꾸는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-07-21-ai-fundamentals-agents-tool-use-runtime/</link>

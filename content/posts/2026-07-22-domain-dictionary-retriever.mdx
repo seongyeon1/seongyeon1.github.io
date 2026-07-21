@@ -1,0 +1,559 @@
+---
+title: "도메인 사전으로 Retriever 성능을 올리는 법 — 동의어 치환을 넘어 Concept Registry로"
+date: "2026-07-22"
+category: "guide"
+tags: ["retrieval", "RAG", "search", "BM25", "dense retrieval", "ontology", "query expansion"]
+summary: "특정 도메인에서 retriever recall을 높이기 위해 단어사전, 매핑테이블, 온톨로지를 어떻게 설계하고 검색 파이프라인에 적용해야 하는지 기존 연구와 실무 패턴을 바탕으로 정리한다."
+---
+
+RAG나 Agent 시스템을 만들다 보면 결국 같은 문제를 만난다.
+
+> 사용자는 도메인에서 통하는 말로 질문하는데, retriever는 문서에 적힌 표면 단어만 보고 찾는다.
+
+예를 들어 세무 도메인에서는 `부가세`, `부가가치세`, `VAT`가 같은 개념을 가리킬 수 있다. 의료 도메인에서는 `AMI`, `heart attack`, `myocardial infarction`, `심근경색`이 연결된다. IAM 도메인에서는 `SSO`, `single sign-on`, `싱글사인온`이 같은 의미로 쓰인다.
+
+Dense retriever가 어느 정도 semantic matching을 해준다고 해도, 전문 도메인에서는 여전히 자주 실패한다. 약어, 코드, 제품명, 법령 조항, 내부 시스템명, 구명칭과 신명칭은 일반 embedding 모델이 안정적으로 이해하기 어렵다.
+
+그래서 특정 도메인의 retriever 성능을 올릴 때는 여전히 **단어사전, 동의어 사전, 매핑테이블, 온톨로지**가 중요하다. 다만 핵심은 “동의어를 왕창 넣는다”가 아니다.
+
+<Callout type="tip">
+도메인 사전은 단순 synonym table이 아니라, query와 document를 같은 개념 ID에 연결하는 **Concept Registry**로 설계하는 편이 훨씬 안전하다.
+</Callout>
+
+이 글에서는 기존 연구 흐름을 간단히 훑고, 실제 RAG/retriever 시스템에 어떻게 적용하면 좋은지 정리한다.
+
+## 왜 도메인 사전이 필요한가
+
+검색 실패는 보통 세 가지 형태로 나타난다.
+
+첫째, **표현 불일치**다.
+
+```text
+query: 부가세 신고 방법
+document: 부가가치세 확정신고 절차
+```
+
+사람은 같은 말이라고 이해하지만 lexical retriever는 다르게 본다.
+
+둘째, **약어와 코드 문제**다.
+
+```text
+query: SSO SAML 오류
+document: Single Sign-On 연동 시 Security Assertion Markup Language 응답 검증 실패
+```
+
+BM25는 `SSO`, `SAML`이 문서에 없으면 놓칠 수 있고, dense retriever도 도메인 약어를 항상 잘 이해하지는 못한다.
+
+셋째, **다국어·내부 용어 문제**다.
+
+```text
+query: 매입공제 안되는 케이스
+document: input tax deduction disallowed cases
+```
+
+한국어, 영어, 약어, 내부 표현이 섞이면 일반 retriever의 recall이 쉽게 떨어진다.
+
+이 문제를 해결하기 위해 오래전부터 IR에서는 query expansion, thesaurus, ontology, controlled vocabulary를 사용해왔다.
+
+## 기존 연구 흐름 1: Query Expansion과 Ontology-based IR
+
+고전적인 접근은 query에 동의어와 관련어를 추가하는 것이다.
+
+Voorhees의 “Query Expansion using Lexical-Semantic Relations”는 WordNet의 lexical-semantic relation을 이용해 query expansion을 시도한 대표적인 연구다. 중요한 결론은 단순하다.
+
+> 동의어 확장은 도움이 될 수 있지만, 잘못된 확장은 query drift를 만든다.
+
+즉 `apple`을 무조건 `macintosh`로 확장하면 과일을 찾는 query가 컴퓨터 검색으로 오염된다. `auth`를 `authentication`과 `authorization`으로 동시에 확장하면 인증과 인가 문서가 섞인다.
+
+Bhogal et al.의 ontology-based query expansion survey도 비슷한 결론을 낸다. 온톨로지는 domain mismatch를 줄이는 데 유용하지만, 어떤 relation을 얼마나 강하게 쓸지가 성능을 좌우한다.
+
+실무적으로는 relation type을 나눠야 한다.
+
+```text
+same_as / alias_of       -> 강한 확장
+abbreviation_of          -> 강한 확장
+canonical_name           -> 강한 확장
+broader_than / parent    -> 약한 boost
+related_to               -> 매우 약한 feature
+co_occurs_with           -> query expansion 금지, rerank feature 정도
+```
+
+예를 들어 `심근경색`과 `myocardial infarction`은 거의 같은 개념이므로 강하게 확장해도 된다. 하지만 `심근경색`을 `심장질환`, `흉통`, `트로포닌`, `ECG`로 넓히는 것은 위험하다. 관련은 있지만 동의어는 아니기 때문이다.
+
+## 기존 연구 흐름 2: Biomedical 검색의 UMLS, MeSH, MetaMap
+
+도메인 사전 기반 retrieval이 가장 잘 정립된 분야는 biomedical이다.
+
+대표적으로 MetaMap은 free text를 UMLS Metathesaurus의 concept로 매핑한다. `heart attack`, `myocardial infarction`, `MI` 같은 표현을 같은 biomedical concept로 연결하는 식이다.
+
+PubMed도 비슷한 구조를 production search에서 사용한다. PubMed의 Automatic Term Mapping은 사용자의 검색어를 MeSH heading, phrase index, author, journal 등으로 매핑한다. 예를 들어 사용자가 일상적인 표현으로 검색해도 controlled vocabulary 기반의 검색이 가능해진다.
+
+이 흐름에서 얻을 수 있는 핵심은 이것이다.
+
+<Callout type="note">
+도메인 검색에서 중요한 것은 surface form을 치환하는 것이 아니라, query와 document를 같은 **concept space**에 올려놓는 것이다.
+</Callout>
+
+예를 들어 query가 이렇게 들어왔다고 하자.
+
+```text
+AMI discharge 기준
+```
+
+도메인 매핑 레이어는 먼저 entity를 감지한다.
+
+```text
+AMI -> acute myocardial infarction -> concept_id: MED_000123
+```
+
+그다음 검색 query를 여러 view로 만든다.
+
+```text
+1. AMI discharge 기준
+2. acute myocardial infarction discharge criteria
+3. myocardial infarction 퇴원 기준
+4. 심근경색 환자 퇴원 기준
+```
+
+동시에 문서에도 `concept_id: MED_000123`이 붙어 있다면, 단어가 직접 겹치지 않아도 같은 개념으로 boost할 수 있다.
+
+## 기존 연구 흐름 3: Dense Retriever에서는 사전을 학습 데이터로 쓴다
+
+Dense retriever 시대에는 사전의 역할이 조금 바뀐다. 단순 query expansion도 가능하지만, 더 강력한 방식은 **사전의 synonym pair를 embedding 학습 데이터로 바꾸는 것**이다.
+
+BioSyn은 biomedical entity normalization에서 UMLS synonym을 활용해 sparse score와 dense score를 함께 사용했다. SapBERT는 같은 UMLS concept에 속한 synonym들을 embedding space에서 가깝게 정렬하도록 학습했다. CODER는 synonym뿐 아니라 knowledge graph relation까지 활용해 medical term embedding을 개선했다.
+
+이 접근은 전문 도메인 검색에도 그대로 적용할 수 있다.
+
+도메인 사전이 이렇게 있다면:
+
+```yaml
+concept_id: TAX_00123
+canonical: "부가가치세"
+aliases:
+  - "부가세"
+  - "VAT"
+  - "value added tax"
+```
+
+다음과 같은 positive pair를 자동으로 만들 수 있다.
+
+```text
+("부가세", "부가가치세")
+("VAT", "부가가치세")
+("value added tax", "부가가치세")
+```
+
+그리고 hard negative는 이렇게 만든다.
+
+```text
+같은 상위 카테고리의 다른 세금 용어
+철자가 비슷하지만 다른 약어
+관련은 있지만 동의어가 아닌 개념
+```
+
+예를 들어 `authentication`과 `authorization`은 같은 IAM 도메인에 있고 자주 같이 나오지만 같은 뜻은 아니다. 이런 pair를 hard negative로 넣어야 모델이 도메인 용어를 더 정확히 구분한다.
+
+## 실무 설계: Synonym Table이 아니라 Concept Registry
+
+가장 흔한 실수는 이런 CSV를 만드는 것이다.
+
+```csv
+term,synonym
+부가세,부가가치세
+VAT,부가가치세
+SSO,single sign-on
+```
+
+작은 시스템에서는 시작점으로 괜찮지만, 금방 한계가 온다. 동의어인지, 약어인지, 구명칭인지, 상위어인지, 그냥 관련어인지 구분이 안 되기 때문이다.
+
+대신 concept 중심으로 관리하는 편이 좋다.
+
+```yaml
+concept_id: TAX_00123
+canonical: "부가가치세"
+aliases:
+  - "부가세"
+  - "VAT"
+  - "value added tax"
+abbreviations:
+  - "VAT"
+domain: "tax"
+type: "tax_term"
+relations:
+  same_as:
+    - "value added tax"
+  broader:
+    - "간접세"
+  related:
+    - "매출세액"
+    - "매입세액"
+source:
+  - "국세청 용어집"
+  - "내부 문서"
+confidence: 0.95
+owner: "tax-agent"
+updated_at: "2026-07-22"
+notes: "부가세는 구어/약칭. canonical은 부가가치세."
+```
+
+이렇게 관리하면 사전을 여러 목적으로 재사용할 수 있다.
+
+| 용도 | 사용하는 필드 |
+|---|---|
+| Query expansion | aliases, abbreviations, same_as |
+| Entity linking | concept_id, canonical, aliases |
+| Document enrichment | canonical, aliases, definitions |
+| Dense fine-tuning | alias-canonical pair |
+| Boosting | concept_id exact match |
+| Debugging | source, owner, confidence |
+
+즉 Concept Registry는 retriever 앞단의 query understanding layer이자, 인덱싱 보강 데이터이자, dense retriever 학습 데이터가 된다.
+
+## 인덱싱 시점: 문서에 concept를 붙인다
+
+문서를 chunking할 때 원문만 저장하지 말고, 감지된 concept를 metadata와 별도 field에 넣는다.
+
+```json
+{
+  "doc_id": "doc_001",
+  "chunk_id": "doc_001_003",
+  "body": "부가세 신고 시 매입세액 공제...",
+  "detected_concepts": ["TAX_00123", "TAX_00451"],
+  "canonical_terms": ["부가가치세", "매입세액 공제"],
+  "aliases": ["부가세", "VAT"],
+  "concept_definitions": [
+    "부가가치세는 재화나 용역의 공급 과정에서 발생하는 부가가치에 부과되는 세금..."
+  ]
+}
+```
+
+검색 인덱스에서는 field를 분리하는 것이 좋다.
+
+```text
+body.raw                 원문
+body.lexical             BM25용
+body.synonym             synonym analyzer 적용
+concept_ids              exact match / filter / boost
+canonical_terms          낮은 boost
+aliases                  낮은~중간 boost
+embedding                dense vector
+```
+
+원문 field와 확장 field를 섞어버리면 ranking을 디버깅하기 어렵다. 원문에 실제로 있는 단어와 사전에서 추가한 단어는 분리해야 한다.
+
+## Query 시점: 원문 query와 확장 query를 함께 쓴다
+
+검색 시에는 query를 바로 embedding하지 말고 먼저 정규화한다.
+
+```text
+User query
+-> normalize
+-> domain term detection
+-> alias/canonical/concept_id mapping
+-> deterministic expansion
+-> optional LLM rewrite / HyDE
+-> BM25 검색
+-> dense 검색
+-> fusion
+-> rerank
+```
+
+예를 들어:
+
+```text
+query: "부가세 매입공제 안되는 케이스"
+```
+
+매핑 결과:
+
+```text
+부가세 -> TAX_00123 / 부가가치세
+매입공제 -> TAX_00451 / 매입세액 공제
+```
+
+확장 query:
+
+```text
+1. 부가세 매입공제 안되는 케이스
+2. 부가가치세 매입세액 공제 불공제 사례
+3. VAT input tax deduction disallowed cases
+```
+
+여기서 중요한 점은 original query를 버리지 않는 것이다. canonical term으로 치환해버리면 사용자의 표현에만 있는 중요한 단서가 사라질 수 있다.
+
+## 추천 Retrieval 구조: Hybrid + RRF + Rerank
+
+도메인 검색에서는 dense-only보다 hybrid가 안전하다.
+
+```text
+candidate_pool =
+  top_k(BM25 original)
++ top_k(BM25 expanded)
++ top_k(Dense original)
++ top_k(Dense expanded, optional)
++ top_k(concept_id exact match)
+
+merge:
+  Reciprocal Rank Fusion
+
+boost:
+  same concept_id match       -> strong
+  alias match                 -> medium
+  related concept match       -> weak
+  broader/narrower match      -> very weak
+
+rerank:
+  cross-encoder or LLM reranker
+```
+
+BM25는 약어, 코드, exact term에 강하다. Dense retriever는 의미적으로 가까운 문서를 찾는 데 강하다. 사전 기반 확장은 BM25 쪽에서 특히 효과가 크고, dense 쪽은 안전한 alias에 한해 expanded query를 추가하는 편이 좋다.
+
+처음부터 복잡한 weighted score를 만들기보다 RRF를 쓰는 것이 실무적으로 안정적이다. BM25 score와 dense score는 scale이 다르기 때문에 단순 합산하면 튜닝이 어렵다. RRF는 각 retriever의 rank만 이용해 합치므로 baseline으로 좋다.
+
+## Elasticsearch/OpenSearch에서는 search-time synonym부터
+
+Elasticsearch나 OpenSearch를 쓴다면 synonym은 우선 search-time analyzer에 적용하는 편이 좋다.
+
+이유는 단순하다.
+
+- synonym을 바꿔도 전체 reindex 부담이 작다.
+- 문제가 생긴 rule을 rollback하기 쉽다.
+- query log 기반 A/B 테스트가 쉽다.
+- precision이 무너진 rule을 개별적으로 제거할 수 있다.
+
+다단어 synonym은 `synonym_graph` 계열을 써야 한다.
+
+```json
+{
+  "filter": {
+    "domain_synonyms": {
+      "type": "synonym_graph",
+      "synonyms": [
+        "부가세, 부가가치세, VAT",
+        "싱글사인온, single sign-on, SSO",
+        "심근경색, myocardial infarction, heart attack, MI"
+      ]
+    }
+  },
+  "analyzer": {
+    "search_with_domain_synonyms": {
+      "tokenizer": "standard",
+      "filter": [
+        "lowercase",
+        "domain_synonyms"
+      ]
+    }
+  }
+}
+```
+
+한국어에서는 형태소 분석 결과와 synonym rule이 맞지 않아 rule이 적용되지 않는 경우가 많다. Nori tokenizer를 쓴다면 반드시 `_analyze` API로 실제 token stream을 확인해야 한다.
+
+<Callout type="warning">
+동의어 사전을 넣었다고 해서 실제 검색에 적용된 것은 아니다. 한국어, 다단어 표현, 하이픈, 띄어쓰기, stopword 처리 때문에 analyzer 결과가 예상과 달라질 수 있다.
+</Callout>
+
+## LLM Query Rewrite와 HyDE는 보조로 쓴다
+
+요즘 RAG에서는 LLM으로 query를 다시 쓰거나 hypothetical document를 만드는 방식도 많이 쓴다. HyDE는 LLM이 가상의 답변 문서를 만들고 그 문서를 embedding해 검색하는 방식이다. Query2Doc도 query를 pseudo-document로 확장해 retrieval을 개선한다.
+
+도메인 사전과 결합하면 이런 식으로 쓸 수 있다.
+
+```text
+User query:
+  "SAML SSO 오류"
+
+Detected terms:
+  SAML = Security Assertion Markup Language
+  SSO = Single Sign-On
+
+Rewritten queries:
+  1. SAML SSO 오류
+  2. Security Assertion Markup Language single sign-on error troubleshooting
+  3. SAML authentication response validation failure in SSO configuration
+```
+
+다만 LLM rewrite는 deterministic하지 않고 hallucination 가능성이 있다. 따라서 추천 구조는 이렇다.
+
+```text
+deterministic dictionary expansion -> 기본
+LLM rewrite / HyDE -> 보조 query
+최종 답변 근거 -> 실제 retrieved document만 사용
+```
+
+LLM이 만든 확장 query 자체를 사실로 취급하면 안 된다.
+
+## 절대 하지 말아야 할 것들
+
+### 1. 동의어와 관련어를 섞기
+
+나쁜 예:
+
+```text
+authentication, authorization
+login, logout
+refund, exchange
+cheap, expensive
+```
+
+이 단어들은 관련은 있지만 동의어가 아니다. Query expansion에 넣으면 검색 결과가 오염된다.
+
+### 2. 상위어에서 하위어로 무분별하게 확장하기
+
+괜찮은 방향:
+
+```text
+아이폰 -> 스마트폰
+갤럭시 -> 스마트폰
+```
+
+위험한 방향:
+
+```text
+스마트폰 -> 아이폰, 갤럭시
+```
+
+상위어 query를 모든 하위어로 확장하면 precision이 급격히 떨어진다.
+
+### 3. 다의어를 전역 synonym으로 등록하기
+
+```text
+apple -> macintosh
+java -> programming language
+python -> programming language
+```
+
+도메인 context 없이 전역 적용하면 엉뚱한 결과가 나온다. ambiguous term은 확장하지 않거나, query classifier와 domain filter를 거친 뒤 적용해야 한다.
+
+### 4. 사전 변경 후 평가 없이 바로 배포하기
+
+Synonym 한 줄이 특정 head query의 결과를 크게 바꿀 수 있다. 사전은 코드처럼 관리해야 한다.
+
+```yaml
+- canonical: "single sign-on"
+  aliases:
+    - "sso"
+    - "single sign on"
+    - "single-sign-on"
+  domain: "identity"
+  type: "abbreviation"
+  direction: "equivalent"
+  owner: "iam-search"
+  source: "query_log_2026_q2"
+  notes: "identity category 밖에서는 Social Security Office 의미와 충돌 가능"
+```
+
+## 평가 방법
+
+도메인 사전을 적용했다면 전체 평균만 보면 안 된다. 사전이 영향을 주는 query subset을 따로 봐야 한다.
+
+최소 평가셋은 이렇게 만든다.
+
+```csv
+query,relevant_doc_ids,intent,critical_terms
+"부가세 매입공제 안되는 경우","doc_1|doc_7","tax_vat","부가세;매입공제"
+"SSO SAML 오류","doc_9|doc_11","iam","SSO;SAML"
+```
+
+비교 실험은 단계별로 나눈다.
+
+```text
+A. BM25 baseline
+B. BM25 + synonyms
+C. Dense baseline
+D. BM25 + Dense
+E. BM25 + synonyms + Dense
+F. BM25 + synonyms + Dense + RRF + reranker
+```
+
+주요 지표는 다음과 같다.
+
+| 지표 | 보는 것 |
+|---|---|
+| Recall@K | 관련 문서가 후보군에 들어오는가 |
+| Precision@K | noise가 늘지 않았는가 |
+| MRR | 정답이 얼마나 위에 뜨는가 |
+| NDCG@K | ranking 품질이 좋아졌는가 |
+| zero-result rate | 검색 실패가 줄었는가 |
+| latency | 확장 때문에 느려지지 않았는가 |
+
+사전 rule마다 regression test를 두는 것도 좋다.
+
+```yaml
+- rule: "sso, single sign-on"
+  query: "sso error"
+  must_include:
+    - "single sign-on troubleshooting"
+  must_not_include:
+    - "social security office"
+```
+
+## 추천 적용 순서
+
+처음부터 거대한 ontology와 fine-tuned dense retriever를 만들 필요는 없다. 다음 순서가 현실적이다.
+
+### Phase 1. Concept Registry 만들기
+
+- query log에서 실패 검색어 수집
+- 문서 제목, heading, glossary, FAQ에서 도메인 용어 추출
+- canonical, alias, abbreviation, old name 분리
+- related term과 synonym을 분리
+- source, owner, confidence 기록
+
+### Phase 2. BM25에 search-time synonym 적용
+
+- original BM25 유지
+- synonym analyzer 추가
+- exact field와 synonym field 분리
+- synonym field는 낮은 boost로 시작
+- `_analyze`와 top-k diff로 검증
+
+### Phase 3. Hybrid retrieval로 확장
+
+- Dense retriever는 original query 기준으로 유지
+- BM25 original, BM25 expanded, Dense original 결과를 RRF로 병합
+- concept_id exact match boost 추가
+- reranker 추가
+
+### Phase 4. Dense retriever를 도메인 사전으로 fine-tuning
+
+- alias-canonical positive pair 생성
+- 약어-full name pair 생성
+- 한글명-영문명 pair 생성
+- 같은 상위 카테고리의 다른 개념을 hard negative로 구성
+- evaluation set으로 Recall@K와 NDCG@K 확인
+
+## 정리
+
+특정 도메인 retriever 성능을 올리는 데 단어사전과 매핑테이블은 여전히 강력하다. 하지만 단순히 동의어를 많이 넣는 방식은 위험하다. 검색 recall은 오를 수 있지만 precision이 무너지고, RAG에서는 잘못된 context가 들어가 hallucination까지 늘어날 수 있다.
+
+가장 안전한 설계는 다음이다.
+
+```text
+Concept Registry
++ Query-time synonym expansion
++ Document concept enrichment
++ BM25 + Dense hybrid retrieval
++ Concept ID exact boost
++ RRF fusion
++ Reranker
++ Offline evaluation
+```
+
+사전은 retriever의 보조 장치가 아니라, 도메인 검색 시스템의 query understanding layer다. 표면 단어를 같은 개념으로 연결하고, 그 연결을 indexing, retrieval, reranking, fine-tuning에 일관되게 쓰는 것이 핵심이다.
+
+## 참고 자료
+
+- Voorhees, “Query Expansion using Lexical-Semantic Relations” — https://doi.org/10.1007/978-1-4471-2099-5_7
+- Bhogal et al., “A review of ontology based query expansion” — https://doi.org/10.1016/j.ipm.2006.09.003
+- Castells et al., “An Adaptation of the Vector-Space Model for Ontology-Based Information Retrieval” — https://doi.org/10.1109/TKDE.2007.1041
+- Aronson, “Effective Mapping of Biomedical Text to the UMLS Metathesaurus: The MetaMap Program” — https://pubmed.ncbi.nlm.nih.gov/11825217/
+- Fiorini et al., “Best Match: New relevance search for PubMed” — https://doi.org/10.1371/journal.pbio.2005343
+- BioSyn: Biomedical Entity Representations with Synonym Marginalization — https://arxiv.org/abs/2005.00239
+- SapBERT: Self-alignment Pretraining for Biomedical Entity Representations — https://arxiv.org/abs/2010.11784
+- CODER: Knowledge-infused Cross-lingual Medical Term Embedding — https://arxiv.org/abs/2010.01118
+- HyDE: Precise Zero-Shot Dense Retrieval without Relevance Labels — https://arxiv.org/abs/2212.10496
+- Query2Doc: Query Expansion with Large Language Models — https://arxiv.org/abs/2303.07678
+- Reciprocal Rank Fusion — https://doi.org/10.1145/1571941.1572114
+- Elasticsearch Synonym Graph Token Filter — https://www.elastic.co/docs/reference/text-analysis/analysis-synonym-graph-tokenfilter
