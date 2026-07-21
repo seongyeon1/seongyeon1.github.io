@@ -1,0 +1,378 @@
+---
+title: "AI 기본기 8: Agent와 Tool Use — LLM을 실행 가능한 시스템으로 바꾸는 법"
+date: "2026-07-21"
+category: "concept"
+tags: ["AI기본기", "agent", "tool-use", "ReAct", "MCP", "LLM"]
+summary: "AI agent를 prompt wrapper가 아니라 상태, 도구, 행동 선택, 관찰, 평가가 결합된 runtime system으로 이해한다."
+series: "AI 기본기"
+seriesOrder: 8
+math: true
+---
+
+## 한 줄 요약
+
+AI agent는 “LLM에게 알아서 해줘라고 말하는 것”이 아니다. 모델링 관점에서 보면 agent는 **언어 모델이 판단한 다음 행동을 실제 도구 호출, 관찰, 메모리, 평가 루프와 연결하는 runtime system**이다.
+
+지난 글에서는 prompting과 inference-time computation을 봤다. Chain-of-Thought, self-consistency, Tree of Thoughts는 모델이 추론 시점에 더 많은 계산을 하도록 돕는다. 이번 글에서는 그 다음 단계로 간다. 모델이 생각만 하는 것이 아니라 **행동**하게 만들려면 무엇이 추가되어야 할까?
+
+<Callout type="note">
+이 글은 LinkedIn에 공유된 AI 학습자료 목록 중 agent, tool use, MCP, ReAct, Toolformer, Generative Agents 관련 자료를 바탕으로 AI 기본기 시리즈에 맞게 재구성한 글이다. 링크 목록 자체보다 중요한 것은 agent를 어떤 구조로 이해할지다.
+</Callout>
+
+## 1. LLM과 agent의 차이
+
+LLM 단독 호출은 보통 이런 구조다.
+
+```text
+사용자 입력 → LLM → 텍스트 출력
+```
+
+반면 agent는 최소한 이런 루프를 가진다.
+
+```text
+목표
+  ↓
+상태 읽기
+  ↓
+다음 행동 선택
+  ↓
+도구 실행
+  ↓
+관찰 결과 반영
+  ↓
+완료 여부 판단 또는 다음 행동 반복
+```
+
+이 차이가 중요하다. LLM은 다음 token 분포를 계산한다. Agent system은 그 출력을 **실제 세계의 action**으로 해석한다.
+
+예를 들어 “이 repo의 failing test를 고쳐줘”라는 요청을 보자.
+
+LLM 단독이면 답변은 설명일 수 있다.
+
+```text
+테스트를 실행하고, 실패 로그를 본 뒤, 관련 파일을 수정하세요.
+```
+
+Agent는 직접 상태를 바꾼다.
+
+```text
+1. `npm test` 실행
+2. 실패 로그 파싱
+3. 관련 파일 읽기
+4. patch 적용
+5. 다시 테스트
+6. diff와 결과 보고
+```
+
+즉 agent의 핵심은 더 긴 답변이 아니라 **행동 가능한 interface**다.
+
+## 2. Agent를 구성하는 다섯 가지 부품
+
+AI agent를 이해할 때 “LLM + tool”이라고만 말하면 너무 거칠다. 실제로는 최소 다섯 가지 부품이 있다.
+
+| 부품 | 질문 | 예시 |
+| --- | --- | --- |
+| State | 지금까지 무엇을 알고 있는가? | 대화 기록, 파일 내용, tool 결과, memory |
+| Policy | 다음에 무엇을 할 것인가? | 답변, 검색, 코드 실행, 파일 수정 |
+| Tool | 어떤 외부 행동을 할 수 있는가? | web search, database query, shell, browser, calendar |
+| Observation | 행동 결과를 어떻게 읽는가? | stdout, API response, DOM snapshot, error log |
+| Evaluator | 성공했는지 어떻게 판단하는가? | test pass, schema validation, user approval, score |
+
+LLM은 이 중 policy의 일부로 쓰이는 경우가 많다. 하지만 agent 전체가 LLM인 것은 아니다. Tool schema, permission, retry, timeout, logging, sandbox, evaluator는 모두 runtime 쪽 설계다.
+
+<Callout type="warning">
+Agent를 “똑똑한 모델 하나”로 보면 실패한다. 실제 제품에서 중요한 문제는 모델 지능뿐 아니라 권한, 상태 관리, 실패 복구, 비용, latency, audit log다.
+</Callout>
+
+## 3. ReAct: reasoning과 acting을 한 trajectory에 놓기
+
+ReAct 논문의 핵심 아이디어는 이름 그대로 **Reasoning + Acting**이다. 모델이 생각만 하거나 행동만 하는 것이 아니라, 중간 reasoning trace와 action을 번갈아 생성한다.
+
+단순화하면 이런 형태다.
+
+```text
+Question: 서울의 오늘 미세먼지 상태를 보고 외출 조언을 해줘.
+Thought: 최신 정보가 필요하므로 날씨/대기질 조회가 필요하다.
+Action: search_air_quality(location="Seoul")
+Observation: PM2.5 is moderate, PM10 is good.
+Thought: 수치는 보통 수준이므로 민감군 기준 조언을 포함하면 된다.
+Answer: 오늘은 대체로 외출 가능하지만 민감군은 장시간 야외활동을 줄이는 게 좋다.
+```
+
+여기서 중요한 점은 action이 그냥 텍스트가 아니라는 것이다. Runtime은 `Action`을 읽고 실제 tool을 실행한다. 그리고 실행 결과를 `Observation`으로 다시 context에 넣는다.
+
+모델링 관점에서 ReAct는 다음 질문에 답한다.
+
+> LLM의 reasoning token과 외부 환경 action을 하나의 sequence 안에서 결합할 수 있는가?
+
+이 구조는 agent의 기본 골격이 됐다. 많은 agent framework가 이름은 달라도 다음 패턴을 반복한다.
+
+```text
+plan 또는 thought → tool call → observation → next thought → next tool call → final answer
+```
+
+## 4. Toolformer: 모델이 도구 사용 데이터를 스스로 만들 수 있을까
+
+ReAct가 inference-time agent loop에 가깝다면, Toolformer는 학습 관점에서 흥미롭다. 핵심 질문은 이렇다.
+
+> 사람이 모든 tool-use example을 라벨링하지 않아도, 모델이 언제 어떤 tool을 쓸지 배울 수 있을까?
+
+Toolformer는 language model이 API call 후보를 삽입하고, 그 tool 결과가 다음 token 예측에 도움이 되는지 평가해 self-supervised 방식으로 tool-use 데이터를 만든다.
+
+직관적으로는 이런 흐름이다.
+
+```text
+원문: The population of Seoul is ...
+후보 삽입: The population of Seoul is [Calculator or Search API] ...
+도구 결과 반영 후 language modeling loss가 줄어드는가?
+유용하면 tool-use example로 채택
+```
+
+이 아이디어가 중요한 이유는 tool use를 단순 prompt trick이 아니라 **학습 가능한 행동 선택 문제**로 보기 때문이다.
+
+실무의 hosted LLM을 직접 Toolformer 방식으로 학습시키지는 않더라도, 이 관점은 유용하다.
+
+- 어떤 tool description이 모델의 선택을 돕는가?
+- tool call이 실제 task loss나 success metric을 낮추는가?
+- 불필요한 tool call을 줄이는 기준은 무엇인가?
+- 모델이 tool 결과를 그대로 믿지 않고 검증하게 만들 수 있는가?
+
+Tool use는 “도구 목록을 많이 붙이면 좋아진다”가 아니다. 도구는 action space를 넓히지만, 동시에 잘못된 행동의 공간도 넓힌다.
+
+## 5. Generative Agents: memory, reflection, planning
+
+Generative Agents 논문은 LLM agent가 단발성 tool call을 넘어 지속적인 행동을 하려면 무엇이 필요한지 보여준다. 핵심 구성은 세 가지로 요약할 수 있다.
+
+1. **Memory stream**: agent가 경험한 observation을 저장한다.
+2. **Reflection**: 여러 memory를 추상화해 더 높은 수준의 insight를 만든다.
+3. **Planning**: 목표와 시간 흐름에 맞춰 다음 행동을 구성한다.
+
+이 구조는 “대화 기억”과는 조금 다르다. 단순히 모든 기록을 context에 넣는 것이 아니라, 필요할 때 관련 memory를 검색하고, 중요도를 계산하고, 새 계획에 반영한다.
+
+```text
+Observation: Alice said she is nervous about the presentation.
+Observation: Alice has a meeting tomorrow morning.
+Reflection: Alice may need encouragement before the meeting.
+Plan: Send a supportive message before the meeting.
+```
+
+여기서 agent는 LLM 하나가 아니라 memory retrieval, scoring, summarization, planning이 결합된 시스템이다. 앞선 RAG 글에서 본 retrieval 문제가 agent memory에도 그대로 들어온다.
+
+Agent memory를 설계할 때는 다음 질문이 생긴다.
+
+- 무엇을 episodic memory로 저장할 것인가?
+- 무엇을 long-term preference로 승격할 것인가?
+- 오래된 memory는 언제 잊거나 압축할 것인가?
+- 검색된 memory가 현재 task에 정말 관련 있는지 어떻게 판단할 것인가?
+- 사용자의 사적 정보를 어디까지 action에 사용할 수 있는가?
+
+좋은 agent는 많이 기억하는 agent가 아니라, **필요한 맥락을 적절한 순간에 꺼내고 부적절한 맥락은 쓰지 않는 agent**다.
+
+## 6. Tool schema는 agent의 행동 공간이다
+
+Agent runtime에서 tool schema는 매우 중요하다. Tool schema는 모델에게 “할 수 있는 행동”을 알려주는 action space다.
+
+예를 들어 calendar tool이 있다고 하자.
+
+```json
+{
+  "name": "create_calendar_event",
+  "parameters": {
+    "title": "string",
+    "start_time": "ISO datetime",
+    "end_time": "ISO datetime",
+    "attendees": ["email"]
+  }
+}
+```
+
+이 schema가 있다는 것은 모델이 자연어 답변 대신 calendar event 생성을 선택할 수 있다는 뜻이다. 하지만 동시에 위험도 생긴다.
+
+- 시간이 애매한데 event를 만들어 버릴 수 있다.
+- 참석자 email을 잘못 추론할 수 있다.
+- 사용자가 원하지 않았는데 외부 초대를 보낼 수 있다.
+- timezone을 틀릴 수 있다.
+
+그래서 tool schema는 API 문서가 아니라 **행동 제어 장치**로 봐야 한다.
+
+좋은 tool schema는 다음을 만족한다.
+
+| 기준 | 설명 |
+| --- | --- |
+| 명확한 이름 | 모델이 언제 써야 하는지 알 수 있어야 한다. |
+| 제한된 parameter | 자유 텍스트보다 enum, schema, validation이 좋다. |
+| read/write 분리 | 조회 tool과 변경 tool을 분리해야 한다. |
+| dry-run 지원 | 외부 side effect 전에 미리 확인할 수 있어야 한다. |
+| 실패 메시지 품질 | 모델이 복구할 수 있게 error를 구조화해야 한다. |
+
+MCP 같은 protocol이 중요한 이유도 여기에 있다. Agent와 tool 사이의 연결을 표준화하면, tool description, parameter, result, error를 더 일관되게 다룰 수 있다.
+
+## 7. Workflow와 autonomous agent를 구분하자
+
+Anthropic의 “Building Effective Agents” 가이드에서 특히 중요한 구분은 workflow와 agent다.
+
+- **Workflow**: 사람이 미리 정한 절차에 따라 LLM과 tool이 움직인다.
+- **Agent**: LLM이 상황을 보며 다음 step을 더 유연하게 결정한다.
+
+둘 중 항상 agent가 더 좋은 것은 아니다.
+
+```text
+Invoice OCR → field extraction → validation → ERP 입력
+```
+
+이런 작업은 정해진 workflow가 더 안전하다. 반대로 bug fixing, research, open-ended planning처럼 다음 step이 매번 달라지는 작업은 agentic loop가 필요할 수 있다.
+
+실무에서는 둘을 섞는 경우가 많다.
+
+```text
+고정 workflow
+  ├─ 입력 검증
+  ├─ 후보 검색
+  ├─ LLM 판단
+  ├─ 필요 시 tool loop
+  └─ 최종 검증
+```
+
+즉 “agent를 쓸까 말까”보다 더 좋은 질문은 이거다.
+
+> 어느 구간은 deterministic workflow로 묶고, 어느 구간만 모델에게 선택권을 줄 것인가?
+
+이 질문을 하지 않으면 모든 것을 autonomous agent에게 맡기게 되고, 디버깅하기 어려운 시스템이 된다.
+
+## 8. Evaluation: agent는 답변이 아니라 trajectory를 평가해야 한다
+
+일반 LLM 답변 평가는 최종 답만 보면 되는 경우가 많다. Agent는 다르다. 최종 답이 맞아 보여도 중간 행동이 위험할 수 있다.
+
+예를 들어 최종적으로 “처리 완료”라고 답했지만 중간에 잘못된 파일을 수정했거나, 필요 없는 API를 호출했거나, private data를 외부로 보냈다면 실패다.
+
+Agent evaluation은 최소 세 층이 필요하다.
+
+| 평가 대상 | 질문 | 예시 metric |
+| --- | --- | --- |
+| Final answer | 사용자의 목표를 만족했는가? | accuracy, helpfulness, completeness |
+| Trajectory | 올바른 순서로 행동했는가? | tool-call precision, unnecessary step count |
+| Safety boundary | 허용된 행동만 했는가? | permission violation, data leakage, side effect |
+
+테스트도 단순 unit test만으로 부족하다.
+
+```text
+Task: 실패한 빌드를 고쳐라.
+Expected trajectory:
+  1. test 실행
+  2. 실패 로그 확인
+  3. 관련 파일만 수정
+  4. test 재실행
+  5. diff 보고
+Forbidden:
+  - unrelated file 수정
+  - secret 출력
+  - test 없이 성공 주장
+```
+
+좋은 agent benchmark는 정답뿐 아니라 action trace를 본다. 제품에서는 trace logging과 replay가 중요하다. 실패한 agent run을 나중에 재현할 수 없으면 개선도 어렵다.
+
+## 9. 실무 agent 설계 체크리스트
+
+Agent를 만들 때는 모델부터 고르기보다 아래 질문을 먼저 잡는 편이 낫다.
+
+### 목표와 종료 조건
+
+- 이 agent의 성공 조건은 무엇인가?
+- “완료”를 누가 판단하는가? 모델, rule, test, 사람?
+- 실패하면 어디서 멈춰야 하는가?
+
+### Tool과 권한
+
+- 읽기 tool과 쓰기 tool이 분리되어 있는가?
+- 외부 side effect가 있는 tool은 confirmation 또는 dry-run이 있는가?
+- tool 결과가 너무 길거나 noisy할 때 요약/필터링이 있는가?
+
+### 상태와 memory
+
+- 한 run 안의 scratchpad와 장기 memory를 구분하는가?
+- 모든 대화 기록을 넣는 대신 필요한 context를 검색하는가?
+- private memory를 외부 action에 사용할 때 제한이 있는가?
+
+### 제어와 복구
+
+- tool 실패 시 retry 정책이 있는가?
+- 같은 행동을 반복하는 loop를 끊는 max step이 있는가?
+- 비용과 latency budget이 있는가?
+
+### 평가와 관측
+
+- 최종 답뿐 아니라 tool trajectory를 저장하는가?
+- 실패 케이스를 regression test로 만들 수 있는가?
+- 사람이 review해야 하는 boundary가 정의되어 있는가?
+
+## 10. 작은 구현 스케치
+
+아주 단순한 agent loop는 다음처럼 볼 수 있다.
+
+```python title="minimal_agent_loop.py"
+def run_agent(goal, tools, model, max_steps=8):
+    state = [{"role": "user", "content": goal}]
+
+    for _ in range(max_steps):
+        decision = model.generate_next_action(state, tools=tools)
+
+        if decision.type == "final_answer":
+            return decision.content
+
+        if decision.type == "tool_call":
+            tool = tools[decision.tool_name]
+            observation = tool(**decision.arguments)
+            state.append({
+                "role": "tool",
+                "name": decision.tool_name,
+                "content": observation,
+            })
+            continue
+
+        raise ValueError("unknown decision type")
+
+    return "max_steps exceeded"
+```
+
+이 코드는 단순하지만 agent의 본질을 보여준다.
+
+- 모델은 답변뿐 아니라 action을 선택한다.
+- Runtime은 action을 실제 tool call로 바꾼다.
+- Observation은 다시 state에 들어간다.
+- Loop에는 종료 조건과 step limit이 필요하다.
+
+실제 시스템에서는 여기에 schema validation, permission check, tool timeout, error handling, trace logging, evaluator, human approval이 붙는다.
+
+## 11. 다음 편으로 이어지는 질문
+
+이번 글까지 오면 AI 기본기 시리즈의 흐름이 자연스럽게 이어진다.
+
+```text
+loss/objective
+→ representation/embedding
+→ Transformer/self-attention
+→ next-token prediction/instruction tuning
+→ retrieval/RAG
+→ prompting/inference-time computation
+→ agent/tool-use runtime
+```
+
+Agent는 앞선 모든 개념이 합쳐지는 지점이다.
+
+- RAG 없이는 agent가 외부 지식을 안정적으로 가져오기 어렵다.
+- Prompting 없이는 tool 선택과 observation 해석이 흔들린다.
+- Instruction tuning 없이는 사용자의 의도와 안전 경계를 따르기 어렵다.
+- Evaluation 없이는 agent가 실제로 일을 끝냈는지 알 수 없다.
+
+다음 단계에서는 agent를 더 제품에 가깝게 보기 위해 **MCP, tool protocol, agent evaluation, memory system**을 각각 분리해서 다룰 수 있다. 특히 MCP는 “도구를 어떻게 연결할 것인가”의 문제이고, evaluation은 “agent가 잘했는지 어떻게 알 것인가”의 문제다.
+
+## 참고 자료
+
+- LinkedIn AI 학습자료 목록: [이상선님의 LinkedIn post](https://www.linkedin.com/posts/soulai_aiukrswdsuyrzo-share-7481275919882416128-eFUj/)
+- ReAct: [Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
+- Toolformer: [Language Models Can Teach Themselves to Use Tools](https://arxiv.org/abs/2302.04761)
+- Generative Agents: [Interactive Simulacra of Human Behavior](https://arxiv.org/abs/2304.03442)
+- Chain-of-Thought Prompting: [Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)
+- Anthropic: [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents)
+- OpenAI: [A Practical Guide to Building Agents](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf)
+- Google Cloud: [Agents whitepaper](https://www.kaggle.com/whitepaper-agents)

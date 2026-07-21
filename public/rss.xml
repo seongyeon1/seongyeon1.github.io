@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 20 Jul 2026 00:56:19 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 21 Jul 2026 00:25:11 GMT</lastBuildDate>
+    <item>
+      <title>AI 기본기 8: Agent와 Tool Use — LLM을 실행 가능한 시스템으로 바꾸는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-21-ai-fundamentals-agents-tool-use-runtime/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-21-ai-fundamentals-agents-tool-use-runtime/</guid>
+      <description>AI agent를 prompt wrapper가 아니라 상태, 도구, 행동 선택, 관찰, 평가가 결합된 runtime system으로 이해한다.</description>
+      <pubDate>Tue, 21 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>agent</category>
+      <category>tool-use</category>
+      <category>ReAct</category>
+      <category>MCP</category>
+      <category>LLM</category>
+    </item>
     <item>
       <title>AI 기본기 7: Prompting과 Inference-time Computation — 추론할 때 모델에게 시간을 쓰게 만드는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-07-20-ai-fundamentals-prompting-inference-time-computation/</link>
