@@ -4080,7 +4080,8 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [agent-framework, python, memory, guardrails]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-21-lightagent-lightweight-python-agent-framework.mdx
 
 ### 2026-07-21 — Solace Agent Mesh: event-driven multi-agent system을 운영하는 방식
 - type: tech

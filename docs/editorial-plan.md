@@ -222,7 +222,7 @@
 | 아이디어 | 미정 | [논문 리뷰] When Do Multi-Agent Systems Help? — 정보 병목으로 보는 MAS 선택 기준 | paper-review | Agent/MCP 실전 | | arXiv 2607.16133 — task decomposition, communication bottleneck, single-agent vs multi-agent 선택 기준 |
 | 아이디어 | 미정 | [논문 리뷰] ToolVerse — massive tool environment에서 long-horizon agentic RL 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.15660 — tool discovery, environment lifecycle, reward/curriculum, regression suite 설계 |
 | 아이디어 | 미정 | [논문 리뷰] Scalable LLM Agent Tool Access in the Cloud — MCP를 클라우드 규모로 운영하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.15593 — MCP gateway, registry, auth boundary, tenant isolation, observability |
-| 아이디어 | 미정 | LightAgent: hooks·memory·guardrails를 갖춘 lightweight Python agent framework | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — lifecycle hooks, memory abstraction, guardrail, tracing, workflow composition |
+| 발행완료 | 2026-07-21 | LightAgent: hooks·memory·guardrails를 갖춘 lightweight Python agent framework | tool | Agent/MCP 실전 | | `content/posts/2026-07-21-lightagent-lightweight-python-agent-framework.mdx` — 자동 발행 완료, GitHub repo 기반 — lifecycle hooks, memory abstraction, guardrail, tracing, workflow composition |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
