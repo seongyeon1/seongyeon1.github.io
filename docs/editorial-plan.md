@@ -223,6 +223,10 @@
 | 아이디어 | 미정 | [논문 리뷰] ToolVerse — massive tool environment에서 long-horizon agentic RL 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.15660 — tool discovery, environment lifecycle, reward/curriculum, regression suite 설계 |
 | 아이디어 | 미정 | [논문 리뷰] Scalable LLM Agent Tool Access in the Cloud — MCP를 클라우드 규모로 운영하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.15593 — MCP gateway, registry, auth boundary, tenant isolation, observability |
 | 발행완료 | 2026-07-21 | LightAgent: hooks·memory·guardrails를 갖춘 lightweight Python agent framework | tool | Agent/MCP 실전 | | `content/posts/2026-07-21-lightagent-lightweight-python-agent-framework.mdx` — 자동 발행 완료, GitHub repo 기반 — lifecycle hooks, memory abstraction, guardrail, tracing, workflow composition |
+| 아이디어 | 미정 | [논문 리뷰] Automated Discovery Has No Universally Superior Harness | paper-review | AI 평가/운영 | | arXiv 2607.18235 — automated discovery harness를 archive·selection·exploration·budget allocation으로 분해하고 online adaptation을 agent 운영 전략으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SWE-Pruner Pro — coding agent context pruning을 agent 내부 표현으로 하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.18213 — 별도 classifier 대신 agent hidden signal로 code/tool-output relevance를 추정하는 context manager 패턴 |
+| 아이디어 | 미정 | [논문 리뷰] Adaptive Adversaries — multi-turn LLM agent security benchmark | paper-review | Agent/MCP 실전 | | arXiv 2607.18063 — 적응형 공격자 agent, multi-round prompt injection, regression red-team harness 설계 |
+| 아이디어 | 미정 | NVIDIA NeMo Gym: environment로 모델과 agent를 평가·개선하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — environment API, rollout log, reward/evaluator, CI regression suite를 agentic RL 운영 루프로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

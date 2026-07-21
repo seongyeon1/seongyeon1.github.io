@@ -4108,3 +4108,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-memory, mcp, graph-memory, github-repo]
 - status: idea
+
+### 2026-07-22 — [논문 리뷰] Automated Discovery Has No Universally Superior Harness
+- type: paper
+- source: http://arxiv.org/abs/2607.18235v1
+- why-now: OpenEvolve류 자동 발견·코드 개선 harness가 빠르게 확산되는 와중에, 논문은 30개 budget-matched harness와 310만+ LLM rollout으로 “고정 recipe”보다 online adaptation이 낫다는 실험 근거를 제시한다.
+- angle: “agent harness 선택은 표준 아키텍처가 아니라 hyperparameter” — archive, parent selection, exploration, budget allocation을 분해하고 early-progress pruning으로 compute를 재배분하는 운영 패턴을 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, automated-discovery, evaluation, llm-rollouts]
+- status: idea
+
+### 2026-07-22 — [논문 리뷰] SWE-Pruner Pro: coding agent context pruning을 agent 내부 표현으로 하기
+- type: paper
+- source: http://arxiv.org/abs/2607.18213v1
+- why-now: coding agent가 긴 tool output과 repository context를 계속 읽으면서 context pruning이 핵심 병목이 됐고, 별도 classifier 대신 agent 자체 hidden representation을 활용하는 접근이 등장했다.
+- angle: “context pruning은 외부 요약기가 아니라 agent reading signal을 써야 한다” — code relevance score, tool-output pruning, SWE-style task loop, 정확도/토큰 비용 trade-off를 coding agent runtime 설계로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, context-management, pruning, swe-bench]
+- status: idea
+
+### 2026-07-22 — [논문 리뷰] TRIM: agent trajectory minimization으로 CodeSlop 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2607.18161v1
+- why-now: 코딩 에이전트가 기능은 맞지만 과하게 큰 diff와 장황한 구현을 남기는 문제가 실무 리뷰 비용으로 직결되고 있어, trajectory 수준에서 code bloat를 줄이는 연구가 중요해졌다.
+- angle: “좋은 coding agent는 많이 쓰는 agent가 아니라 덜 고치는 agent” — edit trajectory, diff size, validation loop, code review 비용을 품질 metric으로 넣는 agent QA 전략을 제안한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, code-quality, trajectory, evaluation]
+- status: idea
+
+### 2026-07-22 — [논문 리뷰] FinSAgent: SEC filing QA를 위한 corpus-aligned multi-agent RAG
+- type: paper
+- source: http://arxiv.org/abs/2607.18102v1
+- why-now: long-form enterprise document RAG는 단순 chunk retrieval보다 query decomposition, evidence alignment, answer synthesis가 중요하며, SEC filing처럼 표준화됐지만 긴 문서는 agentic RAG 설계 검증에 좋은 사례다.
+- angle: “업무 RAG의 난점은 검색보다 evidence alignment” — filing 구조 인식, multi-agent query refinement, heterogeneous evidence aggregation, citation/reproducibility를 enterprise RAG 운영법으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, enterprise-rag, sec-filings, evidence-grounding]
+- status: idea
+
+### 2026-07-22 — [논문 리뷰] Adaptive Adversaries: multi-turn LLM agent security benchmark
+- type: paper
+- source: http://arxiv.org/abs/2607.18063v1
+- why-now: prompt injection 방어 평가가 고정 공격 세트와 단일 turn에 머물면 실제 agent의 multi-turn 조작·적응형 공격을 놓치기 쉽다.
+- angle: “agent 보안 평가는 공격자도 agent라고 가정해야 한다” — adaptive attack loop, scenario design, memoryless defender 한계, regression benchmark를 MCP/tool agent 보안 게이트로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, prompt-injection, benchmark, red-team]
+- status: idea
+
+### 2026-07-22 — [논문 리뷰] Self-State Attacks: self-hosted AI agent의 memory/config 오염 막기
+- type: paper
+- source: http://arxiv.org/abs/2607.17986v1
+- why-now: Claude Code·Codex·MCP agent처럼 로컬 파일과 설정을 읽고 쓰는 self-hosted agent가 늘면서, “정상 system call로 자기 상태를 오염시키는” 공격면이 현실적인 운영 리스크가 됐다.
+- angle: “agent sandbox는 외부 명령보다 자기 상태 쓰기를 먼저 봐야 한다” — memory/config integrity, OS permission boundary, rollback, audit log, state quarantine을 local agent hardening 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, self-hosted-agent, memory-poisoning, sandbox]
+- status: idea
+
+### 2026-07-22 — NVIDIA NeMo Gym: environment로 모델과 agent를 평가·개선하기
+- type: tech
+- source: https://github.com/NVIDIA-NeMo/Gym
+- why-now: agent post-training과 evaluation이 정적 benchmark에서 environment 기반 rollout·feedback loop로 이동하면서, 모델과 agent를 같은 환경 추상화에서 평가·개선하는 툴킷의 가치가 커지고 있다.
+- angle: “eval은 점수표가 아니라 environment contract” — environment API, rollout log, reward/evaluator, regression suite, NeMo 생태계 연동을 agentic RL 운영 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, rl-environment, nvidia-nemo, github-repo]
+- status: idea
+
+### 2026-07-22 — pydantic-deepagents: typed tool-calling과 sandbox를 갖춘 self-hosted coding agent
+- type: tech
+- source: https://github.com/vstorm-co/pydantic-deepagents
+- why-now: 팀들이 외부 SaaS coding agent를 그대로 쓰기보다 self-hosted runtime, typed tool schema, checkpoint, sandbox, multi-agent team을 직접 통제하려는 수요가 늘고 있다.
+- angle: “Claude Code를 self-hosted로 만들면 어떤 abstraction이 필요한가” — Pydantic 기반 tool contract, sandboxed execution, checkpoint/unlimited context, multi-agent routing을 coding agent architecture로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, pydantic, sandbox, self-hosted]
+- status: idea
