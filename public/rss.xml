@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 21 Jul 2026 15:55:46 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 22 Jul 2026 01:11:09 GMT</lastBuildDate>
+    <item>
+      <title>AI 기본기 9: Agent Evaluation과 Guardrails — 실행 가능한 AI를 어떻게 믿을 것인가</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-22-ai-fundamentals-agent-evaluation-guardrails/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-22-ai-fundamentals-agent-evaluation-guardrails/</guid>
+      <description>Agent를 최종 답변이 아니라 trajectory, tool call, side effect, 안전 경계까지 포함한 실행 시스템으로 평가하는 방법을 정리한다.</description>
+      <pubDate>Wed, 22 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>agent</category>
+      <category>evaluation</category>
+      <category>guardrails</category>
+      <category>LLMOps</category>
+      <category>safety</category>
+    </item>
     <item>
       <title>도메인 사전으로 Retriever 성능을 올리는 법 — 동의어 치환을 넘어 Concept Registry로</title>
       <link>https://seongyeon1.github.io/blog/2026-07-22-domain-dictionary-retriever/</link>
