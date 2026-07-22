@@ -4212,3 +4212,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, pydantic, sandbox, self-hosted]
 - status: idea
+
+### 2026-07-23 — [논문 리뷰] CodeRescue: coding agent 실패를 예산 안에서 복구 라우팅하기
+- type: paper
+- source: http://arxiv.org/abs/2607.19338v1
+- why-now: coding agent가 실행 가능한 환경에서 실패 로그를 얻는 일이 일반화되면서, 실패 후 “강한 모델로 무조건 재시도”가 아니라 남은 예산과 복구 가능성을 함께 보는 routing 문제가 중요해졌다.
+- angle: “agent fallback은 cascade가 아니라 recovery budget allocator” — 실패 trace, actionable feedback, escalation policy, cost-quality trade-off를 coding agent 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, recovery-routing, cost-optimization, agent-eval]
+- status: idea
+
+### 2026-07-23 — [논문 리뷰] ResearchArena: 자동 AI R&D agent의 sabotage와 monitoring 평가
+- type: paper
+- source: http://arxiv.org/abs/2607.19321v1
+- why-now: AI R&D 자동화 agent가 논문·코드·실험 artifact를 만들기 시작하면서, agent를 완전히 신뢰하지 않고 monitor로 covert sabotage를 잡는 AI control 평가가 필요해졌다.
+- angle: “연구 agent 평가는 성능보다 배포 가능한 artifact 감시가 먼저” — sabotage scenario, monitor design, trusted/untrusted agent boundary, audit trail을 AI R&D agent governance로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [ai-rnd-agent, monitoring, sabotage, ai-control]
+- status: idea
+
+### 2026-07-23 — [논문 리뷰] Evidence-Aware RL: long-context reasoning의 반복 복사를 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2607.19345v1
+- why-now: long-context reasoning과 deep research agent가 긴 evidence를 다루면서, 실제 추론 대신 같은 문장을 반복 복사하는 실패 모드가 품질과 비용을 동시에 악화시킨다.
+- angle: “long-context 문제는 창 크기보다 evidence 사용 정책” — evidence-aware reward, repetitive copying detector, grounding/coverage metric을 research/RAG agent의 reasoning QA로 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-context, reasoning, evidence-grounding, reinforcement-learning]
+- status: idea
+
+### 2026-07-23 — [논문 리뷰] GAMUT: factual completeness를 위한 two-level meta-rubric 평가
+- type: paper
+- source: http://arxiv.org/abs/2607.19322v1
+- why-now: long-form generation 평가는 틀린 주장만 잡는 precision 중심에서, 답변이 필요한 사실을 얼마나 빠뜨리지 않았는지 보는 completeness 평가로 확장되고 있다.
+- angle: “LLM-as-judge는 오류 탐지기만으로 부족하다” — meta-rubric, factual completeness, decompose-search-verify의 blind spot, agent report QA rubric 설계를 실무형 평가법으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-evaluation, factuality, rubric, long-form-generation]
+- status: idea
+
+### 2026-07-23 — [논문 리뷰] LangGraph long-running workflow: stateful business agent 경로 설계
+- type: paper
+- source: http://arxiv.org/abs/2607.19297v1
+- why-now: LangGraph가 단순 agent demo를 넘어 long-running, stateful business process orchestration에 쓰이면서 workflow path, checkpoint, human-in-the-loop boundary를 설계하는 기준이 필요해졌다.
+- angle: “LangGraph는 모델 성능 도구가 아니라 상태 전이 설계 언어” — graph path, durable state, interrupt/replay, business workflow failure mode를 production agent architecture로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [langgraph, workflow, stateful-agent, orchestration]
+- status: idea
+
+### 2026-07-23 — [논문 리뷰] Agentic CI/CD Pipeline Attack: trusted multi-agent 배포 체인의 권한 프레이밍 공격
+- type: paper
+- source: http://arxiv.org/abs/2607.19267v1
+- why-now: triage·developer·security-scan·review·deploy 같은 multi-agent CI/CD pipeline이 현실화되면, 각 agent가 “검증은 하지만 행동하지 않는” 권한·책임 분리 실패가 supply-chain 공격면이 된다.
+- angle: “agentic CI/CD 보안은 LLM firewall 하나로 끝나지 않는다” — authority framing, laundered code, stage-local verification, deploy gate를 repo-native agent workflow 보안 패턴으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, cicd, supply-chain, multi-agent]
+- status: idea
+
+### 2026-07-23 — Vestige: time-travel MCP memory로 장애 원인을 거슬러 찾기
+- type: tech
+- source: https://github.com/samvallad33/vestige
+- why-now: local-first agent memory와 MCP server가 늘면서, 현재 상태와 유사한 문서 검색보다 과거 변경·결정·서비스 상태를 시간축으로 추적하는 memory layer가 필요해지고 있다.
+- angle: “agent memory의 검색 단위는 문서가 아니라 원인 후보의 시간선” — Rust MCP server, time-travel retrieval, local-first 운영, incident debugging workflow를 agent observability 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, mcp, observability, github-repo]
+- status: idea
+
+### 2026-07-23 — coddy-agent: 단일 Go binary로 배포하는 범용 local agent runtime
+- type: tech
+- source: https://github.com/coddy-project/coddy-agent
+- why-now: agent runtime을 서버 여러 개와 SaaS 조합으로 운영하기 부담스러운 팀에게, ReAct loop·ACP server·REST API·web UI·cron·memory·MCP를 한 binary로 묶는 접근이 실용적인 대안이 될 수 있다.
+- angle: “local agent runtime은 설치 방식도 architecture decision” — static binary packaging, ACP/IDE integration, context compaction, rules/skills/MCP surface를 self-hosted agent 운영 관점으로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [local-agent, go, mcp, github-repo]
+- status: idea

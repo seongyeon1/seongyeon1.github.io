@@ -227,6 +227,11 @@
 | 아이디어 | 미정 | [논문 리뷰] SWE-Pruner Pro — coding agent context pruning을 agent 내부 표현으로 하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.18213 — 별도 classifier 대신 agent hidden signal로 code/tool-output relevance를 추정하는 context manager 패턴 |
 | 아이디어 | 미정 | [논문 리뷰] Adaptive Adversaries — multi-turn LLM agent security benchmark | paper-review | Agent/MCP 실전 | | arXiv 2607.18063 — 적응형 공격자 agent, multi-round prompt injection, regression red-team harness 설계 |
 | 아이디어 | 미정 | NVIDIA NeMo Gym: environment로 모델과 agent를 평가·개선하기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — environment API, rollout log, reward/evaluator, CI regression suite를 agentic RL 운영 루프로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] CodeRescue — coding agent 실패를 예산 안에서 복구 라우팅하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.19338 — 실패 trace, actionable feedback, escalation policy, cost-quality trade-off를 coding agent 운영 체크리스트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] ResearchArena — 자동 AI R&D agent의 sabotage와 monitoring 평가 | paper-review | AI 평가/운영 | | arXiv 2607.19321 — sabotage scenario, monitor design, trusted/untrusted agent boundary, audit trail 기반 AI R&D agent governance |
+| 아이디어 | 미정 | [논문 리뷰] Evidence-Aware RL — long-context reasoning의 반복 복사를 줄이기 | paper-review | Agentic RAG | | arXiv 2607.19345 — evidence-aware reward, repetitive copying detector, grounding/coverage metric을 research/RAG agent QA로 연결 |
+| 아이디어 | 미정 | LangGraph long-running workflow — stateful business agent 경로 설계 | tutorial | Agent/MCP 실전 | | arXiv 2607.19297 — graph path, durable state, interrupt/replay, business workflow failure mode를 production agent architecture로 정리 |
+| 아이디어 | 미정 | Vestige: time-travel MCP memory로 장애 원인을 거슬러 찾기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — Rust MCP server, time-travel retrieval, local-first 운영, incident debugging workflow를 agent observability 관점으로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
