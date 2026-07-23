@@ -65,7 +65,7 @@
 | 아이디어 | 미정 | [논문 리뷰] HieraRAG — RAG benchmark granularity를 어떻게 설계할까 | paper-review | RAG 논문 리뷰 시리즈 | | arXiv 2606.12789 — synthetic question hierarchy, discriminative power, evaluation set 설계 |
 | 아이디어 | 미정 | Omnigent: 여러 코딩 에이전트를 갈아 끼우는 meta-harness 설계 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — adapter, policy, sandbox, collaboration layer를 agent-neutral하게 설계하는 법 |
 | 아이디어 | 미정 | XcodeBuildMCP: iOS/macOS 빌드·테스트를 MCP tool로 노출하기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — xcodebuild, simulator, test parsing을 agent-safe workflow로 감싸는 패턴 |
-| 아이디어 | 미정 | [논문 리뷰] LedgerAgent — tool-calling agent에 명시적 상태 원장을 붙이기 | paper-review | 논문 리뷰 | | arXiv 2606.20529 — task state ledger, tool precondition, policy-adherent action gate 설계 |
+| 발행완료 | 2026-07-23 | [논문 리뷰] LedgerAgent — tool-calling agent에 명시적 상태 원장을 붙이기 | paper-review | 논문 리뷰 | | `content/posts/2026-07-23-ledgeragent-state-ledger-tool-calling-agents.mdx` — 자동 발행 완료, arXiv 2606.20529, task state ledger, tool precondition, policy-adherent action gate 설계 |
 | 아이디어 | 미정 | [논문 리뷰] Probe-and-Refine — AGENTS.md를 벤치마크로 튜닝하는 법 | paper-review | 개발자 AI 워크플로 | | arXiv 2606.20512 — synthetic bug-fix probe로 repo guidance를 진단·패치하는 coding agent 운영법 |
 | 아이디어 | 미정 | [논문 리뷰] ToolChain-CRC — RAG+tool agent의 trajectory risk control | paper-review | Agentic RAG | | arXiv 2606.18467 — step-level risk score, conformal calibration, anytime alarm을 QA gate로 쓰기 |
 | 아이디어 | 미정 | Google ADK: code-first agent 개발·평가·배포 툴킷 훑어보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — eval, session state, tool boundary, deployment path를 agent framework 선택 기준으로 정리 |

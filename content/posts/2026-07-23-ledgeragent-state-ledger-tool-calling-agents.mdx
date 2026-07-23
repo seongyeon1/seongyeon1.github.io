@@ -1,0 +1,194 @@
+---
+title: "[논문 리뷰] LedgerAgent — tool-calling agent에 상태 원장을 붙이기"
+date: "2026-07-23"
+category: "paper-review"
+tags: ["agent", "tool-use", "state-management", "policy"]
+summary: "LedgerAgent는 tool-calling agent의 작업 상태를 prompt 밖의 typed ledger로 관리하고, 변경성 tool 호출 전에 정책을 검증한다."
+---
+
+<Paper
+  title="LedgerAgent: Structured State for Policy-Adherent Tool-Calling Agents"
+  authors="Md Nayem Uddin et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2606.20529"
+/>
+
+## 한 줄 요약
+
+LedgerAgent는 고객지원형 tool-calling agent에서 `상태`를 대화 기록 안에 묻어두지 말고 별도 typed ledger로 꺼내 관리하자는 논문이다. 읽기 tool이 반환한 구조화 데이터를 ledger에 저장하고, 환경을 바꾸는 쓰기 tool 호출 전에는 ledger와 도메인 정책을 대조해 위반 호출을 막는다.
+
+내가 보기엔 이 아이디어는 꽤 현실적이다. 많은 agent 실패는 모델이 정책을 “몰라서”가 아니라, 이미 본 주문·예약·계정 상태를 다음 turn에서 엉뚱하게 재구성해서 생긴다. long context와 좋은 prompt만으로 해결하려는 건 한계가 있다. 상태가 action validity를 결정한다면, 그 상태는 prompt prose가 아니라 검증 가능한 데이터 구조여야 한다.
+
+## 문제: tool output은 많아지는데 상태는 암묵적이다
+
+일반적인 tool-calling agent 구현은 단순하다.
+
+1. 시스템 프롬프트에 정책과 tool schema를 넣는다.
+2. 사용자의 요청을 받는다.
+3. tool call 결과를 대화 기록에 append한다.
+4. 다음 모델 호출 때 전체 또는 일부 history를 다시 넣는다.
+
+이 방식은 빠르게 만들 수 있지만, 운영 업무에는 약하다. 고객지원 agent를 생각해보자. 사용자가 항공권 취소를 요청했고, agent가 예약 정보를 조회했다. 예약일, 결제 수단, 취소 가능 시간, 사용자 소유 여부 같은 필드는 모두 tool output 안에 있다. 그런데 다음 turn에서 모델은 그 JSON을 다시 찾아 읽고, 현재 정책과 맞는지 판단하고, 올바른 tool argument를 만들어야 한다.
+
+문제는 이 과정이 전부 모델의 암묵적 reading comprehension에 기대고 있다는 점이다.
+
+- 이전 tool output에서 필요한 record를 놓칠 수 있다.
+- 최신 상태가 아니라 오래된 상태를 기준으로 판단할 수 있다.
+- tool call은 schema상 유효하지만 도메인 정책상 금지된 action일 수 있다.
+- write 이후 상태를 “그렇게 됐겠지”라고 가정하고 다음 작업을 진행할 수 있다.
+
+논문은 이를 state grounding 문제로 본다. 핵심은 “모델이 좋은 답을 생성하느냐”보다 “action을 실행하는 순간 근거 상태가 명시적으로 존재하느냐”다.
+
+## LedgerAgent의 핵심 구조
+
+LedgerAgent는 모델 weight를 바꾸지 않는 inference-time scaffold다. 논문이 제안하는 구성은 크게 세 가지다.
+
+### 1. Schema-anchored ledger
+
+Ledger는 관찰된 task state를 저장하는 typed dictionary다. 논문은 이를 canonical schema path에서 tool-returned value로 가는 구조로 설명한다. 예를 들면 다음과 같은 형태다.
+
+```json title="ledger-example.json"
+{
+  "user": {
+    "id": "user_123",
+    "name": "Kim"
+  },
+  "orders.order_456": {
+    "status": "delivered",
+    "payment_method": "credit_card",
+    "items": ["sku_a"]
+  },
+  "products.sku_b": {
+    "in_stock": true,
+    "eligible_for_exchange": true
+  }
+}
+```
+
+중요한 점은 ledger가 장기 기억이나 LLM 요약이 아니라는 것이다. 성공한 read-tool return에서 관찰된 구조화 상태만 저장한다. failed tool이나 write-tool return으로는 상태를 갱신하지 않는다. write 이후에는 다시 read를 호출해 외부 시스템의 실제 상태를 관찰해야 한다. 논문은 이 원칙을 observe-not-assume 방식으로 둔다.
+
+이 제약은 귀찮지만 맞는 방향이다. agent가 “방금 변경했으니 DB도 바뀌었을 것”이라고 추측하기 시작하면 ledger도 prompt summary와 다를 게 없어진다.
+
+### 2. Ledger-grounded generation
+
+모델을 호출하기 전에 LedgerAgent는 현재 ledger 전체를 deterministic block으로 prompt에 렌더링한다. 대화 기록과 정책, tool schema는 그대로 유지하되, 모델이 현재 관찰 상태를 쉽게 찾도록 별도 상태 뷰를 제공하는 방식이다.
+
+이 접근은 RAG와 비슷해 보이지만 목적이 다르다. RAG가 외부 지식을 가져오는 장치라면, ledger는 이미 관찰한 task-local state를 안정적으로 재노출하는 장치다. 주문 번호, 예약 상태, 사용자 소유 여부, 결제 수단처럼 action argument와 policy check에 직접 쓰이는 값이 대상이다.
+
+### 3. Pre-action policy gate
+
+LedgerAgent의 더 중요한 부분은 policy gate다. 환경을 변경하는 tool call이 실행되기 전에, gate가 proposed call을 ledger field와 도메인 정책 predicate에 대조한다.
+
+예를 들어 정책이 “예약일 기준 24시간이 지나면 취소 불가”라면, gate는 proposed `cancel_reservation` 호출을 실행하기 전에 ledger에 저장된 reservation date를 확인한다. 위반이면 tool을 호출하지 않고, 어떤 규칙과 어떤 상태가 충돌했는지 feedback을 반환한다. 그러면 agent는 사용자에게 거절하거나 다른 경로를 찾아야 한다.
+
+이 설계의 장점은 실패 경계가 바뀐다는 것이다. 기존 agent는 policy-violating tool call을 이미 실행한 뒤 evaluator나 사람이 문제를 발견한다. LedgerAgent는 실행 전에 막는다. 운영 시스템에서는 이 차이가 크다. 후처리로 사과하는 것보다 write path 앞에서 막는 게 훨씬 싸고 안전하다.
+
+## 실험: 네 개 고객지원 도메인에서 평가
+
+논문은 τ²-bench와 τ-Trait 기반의 네 개 고객지원 도메인에서 LedgerAgent를 표준 function calling baseline과 비교한다.
+
+- Airline: 예약·항공권 상태를 조회하고 변경한다.
+- Retail: 주문·상품·결제 상태를 근거로 교환·환불을 처리한다.
+- Telecom: 사용자 측 action도 공유 상태를 바꿀 수 있는 dual-control 환경이다.
+- Telehealth: 구조화된 tool-use 형식의 의료 지원 도메인이다.
+
+평가는 각 task를 네 번 독립 실행하고, `pass^1`과 `pass^4`를 본다. `pass^1`은 한 번 성공할 확률에 가깝고, `pass^4`는 네 번 모두 성공해야 하므로 일관성에 더 엄격하다.
+
+공개된 결과에서 LedgerAgent는 Kimi-K2.5, GLM-5, MiniMax M2.5 같은 비-GPT backbone에서 평균 성능을 올렸다. 예를 들어 Kimi-K2.5는 평균 `pass^1`이 3.4포인트, `pass^4`가 5.6포인트 개선됐고, GLM-5는 각각 4.7포인트와 7.6포인트, MiniMax M2.5는 7.3포인트와 8.3포인트 개선됐다고 보고한다.
+
+숫자를 과하게 일반화하면 안 된다. benchmark, 도메인 schema, gate predicate 품질에 영향을 크게 받는다. 그래도 `pass^4` 개선이 더 크게 나오는 건 설계 의도와 잘 맞는다. ledger는 한 번의 운 좋은 성공보다 run-to-run consistency를 개선하는 장치에 가깝다.
+
+## 남은 실패: ledger는 planning을 대신하지 않는다
+
+논문의 error analysis도 실용적이다. Ledger 설정에서 남은 실패의 대부분은 missed required action과 wrong action arguments였다고 한다. 세 backbone과 네 도메인 실패 trajectory 기준으로 missed required action이 70.3%, wrong action arguments가 20.4%를 차지했다.
+
+이건 중요한 신호다. LedgerAgent는 “현재 상태를 잊거나 정책 위반 write를 실행하는 문제”를 줄이지만, agent가 전체 업무를 끝까지 계획하고 필요한 action을 빠짐없이 수행하는 능력까지 보장하지는 않는다.
+
+즉, production agent에는 적어도 세 층이 필요하다.
+
+1. **State layer**: 관찰된 업무 상태를 ledger로 보존한다.
+2. **Policy layer**: 변경성 action 전 precondition과 금지 규칙을 검사한다.
+3. **Workflow layer**: 남은 required action, fallback, escalation 기준을 추적한다.
+
+LedgerAgent는 1과 2에 강하다. 3은 별도 planner, checklist, state machine, workflow engine이 여전히 필요하다.
+
+## 실무 적용 패턴
+
+이 논문을 바로 제품에 적용한다면, 나는 다음 순서로 설계할 것 같다.
+
+### Read/write tool을 먼저 분리한다
+
+모든 tool을 같은 취급하면 ledger를 망친다. 상태를 관찰하는 read tool과 상태를 변경하는 write tool을 명확히 나눠야 한다.
+
+```ts title="tool-policy.ts"
+type ToolKind = "read" | "write";
+
+type ToolSpec = {
+  name: string;
+  kind: ToolKind;
+  ledgerPath?: string;
+  requiresPolicyGate?: boolean;
+};
+```
+
+read tool은 성공한 반환값을 ledger path에 저장한다. write tool은 실행 전에 policy gate를 통과해야 한다. write tool 결과만 보고 ledger를 갱신하지 말고, 필요한 경우 후속 read를 강제한다.
+
+### Policy를 자연어로만 두지 않는다
+
+“환불은 원 결제 수단으로만 가능하다” 같은 정책을 prompt에만 쓰면 모델이 매번 해석해야 한다. 최소한 write path의 핵심 규칙은 executable predicate로 빼는 게 낫다.
+
+```ts title="policy-gate.ts"
+function canRefundToPaymentMethod(ledger: Ledger, call: ToolCall) {
+  const order = ledger.get(`orders.${call.args.order_id}`);
+  if (!order) return { ok: false, reason: "order state not observed" };
+
+  if (call.args.payment_method !== order.payment_method) {
+    return {
+      ok: false,
+      reason: "refund must use the original payment method",
+    };
+  }
+
+  return { ok: true };
+}
+```
+
+여기서 핵심은 “모델에게 조심하라고 말하기”가 아니라 “조심하지 않으면 실행이 안 되게 만들기”다.
+
+### Ledger를 감사 로그와 연결한다
+
+Ledger는 단지 prompt 보조물이 아니라 audit artifact가 될 수 있다. 어떤 tool return이 어떤 ledger path를 만들었고, 어떤 policy gate가 어떤 write call을 허용·차단했는지 남기면 장애 분석이 쉬워진다.
+
+최소한 아래 이벤트는 남기는 편이 좋다.
+
+- read tool 성공 → ledger path update
+- write tool 제안 → gate 입력 상태 snapshot
+- gate 허용/차단 → rule id, reason
+- write 실행 후 required re-read 여부
+- re-read 실패 시 ledger stale 표시
+
+이렇게 해야 “agent가 왜 이 action을 했는지”를 나중에 재구성할 수 있다.
+
+## 한계와 주의점
+
+LedgerAgent는 구조화된 업무 도메인에 잘 맞는다. 주문, 예약, 계정, 티켓, 결제처럼 stable field와 identifier가 있는 시스템에서는 설계가 자연스럽다. 반대로 상태가 이미지, 자유 텍스트, 암묵적 사용자 선호, 장기 맥락에 흩어져 있으면 ledger path를 정의하기 어렵다.
+
+또 하나의 비용은 domain specification이다. read-tool path map과 policy predicate는 사람이 정의해야 한다. 논문도 자동 정책 induction을 주장하지 않는다. 이 점이 오히려 솔직해서 좋다. 운영에서 중요한 규칙을 LLM이 알아서 추출해주길 기대하는 건 위험하다. 핵심 write path만이라도 사람이 executable contract로 만들어야 한다.
+
+마지막으로 ledger는 관찰된 상태만 안다. 아직 조회하지 않은 정보는 검증할 수 없다. 따라서 gate는 “허용/차단”뿐 아니라 “근거 부족이니 먼저 read하라”는 abstain 결과를 낼 수 있어야 한다.
+
+## 정리
+
+LedgerAgent의 메시지는 단순하다. **상태가 action의 합법성을 결정한다면, 그 상태는 prompt history가 아니라 별도 데이터 구조와 실행 전 gate에 있어야 한다.**
+
+나는 이 방향이 agent infra에서 점점 기본값이 될 거라고 본다. 특히 고객지원, 사내 운영, DevOps, 결제, 권한 변경처럼 write side effect가 있는 workflow에서는 “LLM이 정책을 잘 읽는다”보다 “정책 위반 call이 실행될 수 없는 구조”가 더 중요하다.
+
+좋은 agent runtime은 더 똑똑한 prompt가 아니라, 더 지루하고 명시적인 상태·정책·감사 계층에서 나온다. LedgerAgent는 그 지루한 계층을 꽤 깔끔하게 논문화한 사례다.
+
+## 참고 자료
+
+- LedgerAgent: Structured State for Policy-Adherent Tool-Calling Agents — https://arxiv.org/abs/2606.20529
+- PDF — https://arxiv.org/pdf/2606.20529v1
+- τ²-bench — https://arxiv.org/abs/2506.07982
+- τ-Trait — https://arxiv.org/abs/2606.12894

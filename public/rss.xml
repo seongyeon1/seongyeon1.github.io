@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 23 Jul 2026 00:08:28 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 23 Jul 2026 01:12:06 GMT</lastBuildDate>
     <item>
       <title>AI 기본기 10: LLMOps와 AI 시스템 운영 — 모델을 서비스로 믿게 만드는 방법</title>
       <link>https://seongyeon1.github.io/blog/2026-07-23-ai-fundamentals-llmops-ai-system-operations/</link>
@@ -20,6 +20,18 @@
       <category>evaluation</category>
       <category>observability</category>
       <category>deployment</category>
+    </item>
+    <item>
+      <title>[논문 리뷰] LedgerAgent — tool-calling agent에 상태 원장을 붙이기</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-23-ledgeragent-state-ledger-tool-calling-agents/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-23-ledgeragent-state-ledger-tool-calling-agents/</guid>
+      <description>LedgerAgent는 tool-calling agent의 작업 상태를 prompt 밖의 typed ledger로 관리하고, 변경성 tool 호출 전에 정책을 검증한다.</description>
+      <pubDate>Thu, 23 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>tool-use</category>
+      <category>state-management</category>
+      <category>policy</category>
     </item>
     <item>
       <title>AI 기본기 9: Agent Evaluation과 Guardrails — 실행 가능한 AI를 어떻게 믿을 것인가</title>

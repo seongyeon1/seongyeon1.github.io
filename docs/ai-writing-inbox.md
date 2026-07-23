@@ -414,7 +414,8 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent, tool-use, state-management, policy]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-23-ledgeragent-state-ledger-tool-calling-agents.mdx
 
 ### 2026-06-21 — Probe-and-Refine: AGENTS.md를 벤치마크로 튜닝하는 법
 - type: paper
