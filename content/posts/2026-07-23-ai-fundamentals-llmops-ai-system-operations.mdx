@@ -1,0 +1,489 @@
+---
+title: "AI 기본기 10: LLMOps와 AI 시스템 운영 — 모델을 서비스로 믿게 만드는 방법"
+date: "2026-07-23"
+category: "concept"
+tags: ["AI기본기", "LLMOps", "AI engineering", "evaluation", "observability", "deployment"]
+summary: "모델 품질, 프롬프트, RAG, agent, evaluation, 비용, 지연시간, 장애 대응을 하나의 운영 루프로 묶어 AI 시스템을 서비스로 관리하는 방법을 정리한다."
+series: "AI 기본기"
+seriesOrder: 10
+math: true
+---
+
+## 한 줄 요약
+
+AI 시스템은 모델 하나를 붙였다고 끝나지 않는다. 실제 서비스에서는 **입력 데이터, retrieval, prompt, model, tool call, cache, evaluation, logging, 비용, latency, 배포 전략**이 같이 움직인다. LLMOps는 이 전체 흐름을 관찰하고, 평가하고, 안전하게 바꾸는 운영 체계다.
+
+지난 글에서는 agent evaluation과 guardrails를 다뤘다. 이번 글은 시리즈의 마지막 큰 묶음이다.
+
+> LLM 기반 기능을 데모가 아니라 매일 쓰는 서비스로 만들려면 무엇을 운영해야 할까?
+
+<Callout type="note">
+이 글은 LinkedIn에 공유된 AI 학습자료 목록 중 Made with ML, Hands-On AI Engineering, Designing ML Systems, AI Engineering, agent 구축·평가 가이드류를 바탕으로 AI 기본기 시리즈에 맞게 재구성한 글이다. 핵심은 “모델을 잘 고르는 법”이 아니라 “AI 시스템을 계속 좋은 상태로 유지하는 법”이다.
+</Callout>
+
+## 1. LLMOps는 MLOps의 하위 버전이 아니다
+
+전통적인 MLOps는 보통 이런 문제를 다룬다.
+
+```text
+데이터 수집
+  ↓
+모델 학습
+  ↓
+검증
+  ↓
+배포
+  ↓
+모니터링
+  ↓
+재학습
+```
+
+LLM 기반 서비스도 이 흐름을 일부 공유한다. 하지만 운영 대상이 조금 다르다. 많은 LLM 제품은 모델을 직접 학습하지 않고 API 모델이나 오픈 웨이트 모델을 가져다 쓴다. 대신 품질을 좌우하는 요소가 더 넓어진다.
+
+| 운영 대상 | 전통 ML | LLM 애플리케이션 |
+| --- | --- | --- |
+| 모델 | 직접 학습한 예측 모델 | API 모델, 오픈 웨이트 모델, fine-tuned 모델 |
+| 입력 | 정형 feature | 자연어, 문서, 이미지, tool 결과, 대화 히스토리 |
+| 로직 | feature pipeline + model | prompt, RAG, router, tool call, guardrail |
+| 평가 | 정답 라벨 기반 metric | 정답, 근거성, 형식, 유해성, trajectory, 비용 |
+| 장애 | drift, serving failure | hallucination, context 누락, tool 실패, prompt regression |
+
+그래서 LLMOps는 단순히 “LLM용 MLOps”가 아니다. 더 정확히는 **LLM을 포함한 AI product runtime을 운영하는 방법**에 가깝다.
+
+<Callout type="warning">
+LLM 서비스에서 가장 흔한 착각은 모델 API 호출만 모니터링하면 운영이 된다고 생각하는 것이다. 실제 장애는 모델 밖에서 더 자주 난다. 검색 인덱스가 오래됐거나, prompt가 바뀌었거나, tool schema가 깨졌거나, 비용 제한 때문에 fallback이 발동했을 수 있다.
+</Callout>
+
+## 2. 운영 단위는 모델이 아니라 request path다
+
+LLM 기능 하나를 호출할 때 내부에서는 보통 여러 단계가 돈다.
+
+```text
+User request
+  ↓
+입력 정규화 / 정책 검사
+  ↓
+Intent routing
+  ↓
+검색 또는 context assembly
+  ↓
+Prompt construction
+  ↓
+Model call
+  ↓
+Tool call 또는 structured output parsing
+  ↓
+Post-processing / guardrail
+  ↓
+Response
+  ↓
+Logging / evaluation sample 저장
+```
+
+이 전체 경로를 request path라고 부르자. 운영 관점에서는 모델 응답 하나보다 request path 전체가 더 중요하다.
+
+예를 들어 고객 문서 기반 Q&A 기능이 있다고 하자. 사용자가 틀린 답변을 받았을 때 원인은 여러 가지일 수 있다.
+
+1. 질문 intent가 잘못 분류됐다.
+2. 검색 query rewriting이 잘못됐다.
+3. vector index에 최신 문서가 없었다.
+4. 검색은 맞았지만 reranker가 잘못 골랐다.
+5. prompt가 근거 문서를 충분히 강조하지 않았다.
+6. 모델이 근거와 다른 답을 생성했다.
+7. 후처리에서 citation이 누락됐다.
+
+모델만 보면 원인을 찾기 어렵다. 그래서 LLMOps의 기본 단위는 아래처럼 쪼개져야 한다.
+
+| 단계 | 기록해야 할 것 |
+| --- | --- |
+| Routing | 선택된 route, confidence, fallback 여부 |
+| Retrieval | query, top-k 문서 ID, score, 필터, index version |
+| Prompt | template version, system instruction, context 길이 |
+| Model | model name, temperature, token 수, latency, cost |
+| Tool | tool name, input schema, output status, error |
+| Guardrail | 차단 여부, 정책 rule, redaction 결과 |
+| Output | 최종 답변, citation, structured parse 결과 |
+
+이 정보가 있어야 “왜 틀렸는지”를 나중에 재현할 수 있다.
+
+## 3. Prompt도 코드처럼 버전 관리해야 한다
+
+LLM 애플리케이션에서 prompt는 사실상 프로그램이다. 같은 모델이라도 prompt 한 줄이 바뀌면 behavior가 크게 달라질 수 있다.
+
+나쁜 운영 방식은 이렇다.
+
+```text
+프로덕션 prompt를 대충 수정
+  ↓
+몇 개 예시로 괜찮아 보임
+  ↓
+바로 배포
+  ↓
+다른 케이스에서 품질 regression 발생
+```
+
+좋은 방식은 prompt를 코드처럼 다루는 것이다.
+
+```text
+prompt template 변경
+  ↓
+버전 기록
+  ↓
+offline eval 실행
+  ↓
+샘플 로그 replay
+  ↓
+canary 또는 A/B 테스트
+  ↓
+배포
+```
+
+Prompt versioning에서 최소로 남겨야 할 것은 다음과 같다.
+
+| 항목 | 예시 |
+| --- | --- |
+| template ID | `support_qa_v12` |
+| 변경 이유 | citation 누락을 줄이기 위해 근거 우선 규칙 추가 |
+| 적용 route | customer support Q&A |
+| 연결 eval set | `support_qa_regression_2026_07` |
+| 배포 방식 | 10퍼센트 canary 후 전체 전환 |
+
+<Callout type="tip">
+Prompt를 “문장”으로 보면 운영이 흐려진다. Prompt를 “versioned policy + formatting program + context contract”로 보면 테스트와 배포 전략을 세울 수 있다.
+</Callout>
+
+## 4. Evaluation은 배포 전 테스트와 배포 후 감시로 나뉜다
+
+LLM evaluation은 한 번 점수를 내고 끝나는 작업이 아니다. 최소 두 종류로 나눠야 한다.
+
+| 평가 종류 | 목적 | 예시 |
+| --- | --- | --- |
+| Pre-deploy evaluation | 변경 전 regression 방지 | prompt/model/RAG 변경 전 고정 eval set 실행 |
+| Post-deploy monitoring | 실제 사용자 환경의 품질 감시 | production log sampling, feedback, drift 탐지 |
+
+### Pre-deploy evaluation
+
+배포 전 평가는 CI에 가깝다. 변경된 prompt, model, retriever, tool schema가 기존 중요한 케이스를 깨지 않는지 확인한다.
+
+```yaml
+change:
+  type: prompt_update
+  route: support_qa
+checks:
+  - answer_correctness
+  - citation_groundedness
+  - refusal_policy
+  - output_schema_validity
+  - latency_budget
+  - cost_budget
+```
+
+여기서 중요한 점은 정확도만 보면 안 된다는 것이다. LLM 서비스에서는 품질과 운영 비용이 같이 움직인다.
+
+간단히 말해 request 하나의 비용은 아래처럼 생각할 수 있다.
+
+$$
+Cost = InputTokens \times InputPrice + OutputTokens \times OutputPrice + ToolCost
+$$
+
+Prompt를 길게 만들어 정확도가 조금 오르더라도 latency와 비용이 폭증하면 운영상 실패일 수 있다.
+
+### Post-deploy monitoring
+
+배포 후에는 실제 요청을 샘플링해야 한다. 사용자의 질문 분포는 eval set보다 지저분하다. 오타, 애매한 표현, 길어진 대화 히스토리, 깨진 문서, 권한 문제, tool timeout이 섞인다.
+
+운영 로그에서 봐야 할 신호는 다음과 같다.
+
+| 신호 | 의미 |
+| --- | --- |
+| fallback rate 증가 | route 또는 model이 불안정할 수 있음 |
+| retrieval empty rate 증가 | index, filter, query rewrite 문제 가능 |
+| output parse failure 증가 | structured output prompt나 schema 문제 가능 |
+| guardrail block 증가 | 입력 분포 변화 또는 정책 과민 반응 가능 |
+| latency p95 증가 | model, retrieval, tool, network 병목 가능 |
+| cost per task 증가 | context 과다, retry 증가, model routing 문제 가능 |
+
+## 5. RAG 운영의 핵심은 index version과 evidence trace다
+
+RAG는 “검색 붙인 LLM”처럼 보이지만, 운영 난이도는 꽤 높다. 문서가 바뀌면 index도 바뀌고, chunking 전략이 바뀌면 검색 결과도 바뀐다. embedding model을 바꾸면 score 분포도 달라진다.
+
+그래서 RAG 요청에는 최소한 다음 정보가 남아야 한다.
+
+```text
+question: 사용자의 질문
+query: 검색용으로 변환된 query
+index_version: docs_2026_07_23_v3
+embedding_model: text-embedding-...
+chunking_policy: markdown_heading_800_tokens
+filters: product=enterprise, language=ko
+top_k_docs: [doc_42, doc_17, doc_91]
+reranked_docs: [doc_17, doc_42, doc_91]
+answer_citations: [doc_17]
+```
+
+이런 trace가 없으면 사용자가 “왜 이 답변이 나왔나요?”라고 물었을 때 설명할 수 없다.
+
+<Callout type="warning">
+RAG 장애는 모델 hallucination처럼 보이지만 실제로는 retrieval miss인 경우가 많다. 모델을 바꾸기 전에 index freshness, chunking, metadata filter, query rewriting부터 확인해야 한다.
+</Callout>
+
+RAG evaluation도 두 층으로 나눠야 한다.
+
+| 평가 | 질문 |
+| --- | --- |
+| Retrieval evaluation | 정답에 필요한 문서를 top-k 안에 가져왔는가? |
+| Generation evaluation | 가져온 문서에 근거해서 정확히 답했는가? |
+
+Retrieval recall이 낮으면 generation 모델을 아무리 바꿔도 답이 좋아지기 어렵다.
+
+$$
+AnswerQuality \leq f(RetrievalQuality, GenerationQuality)
+$$
+
+즉, 필요한 근거가 context에 없으면 좋은 답변의 상한이 낮아진다.
+
+## 6. Agent 운영은 side effect ledger가 필요하다
+
+Agent가 단순히 답변만 하는 것이 아니라 실제 행동을 한다면 운영 기준이 더 엄격해진다.
+
+예를 들어 agent가 GitHub issue를 만들고, Slack 메시지를 보내고, 캘린더를 수정할 수 있다고 하자. 그러면 로그는 단순한 text log가 아니라 side effect ledger가 되어야 한다.
+
+```text
+task_id: agent_run_123
+user_goal: 다음 회의 준비 자료 정리해줘
+actions:
+  - read: calendar events
+  - read: docs folder
+  - write: draft agenda file
+  - proposed: slack message
+  - blocked: calendar update requires approval
+final_status: completed_with_pending_approval
+```
+
+여기서 핵심은 두 가지다.
+
+1. **실제로 바뀐 외부 상태를 기록해야 한다.**
+2. **승인이 필요한 행동과 자동 실행 가능한 행동을 분리해야 한다.**
+
+Agent 운영에서 좋은 rule은 아래처럼 생겼다.
+
+```yaml
+read_only:
+  - search_docs
+  - read_calendar
+  - inspect_issue
+requires_approval:
+  - send_message
+  - create_calendar_event
+  - merge_pull_request
+forbidden:
+  - delete_customer_data
+  - expose_secrets
+  - bypass_policy_check
+```
+
+이렇게 해야 agent가 똑똑해질수록 위험해지는 문제를 줄일 수 있다.
+
+## 7. 모델 라우팅은 품질, 비용, 지연시간의 trade-off다
+
+LLM 제품이 커지면 모든 요청을 가장 강한 모델로 보내기 어렵다. 비용과 latency 때문이다. 그래서 model routing이 필요하다.
+
+간단한 라우팅 예시는 이렇다.
+
+```text
+쉬운 분류 / 포맷팅
+  → 작은 모델
+
+긴 문서 요약 / 근거 기반 답변
+  → 중간 모델 + RAG
+
+복잡한 계획 / 코드 수정 / agent 실행
+  → 강한 reasoning 모델 + tool access
+```
+
+Routing의 목표는 무조건 비용을 줄이는 것이 아니다. **task risk에 맞는 모델과 runtime을 선택하는 것**이다.
+
+| 요청 유형 | 실패 비용 | 추천 운영 방식 |
+| --- | --- | --- |
+| 단순 FAQ | 낮음 | 작은 모델 + 캐시 + 샘플링 평가 |
+| 내부 문서 Q&A | 중간 | RAG + citation + retrieval eval |
+| 고객 계정 변경 | 높음 | 강한 모델 + tool guardrail + 승인 |
+| 배포 자동화 | 매우 높음 | 제한된 action space + human approval + audit log |
+
+Model routing도 eval 대상이다. 라우터가 쉬운 요청을 과도하게 강한 모델로 보내면 비용 문제가 생기고, 어려운 요청을 약한 모델로 보내면 품질 문제가 생긴다.
+
+## 8. Observability는 LLM 출력 저장이 아니다
+
+LLM observability라고 하면 많은 도구가 prompt와 completion을 예쁘게 보여준다. 그것도 필요하지만 충분하지 않다.
+
+운영자가 알고 싶은 질문은 더 구체적이다.
+
+- 어느 route에서 실패가 늘었는가?
+- 어떤 prompt version 이후 parse failure가 증가했는가?
+- 특정 고객 문서 index에서 retrieval miss가 늘었는가?
+- 비용 증가는 token 증가 때문인가, retry 증가 때문인가?
+- guardrail이 실제 위험을 막은 것인가, 정상 요청을 과하게 막은 것인가?
+
+그래서 좋은 observability schema는 request를 여러 축으로 자를 수 있어야 한다.
+
+```text
+trace_id
+user_segment
+route
+prompt_version
+model
+retriever_version
+tool_version
+guardrail_version
+latency_ms
+input_tokens
+output_tokens
+cost_usd
+status
+failure_type
+```
+
+그리고 failure type은 최소한 사람이 읽을 수 있게 분류되어야 한다.
+
+| Failure type | 예시 |
+| --- | --- |
+| retrieval_miss | 필요한 문서를 못 찾음 |
+| hallucination | 근거 없는 내용 생성 |
+| schema_error | JSON/구조화 출력 파싱 실패 |
+| tool_error | 외부 API 실패 또는 timeout |
+| policy_block | guardrail에 의해 차단 |
+| user_ambiguity | 질문이 불명확해서 진행 불가 |
+
+이 분류가 쌓이면 개선 우선순위가 보인다. 모델을 바꿀 문제인지, retrieval을 고칠 문제인지, prompt를 고칠 문제인지 구분할 수 있다.
+
+## 9. AI 시스템 변경은 작은 단위로 배포해야 한다
+
+LLM 기능은 변경 요소가 많다.
+
+- model 변경
+- prompt 변경
+- retrieval index 변경
+- chunking 변경
+- reranker 변경
+- tool schema 변경
+- guardrail policy 변경
+- post-processing 변경
+
+이걸 한 번에 바꾸면 성능이 좋아지거나 나빠졌을 때 원인을 알 수 없다. 운영에서는 작은 단위로 바꾸고 측정해야 한다.
+
+좋은 변경 절차는 아래와 같다.
+
+```text
+1. 변경 목적 정의
+2. 영향받는 route 확인
+3. offline eval 실행
+4. log replay로 과거 요청 재검증
+5. 작은 traffic에 canary 배포
+6. 핵심 metric 비교
+7. 문제 없으면 점진 확대
+8. rollback 기준 유지
+```
+
+Rollback 기준도 미리 정해야 한다.
+
+```yaml
+rollback_if:
+  - answer_correctness_drop > 3 percent
+  - groundedness_drop > 5 percent
+  - p95_latency_increase > 20 percent
+  - cost_per_successful_task_increase > 25 percent
+  - policy_violation_count > 0
+```
+
+정확한 숫자는 제품마다 다르지만, 중요한 것은 배포 전에 실패 조건을 정하는 것이다. 그래야 배포 후에 “느낌상 괜찮다”가 아니라 운영 기준으로 판단할 수 있다.
+
+## 10. 실무용 LLMOps 체크리스트
+
+LLM 기반 기능을 만들 때 최소한 아래 질문에 답할 수 있어야 한다.
+
+### 품질
+
+- 대표 eval set이 있는가?
+- 실패 케이스와 edge case가 포함되어 있는가?
+- LLM-as-a-judge를 쓴다면 judge prompt와 calibration sample이 있는가?
+- 사용자 feedback을 어떤 taxonomy로 분류하는가?
+
+### 근거성
+
+- RAG 요청에서 검색 query, top-k, index version을 남기는가?
+- 답변 citation이 실제 context와 연결되는가?
+- 문서 업데이트와 index 업데이트 사이의 지연을 알고 있는가?
+
+### 비용과 성능
+
+- request당 input token, output token, tool cost를 추적하는가?
+- p50, p95, p99 latency를 route별로 보는가?
+- cache hit rate와 retry rate를 추적하는가?
+- 작은 모델과 큰 모델의 routing 기준이 있는가?
+
+### 안전과 권한
+
+- read-only action과 write action이 분리되어 있는가?
+- 외부 side effect에는 approval gate가 있는가?
+- secret, PII, private document 노출을 막는 장치가 있는가?
+- agent trajectory와 side effect ledger를 감사할 수 있는가?
+
+### 변경 관리
+
+- prompt, retriever, model, tool schema에 version이 있는가?
+- 변경 전 regression test를 돌리는가?
+- canary와 rollback 기준이 있는가?
+- 실패가 났을 때 어느 단계 문제인지 추적할 수 있는가?
+
+<Callout type="tip">
+작게 시작하려면 세 가지만 먼저 해도 된다. 첫째, prompt version을 남긴다. 둘째, route별 request trace를 저장한다. 셋째, 운영 로그에서 실패 케이스를 골라 eval set으로 되돌린다. 이 세 가지가 있으면 AI 시스템은 점점 좋아질 수 있다.
+</Callout>
+
+## 11. AI 기본기 시리즈를 운영 관점으로 다시 보기
+
+지금까지의 AI 기본기 시리즈를 운영 관점에서 다시 보면 흐름이 보인다.
+
+| 시리즈 주제 | 운영 질문 |
+| --- | --- |
+| Loss와 objective | 무엇을 최적화하고 무엇을 놓치는가? |
+| Representation과 embedding | 정보를 어떤 공간에 놓고 비교하는가? |
+| Transformer와 attention | 긴 context에서 무엇을 보게 할 것인가? |
+| Next-token prediction과 instruction tuning | 모델의 기본 행동과 지시 따르기를 어떻게 이해할 것인가? |
+| RAG | 모델 밖 지식을 어떻게 가져오고 검증할 것인가? |
+| Prompting과 inference-time computation | 추론 시점에 생각과 출력을 어떻게 제어할 것인가? |
+| Agent와 tool use | 모델이 실제 행동을 할 때 runtime을 어떻게 설계할 것인가? |
+| Agent evaluation과 guardrails | 실행 가능한 AI를 어떻게 평가하고 막을 것인가? |
+| LLMOps | 이 모든 것을 어떻게 계속 운영하고 개선할 것인가? |
+
+AI 기본기는 수식과 모델 구조를 아는 것에서 끝나지 않는다. 지금의 AI 제품은 모델링, retrieval, prompt, agent runtime, evaluation, observability가 결합된 시스템이다. 그래서 AI를 구체적으로 배우려면 “모델이 왜 답을 내는가”와 “서비스가 왜 안정적으로 돌아가는가”를 같이 봐야 한다.
+
+## 12. 정리
+
+LLMOps의 핵심은 복잡한 도구 이름이 아니다. 아래 다섯 문장으로 요약할 수 있다.
+
+1. 모델이 아니라 request path 전체를 운영한다.
+2. prompt, retriever, model, tool, guardrail을 모두 versioned component로 본다.
+3. 배포 전 eval과 배포 후 monitoring을 분리한다.
+4. 품질, 비용, latency, 안전을 같이 본다.
+5. production 실패 로그를 다시 eval set으로 돌려 시스템을 개선한다.
+
+AI 시스템은 한 번 만들고 끝나는 산출물이 아니다. 사용자 질문, 문서, 모델, 도구, 비용 구조가 계속 바뀐다. 그래서 좋은 AI 엔지니어링은 “한 번 멋진 데모를 만드는 능력”보다 **변하는 환경에서도 품질을 유지하는 운영 루프를 만드는 능력**에 가깝다.
+
+## 참고 자료
+
+- LinkedIn AI 학습자료 모음: [이상선 님의 AI 학습자료 공유 글](https://www.linkedin.com/posts/soulai_aiukrswdsuyrzo-share-7481275919882416128-eFUj/)
+- Made with ML: [Practical MLOps and ML systems guide](https://madewithml.com/)
+- Designing Machine Learning Systems: [Chip Huyen](https://huyenchip.com/machine-learning-systems-design/toc.html)
+- Hands-On Large Language Models: [공식 자료](https://github.com/HandsOnLLM/Hands-On-Large-Language-Models)
+- OpenAI: [A practical guide to building agents](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf)
+- Anthropic: [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+## 다음에 더 공부하면 좋은 것
+
+이 글까지 읽었다면 다음 단계는 두 갈래다.
+
+- 모델링 쪽으로 더 깊게 가려면 optimization, scaling law, alignment, post-training을 보면 좋다.
+- 시스템 쪽으로 더 깊게 가려면 RAG evaluation, online experimentation, agent observability, AI safety policy runtime을 보면 좋다.
+
+AI 기본기를 제대로 배우는 가장 좋은 방법은 결국 하나다. 개념을 읽고, 작은 시스템으로 구현하고, 실패 로그를 모아서 다시 개념으로 돌아오는 것이다.

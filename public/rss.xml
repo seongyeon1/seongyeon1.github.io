@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 22 Jul 2026 01:11:09 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 23 Jul 2026 00:08:28 GMT</lastBuildDate>
+    <item>
+      <title>AI 기본기 10: LLMOps와 AI 시스템 운영 — 모델을 서비스로 믿게 만드는 방법</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-23-ai-fundamentals-llmops-ai-system-operations/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-23-ai-fundamentals-llmops-ai-system-operations/</guid>
+      <description>모델 품질, 프롬프트, RAG, agent, evaluation, 비용, 지연시간, 장애 대응을 하나의 운영 루프로 묶어 AI 시스템을 서비스로 관리하는 방법을 정리한다.</description>
+      <pubDate>Thu, 23 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>LLMOps</category>
+      <category>AI engineering</category>
+      <category>evaluation</category>
+      <category>observability</category>
+      <category>deployment</category>
+    </item>
     <item>
       <title>AI 기본기 9: Agent Evaluation과 Guardrails — 실행 가능한 AI를 어떻게 믿을 것인가</title>
       <link>https://seongyeon1.github.io/blog/2026-07-22-ai-fundamentals-agent-evaluation-guardrails/</link>
