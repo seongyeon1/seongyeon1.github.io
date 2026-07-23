@@ -232,6 +232,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Evidence-Aware RL — long-context reasoning의 반복 복사를 줄이기 | paper-review | Agentic RAG | | arXiv 2607.19345 — evidence-aware reward, repetitive copying detector, grounding/coverage metric을 research/RAG agent QA로 연결 |
 | 아이디어 | 미정 | LangGraph long-running workflow — stateful business agent 경로 설계 | tutorial | Agent/MCP 실전 | | arXiv 2607.19297 — graph path, durable state, interrupt/replay, business workflow failure mode를 production agent architecture로 정리 |
 | 아이디어 | 미정 | Vestige: time-travel MCP memory로 장애 원인을 거슬러 찾기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — Rust MCP server, time-travel retrieval, local-first 운영, incident debugging workflow를 agent observability 관점으로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] ChannelGuard — multi-agent channel injection을 runtime에서 막기 | paper-review | Agent/MCP 실전 | | arXiv 2607.19430 — agent 간 message channel, provenance, monitor coverage, runtime firewall 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Notes to Self — LLM agent의 경험 abstraction memory | paper-review | 논문 리뷰 | | arXiv 2607.20372 — 실패 경험을 전략·주의사항으로 압축하는 experiential memory와 retrieval trigger 설계 |
+| 아이디어 | 미정 | [논문 리뷰] HyMCache — multi-turn agent serving의 KV cache memory tiering | paper-review | AI 추론 최적화 | | arXiv 2607.18141 — HBM/DRAM/CXL 기반 reusable KV state 운영과 latency trade-off |
+| 아이디어 | 미정 | [논문 리뷰] AgentAbstain — agent가 행동하지 말아야 할 때를 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.10059 — ambiguity, conflicting constraints, tool failure에서 abstain·escalation policy 설계 |
+| 아이디어 | 미정 | Containarium — SSH-native sandbox와 eBPF egress policy로 agent 실행 격리 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — LXC/Kubernetes backend, MCP-native CLI, network egress control을 agent runtime 보안 경계로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

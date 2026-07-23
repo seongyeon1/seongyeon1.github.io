@@ -4317,3 +4317,107 @@
 - suggested-category: tutorial
 - suggested-tags: [local-agent, go, mcp, github-repo]
 - status: idea
+
+### 2026-07-24 — [논문 리뷰] ChannelGuard: safe model을 조합해도 multi-agent system은 안전하지 않다
+- type: paper
+- source: http://arxiv.org/abs/2607.19430v1
+- why-now: planner, worker, verifier, synthesizer를 연결하는 multi-agent 앱이 늘면서 입력 경계만 지키는 guardrail로는 agent 사이 channel injection을 놓치기 쉽다.
+- angle: “multi-agent 보안은 각 모델의 safety score가 아니라 agent 간 message channel의 provenance와 monitor coverage 문제” — channel policy, taint tracking, verifier blind spot을 runtime firewall 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, agent-security, runtime-monitoring, prompt-injection]
+- status: idea
+
+### 2026-07-24 — [논문 리뷰] Notes to Self: LLM agent가 경험을 재사용 가능한 abstraction으로 바꾸는 법
+- type: paper
+- source: http://arxiv.org/abs/2607.20372v1
+- why-now: long-horizon agent에서 단순 transcript memory보다 “다음 실행에 쓸 수 있는 전략·주의사항” 형태의 experiential abstraction이 중요해지고 있다.
+- angle: “agent memory는 과거 로그 저장소가 아니라 자기 자신에게 남기는 운영 runbook” — 실패 경험 요약, abstraction granularity, retrieval trigger, memory hygiene를 개인 비서/코딩 agent 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, experiential-learning, long-horizon-agent, reflection]
+- status: idea
+
+### 2026-07-24 — [논문 리뷰] HyMCache: multi-turn LLM serving에서 KV cache를 CXL hybrid memory로 운영하기
+- type: paper
+- source: http://arxiv.org/abs/2607.18141v1
+- why-now: agentic workload는 이전 context와 tool trace를 재사용하므로 KV-cache reuse가 중요하지만, GPU HBM만으로는 cluster-scale cache 저장·서빙 병목이 커진다.
+- angle: “agent inference infra의 병목은 prefill 계산만이 아니라 재사용 가능한 KV state의 memory tiering” — HBM/DRAM/CXL 배치, cache hit, latency trade-off를 serving architecture로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-serving, kv-cache, cxl, agent-inference]
+- status: idea
+
+### 2026-07-24 — [논문 리뷰] PyroDash: token-level small-large model 협업으로 reasoning inference 비용 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2607.20327v1
+- why-now: 큰 reasoning model은 강하지만 비싸고, 작은 모델은 빠르지만 어려운 token에서 불안정해져 token 단위 routing과 confidence 기반 협업이 실용적 주제로 올라왔다.
+- angle: “모델 라우팅을 요청 단위가 아니라 토큰/구간 단위로 쪼개면 무엇이 달라지나” — SLM/LLM 협업, fallback trigger, latency-cost-quality frontier를 inference 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [inference, model-routing, small-language-model, reasoning]
+- status: idea
+
+### 2026-07-24 — [논문 리뷰] AgentAbstain: LLM agent는 언제 행동하지 말아야 하는지 아는가
+- type: paper
+- source: http://arxiv.org/abs/2607.10059v1
+- why-now: autonomous agent를 실제 업무에 넣을수록 task success보다 ambiguity, conflicting constraints, tool failure에서 안전하게 abstain·escalate하는 능력이 중요해진다.
+- angle: “좋은 agent는 많이 실행하는 agent가 아니라 멈출 줄 아는 agent” — abstention policy, uncertainty signal, human escalation, no-op audit를 운영 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, abstention, safety, human-in-the-loop]
+- status: idea
+
+### 2026-07-24 — [논문 리뷰] AgentLTL: tool-using agent 절차 준수를 trace logic으로 검증하기
+- type: paper
+- source: http://arxiv.org/abs/2607.02599v1
+- why-now: tool agent 평가는 최종 답만 맞는지보다 “올바른 순서와 조건으로 도구를 썼는가”가 중요해졌고, 절차 자체를 검증 가능한 specification으로 만드는 흐름이 강하다.
+- angle: “agent QA를 LLM judge 점수가 아니라 실행 trace의 temporal logic check로 바꾸기” — precondition, forbidden transition, policy-as-code, training/eval feedback loop를 다룬다.
+- difficulty: high
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, formal-verification, agent-eval, policy-as-code]
+- status: idea
+
+### 2026-07-24 — AWS Bedrock AgentCore SDK: framework-agnostic agent runtime primitive 살펴보기
+- type: tech
+- source: https://github.com/aws/bedrock-agentcore-sdk-python
+- why-now: agent framework가 늘어날수록 특정 orchestration API보다 runtime, memory, auth, tool, deployment primitive를 클라우드 관리 계층으로 분리하는 패턴이 중요해지고 있다.
+- angle: “agent framework 위가 아니라 아래에 필요한 managed runtime은 무엇인가” — runtime isolation, memory/auth/tool primitive, framework-agnostic 배포 경계를 AWS SDK 구조로 점검한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-runtime, aws-bedrock, agent-framework, deployment]
+- status: idea
+
+### 2026-07-24 — Containarium: SSH-native sandbox와 eBPF egress policy로 agent 실행 격리하기
+- type: tech
+- source: https://github.com/FootprintAI/Containarium
+- why-now: 코딩·운영 agent가 shell, network, GPU, Kubernetes에 접근하면서 sandbox는 선택 기능이 아니라 agent runtime의 기본 안전 경계가 되고 있다.
+- angle: “agent sandbox를 Docker wrapper가 아니라 policy-aware execution substrate로 보기” — SSH-native isolation, eBPF egress control, LXC/Kubernetes backend, MCP-native CLI를 실행 보안 패턴으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-sandbox, security, ebpf, github-repo]
+- status: idea
