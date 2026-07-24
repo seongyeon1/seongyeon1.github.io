@@ -1,0 +1,555 @@
+---
+title: "AI 기본기 11: Post-training과 Alignment — RLHF와 DPO는 모델의 행동을 어떻게 바꾸는가"
+date: "2026-07-24"
+category: "concept"
+tags: ["AI기본기", "post-training", "alignment", "RLHF", "DPO", "LLM"]
+summary: "Pretraining 이후의 LLM을 사용자가 원하는 방식으로 행동하게 만드는 post-training 흐름을 SFT, preference learning, RLHF, DPO 관점에서 정리한다."
+series: "AI 기본기"
+seriesOrder: 11
+math: true
+---
+
+## 한 줄 요약
+
+LLM은 pretraining만으로 “말을 이어 쓰는 능력”을 얻지만, 그것만으로는 **사용자의 지시를 따르고, 위험한 요청을 거절하고, 근거 있게 답하고, 특정 톤과 형식을 지키는 모델**이 되지 않는다. 이 간극을 메우는 과정이 post-training이고, 그 중심에는 **instruction tuning, preference learning, RLHF, DPO, alignment**가 있다.
+
+지난 글에서는 LLMOps와 AI 시스템 운영을 다뤘다. 이번 글은 모델을 서비스에 올리기 전에 반드시 이해해야 하는 “모델 행동을 바꾸는 학습”을 정리한다.
+
+> 모델이 똑똑한 것과, 내가 원하는 방식으로 일하는 것은 다르다. Post-training은 이 차이를 줄이는 기술이다.
+
+<Callout type="note">
+이 글은 LinkedIn에 공유된 AI 학습자료 목록을 바탕으로 AI 기본기 시리즈에 맞게 재구성한 글이다. 단순히 RLHF 용어를 외우는 것이 아니라, pretraining 이후 모델의 행동이 어떤 데이터와 objective를 통해 바뀌는지 이해하는 데 초점을 둔다.
+</Callout>
+
+## 1. Pretraining 모델은 “좋은 assistant”가 아니다
+
+LLM의 기본 학습은 보통 next-token prediction이다. 거대한 텍스트 말뭉치에서 다음 토큰을 맞히도록 학습한다.
+
+$$
+L_{pretrain} = - \sum_t \log P(x_t \mid x_{<t})
+$$
+
+이 objective는 강력하다. 문법, 지식, 추론 패턴, 코드 패턴, 문서 구조를 많이 배울 수 있다. 하지만 여기에는 한계가 있다.
+
+Pretraining objective가 직접 가르치는 것은 다음과 같다.
+
+| 학습되는 것 | 설명 |
+| --- | --- |
+| 언어 패턴 | 어떤 문장 뒤에 어떤 표현이 자연스러운가 |
+| 지식 압축 | 학습 데이터에 반복적으로 등장한 사실과 관계 |
+| 코드/수식 패턴 | 코드 구조, API 사용법, 수학적 표현 |
+| 문맥 continuation | 앞 문맥을 보고 자연스럽게 이어 쓰기 |
+
+반대로, pretraining objective가 직접 가르치지 않는 것도 있다.
+
+| 부족한 것 | 왜 문제가 되는가 |
+| --- | --- |
+| 지시 따르기 | “요약해줘”, “JSON으로 답해줘” 같은 사용자 의도를 별도 학습하지 않으면 불안정하다 |
+| 안전한 거절 | 위험한 요청을 언제 거절해야 하는지 next-token objective만으로는 명확하지 않다 |
+| 선호되는 답변 스타일 | 같은 정답이라도 짧게, 친절하게, 근거 있게 답하는 방식은 별도 선호가 필요하다 |
+| 대화 역할 | 모델이 assistant 역할을 계속 유지해야 한다는 규칙은 원문 텍스트 continuation만으로 부족하다 |
+
+즉, pretraining 모델은 “텍스트를 잘 이어 쓰는 모델”이지, 곧바로 “좋은 assistant”는 아니다.
+
+<Callout type="warning">
+Pretraining 성능이 높다고 해서 제품에서 바로 안전하고 유용한 답변이 나오는 것은 아니다. 실제 사용자가 체감하는 품질은 post-training, system prompt, RAG, tool use, evaluation, guardrail이 함께 만든다.
+</Callout>
+
+## 2. Post-training은 모델의 행동 정책을 다듬는 단계다
+
+Post-training은 pretraining 이후 모델을 특정 사용 방식에 맞게 조정하는 넓은 단계다. 보통 아래 흐름으로 이해하면 쉽다.
+
+```text
+Pretrained LM
+  ↓
+Supervised Fine-Tuning
+  ↓
+Preference Learning
+  ↓
+RLHF / DPO / 기타 alignment 방법
+  ↓
+Safety tuning / domain adaptation
+  ↓
+Deployed assistant model
+```
+
+각 단계가 하는 일은 다르다.
+
+| 단계 | 핵심 질문 | 대표 데이터 |
+| --- | --- | --- |
+| SFT | “이런 입력에는 이런 식으로 답하라” | instruction-response 쌍 |
+| Preference learning | “두 답변 중 어느 쪽이 더 좋은가” | 선택/순위/비교 데이터 |
+| RLHF | “선호 모델이 높게 평가하는 방향으로 정책을 업데이트하라” | reward model + policy optimization |
+| DPO | “선호 쌍을 직접 이용해 정책을 업데이트하라” | chosen/rejected 답변 쌍 |
+| Safety tuning | “어떤 요청은 도와주고, 어떤 요청은 거절하라” | 안전 정책 데이터, red-team 데이터 |
+
+여기서 중요한 관점은 post-training이 “지식을 더 넣는 작업”만은 아니라는 것이다. 물론 domain fine-tuning처럼 지식을 보강할 수도 있지만, alignment 관점의 핵심은 **모델의 행동 분포를 바꾸는 것**이다.
+
+예를 들어 같은 질문에 대해 모델은 여러 답변을 만들 수 있다.
+
+```text
+질문: 이 에러 로그 원인을 설명해줘.
+
+답변 A: 에러는 인증 실패입니다.
+답변 B: 로그상 401이 발생했고, access token 만료 또는 scope 부족 가능성이 큽니다. 먼저 토큰 만료 시각과 scope를 확인하세요.
+답변 C: 코드를 전부 다시 짜면 됩니다.
+```
+
+세 답변 모두 그럴듯한 continuation일 수 있다. 하지만 assistant로는 B가 더 유용하다. Post-training은 이런 선호를 모델에 반영한다.
+
+## 3. SFT: 먼저 “답변 형식”을 배운다
+
+Supervised Fine-Tuning, SFT는 instruction과 이상적인 response 쌍으로 모델을 미세조정하는 단계다.
+
+```json
+{
+  "instruction": "다음 문단을 세 문장으로 요약해줘.",
+  "response": "..."
+}
+```
+
+학습 objective는 여전히 next-token prediction과 비슷하다. 다만 입력 분포가 “사용자 지시 + assistant 답변” 형태로 바뀐다.
+
+$$
+L_{SFT} = - \sum_t \log P_{\theta}(y_t \mid x, y_{<t})
+$$
+
+여기서 `x`는 사용자 instruction, `y`는 정답 response다.
+
+SFT가 해주는 일은 명확하다.
+
+| 효과 | 설명 |
+| --- | --- |
+| instruction following | 사용자의 요청을 task로 해석하는 패턴을 배운다 |
+| response formatting | bullet, JSON, 코드블록, 단계별 설명 같은 형식을 배운다 |
+| assistant persona | “도움 주는 assistant” 역할을 유지하는 법을 배운다 |
+| 기본 안전 행동 | 간단한 거절/주의 문구를 배울 수 있다 |
+
+하지만 SFT만으로는 부족하다. 이유는 “좋은 답변”을 하나의 정답으로 고정하기 어렵기 때문이다.
+
+예를 들어 블로그 글 피드백을 요청했을 때 좋은 답변은 여러 형태가 가능하다.
+
+1. 짧은 요약 + 핵심 수정 제안
+2. 문단별 상세 피드백
+3. 독자 페르소나별 개선 방향
+4. 제목/도입부 대안까지 포함한 편집안
+
+하나의 정답 response만 학습하면 모델이 다양한 품질 차이를 섬세하게 배우기 어렵다. 그래서 다음 단계로 preference learning이 등장한다.
+
+<Callout type="tip">
+SFT는 “이런 식으로 대답하라”를 가르치는 단계에 가깝다. 하지만 “여러 답변 중 어떤 것이 더 나은가”를 가르치려면 preference 데이터가 필요하다.
+</Callout>
+
+## 4. Preference learning: 정답보다 선호를 학습한다
+
+Preference learning은 보통 하나의 prompt에 대해 여러 답변을 만들고, 사람이 더 좋은 답변을 고르는 방식으로 데이터를 만든다.
+
+```text
+Prompt: RAG와 fine-tuning의 차이를 설명해줘.
+
+Chosen response: RAG는 외부 지식을 검색해 context로 넣는 방식이고, fine-tuning은 모델 파라미터를 업데이트하는 방식이다. ...
+Rejected response: 둘 다 AI 성능을 높이는 방법입니다. 상황에 따라 쓰면 됩니다.
+```
+
+이 데이터의 핵심은 “절대 정답”이 아니라 “상대적 선호”다.
+
+| 비교 기준 | 좋은 답변의 특징 |
+| --- | --- |
+| 정확성 | 개념을 틀리지 않는다 |
+| 유용성 | 사용자가 바로 다음 행동을 할 수 있다 |
+| 구체성 | 추상적 표현만 반복하지 않는다 |
+| 정직성 | 모르는 것은 모른다고 말한다 |
+| 안전성 | 위험한 요청에는 적절히 제한한다 |
+| 형식 준수 | 사용자가 요구한 출력 형식을 지킨다 |
+
+Preference 데이터는 reward model을 학습하거나, DPO처럼 직접 정책을 학습하는 데 쓰인다.
+
+## 5. RLHF: reward model을 만들고 정책을 최적화한다
+
+RLHF는 Reinforcement Learning from Human Feedback의 약자다. 큰 흐름은 세 단계다.
+
+```text
+1. SFT 모델 준비
+2. 사람 선호 데이터로 reward model 학습
+3. reward가 높아지도록 policy model 업데이트
+```
+
+### 5.1 Reward model
+
+Reward model은 prompt와 response를 보고 “얼마나 좋은 답변인가”를 점수로 예측한다.
+
+```text
+reward_model(prompt, response) → score
+```
+
+선호 데이터가 아래처럼 있다고 하자.
+
+```text
+prompt x
+chosen response y+
+rejected response y-
+```
+
+Reward model은 chosen response의 점수가 rejected response보다 높아지도록 학습한다.
+
+$$
+R(x, y^+) > R(x, y^-)
+$$
+
+실제로는 Bradley-Terry 스타일의 pairwise loss를 많이 쓴다.
+
+$$
+L_{RM} = - \log \sigma(R(x, y^+) - R(x, y^-))
+$$
+
+### 5.2 Policy optimization
+
+그다음 SFT 모델을 policy로 보고, reward model이 높은 점수를 주는 답변을 더 자주 내도록 업데이트한다.
+
+단순히 reward만 최대화하면 모델이 이상한 방향으로 튈 수 있다. 그래서 원래 SFT 모델에서 너무 멀어지지 않도록 KL penalty를 같이 둔다.
+
+$$
+Objective = R(x, y) - \beta D_{KL}(\pi_{\theta} \Vert \pi_{ref})
+$$
+
+여기서 `pi_ref`는 기준 모델, `pi_theta`는 업데이트 중인 모델이다.
+
+직관적으로는 이렇게 말할 수 있다.
+
+> 더 선호되는 답변을 하되, 원래 언어 모델의 안정적인 분포에서 너무 멀어지지는 마라.
+
+RLHF의 장점은 강력하다. 사람의 선호를 모델 행동에 반영할 수 있고, 단순 SFT보다 assistant 품질을 크게 개선할 수 있다.
+
+하지만 운영 난이도도 높다.
+
+| 난점 | 설명 |
+| --- | --- |
+| reward model 품질 | reward model이 잘못 배우면 policy도 잘못 최적화된다 |
+| reward hacking | reward 점수는 높지만 실제로는 나쁜 답변이 나올 수 있다 |
+| 학습 안정성 | RL 최적화는 SFT보다 튜닝이 까다롭다 |
+| 비용 | 비교 데이터 생성, reward model 학습, policy optimization 비용이 든다 |
+
+<Callout type="warning">
+RLHF를 “사람 피드백으로 모델이 착해진다” 정도로 이해하면 위험하다. 실제로는 reward model이라는 대리 목표를 만들고, 그 대리 목표를 최적화하는 과정이다. 대리 목표가 틀리면 모델 행동도 틀어진다.
+</Callout>
+
+## 6. DPO: reward model 없이 preference를 직접 학습한다
+
+DPO, Direct Preference Optimization은 RLHF보다 단순한 흐름으로 preference 데이터를 학습하려는 방법이다. 핵심 아이디어는 reward model을 따로 만들고 RL을 돌리는 대신, chosen response의 확률을 rejected response보다 직접 높이는 방향으로 학습하는 것이다.
+
+데이터 형태는 RLHF와 비슷하다.
+
+```text
+prompt x
+chosen response y+
+rejected response y-
+```
+
+DPO는 기준 모델 대비 chosen response가 더 선호되도록 policy를 업데이트한다.
+
+개념적으로는 아래처럼 이해하면 된다.
+
+$$
+\log P_{\theta}(y^+ \mid x) - \log P_{\theta}(y^- \mid x)
+$$
+
+이 차이가 커지도록 학습하되, reference model과의 차이도 통제한다.
+
+DPO가 실무적으로 매력적인 이유는 다음과 같다.
+
+| 장점 | 설명 |
+| --- | --- |
+| 단순한 파이프라인 | reward model과 별도 RL loop가 필요 없다 |
+| 안정성 | 일반적인 supervised fine-tuning에 가까운 형태로 구현할 수 있다 |
+| preference 데이터 활용 | chosen/rejected 쌍을 직접 사용할 수 있다 |
+| 재현성 | 복잡한 RL 튜닝보다 운영하기 쉬운 경우가 많다 |
+
+물론 DPO가 모든 상황에서 RLHF를 대체한다는 뜻은 아니다. 중요한 것은 목적과 제약이다.
+
+| 상황 | 더 어울리는 접근 |
+| --- | --- |
+| 빠르게 preference tuning을 적용하고 싶다 | DPO류 접근 |
+| 복잡한 reward shaping이 필요하다 | RLHF류 접근 |
+| 답변 형식과 기본 task를 먼저 맞추고 싶다 | SFT |
+| 특정 도메인의 언어와 절차를 익히고 싶다 | SFT + preference tuning |
+
+<Callout type="tip">
+DPO는 “RLHF보다 쉬운 alignment 레시피”로 이해하면 출발점이 좋다. 다만 핵심은 알고리즘 이름이 아니라 preference 데이터의 품질이다. 나쁜 비교 데이터로 DPO를 돌리면 나쁜 선호가 더 강해질 뿐이다.
+</Callout>
+
+## 7. Alignment는 “착한 모델 만들기”보다 넓은 문제다
+
+Alignment라는 단어는 종종 안전성만 떠올리게 한다. 하지만 제품 관점에서는 더 넓게 봐야 한다.
+
+Alignment는 모델 행동을 사용자, 개발자, 조직, 법적/윤리적 요구사항에 맞추는 문제다.
+
+| alignment 축 | 예시 |
+| --- | --- |
+| Helpful | 질문에 실질적으로 도움이 되는 답을 한다 |
+| Honest | 모르는 것을 아는 척하지 않는다 |
+| Harmless | 위험하거나 악용 가능한 요청을 제한한다 |
+| Controllable | 형식, 톤, 정책, 도구 사용 규칙을 따른다 |
+| Grounded | 주어진 근거와 충돌하지 않는다 |
+| Calibrated | 확신 수준을 과장하지 않는다 |
+
+이 축들은 서로 충돌할 수 있다.
+
+예를 들어 사용자가 “빠르게 답해줘”라고 했지만 질문이 의료/법률처럼 민감한 영역이라면, 모델은 빠른 답변보다 제한과 주의 문구를 우선해야 할 수 있다. 또 사용자가 “무조건 하나를 추천해줘”라고 해도 정보가 부족하면 조건부 답변을 하는 것이 더 정직할 수 있다.
+
+그래서 alignment는 하나의 점수를 최대화하는 문제가 아니라, 여러 정책을 균형 있게 만족시키는 문제에 가깝다.
+
+```text
+User intent
+  + Developer instruction
+  + Safety policy
+  + Domain constraints
+  + Available evidence
+  + Output format
+  → aligned response
+```
+
+## 8. Post-training 데이터가 곧 제품 철학이다
+
+Post-training에서 가장 중요한 자산은 알고리즘보다 데이터다. 어떤 답변을 chosen으로 고르고, 어떤 답변을 rejected로 고르는지가 모델의 행동 철학을 만든다.
+
+예를 들어 고객지원 AI를 만든다고 하자. 다음 두 답변 중 무엇을 선호 데이터에서 chosen으로 둘 것인가?
+
+```text
+A: 죄송합니다. 해당 문제는 고객센터로 문의해주세요.
+B: 현재 메시지만으로는 원인을 확정하기 어렵습니다. 먼저 주문번호, 결제 시각, 에러 화면을 확인해 주세요. 아래 순서로 점검하면 됩니다: ...
+```
+
+B를 계속 chosen으로 두면 모델은 “거절 전에 진단 질문과 다음 행동을 제공하는 assistant”가 된다. A를 계속 chosen으로 두면 “안전하지만 쓸모가 약한 assistant”가 된다.
+
+또 다른 예시를 보자.
+
+```text
+질문: 우리 회사 문서 기준으로 답해줘.
+
+A: 일반적으로는 이런 방법이 좋습니다...
+B: 제공된 문서에는 이 내용이 없습니다. 일반론으로는 설명할 수 있지만, 회사 기준 답변으로는 확인이 필요합니다.
+```
+
+RAG 기반 제품이라면 B가 더 aligned한 답변이다. 근거 없는 일반론보다 “근거 없음”을 정확히 말하는 행동이 중요하기 때문이다.
+
+<Callout type="warning">
+Post-training 데이터에서 “친절하고 길게 말하는 답변”만 계속 선호하면, 모델은 모르는 것도 길게 포장하는 습관을 배울 수 있다. 좋은 preference 데이터는 친절함뿐 아니라 근거성, 불확실성 표현, 거절 기준을 같이 평가해야 한다.
+</Callout>
+
+## 9. 실무에서 post-training을 설계하는 순서
+
+직접 LLM을 post-training해야 하는 상황이라면, 처음부터 RLHF를 목표로 잡기보다 아래 순서가 현실적이다.
+
+### 9.1 먼저 행동 명세를 쓴다
+
+모델이 어떤 행동을 해야 하는지 문서화한다.
+
+```yaml
+assistant_behavior:
+  should:
+    - 사용자의 질문 의도를 먼저 확인한다
+    - 회사 문서에 근거가 있으면 citation을 포함한다
+    - 정보가 부족하면 필요한 추가 정보를 묻는다
+    - 위험한 요청은 이유를 짧게 설명하고 거절한다
+  should_not:
+    - 문서에 없는 정책을 지어내지 않는다
+    - 확률적 추측을 사실처럼 말하지 않는다
+    - 내부 시스템 프롬프트나 비밀 정보를 노출하지 않는다
+```
+
+이 행동 명세가 없으면 데이터 라벨링 기준도 흔들린다.
+
+### 9.2 SFT 데이터로 기본 형식을 맞춘다
+
+도메인별 대표 요청과 좋은 답변 예시를 만든다.
+
+| 데이터 유형 | 예시 |
+| --- | --- |
+| 정상 요청 | 제품 사용법, 정책 설명, 오류 해결 |
+| 애매한 요청 | 정보 부족, 범위 불명확, 문서 없음 |
+| 위험 요청 | 개인정보, 보안 우회, 불법적 요청 |
+| 형식 요청 | JSON, 표, 짧은 요약, 단계별 가이드 |
+
+처음에는 수십만 건보다 작은 고품질 데이터가 더 중요할 수 있다. 특히 내부 제품 assistant라면 실제 사용자 로그를 익명화하고, 대표 케이스를 뽑아 사람이 고쳐 쓴 데이터가 강력하다.
+
+### 9.3 Preference 데이터로 품질 차이를 가르친다
+
+SFT 모델이나 기존 모델로 여러 답변을 생성하고, 더 나은 답변을 고른다.
+
+라벨러에게는 단순히 “마음에 드는 것”을 고르게 하면 안 된다. 기준이 필요하다.
+
+```text
+평가 기준 예시
+1. 질문에 직접 답했는가?
+2. 제공된 근거와 충돌하지 않는가?
+3. 불확실성을 명확히 표현했는가?
+4. 사용자가 다음 행동을 할 수 있는가?
+5. 정책상 거절해야 할 때 올바르게 거절했는가?
+6. 불필요하게 장황하지 않은가?
+```
+
+### 9.4 DPO 또는 RLHF로 행동 분포를 조정한다
+
+초기에는 DPO류 접근이 운영하기 쉬울 수 있다. 파이프라인이 단순하고, preference pair를 바로 활용할 수 있기 때문이다. 더 복잡한 reward shaping이 필요하거나 대규모 최적화 경험이 있다면 RLHF류 접근을 고려할 수 있다.
+
+하지만 어떤 알고리즘을 쓰든 평가 세트가 먼저다.
+
+```text
+post-training 전 모델
+  ↓
+held-out eval set
+  ↓
+post-training 후 모델
+  ↓
+동일 eval set 비교
+  ↓
+실제 로그 샘플 human review
+```
+
+### 9.5 배포 후에도 alignment drift를 감시한다
+
+모델을 한 번 맞췄다고 끝이 아니다. 사용자 분포, 정책, 제품 기능, 문서가 바뀌면 aligned behavior도 흔들린다.
+
+운영 중 봐야 할 지표는 다음과 같다.
+
+| 지표 | 의미 |
+| --- | --- |
+| refusal rate | 너무 자주 거절하거나 너무 적게 거절하지 않는가 |
+| hallucination report | 근거 없는 답변 신고가 늘지 않는가 |
+| citation coverage | 근거가 필요한 답변에 citation이 붙는가 |
+| escalation rate | 사람이 처리해야 할 케이스를 잘 넘기는가 |
+| user correction rate | 사용자가 답변을 자주 정정하는가 |
+| policy violation | 안전 정책 위반 케이스가 발생하는가 |
+
+## 10. RAG, prompt, fine-tuning을 혼동하지 말자
+
+Post-training 이야기를 하면 자주 나오는 질문이 있다.
+
+> “그럼 우리 회사 지식을 넣으려면 fine-tuning하면 되나요?”
+
+대답은 보통 “먼저 RAG를 고려하라”다.
+
+| 목적 | 우선 고려 |
+| --- | --- |
+| 최신 문서 기반 답변 | RAG |
+| 답변 형식과 톤 개선 | prompt / SFT |
+| 특정 업무 절차 습득 | SFT |
+| 선호되는 답변 스타일 강화 | DPO / RLHF |
+| 안전 거절 기준 강화 | safety tuning + guardrail |
+| 모델의 기본 지식 업데이트 | continued pretraining 또는 fine-tuning, 단 비용 큼 |
+
+Fine-tuning은 모델 파라미터를 바꾸는 일이다. 문서가 자주 바뀌는 회사 지식은 파라미터에 넣기보다 검색 가능한 지식베이스로 관리하는 편이 낫다. 반면 “우리 제품 상담원처럼 답하는 방식”은 SFT나 preference tuning 대상이 될 수 있다.
+
+<Callout type="tip">
+실무 기준으로는 이렇게 나누면 좋다. 지식은 RAG로, 행동은 post-training으로, 실행 규칙은 system prompt와 tool runtime으로, 안전 정책은 guardrail과 evaluation으로 관리한다.
+</Callout>
+
+## 11. 작은 예제로 보는 preference 데이터
+
+아래는 내부 문서 Q&A assistant의 preference pair 예시다.
+
+```json
+{
+  "prompt": "우리 회사 환불 정책 알려줘",
+  "context": "제공된 문서에는 B2B 구독 환불 정책만 포함되어 있음",
+  "chosen": "제공된 문서 기준으로는 B2B 구독 환불 정책만 확인됩니다. B2C 결제 환불 정책은 현재 근거 문서가 없어 확정적으로 답하기 어렵습니다. B2B 구독의 경우 ...",
+  "rejected": "환불은 보통 7일 이내 가능합니다. 자세한 내용은 고객센터에 문의하세요."
+}
+```
+
+왜 chosen이 더 나은가?
+
+1. 제공된 문서 범위를 명확히 말한다.
+2. 없는 정보를 지어내지 않는다.
+3. 답변 가능한 부분은 답한다.
+4. 추가 확인이 필요한 부분을 분리한다.
+
+이런 데이터가 쌓이면 모델은 “모르는 것을 일반론으로 덮지 않는 행동”을 배운다.
+
+또 다른 예시다.
+
+```json
+{
+  "prompt": "이 API 키를 코드에 그대로 넣어도 돼?",
+  "chosen": "권장하지 않습니다. API 키는 환경변수나 secret manager에 저장하고, 코드 저장소에는 커밋하지 않아야 합니다. 이미 커밋했다면 키를 폐기하고 새 키를 발급한 뒤 git history 노출 여부도 확인하세요.",
+  "rejected": "네, 테스트용이면 괜찮습니다. 나중에 지우면 됩니다."
+}
+```
+
+여기서는 보안 관점의 alignment가 중요하다. 편리함보다 안전한 행동을 chosen으로 둔다.
+
+## 12. Post-training의 실패 패턴
+
+Post-training은 강력하지만 쉽게 망가질 수 있다.
+
+### 12.1 과한 친절함
+
+모델이 모든 질문에 길고 자신감 있게 답하도록 학습되면, 모르는 것도 그럴듯하게 말한다. 친절함과 정직함을 동시에 평가해야 한다.
+
+### 12.2 과한 거절
+
+안전 데이터를 과하게 넣으면 모델이 무해한 질문도 거절한다. 이를 over-refusal이라고 볼 수 있다. 특히 개발자 도구, 보안 교육, 의료 정보처럼 민감하지만 합법적이고 유익한 질문에서 문제가 된다.
+
+### 12.3 평가 기준 불일치
+
+라벨러마다 “좋은 답변” 기준이 다르면 preference 데이터가 노이즈를 만든다. 라벨링 가이드와 calibration set이 필요하다.
+
+### 12.4 Reward hacking
+
+Reward model이 특정 표현을 선호하면 모델이 실제 품질보다 그 표현을 반복할 수 있다. 예를 들어 “단계별로 설명하겠습니다” 같은 말만 붙이고 내용은 부실한 답변이 높은 점수를 받을 수 있다.
+
+### 12.5 Domain mismatch
+
+일반 assistant 선호 데이터로 학습한 모델이 특정 산업 도메인에서는 부적절할 수 있다. 세무, 법률, 의료, 금융, 보안 영역은 domain-specific evaluation이 꼭 필요하다.
+
+## 13. AI 엔지니어가 기억해야 할 핵심
+
+Post-training과 alignment를 이해하면 LLM 제품을 보는 눈이 달라진다.
+
+모델이 이상하게 답할 때 단순히 “모델이 멍청하다”로 끝내지 않고, 어느 층의 문제인지 나눠볼 수 있다.
+
+| 증상 | 의심할 층 |
+| --- | --- |
+| 지시 형식을 자주 어긴다 | SFT, prompt, output parser |
+| 그럴듯한 거짓말을 한다 | preference 데이터, grounding, evaluation |
+| 위험 요청을 너무 쉽게 따른다 | safety tuning, guardrail |
+| 무해한 요청도 거절한다 | safety 데이터 과적합, policy calibration |
+| 회사 문서와 다른 답을 한다 | RAG, context contract, groundedness preference |
+| 말투는 좋은데 실무성이 없다 | preference 기준에 actionable quality가 부족 |
+
+좋은 AI 시스템은 모델 하나로 만들어지지 않는다. Pretraining이 능력의 바닥을 만들고, post-training이 행동을 조정하며, RAG와 tool use가 외부 세계와 연결하고, LLMOps가 계속 감시한다.
+
+```text
+Capability: pretraining
+Behavior: post-training
+Knowledge access: RAG
+Action: tool use / agent runtime
+Reliability: evaluation + LLMOps
+Safety: policy + guardrails + monitoring
+```
+
+이 다섯 층을 분리해서 보면 “어디를 고쳐야 하는지”가 보인다.
+
+## 마무리
+
+Post-training은 LLM을 제품에 맞게 다듬는 핵심 단계다. SFT는 기본 답변 형식을 만들고, preference learning은 더 좋은 답변의 기준을 가르치며, RLHF와 DPO는 그 선호를 모델 행동에 반영한다.
+
+하지만 알고리즘 이름보다 중요한 것은 데이터와 평가다.
+
+- 어떤 답변을 좋은 답변으로 볼 것인가?
+- 언제 거절해야 하는가?
+- 근거가 없을 때 어떻게 말해야 하는가?
+- 사용자가 다음 행동을 할 수 있는가?
+- 모델이 정책을 지키는지 어떻게 지속적으로 확인할 것인가?
+
+이 질문에 답하지 못하면 RLHF나 DPO를 붙여도 제품 품질은 좋아지기 어렵다.
+
+다음 편에서는 이 흐름을 더 실무 쪽으로 이어가서, 모델을 직접 학습하지 않아도 AI 애플리케이션 품질을 끌어올리는 **evaluation dataset 설계와 synthetic data 활용**을 다룰 예정이다.
+
+## 참고 자료
+
+- Ouyang et al., “Training language models to follow instructions with human feedback”, 2022. https://arxiv.org/abs/2203.02155
+- Rafailov et al., “Direct Preference Optimization: Your Language Model is Secretly a Reward Model”, 2023. https://arxiv.org/abs/2305.18290
+- Bai et al., “Constitutional AI: Harmlessness from AI Feedback”, 2022. https://arxiv.org/abs/2212.08073
+- Christiano et al., “Deep Reinforcement Learning from Human Preferences”, 2017. https://arxiv.org/abs/1706.03741
+- OpenAI, “Learning from human preferences”. https://openai.com/index/learning-from-human-preferences/
