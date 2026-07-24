@@ -4421,3 +4421,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-sandbox, security, ebpf, github-repo]
 - status: idea
+
+### 2026-07-25 — [논문 리뷰] OpenForgeRL: harness-native agent를 end-to-end RL로 학습하기
+- type: paper
+- source: http://arxiv.org/abs/2607.21557v1
+- why-now: Claude Code, Codex 같은 실제 agent harness는 stateful·multi-process tool loop라 기존 SFT/RL stack으로 학습하기 어려운데, harness 자체를 학습 환경으로 표현하려는 시도가 나왔다.
+- angle: “agent post-training은 chat transcript가 아니라 실행 harness를 학습 가능한 environment로 감싸는 문제” — rollout, tool trace, reward, sandbox boundary를 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, harness, post-training, tool-use]
+- status: idea
+
+### 2026-07-25 — [논문 리뷰] Agentic Context Management: agent memory와 비용을 lifecycle 문제로 보기
+- type: paper
+- source: http://arxiv.org/abs/2607.21503v1
+- why-now: production agent의 실패가 추론력보다 conversation history, tool definition, tool output 누적으로 생기는 context 관리 문제로 드러나고 있다.
+- angle: “context engineering은 벡터 DB 검색만이 아니라 생성·압축·보존·폐기 lifecycle architecture” — memory tier, compaction trigger, cost ceiling, recall QA를 agent runtime 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent, context-engineering, memory, cost-optimization]
+- status: idea
+
+### 2026-07-25 — [논문 리뷰] Euclid-MCP: Prolog를 MCP 서버로 붙이는 deterministic reasoning layer
+- type: paper
+- source: http://arxiv.org/abs/2607.21412v1
+- why-now: LLM agent가 규정·정책·논리 조건을 다룰 때 자연어 reasoning만으로는 재현성과 감사 가능성이 부족해, MCP 기반 symbolic tool 통합이 실용적인 대안으로 떠오른다.
+- angle: “agent reasoning에서 LLM이 설명하고 Prolog가 판정하는 경계” — MCP tool schema, deterministic verifier, compliance workflow, 실패 모드를 neuro-symbolic agent 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, symbolic-reasoning, prolog, agent-tools]
+- status: idea
+
+### 2026-07-25 — [논문 리뷰] RUMBA: long-term user memory benchmark를 다국어·시간성 기준으로 보기
+- type: paper
+- source: http://arxiv.org/abs/2607.21447v1
+- why-now: 개인 비서형 agent memory 평가는 영어 중심 aggregate retrieval 점수만으로는 long-range context, temporal fact, reasoning 실패를 구분하기 어렵다.
+- angle: “agent memory 벤치마크는 기억했는가보다 어떤 질문 유형에서 temporal reasoning이 깨지는가를 봐야 한다” — taxonomy, multilingual QA, memory regression suite 설계를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, benchmark, multilingual, temporal-reasoning]
+- status: idea
+
+### 2026-07-25 — [논문 리뷰] Continuous Assurance: no-code agent가 배포된 뒤에도 안전한지 계속 검증하기
+- type: paper
+- source: http://arxiv.org/abs/2607.21495v1
+- why-now: 조직 내부에서 low-code/no-code agent 생성이 쉬워지면서, 모델·도구·권한·스케줄·retrieval source가 바뀔 때 silent degradation을 잡는 운영 체계가 필요해졌다.
+- angle: “agent governance는 출시 전 승인 문서가 아니라 dependency drift를 계속 보는 assurance loop” — inventory, policy check, eval cadence, rollback 기준을 enterprise agent 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-governance, eval, reliability, enterprise-ai]
+- status: idea
+
+### 2026-07-25 — [논문 리뷰] Agentic coding without the cloud: 민감 데이터 환경의 local coding agent 평가
+- type: paper
+- source: http://arxiv.org/abs/2607.21482v1
+- why-now: 개인·연구·의료 데이터처럼 외부 cloud LLM 전송이 막힌 환경에서도 coding agent 수요는 커지고 있어 open-weight local model 평가 기준이 필요하다.
+- angle: “coding agent 선택 기준에 privacy boundary와 longitudinal task를 넣자” — local inference, data preparation workflow, task drift, governance 제약을 개발자 워크플로 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, local-llm, privacy, benchmark]
+- status: idea
+
+### 2026-07-25 — Arcade MCP: agent tool 개발을 framework와 server runtime으로 표준화하기
+- type: tech
+- source: https://github.com/ArcadeAI/arcade-mcp
+- why-now: MCP tool이 늘어날수록 단일 server 예제보다 custom capability 개발, tool packaging, auth/context 전달, testable runtime을 표준화하는 framework가 필요해지고 있다.
+- angle: “MCP server를 demo script가 아니라 reusable tool product로 만드는 법” — tool definition, server lifecycle, permission boundary, agent integration workflow를 repo 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-tools, framework, github-repo]
+- status: idea
+
+### 2026-07-25 — NVIDIA skills: coding agent에 제품별 executable skill을 설치하는 패턴
+- type: tech
+- source: https://github.com/NVIDIA/skills
+- why-now: Claude Code, Codex 같은 coding agent가 특정 제품·도메인의 문서와 명령을 매번 새로 배우는 대신, 검증된 skill package를 설치해 end-to-end workflow를 수행하는 패턴이 커지고 있다.
+- angle: “agent capability 배포 단위는 prompt snippet이 아니라 테스트 가능한 skill bundle” — CUDA, robotics, simulation, RAG workflow의 skill packaging, versioning, repo guidance를 실무 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, skills, nvidia, github-repo]
+- status: idea

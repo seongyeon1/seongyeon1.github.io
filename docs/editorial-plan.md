@@ -237,6 +237,10 @@
 | 아이디어 | 미정 | [논문 리뷰] HyMCache — multi-turn agent serving의 KV cache memory tiering | paper-review | AI 추론 최적화 | | arXiv 2607.18141 — HBM/DRAM/CXL 기반 reusable KV state 운영과 latency trade-off |
 | 아이디어 | 미정 | [논문 리뷰] AgentAbstain — agent가 행동하지 말아야 할 때를 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.10059 — ambiguity, conflicting constraints, tool failure에서 abstain·escalation policy 설계 |
 | 아이디어 | 미정 | Containarium — SSH-native sandbox와 eBPF egress policy로 agent 실행 격리 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — LXC/Kubernetes backend, MCP-native CLI, network egress control을 agent runtime 보안 경계로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] Agentic Context Management — agent memory와 비용을 lifecycle 문제로 보기 | paper-review | 논문 리뷰 | | arXiv 2607.21503 — context lifecycle, compaction trigger, memory tier, cost ceiling을 agent runtime 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] OpenForgeRL — harness-native agent를 end-to-end RL로 학습하기 | paper-review | AI 평가/운영 | | arXiv 2607.21557 — stateful multi-process harness를 RL environment로 감싸는 agent post-training 운영법 |
+| 아이디어 | 미정 | [논문 리뷰] Euclid-MCP — Prolog를 MCP 서버로 붙이는 deterministic reasoning layer | paper-review | Agent/MCP 실전 | | arXiv 2607.21412 — MCP tool schema, deterministic verifier, compliance workflow를 neuro-symbolic agent 패턴으로 정리 |
+| 아이디어 | 미정 | Arcade MCP — agent tool 개발을 framework와 server runtime으로 표준화하기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — custom capability 개발, tool packaging, auth/context, testable MCP runtime 설계 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
