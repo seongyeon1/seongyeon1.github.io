@@ -4526,3 +4526,108 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, skills, nvidia, github-repo]
 - status: idea
+
+
+### 2026-07-26 — [논문 리뷰] AREX: deep research agent를 recursively self-improving loop로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2607.21461v1
+- why-now: deep research agent가 단순 검색 시간을 늘리는 대신 후보 답변 검증을 constraint-wise로 쪼개고, 실패한 제약을 다시 하위 연구 과제로 재귀 확장하는 방향이 구체화됐다.
+- angle: “research agent의 핵심은 더 오래 검색하기가 아니라 발견-검증 비대칭을 runtime loop로 만드는 것” — constraint decomposition, verifier, recursive refinement, evidence budget을 설계 패턴으로 정리.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, deep-research, verification, recursive-agent]
+- status: idea
+
+### 2026-07-26 — [논문 리뷰] PATS: agentic RL에서 policy-aware scaffolding이 필요한 이유
+- type: paper
+- source: http://arxiv.org/abs/2607.21419v1
+- why-now: long-horizon agent RL은 약한 policy가 비슷한 실패 trajectory를 반복해 학습 신호가 빈약해지는 문제가 크고, rollout을 policy 상태에 맞춰 scaffold하는 접근이 중요해지고 있다.
+- angle: “agent RL의 병목은 보상 함수보다 실패를 덜 낭비하게 만드는 scaffolding” — policy-aware task shaping, exploration, rollout logging, curriculum boundary를 운영 관점으로 설명.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, scaffolding, post-training, rollout]
+- status: idea
+
+### 2026-07-26 — [논문 리뷰] GRADRAG: multi-agent RAG prompt를 그래프 전체에서 같이 튜닝하기
+- type: paper
+- source: http://arxiv.org/abs/2607.21324v1
+- why-now: RAG pipeline이 retriever, planner, reader, verifier 등 여러 agent/component로 나뉘면서 컴포넌트별 prompt 최적화만으로는 전체 오류 전파를 줄이기 어렵다.
+- angle: “RAG prompt tuning은 노드별 튜닝이 아니라 computational graph의 credit assignment 문제” — cross-component adaptation, structured feedback, pipeline-level regression test로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, prompt-optimization, multi-agent, eval]
+- status: idea
+
+### 2026-07-26 — [논문 리뷰] MemTools: agent memory 연구를 interoperable framework로 표준화하기
+- type: paper
+- source: http://arxiv.org/abs/2607.21404v1
+- why-now: agent memory 구현이 저장·검색·요약·평가 로직을 제각각 묶으면서 비교와 재현이 어려워졌고, memory lifecycle을 분리한 연구 프레임워크 수요가 커졌다.
+- angle: “memory는 vector DB 기능이 아니라 lifecycle API와 evaluation contract의 문제” — heterogeneous memory type, update/retrieve/eval 분리, benchmark adapter를 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, framework, eval, interoperability]
+- status: idea
+
+### 2026-07-26 — [논문 리뷰] Auditing Provenance Sensitivity: agent action이 허가된 근거에서 나왔는지 검사하기
+- type: paper
+- source: http://arxiv.org/abs/2607.20827v1
+- why-now: LLM agent는 user request, tool output, retrieved record, memory, untrusted text를 한 context에 섞어 action을 고르기 때문에 관련성(relevance)과 권한(authorization)을 분리해 감사해야 한다.
+- angle: “정답 행동이어도 잘못된 provenance에서 나온 결정이면 위험하다” — permitted evidence labeling, action-specific audit, tool argument gate를 agent 보안 QA로 설명.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, provenance, tool-use, audit]
+- status: idea
+
+### 2026-07-26 — NVIDIA OO Agents: Python object를 agent runtime primitive로 쓰는 설계
+- type: tech
+- source: http://arxiv.org/abs/2607.20709v1
+- why-now: agent 개발이 prompt template, tool schema, callback, workflow graph로 쪼개지면서 복잡해졌고, agent를 Python object로 모델링해 state/action/lifecycle을 한곳에 묶는 대안이 나왔다.
+- angle: “agent framework의 추상화 단위는 graph node가 아니라 object일 수도 있다” — method-as-action, field-as-state, lifecycle hook, LangGraph/ADK와의 선택 기준을 비교.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, python, nvidia, architecture]
+- status: idea
+
+### 2026-07-26 — pydantic-deepagents: self-hosted coding agent와 Python framework를 같이 보기
+- type: tech
+- source: https://github.com/vstorm-co/pydantic-deepagents
+- why-now: Claude Code류 terminal coding agent를 자체 호스팅하고, tool-calling·sandbox·multi-agent team·checkpoint를 Pydantic AI 위에서 조립하려는 repo가 빠르게 주목받고 있다.
+- angle: “coding agent 제품과 framework의 경계는 어디인가” — sandboxed execution, typed tool contract, checkpoints, unlimited context 주장을 repo architecture 중심으로 검증.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, pydantic-ai, sandbox, github-repo]
+- status: idea
+
+### 2026-07-26 — Doberman-Core: agent guardrail을 runtime policy와 audit log로 묶는 보안 프레임워크
+- type: tech
+- source: https://github.com/fu351/Doberman-Core
+- why-now: prompt injection 방어가 단순 필터에서 tool-use permission, runtime policy enforcement, monitoring, audit log를 묶은 agent security framework로 이동하고 있다.
+- angle: “agent 보안은 모델 앞단 필터가 아니라 실행 전후 policy pipeline” — permission model, guardrail placement, monitoring/audit log, deployment checklist를 repo introduction으로 정리.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-security, guardrails, runtime-policy, github-repo]
+- status: idea

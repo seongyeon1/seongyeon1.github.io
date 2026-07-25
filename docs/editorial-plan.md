@@ -241,6 +241,11 @@
 | 아이디어 | 미정 | [논문 리뷰] OpenForgeRL — harness-native agent를 end-to-end RL로 학습하기 | paper-review | AI 평가/운영 | | arXiv 2607.21557 — stateful multi-process harness를 RL environment로 감싸는 agent post-training 운영법 |
 | 아이디어 | 미정 | [논문 리뷰] Euclid-MCP — Prolog를 MCP 서버로 붙이는 deterministic reasoning layer | paper-review | Agent/MCP 실전 | | arXiv 2607.21412 — MCP tool schema, deterministic verifier, compliance workflow를 neuro-symbolic agent 패턴으로 정리 |
 | 아이디어 | 미정 | Arcade MCP — agent tool 개발을 framework와 server runtime으로 표준화하기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — custom capability 개발, tool packaging, auth/context, testable MCP runtime 설계 |
+| 아이디어 | 미정 | [논문 리뷰] AREX — deep research agent의 recursive self-improvement loop | paper-review | AI 평가/운영 | | arXiv 2607.21461 — constraint-wise verification, recursive refinement, evidence budget을 research agent runtime 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] GRADRAG — multi-agent RAG prompt를 그래프 전체에서 같이 튜닝하기 | paper-review | Agentic RAG | | arXiv 2607.21324 — cross-component prompt adaptation과 pipeline-level credit assignment를 RAG 운영 튜토리얼로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] MemTools — agent memory 연구를 interoperable framework로 표준화하기 | paper-review | AI 평가/운영 | | arXiv 2607.21404 — memory lifecycle API, heterogeneous memory, evaluation contract 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Auditing Provenance Sensitivity — agent action 근거 권한 감사 | paper-review | Agent/MCP 실전 | | arXiv 2607.20827 — permitted evidence labeling, action-specific audit, tool argument gate를 agent 보안 QA로 설명 |
+| 아이디어 | 미정 | pydantic-deepagents: self-hosted coding agent와 Python framework를 같이 보기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — sandboxed execution, typed tool contract, checkpoints, multi-agent teams를 coding agent runtime architecture로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
