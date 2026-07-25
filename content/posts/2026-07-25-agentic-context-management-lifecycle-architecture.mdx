@@ -1,0 +1,205 @@
+---
+title: "[논문 리뷰] Agentic Context Management — agent memory를 lifecycle로 다루기"
+date: "2026-07-25"
+category: "paper-review"
+tags: ["agent", "context-engineering", "memory", "cost-optimization"]
+summary: "Agentic Context Management는 agent memory와 context 비용을 단순 저장 문제가 아니라 lifecycle architecture 문제로 재정의한다."
+series: "논문 리뷰"
+seriesOrder: 17
+---
+
+<Paper
+  title="Agentic Context Management: Solving Agent Memory and Cost by Treating Them as Lifecycle and Architecture Problems"
+  authors="Gaurav Dadhich"
+  year="2026"
+  venue="arXiv"
+  arxiv="2607.21503"
+/>
+
+## 한 줄 요약
+
+Agentic Context Management, 줄여서 ACM은 production agent의 memory 문제를 “어디에 저장하고 어떻게 검색할까”로만 보지 말고, context가 태어나고·구조화되고·범위가 정해지고·압축되고·폐기되는 전체 lifecycle로 보자는 논문이다. 논문은 agent 실패의 상당 부분이 추론 능력 부족보다 대화 기록, 큰 시스템 프롬프트, tool definition, tool output이 누적되면서 생기는 context 관리 실패에서 온다고 주장한다.
+
+나는 이 관점에 꽤 동의한다. 요즘 agent stack에서 memory는 너무 자주 “vector DB 하나 붙이면 되는 기능”처럼 취급된다. 하지만 실제 운영에서는 기억할 값, 지금 넣을 값, 조직 전체에 공유할 값, 버려도 되는 값, provenance를 보존해야 하는 값이 전부 다르다. 이걸 한 retrieval layer로 밀어 넣으면 잠깐은 돌아가도 장기 실행 agent에서는 비용과 품질이 같이 무너진다.
+
+## 왜 지금 중요한가
+
+단발성 챗봇에서는 context 관리가 대충 되어도 티가 덜 난다. 최근 몇 턴을 넣고, 길어지면 요약하고, 필요한 문서는 RAG로 가져오면 된다. 문제는 agent가 다음과 같은 workload를 맡기 시작할 때 커진다.
+
+- 여러 날에 걸쳐 이어지는 개인 비서 업무
+- ticket, PR, incident, customer record를 오가는 운영 agent
+- tool output이 JSON, log, diff, trace처럼 길고 구조적인 coding agent
+- 여러 사용자·팀·조직 scope의 memory를 동시에 다루는 enterprise agent
+
+이 환경에서는 “모든 history를 계속 append”하는 방식이 바로 비용 폭탄이 된다. 매 turn마다 이전 turn 전체를 다시 읽으면 conversation length가 길어질수록 누적 token cost가 급격히 커진다. 반대로 무식하게 summarization만 걸면 비용은 줄어도 중요한 식별자, constraint, 최신 상태, 출처가 사라지기 쉽다.
+
+논문은 이 trade-off를 ACM이라는 이름으로 정리한다. 핵심 메시지는 단순하다. context는 저장소가 아니라 운영 자원이다. CPU, memory, cache, log처럼 lifecycle policy가 있어야 한다.
+
+## ACM의 다섯 가지 primitive
+
+논문은 ACM을 다섯 primitive로 나눈다. 용어는 약간 제품 카테고리 선언처럼 들리지만, agent runtime 설계 체크리스트로 보면 쓸 만하다.
+
+### 1. Architecting: memory를 한 덩어리로 보지 않기
+
+먼저 어떤 정보를 어떤 store에 둘지 설계해야 한다. conversation transcript, user preference, task-local state, organization policy, retrieved document, tool result는 수명과 접근 패턴이 다르다.
+
+예를 들어 coding agent에서 “이 repo는 pnpm을 쓴다”는 repo-level 장기 memory에 가깝다. “방금 typecheck가 실패한 파일과 에러 메시지”는 task-local state다. “사용자가 이번 작업에서는 DB migration을 건드리지 말라고 했다”는 session constraint다. 셋을 같은 vector collection에 넣고 similarity search로 꺼내는 건 편하지만, 정확한 정책으로 보기 어렵다.
+
+ACM식 설계라면 최소한 아래를 구분해야 한다.
+
+- scope: user / session / project / organization
+- lifetime: one-shot / task-local / long-term / archival
+- mutability: append-only / update 가능 / 삭제 필요
+- trust level: 사용자 발화 / tool 관측 / 검증된 문서 / 추론된 요약
+- retrieval mode: exact key lookup / semantic search / rule-based injection / recency
+
+### 2. Ingesting: 무엇을 기억할지 결정하기
+
+모든 입력을 기억하면 memory가 아니라 쓰레기장이 된다. ingest 단계는 원본 stream에서 기억할 후보를 고르고 구조화하는 단계다.
+
+여기서 중요한 건 “좋은 요약”보다 “나중에 쓸 수 있는 구조”다. 예를 들어 사용자가 “다음부터 내 블로그 글은 마케팅 톤 싫어하고 실무적인 문체로 써줘”라고 말했을 때, transcript 전체를 저장하는 것보다 다음처럼 저장하는 편이 낫다.
+
+```json title="memory-item.json"
+{
+  "scope": "user",
+  "type": "writing_preference",
+  "content": "AI 블로그 글은 마케팅 톤보다 간결하고 실무적인 문체를 선호한다.",
+  "source": "user_instruction",
+  "confidence": "high",
+  "created_at": "2026-07-25"
+}
+```
+
+이 구조가 있어야 나중에 retrieval, conflict resolution, deletion, audit가 가능하다. 그냥 “사용자는 실무적인 글을 좋아함”이라는 자연어 summary만 쌓이면 어느 발화에서 왔는지, 지금도 유효한지, 어떤 scope인지 알기 어렵다.
+
+### 3. Scoping: 지금 agent가 볼 수 있는 memory 범위 정하기
+
+production agent에서 가장 자주 무시되는 부분이 scope다. 개인 비서 agent라면 user-level memory가 필요하지만, 조직 agent라면 user, team, workspace, tenant boundary가 더 중요해진다. 잘못된 memory를 잘 검색하는 것은 검색 실패보다 위험하다.
+
+예를 들어 A팀 incident 대응 agent가 B팀의 credential rotation 절차를 가져와 실행하면, 답변 품질 문제가 아니라 권한 경계 문제다. ACM은 context selection을 relevance만으로 보지 않고 scope hierarchy와 policy 문제로 본다. 이건 맞는 방향이다. agent memory는 정보 검색 계층인 동시에 access-control surface다.
+
+실무에서는 다음 질문을 먼저 해야 한다.
+
+- 이 memory는 누구에게 보이면 안 되는가?
+- 이 task에서 user-level preference가 organization policy보다 우선할 수 있는가?
+- project-local rule과 global rule이 충돌하면 어느 쪽을 채택할 것인가?
+- retrieval된 memory가 오래됐거나 낮은 confidence면 어떻게 표시할 것인가?
+
+### 4. Anticipating: 지금 필요한 것뿐 아니라 곧 필요할 context 준비하기
+
+RAG는 보통 현재 query에 반응한다. 하지만 agent는 plan을 가지고 여러 step을 실행한다. 다음 step에서 어떤 파일, policy, tool result가 필요할지 어느 정도 예측할 수 있다.
+
+예를 들어 coding agent가 “테스트 실패 수정” 작업을 한다면, 현재 에러 로그뿐 아니라 관련 test file, 구현 file, package script, 최근 변경 diff가 곧 필요하다. 매번 모델이 막힌 뒤 검색하는 것보다, plan을 보고 필요한 context를 미리 staging하는 편이 latency와 실패율을 줄일 수 있다.
+
+다만 anticipating은 조심해야 한다. 너무 많이 preload하면 원래 문제인 context bloat로 돌아간다. 그래서 anticipation은 “무엇을 넣을까”가 아니라 “다음 모델 호출의 budget 안에서 무엇을 준비할까” 문제로 설계해야 한다.
+
+### 5. Compacting & consolidation: 줄이되 검증 가능하게 줄이기
+
+논문이 특히 강조하는 부분은 compaction이다. 긴 history를 짧게 만드는 일 자체는 쉽다. 어려운 건 중요한 constraint, 최신 상태, provenance, unresolved task를 잃지 않으면서 줄이는 것이다.
+
+나쁜 compaction은 이런 식이다.
+
+> 사용자는 블로그 글을 작성하고 검증을 요청했다.
+
+좋은 compaction은 적어도 다음을 남긴다.
+
+- 선택한 후보와 source
+- 생성한 파일 경로
+- 유지해야 하는 `draft: true` 같은 hard constraint
+- 실행한 검증 명령과 결과
+- 남은 human action
+- 원본 source/provenance
+
+즉 compaction 결과는 예쁜 문단이 아니라 다음 실행자가 이어받을 수 있는 state checkpoint여야 한다. agent runtime에서 compaction을 넣는다면, 나는 natural-language summary 하나보다 typed state와 short narrative를 같이 남기는 편을 선호한다.
+
+## 비용 모델: context 누적은 공짜가 아니다
+
+논문은 naive context accumulation이 conversation length에 따라 token cost를 크게 키우고, crude summarization은 비용을 줄이는 대신 accuracy cliff를 만들 수 있다고 설명한다. 구체적인 수식보다 중요한 건 방향성이다.
+
+- append-only history: 구현은 쉽지만 장기 세션에서 비용과 latency가 빠르게 증가한다.
+- 단순 summarization: 비용은 줄지만 instruction, constraint, ID, provenance 손실이 잦다.
+- validated compaction: 압축 후에도 필요한 정보가 보존됐는지 검증해야 비용 절감과 품질 유지를 같이 얻을 수 있다.
+
+이 지점에서 “context engineering”이라는 말이 과장처럼 들리지 않게 된다. context window가 커져도 문제는 사라지지 않는다. 큰 창은 더 많은 실수를 더 비싸게 할 수 있게 해줄 뿐이다. 특히 tool output이 큰 agent에서는 context window보다 context policy가 더 중요하다.
+
+## 논문이 보고한 구현과 결과
+
+논문은 ACM의 reference implementation으로 Maximem Synap이라는 multi-tenant service를 설명한다. arXiv abstract 기준으로는 LongMemEval 92%, LoCoMo 93.2%를 보고한다. 또한 기존 benchmark가 latency, token efficiency, context-rot resistance 같은 운영 지표를 충분히 다루지 못한다고 지적한다.
+
+여기서는 조심해서 읽어야 한다. 논문 자체가 특정 구현과 카테고리 제안을 함께 담고 있으므로, reported score를 일반적인 ACM 우월성으로 과하게 해석하면 안 된다. 중요한 건 “이 제품이 최고다”가 아니라 “memory/context 평가에서 이제 accuracy만 보면 부족하다”는 문제 제기다.
+
+내가 후속 검토에서 보고 싶은 항목은 이렇다.
+
+- 동일 모델·동일 budget에서 naive history, summarization, RAG memory, ACM식 compaction을 나란히 비교했는가
+- compaction이 실패했을 때 agent가 어떤 방식으로 복구하는가
+- provenance 보존이 실제 user deletion, audit, incident review에 얼마나 쓸 수 있는가
+- multi-tenant scope isolation을 benchmark로 어떻게 검증했는가
+- latency와 token saving이 품질 저하 없이 재현되는가
+
+## 실무 적용 패턴
+
+ACM을 바로 거창한 platform으로 만들 필요는 없다. 작은 agent harness에도 다음 정도는 넣을 수 있다.
+
+### Context inventory부터 만들기
+
+agent prompt에 들어가는 항목을 목록으로 만들자.
+
+- system instruction
+- developer instruction / repo guidance
+- user request
+- conversation summary
+- recent messages
+- tool schemas
+- tool outputs
+- retrieved documents
+- persistent memory
+- task state
+
+그다음 각 항목에 owner, scope, TTL, max budget, injection condition을 붙인다. 이 작업만 해도 “왜 매번 prompt가 80k token이지?” 같은 문제를 잡기 쉬워진다.
+
+### Memory write를 이벤트로 다루기
+
+agent가 아무 때나 memory를 쓰게 두지 말고, memory write event를 따로 만든다. 최소한 아래 필드를 남긴다.
+
+```ts title="memory-write.ts"
+type MemoryWrite = {
+  scope: "session" | "user" | "project" | "org";
+  kind: "preference" | "constraint" | "fact" | "task_state" | "lesson";
+  content: string;
+  source: "user" | "tool" | "system" | "agent_inference";
+  confidence: "low" | "medium" | "high";
+  expiresAt?: string;
+};
+```
+
+특히 `source: "agent_inference"`는 낮은 trust로 봐야 한다. agent가 추론한 사실을 사용자가 말한 사실처럼 저장하면 memory poisoning과 drift가 시작된다.
+
+### Compaction을 테스트 대상으로 만들기
+
+compaction은 prompt 비용 최적화 기능이 아니라 correctness-critical component다. 따라서 테스트해야 한다.
+
+- 긴 trace를 넣고 필수 constraint가 보존되는지 확인한다.
+- stale fact와 최신 fact가 충돌할 때 최신성을 유지하는지 본다.
+- tool output의 ID, status, permission field가 사라지지 않는지 본다.
+- 압축 전후 agent action이 바뀌는지 regression test를 만든다.
+
+작은 팀이라면 LLM judge보다 deterministic checklist가 먼저다. 예를 들어 “summary 안에 ticket id, blocking constraint, last verified state가 모두 있는가” 같은 규칙은 코드로 검사할 수 있다.
+
+## 한계와 내 의견
+
+이 논문은 production agent memory 문제를 잘 짚는다. 특히 memory를 retrieval 기능이 아니라 architecture와 lifecycle 문제로 보는 프레임은 실무적으로 유용하다. 다만 아직은 ACM이라는 카테고리를 제안하는 성격이 강하고, reference implementation의 세부 성능은 독립 재현과 더 다양한 baseline 비교가 필요해 보인다.
+
+내 결론은 이렇다.
+
+- agent memory를 “장기 기억”이라는 UX 기능으로만 보면 부족하다.
+- context budget, scope boundary, provenance, compaction fidelity를 함께 설계해야 한다.
+- vector DB retrieval은 ACM의 일부일 수 있지만 ACM 그 자체는 아니다.
+- production agent에서 가장 먼저 만들 것은 똑똑한 memory가 아니라 관찰 가능한 context lifecycle이다.
+
+개인적으로는 ACM을 agent 운영의 `cache invalidation` 문제에 가깝게 본다. 무엇을 기억할지보다 언제 믿지 말고, 언제 버리고, 언제 다시 관측할지를 정하는 게 더 어렵다. 그 경계를 명시하지 않은 agent는 context window가 커져도 오래 버티기 힘들다.
+
+## 참고 자료
+
+- [arXiv: Agentic Context Management: Solving Agent Memory and Cost by Treating Them as Lifecycle and Architecture Problems](https://arxiv.org/abs/2607.21503)
+- [arXiv PDF](https://arxiv.org/pdf/2607.21503v1)
+- [Maximem AI GitHub organization](https://github.com/maximem-ai)

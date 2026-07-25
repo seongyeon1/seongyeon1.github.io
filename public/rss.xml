@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 24 Jul 2026 00:11:46 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 25 Jul 2026 01:11:43 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Agentic Context Management — agent memory를 lifecycle로 다루기</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-25-agentic-context-management-lifecycle-architecture/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-25-agentic-context-management-lifecycle-architecture/</guid>
+      <description>Agentic Context Management는 agent memory와 context 비용을 단순 저장 문제가 아니라 lifecycle architecture 문제로 재정의한다.</description>
+      <pubDate>Sat, 25 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>context-engineering</category>
+      <category>memory</category>
+      <category>cost-optimization</category>
+    </item>
     <item>
       <title>AI 기본기 11: Post-training과 Alignment — RLHF와 DPO는 모델의 행동을 어떻게 바꾸는가</title>
       <link>https://seongyeon1.github.io/blog/2026-07-24-ai-fundamentals-post-training-alignment-rlhf-dpo/</link>

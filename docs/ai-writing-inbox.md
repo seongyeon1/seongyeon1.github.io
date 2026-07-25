@@ -4446,7 +4446,8 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent, context-engineering, memory, cost-optimization]
-- status: idea
+- status: published
+- draft: content/posts/2026-07-25-agentic-context-management-lifecycle-architecture.mdx
 
 ### 2026-07-25 — [논문 리뷰] Euclid-MCP: Prolog를 MCP 서버로 붙이는 deterministic reasoning layer
 - type: paper
