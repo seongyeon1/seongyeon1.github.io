@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 25 Jul 2026 01:11:43 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 25 Jul 2026 01:28:56 GMT</lastBuildDate>
     <item>
       <title>[논문 리뷰] Agentic Context Management — agent memory를 lifecycle로 다루기</title>
       <link>https://seongyeon1.github.io/blog/2026-07-25-agentic-context-management-lifecycle-architecture/</link>
@@ -18,6 +18,20 @@
       <category>context-engineering</category>
       <category>memory</category>
       <category>cost-optimization</category>
+    </item>
+    <item>
+      <title>AI 기본기 12: Efficient Fine-tuning — LoRA, Quantization, Distillation은 무엇을 줄이는가</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-25-ai-fundamentals-efficient-finetuning-lora-quantization-distillation/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-25-ai-fundamentals-efficient-finetuning-lora-quantization-distillation/</guid>
+      <description>큰 LLM을 매번 전체 학습하지 않고 목적에 맞게 바꾸기 위해 LoRA, quantization, distillation이 각각 무엇을 줄이고 어떤 trade-off를 만드는지 정리한다.</description>
+      <pubDate>Sat, 25 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>fine-tuning</category>
+      <category>LoRA</category>
+      <category>quantization</category>
+      <category>distillation</category>
+      <category>LLM</category>
     </item>
     <item>
       <title>AI 기본기 11: Post-training과 Alignment — RLHF와 DPO는 모델의 행동을 어떻게 바꾸는가</title>

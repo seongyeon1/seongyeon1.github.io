@@ -1,0 +1,370 @@
+---
+title: "AI 기본기 12: Efficient Fine-tuning — LoRA, Quantization, Distillation은 무엇을 줄이는가"
+date: "2026-07-25"
+category: "concept"
+tags: ["AI기본기", "fine-tuning", "LoRA", "quantization", "distillation", "LLM"]
+summary: "큰 LLM을 매번 전체 학습하지 않고 목적에 맞게 바꾸기 위해 LoRA, quantization, distillation이 각각 무엇을 줄이고 어떤 trade-off를 만드는지 정리한다."
+series: "AI 기본기"
+seriesOrder: 12
+math: true
+---
+
+## 한 줄 요약
+
+LLM을 실제 서비스에 맞게 쓰려면 모델을 “그냥 호출”하는 것만으로는 부족하다. 하지만 수십억~수천억 파라미터 모델을 매번 full fine-tuning하는 것도 비싸다. 그래서 실무에서는 **LoRA로 학습할 파라미터를 줄이고, quantization으로 표현 비트를 줄이고, distillation으로 실행할 모델 크기를 줄이는 방식**을 조합한다.
+
+지난 글에서는 post-training과 alignment를 다뤘다. 이번 글은 그다음 질문이다.
+
+> 모델 행동을 바꾸고 싶은데, 전체 모델을 다시 학습할 비용은 없다. 그러면 무엇을 줄여야 하는가?
+
+<Callout type="note">
+이 글은 LinkedIn에 공유된 AI 학습자료 목록을 바탕으로 이어가는 AI 기본기 시리즈다. 목표는 LoRA, QLoRA, quantization, distillation이라는 용어를 외우는 것이 아니라, 각각이 파라미터·메모리·연산·품질 사이에서 어떤 trade-off를 만드는지 이해하는 것이다.
+</Callout>
+
+## 1. Fine-tuning이 필요한 순간
+
+LLM을 제품에 붙일 때 선택지는 대략 네 가지다.
+
+| 방식 | 모델 파라미터 변경 | 대표 목적 |
+| --- | --- | --- |
+| Prompting | 없음 | 입력 형식, 작업 지시, few-shot 예시 제공 |
+| RAG | 없음 | 외부 지식 주입, 최신 문서 참조 |
+| Fine-tuning | 있음 | 반복되는 출력 형식, 도메인 스타일, task policy 학습 |
+| Post-training / alignment | 있음 | 지시 따르기, 선호, 안전성, 거절 정책 조정 |
+
+많은 문제는 prompting과 RAG로 충분히 해결된다. 예를 들어 사내 문서를 찾아 답하는 챗봇은 먼저 retrieval 품질을 봐야 한다. 모델이 모르는 지식을 fine-tuning으로 억지로 넣는 것은 유지보수 관점에서 좋지 않은 경우가 많다.
+
+하지만 fine-tuning이 필요한 순간도 분명히 있다.
+
+- 항상 같은 JSON schema로 답해야 한다.
+- 특정 도메인의 표현 방식과 판단 기준을 반복적으로 맞춰야 한다.
+- 작은 모델을 특정 task에서 큰 모델처럼 쓰고 싶다.
+- prompt만으로는 출력 스타일이 불안정하다.
+- 공개 모델을 내부 policy에 맞게 조정해야 한다.
+
+문제는 비용이다. LLM의 파라미터 수가 커질수록 full fine-tuning은 메모리, GPU 시간, 데이터 관리, 배포 복잡도를 크게 올린다.
+
+## 2. Full fine-tuning은 무엇이 비싼가
+
+모델 파라미터를 $W$라고 하자. Full fine-tuning은 pretraining된 모든 weight를 업데이트한다.
+
+$$
+W' = W - \eta \nabla_W L
+$$
+
+개념적으로는 단순하지만, 실제 비용은 꽤 크다.
+
+| 비용 항목 | 왜 커지는가 |
+| --- | --- |
+| 파라미터 메모리 | 모델 weight 자체가 크다 |
+| gradient 메모리 | 업데이트하려면 gradient를 저장해야 한다 |
+| optimizer state | Adam 계열은 momentum, variance 상태를 추가로 든다 |
+| checkpoint 저장 | fine-tuned 모델 전체를 저장해야 한다 |
+| 배포 복잡도 | task마다 다른 전체 모델을 운영해야 한다 |
+
+예를 들어 7B 모델 하나를 full fine-tuning한다고 해도 단순히 weight 7B개만 생각하면 안 된다. 학습 중에는 gradient와 optimizer state까지 필요하다. 서비스가 여러 task를 갖고 있으면 task마다 전체 모델 checkpoint가 늘어난다.
+
+그래서 실무 질문은 이렇게 바뀐다.
+
+> 모든 weight를 바꾸지 않고도, 필요한 행동만 바꿀 수 있을까?
+
+이 질문에서 parameter-efficient fine-tuning, 즉 PEFT 계열 방법이 나온다.
+
+## 3. LoRA: 큰 weight를 직접 바꾸지 말고 작은 update만 학습한다
+
+LoRA는 Low-Rank Adaptation의 약자다. 핵심 아이디어는 간단하다.
+
+기존 weight $W_0$는 얼려 둔다. 대신 fine-tuning으로 필요한 변화량 $\Delta W$만 학습한다.
+
+$$
+W' = W_0 + \Delta W
+$$
+
+그런데 $\Delta W$를 원래 weight와 같은 크기의 큰 행렬로 학습하면 비용이 여전히 크다. LoRA는 이 변화량이 낮은 rank 구조로 근사될 수 있다고 보고, 두 개의 작은 행렬 곱으로 표현한다.
+
+$$
+\Delta W = BA
+$$
+
+여기서 $A$와 $B$는 원래 weight보다 훨씬 작은 행렬이고, 중간 차원 $r$이 LoRA rank다.
+
+```text
+Original weight W0: frozen
+LoRA A, B: trainable
+
+input x
+  ↓
+W0 x + B A x
+  ↓
+output
+```
+
+직관은 이렇다.
+
+- 모델의 기본 언어 능력은 이미 $W_0$에 있다.
+- 특정 task에 맞게 필요한 변화는 전체 파라미터 공간을 다 바꿀 필요가 없을 수 있다.
+- 그 변화 방향을 작은 low-rank update로 학습한다.
+
+<Callout type="tip">
+LoRA를 “모델 옆에 붙이는 작은 행동 패치”로 생각하면 쉽다. base model은 그대로 두고, task별 adapter만 바꿔 끼우는 구조다.
+</Callout>
+
+## 4. LoRA가 줄이는 것과 줄이지 못하는 것
+
+LoRA는 모든 문제를 해결하지 않는다. 무엇을 줄이는지 정확히 봐야 한다.
+
+| 줄이는 것 | 설명 |
+| --- | --- |
+| 학습 파라미터 수 | 전체 weight 대신 LoRA adapter만 업데이트한다 |
+| optimizer state | trainable parameter가 줄어 optimizer state도 줄어든다 |
+| checkpoint 크기 | task별 adapter만 저장할 수 있다 |
+| 실험 비용 | 여러 rank, dataset, style을 빠르게 실험하기 좋다 |
+
+하지만 줄이지 못하거나 별도로 봐야 하는 것도 있다.
+
+| 남는 비용 | 설명 |
+| --- | --- |
+| base model 로딩 메모리 | frozen이어도 base model weight는 메모리에 올라간다 |
+| forward 연산 | 기본 모델의 forward pass는 여전히 필요하다 |
+| 데이터 품질 문제 | LoRA가 나쁜 데이터까지 해결해주지는 않는다 |
+| catastrophic behavior | 작은 adapter도 잘못 학습하면 출력 품질을 망칠 수 있다 |
+
+즉 LoRA는 “큰 모델을 작은 모델처럼 만든다”가 아니다. 더 정확히는 **큰 모델의 대부분은 고정하고, task에 필요한 작은 update만 효율적으로 학습한다**에 가깝다.
+
+## 5. Quantization: 숫자 표현의 비트를 줄인다
+
+LoRA가 학습할 파라미터 수를 줄인다면, quantization은 숫자 표현의 bit 수를 줄인다.
+
+모델 weight는 보통 floating point 숫자로 저장된다. FP32, FP16, BF16 같은 표현을 쓴다. Quantization은 이를 INT8, INT4 같은 낮은 precision 표현으로 바꿔 메모리와 연산 비용을 줄인다.
+
+```text
+FP16 weight: 16 bits per value
+INT8 weight: 8 bits per value
+INT4 weight: 4 bits per value
+```
+
+아주 단순화하면 quantization은 연속적인 값을 더 거친 격자로 매핑하는 것이다.
+
+$$
+q = \operatorname{round}(x / s) + z
+$$
+
+여기서 $s$는 scale, $z$는 zero point다. 실제 방법은 더 복잡하지만, 핵심은 “정밀도를 줄여서 저장·계산 비용을 낮춘다”다.
+
+| 장점 | 설명 |
+| --- | --- |
+| 메모리 절감 | 같은 GPU에 더 큰 모델을 올릴 수 있다 |
+| 추론 비용 절감 | 하드웨어 지원이 맞으면 inference가 빨라진다 |
+| 배포 용이성 | edge, single GPU, 저비용 serving에 유리하다 |
+
+하지만 precision을 줄이면 정보 손실이 생긴다. 특히 작은 activation 차이가 중요한 layer나 outlier weight가 많은 모델에서는 품질이 떨어질 수 있다.
+
+<Callout type="warning">
+Quantization은 “공짜 압축”이 아니다. 어떤 bit-width, 어떤 layer, 어떤 calibration data, 어떤 kernel을 쓰는지에 따라 품질과 속도가 크게 달라진다.
+</Callout>
+
+## 6. QLoRA: quantized base model 위에 LoRA를 얹는다
+
+QLoRA는 실무적으로 매우 중요한 조합이다. 아이디어는 다음과 같다.
+
+1. base model을 4-bit 등으로 quantization해서 메모리에 올린다.
+2. base model weight는 고정한다.
+3. 작은 LoRA adapter만 학습한다.
+4. gradient는 LoRA parameter에 대해서만 흐른다.
+
+```text
+Quantized frozen base model
+  +
+Trainable LoRA adapters
+  ↓
+Memory-efficient fine-tuning
+```
+
+이 조합이 좋은 이유는 명확하다.
+
+| 구성 요소 | 줄이는 비용 |
+| --- | --- |
+| Quantization | base model 메모리 |
+| LoRA | 학습 파라미터와 optimizer state |
+| 둘의 조합 | single GPU fine-tuning 가능성 증가 |
+
+다만 QLoRA도 만능은 아니다. base model이 지나치게 작거나, task가 원래 모델 능력 밖에 있거나, 데이터 품질이 낮으면 adapter만으로는 원하는 행동을 만들기 어렵다.
+
+## 7. Distillation: 큰 모델의 행동을 작은 모델로 옮긴다
+
+Distillation은 방향이 조금 다르다. LoRA와 quantization은 대체로 “큰 모델을 효율적으로 조정하거나 실행하는 방법”이다. Distillation은 **큰 teacher model의 행동을 작은 student model이 배우게 하는 방법**이다.
+
+가장 기본적인 supervised distillation은 teacher의 output을 student가 따라 하게 한다.
+
+```text
+Prompt x
+  ↓
+Teacher model generates y_teacher
+  ↓
+Student model learns P(y_teacher | x)
+```
+
+분류 모델에서는 teacher의 soft probability distribution을 student가 맞히게 하는 방식이 많이 쓰인다. LLM에서는 teacher가 만든 답변, chain-of-thought, preference ranking, tool-use trajectory 등을 student 학습 데이터로 활용할 수 있다.
+
+| Distillation 대상 | student가 배우는 것 |
+| --- | --- |
+| 답변 형식 | 특정 스타일, 구조, JSON schema |
+| 추론 과정 | 중간 reasoning pattern, decomposition |
+| 도메인 판단 | teacher가 내린 분류·판단 기준 |
+| tool-use trajectory | 언제 어떤 tool을 호출하는지 |
+
+Distillation의 장점은 serving 비용이다. 큰 모델을 매번 호출하지 않고, 작은 모델이 특정 task에서 충분한 품질을 내도록 만들 수 있다.
+
+하지만 여기에도 함정이 있다.
+
+- teacher의 오류도 같이 복제될 수 있다.
+- student capacity가 부족하면 복잡한 판단을 못 따라간다.
+- teacher 답변이 다양하지 않으면 student가 좁은 행동만 배운다.
+- synthetic data 품질 관리가 중요하다.
+
+즉 distillation은 “큰 모델을 작은 모델로 압축”한다기보다, **큰 모델의 특정 행동 분포를 작은 모델에 재현시키는 작업**에 가깝다.
+
+## 8. 세 방법은 서로 다른 축을 줄인다
+
+LoRA, quantization, distillation은 자주 함께 언급되지만 줄이는 축이 다르다.
+
+| 방법 | 줄이는 핵심 축 | 주로 쓰는 상황 |
+| --- | --- | --- |
+| LoRA | 학습 파라미터, adapter checkpoint | task/domain fine-tuning을 빠르게 반복할 때 |
+| Quantization | weight precision, 메모리, 추론 비용 | 큰 모델을 제한된 GPU/서버에서 돌릴 때 |
+| QLoRA | base 메모리 + 학습 파라미터 | 큰 모델을 저비용으로 fine-tuning할 때 |
+| Distillation | 실행 모델 크기, serving 비용 | 작은 모델로 특정 task 성능을 내고 싶을 때 |
+
+실무에서는 이런 식으로 조합된다.
+
+```text
+1. 큰 teacher model로 고품질 데이터 생성
+2. base open model을 quantized 상태로 로드
+3. LoRA/QLoRA로 task adapter 학습
+4. 충분히 반복 검증
+5. 필요하면 작은 student model로 distillation
+6. quantized student를 serving에 배포
+```
+
+이때 중요한 것은 각 단계의 목적을 섞지 않는 것이다.
+
+- LoRA는 지식을 마법처럼 넣는 기술이 아니다.
+- Quantization은 품질 손실 없이 무조건 빨라지는 버튼이 아니다.
+- Distillation은 teacher보다 더 똑똑한 student를 자동으로 만드는 기술이 아니다.
+
+## 9. 어떤 상황에서 무엇을 먼저 써야 할까
+
+실무에서 바로 쓸 수 있는 판단 기준은 다음과 같다.
+
+### 9.1 출력 형식이 불안정하다
+
+먼저 prompt와 schema validation을 본다. 그래도 반복적으로 깨지면 SFT/LoRA를 검토한다.
+
+```text
+추천 순서:
+prompt template → constrained decoding/schema validation → LoRA fine-tuning
+```
+
+### 9.2 도메인 지식이 부족하다
+
+먼저 RAG를 본다. 지식이 자주 바뀌면 fine-tuning보다 retrieval이 낫다.
+
+```text
+추천 순서:
+retrieval quality 개선 → reranker/evaluation → 필요 시 domain adapter
+```
+
+### 9.3 GPU 메모리가 부족하다
+
+먼저 quantization을 본다. 학습까지 해야 한다면 QLoRA를 검토한다.
+
+```text
+추천 순서:
+INT8/INT4 inference → QLoRA training → serving kernel 최적화
+```
+
+### 9.4 큰 모델 API 비용이 부담된다
+
+특정 task가 반복된다면 distillation을 검토한다. 단, teacher-generated data를 평가할 기준이 있어야 한다.
+
+```text
+추천 순서:
+로그 분석 → teacher 데이터 생성 → student 학습 → task-specific eval
+```
+
+<Callout type="tip">
+Fine-tuning을 시작하기 전에는 “무엇을 바꾸려는가”를 한 문장으로 써야 한다. 지식, 형식, 스타일, 정책, 비용 중 어느 문제인지 구분하지 않으면 LoRA와 RAG와 prompt와 distillation이 뒤섞인다.
+</Callout>
+
+## 10. 최소 실험 설계
+
+작은 팀에서 LoRA나 distillation을 검토한다면 처음부터 대규모 학습으로 가지 않는 편이 좋다. 최소 실험은 이렇게 잡을 수 있다.
+
+```text
+Goal:
+  고객 문의 분류 + 답변 초안 생성의 형식 안정성 개선
+
+Baseline:
+  현재 prompt-only 모델의 정확도, JSON parse success rate, latency, cost 측정
+
+Dataset:
+  실제 로그에서 anonymized sample 500~2000개
+  train/validation/test split 고정
+
+Training:
+  LoRA rank 8 / 16 비교
+  learning rate 2e-4 근처부터 탐색
+  1~3 epoch로 과적합 여부 확인
+
+Evaluation:
+  schema success rate
+  분류 정확도
+  human preference sample
+  hallucination / policy violation case count
+  latency / cost
+
+Decision:
+  prompt-only 대비 품질 상승이 운영 복잡도를 정당화하는가?
+```
+
+여기서 중요한 건 benchmark를 예쁘게 만드는 것이 아니다. **운영 의사결정에 필요한 숫자**를 얻는 것이다.
+
+## 11. 자주 하는 오해
+
+### 오해 1. LoRA를 쓰면 모델이 작아진다
+
+아니다. LoRA는 학습할 update를 작게 만드는 것이다. base model 자체가 작아지는 것은 아니다.
+
+### 오해 2. Quantization하면 항상 빨라진다
+
+아니다. 하드웨어, kernel, batch size, memory bandwidth에 따라 속도 이득이 다르다. 어떤 경우에는 메모리는 줄지만 latency 개선은 작을 수 있다.
+
+### 오해 3. Fine-tuning하면 RAG가 필요 없다
+
+대부분의 경우 아니다. 자주 바뀌는 지식, 긴 문서 근거, 최신 정책은 RAG가 더 적합하다. Fine-tuning은 주로 행동·형식·판단 패턴을 바꾸는 데 강하다.
+
+### 오해 4. Distillation은 teacher 성능을 그대로 복사한다
+
+아니다. student capacity, 데이터 다양성, 평가 기준에 따라 성능이 크게 달라진다. 특히 reasoning-heavy task에서는 student가 표면 형식만 따라 하고 실제 판단은 약할 수 있다.
+
+## 12. 다음 편 예고: 데이터가 모델 성능을 지배하는 방식
+
+이번 글의 핵심은 “효율화 기법마다 줄이는 축이 다르다”였다.
+
+- LoRA는 학습할 파라미터를 줄인다.
+- Quantization은 숫자 표현의 비트를 줄인다.
+- QLoRA는 quantized base model 위에서 adapter만 학습한다.
+- Distillation은 큰 모델의 행동을 작은 모델로 옮겨 serving 비용을 줄인다.
+
+하지만 어떤 방법을 쓰든 결국 품질은 데이터로 돌아온다. 나쁜 instruction data로 LoRA를 하면 나쁜 행동이 빨리 학습된다. teacher가 만든 synthetic data가 편향되어 있으면 student도 그 편향을 배운다. calibration data가 부실하면 quantization 품질도 흔들린다.
+
+다음 글에서는 AI 기본기 13편으로 **데이터 중심 AI — 학습 데이터, synthetic data, evaluation set은 모델 성능을 어떻게 지배하는가**를 다룬다.
+
+## 참고 자료
+
+- Edward J. Hu et al., “LoRA: Low-Rank Adaptation of Large Language Models”, 2021.
+- Tim Dettmers et al., “QLoRA: Efficient Finetuning of Quantized LLMs”, 2023.
+- Geoffrey Hinton, Oriol Vinyals, Jeff Dean, “Distilling the Knowledge in a Neural Network”, 2015.
+- Hugging Face PEFT documentation.
+- Hugging Face quantization documentation.
+- Sebastian Raschka, “Build a Large Language Model From Scratch”.
