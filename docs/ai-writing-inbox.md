@@ -4631,3 +4631,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-security, guardrails, runtime-policy, github-repo]
 - status: idea
+
+### 2026-07-27 — [논문 리뷰] Same Dangerous Objective: multi-agent mediation이 safety signal을 뒤집는 방식
+- type: paper
+- source: http://arxiv.org/abs/2607.21518v1
+- why-now: 단일 모델 safety 평가가 안전해 보여도, 다른 agent가 목표를 재표현·검열·중계하는 multi-agent 구조에서는 같은 위험 목표가 다른 조언으로 바뀔 수 있다는 실험이 나왔다.
+- angle: “agent safety는 모델 한 번의 거절률이 아니라 메시지 변환 체인의 문제” — mediator agent, constraint rewriting, intent laundering, trace audit를 multi-agent runtime 보안 패턴으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, safety, alignment, agent-security]
+- status: idea
+
+### 2026-07-27 — [논문 리뷰] FedAgentKE: heterogeneous agent 사이의 경험 지식을 federated하게 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2607.21361v1
+- why-now: agent framework가 LangGraph, AutoGen, CrewAI, MCP 기반 도구 등으로 갈라지면서 각 agent의 local memory와 workflow 경험이 고립되는 문제가 커지고 있다.
+- angle: “agent memory를 개인 cache가 아니라 framework를 넘나드는 federated knowledge layer로 보기” — semantic knowledge evolution, cross-framework transfer, privacy boundary, 협업 reasoning 업데이트를 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, federated-learning, multi-agent, knowledge-evolution]
+- status: idea
+
+### 2026-07-27 — [논문 리뷰] ChainWatch: MCP agent의 multi-step attack을 kill chain으로 탐지하기
+- type: paper
+- source: http://arxiv.org/abs/2607.19432v1
+- why-now: MCP 도구 호출은 개별 call만 보면 정상처럼 보여도 여러 benign action이 이어져 credential exfiltration이나 state mutation 공격으로 합성될 수 있다.
+- angle: “MCP 보안은 per-tool allowlist를 넘어 sequence-level detector가 필요하다” — kill chain stage, sequential detection, audit log feature, runtime alarm을 agent gateway 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, agent-security, tool-use, runtime-monitoring]
+- status: idea
+
+### 2026-07-27 — [논문 리뷰] Schema-Bound MCP Skills: 과학 장비 조작 agent에 물리 경계 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2607.17012v1
+- why-now: 연구실·공장·의료 장비처럼 물리 world에 닿는 agent는 자연어 tool call을 그대로 실행하면 안전 범위·장비 host 제약·vendor API 경계에서 위험해진다.
+- angle: “LLM이 계획하고 schema가 물리적으로 가능한 행동만 통과시키는 구조” — MCP skill schema, physical bounds validation, host-process adapter, local LLM 운영을 lab automation 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, scientific-agents, safety, tool-schema]
+- status: idea
+
+### 2026-07-27 — [논문 리뷰] IteraSim RAG: CFD 설정을 multi-stage agentic RAG로 생성하기
+- type: paper
+- source: http://arxiv.org/abs/2607.20346v1
+- why-now: RAG가 범용 QA를 넘어 OpenFOAM 같은 전문 소프트웨어의 multi-directory 설정 파일 생성과 검토 workflow로 확장되고 있다.
+- angle: “domain RAG는 검색 한 번이 아니라 draft-review-repair stage를 분리한 agentic backend” — query decomposition, role-specific retrieval, self-review 분리, simulation config 검증 루프를 실무 RAG 설계로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, domain-agent, simulation, openfoam]
+- status: idea
+
+### 2026-07-27 — second-brain: local file intelligence를 agent OS처럼 다루기
+- type: tech
+- source: https://github.com/henrydaum/second-brain
+- why-now: 개인 agent가 파일 시스템, 메시지, 작업 자동화를 연결하면서 cloud SaaS보다 local-first memory와 workflow boundary를 어떻게 설계할지가 중요해졌다.
+- angle: “personal agent의 OS 계층은 무엇을 책임져야 하나” — local file intelligence, workflow automation, communication surface, privacy boundary를 repo architecture로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, local-first, agent-os, github-repo]
+- status: idea
+
+### 2026-07-27 — codanna: AI coding agent를 위한 local code intelligence MCP server
+- type: tech
+- source: https://github.com/bartolli/codanna
+- why-now: coding agent 품질은 모델보다 repo symbol graph, references, local search, context budget을 얼마나 안정적으로 공급하느냐에 크게 좌우된다.
+- angle: “LSP보다 agent 친화적인 code context layer를 어떻게 설계할까” — local indexing, MCP server interface, symbol/relation retrieval, token budget 절감을 coding agent 운영 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, code-intelligence, github-repo]
+- status: idea
+
+### 2026-07-27 — workshop: coding agent가 스스로 eval을 만들고 실행하게 하는 workflow
+- type: tech
+- source: https://github.com/raindrop-ai/workshop
+- why-now: coding agent 도입 팀은 “작동하는 것처럼 보이는 PR”이 아니라 repo별 regression eval을 agent가 작성·실행·갱신하는 루프가 필요해지고 있다.
+- angle: “agent에게 코드만 쓰게 하지 말고 평가 하네스도 같이 만들게 하자” — eval authoring, run loop, failure triage, CI integration을 developer AI workflow로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, eval, ci, github-repo]
+- status: idea

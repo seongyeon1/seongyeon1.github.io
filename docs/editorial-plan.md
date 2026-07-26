@@ -246,6 +246,10 @@
 | 아이디어 | 미정 | [논문 리뷰] MemTools — agent memory 연구를 interoperable framework로 표준화하기 | paper-review | AI 평가/운영 | | arXiv 2607.21404 — memory lifecycle API, heterogeneous memory, evaluation contract 설계 |
 | 아이디어 | 미정 | [논문 리뷰] Auditing Provenance Sensitivity — agent action 근거 권한 감사 | paper-review | Agent/MCP 실전 | | arXiv 2607.20827 — permitted evidence labeling, action-specific audit, tool argument gate를 agent 보안 QA로 설명 |
 | 아이디어 | 미정 | pydantic-deepagents: self-hosted coding agent와 Python framework를 같이 보기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — sandboxed execution, typed tool contract, checkpoints, multi-agent teams를 coding agent runtime architecture로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] ChainWatch — MCP agent의 multi-step attack을 kill chain으로 탐지하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.19432 — per-call 방어를 넘어 sequence-level attack detector와 audit log 기반 MCP gateway 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Schema-Bound MCP Skills — 과학 장비 조작 agent에 물리 경계 붙이기 | paper-review | Agent/MCP 실전 | | arXiv 2607.17012 — schema validation, physical bounds, host-process adapter로 lab automation agent 안전 경계 설계 |
+| 아이디어 | 미정 | [논문 리뷰] FedAgentKE — heterogeneous agent 사이의 경험 지식 진화 | paper-review | 논문 리뷰 | | arXiv 2607.21361 — local memory 고립을 넘는 federated semantic knowledge evolution과 privacy boundary |
+| 아이디어 | 미정 | codanna: AI coding agent를 위한 local code intelligence MCP server | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — local symbol graph, MCP interface, relation retrieval로 coding agent context budget 줄이기 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
