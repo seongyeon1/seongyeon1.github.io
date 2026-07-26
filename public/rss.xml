@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 25 Jul 2026 01:28:56 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 26 Jul 2026 03:56:26 GMT</lastBuildDate>
+    <item>
+      <title>AI 기본기 13: Data-centric AI — 모델보다 데이터셋 품질을 먼저 의심하는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-26-ai-fundamentals-data-centric-ai-dataset-quality-synthetic-evalsets/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-26-ai-fundamentals-data-centric-ai-dataset-quality-synthetic-evalsets/</guid>
+      <description>AI 시스템 성능을 모델 교체만으로 올리려 하기 전에 데이터 정의, 라벨 품질, 분포, 합성 데이터, 평가셋을 어떻게 설계해야 하는지 정리한다.</description>
+      <pubDate>Sun, 26 Jul 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>AI기본기</category>
+      <category>data-centric-ai</category>
+      <category>dataset</category>
+      <category>synthetic-data</category>
+      <category>evaluation</category>
+      <category>ML</category>
+    </item>
     <item>
       <title>[논문 리뷰] Agentic Context Management — agent memory를 lifecycle로 다루기</title>
       <link>https://seongyeon1.github.io/blog/2026-07-25-agentic-context-management-lifecycle-architecture/</link>
