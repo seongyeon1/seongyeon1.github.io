@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 26 Jul 2026 03:56:26 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 26 Jul 2026 09:31:04 GMT</lastBuildDate>
     <item>
       <title>AI 기본기 13: Data-centric AI — 모델보다 데이터셋 품질을 먼저 의심하는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-07-26-ai-fundamentals-data-centric-ai-dataset-quality-synthetic-evalsets/</link>
@@ -20,6 +20,21 @@
       <category>synthetic-data</category>
       <category>evaluation</category>
       <category>ML</category>
+    </item>
+    <item>
+      <title>PageIndex와 Quarkify를 보며 생각한 구조형 인덱스 — Vector RAG를 대체할 수 있을까</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-26-structured-index-pageindex-quarkify-rag/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-26-structured-index-pageindex-quarkify-rag/</guid>
+      <description>PageIndex와 Quarkify는 문서와 코드를 chunk로 납작하게 만들지 않고 구조형 인덱스로 바꾸는 접근이다. 기존 vector RAG와 비교했을 때 무엇이 좋아지고, 대규모 데이터에서는 어디까지 통할 수 있는지 정리한다.</description>
+      <pubDate>Sun, 26 Jul 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>RAG</category>
+      <category>retrieval</category>
+      <category>PageIndex</category>
+      <category>Quarkify</category>
+      <category>AI agent</category>
+      <category>code search</category>
+      <category>document search</category>
     </item>
     <item>
       <title>[논문 리뷰] Agentic Context Management — agent memory를 lifecycle로 다루기</title>
