@@ -4826,3 +4826,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-eval, mcp, testing, github-repo]
 - status: idea
+
+### 2026-07-28 — [논문 리뷰] The Regression Tax: agent skill이 성능을 올리면서 망치는 지점
+- type: paper
+- source: https://arxiv.org/abs/2607.22520
+- why-now: LLM agent에 procedural skill을 붙이는 흐름이 커졌지만, 평균 성공률 개선 뒤에 특정 작업을 악화시키는 regression cost가 숨어 있다는 문제가 최신 논문으로 정리됐다.
+- angle: “skill library는 추가할수록 좋아지는 플러그인 묶음이 아니라 regression budget이 필요한 runtime dependency” — skill 선택, ablation, task별 rollback gate를 agent 운영 체크리스트로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, eval, regression, tool-use]
+- status: idea
+
+### 2026-07-28 — [논문 리뷰] TRACE-ROUTER: agentic workflow에서 LLM router를 call 단위가 아니라 trajectory 단위로 보기
+- type: paper
+- source: https://arxiv.org/abs/2607.22465
+- why-now: enterprise agent는 여러 LLM 호출이 긴 작업 궤적을 이루는데, 기존 router는 각 호출을 독립적으로 골라 비용·품질·일관성 trade-off를 놓치기 쉽다.
+- angle: “agent routing은 cheap model fallback 목록이 아니라 workflow-level control policy” — trace consistency, adaptive routing, cost-quality frontier, observability를 agent serving 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-routing, llm-serving, eval, cost-optimization]
+- status: idea
+
+### 2026-07-28 — [논문 리뷰] CausalForge: causal inference 연구 에이전트를 formal verifier와 닫힌 루프로 만들기
+- type: paper
+- source: https://arxiv.org/abs/2607.22511
+- why-now: automated research agent가 LLM reviewer만으로 후보 정리를 검증하면 오류를 받아들이기 쉬워, formal grounding과 self-improvement loop를 결합한 연구 에이전트 설계가 주목할 만하다.
+- angle: “연구 에이전트의 judge는 더 큰 LLM이 아니라 domain verifier여야 한다” — causal theorem generation, formal check, 실패 피드백, archive selection을 자동 연구 harness로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, causal-inference, formal-verification, automation]
+- status: idea
+
+### 2026-07-28 — [논문 리뷰] DBA-Bench: production-fidelity database operations agent benchmark
+- type: paper
+- source: https://arxiv.org/abs/2607.22165
+- why-now: DB 운영 agent는 단순 SQL 생성보다 live database, multi-turn read/write, 관측 공간 규모, 안전한 mutation 검증이 중요해졌고 이를 production fidelity로 평가하려는 benchmark가 나왔다.
+- angle: “database agent 평가는 쿼리 정답보다 운영 세션 재현성이 핵심” — stateful DB environment, rollback, permission boundary, verifier metric을 backend agent QA로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [database-agent, agent-eval, benchmark, operations]
+- status: idea
+
+### 2026-07-28 — [논문 리뷰] Skill Self-Play: co-evolving skill로 LLM capability frontier 밀기
+- type: paper
+- source: https://arxiv.org/abs/2607.22529
+- why-now: agent post-training이 정적 데이터셋에서 interaction-driven self-evolution으로 이동하면서, task diversity와 verification reliability를 동시에 잡는 skill 생성 루프가 중요해졌다.
+- angle: “agent skill은 사람이 쓰는 매크로가 아니라 모델이 스스로 만든 curriculum artifact” — skill proposal, self-play, verifier 설계, skill library hygiene를 학습 파이프라인 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, self-play, post-training, verification]
+- status: idea
+
+### 2026-07-28 — Agentic Root Cause Analysis: evidence-grounded reasoning으로 산업 장애 원인 찾기
+- type: paper
+- source: https://arxiv.org/abs/2607.22385
+- why-now: RCA agent는 센서·로그·알람에서 가설을 세우고 근거를 모아야 하므로, 최종 원인 라벨보다 evidence-grounded reasoning trace가 운영 신뢰도의 핵심이 되고 있다.
+- angle: “RCA agent는 이상 탐지 모델이 아니라 evidence collection workflow” — hypothesis generation, sensor evidence, tool trace, human escalation boundary를 SRE/산업 운영 관점으로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [root-cause-analysis, agent, observability, evidence]
+- status: idea
+
+### 2026-07-28 — Orca: parallel coding agent fleet를 돌리는 ADE 구조 뜯어보기
+- type: tech
+- source: https://github.com/stablyai/orca
+- why-now: Claude Code, Codex, Cursor류 coding agent를 한 명씩 쓰는 단계를 넘어 여러 agent를 병렬로 돌리고 결과를 비교·merge하는 ADE(agent development environment) 패턴이 빠르게 커지고 있다.
+- angle: “coding agent 생산성의 다음 병목은 모델이 아니라 agent fleet 운영 UX” — parallel run, workspace isolation, mobile/VPS session, subscription bring-your-own-model 구조를 repo architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, ade, parallel-agents, github-repo]
+- status: idea
+
+### 2026-07-28 — Open Connector: 1000개 SaaS를 agent tool로 연결하는 auth gateway
+- type: tech
+- source: https://github.com/oomol-lab/open-connector
+- why-now: agent가 SaaS API를 직접 조작할수록 tool discovery보다 OAuth, credential scope, MCP/HTTP/OpenAPI surface를 통합하는 auth gateway가 실무 병목이 되고 있다.
+- angle: “agent tool layer의 핵심은 function schema가 아니라 인증·권한·프로토콜 브리지” — SDK/CLI/MCP/HTTP/OpenAPI 경계, token scope, audit 가능성을 agent platform 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-tools, auth, mcp, github-repo]
+- status: idea
