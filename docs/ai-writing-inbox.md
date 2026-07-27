@@ -4735,3 +4735,94 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, eval, ci, github-repo]
 - status: idea
+
+### 2026-07-27 — [논문 리뷰] Tencent WorkBuddy Bench: contamination-resistant coding-agent benchmark
+- type: paper
+- source: https://arxiv.org/abs/2607.20911
+- why-now: coding agent 성능 비교가 SWE-bench류 단일 축에 과하게 묶이면서, task contamination과 subset별 scoring 차이를 명시적으로 통제한 multi-domain benchmark 수요가 커졌다.
+- angle: “coding agent benchmark는 평균 점수보다 task construction과 scoring instrument가 중요하다” — contamination-resistant task 생성, CodeBuddy/Claude Code harness, subset별 metric 분리를 평가 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, benchmark, eval, contamination]
+- status: idea
+
+### 2026-07-27 — [논문 리뷰] LLMs Get Lost in Evolving User Intent: 협업 agent가 바뀌는 의도를 놓치는 이유
+- type: paper
+- source: https://arxiv.org/abs/2607.20734
+- why-now: 개인 비서·coding assistant·업무 agent는 한 번의 instruction이 아니라 사용자의 수정·선호·제약 변경을 따라가야 하는데, 정적 벤치마크는 이 실패를 잘 드러내지 못한다.
+- angle: “agent eval은 최초 요청 이해가 아니라 intent drift tracking을 봐야 한다” — evolving-intent task 설계, annotation 방식, memory/update policy, clarification trigger를 personal agent 운영 체크리스트로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, intent-tracking, memory, personal-agent]
+- status: idea
+
+### 2026-07-27 — [논문 리뷰] Sample-Efficient Learning from Agent Experience: 시행착오를 적은 샘플로 증류하기
+- type: paper
+- source: https://arxiv.org/abs/2607.21051
+- why-now: real-world agent 학습은 환경 실행, human feedback, 실험 비용이 비싸서 무작정 rollout을 늘릴 수 없고, 적은 경험을 재사용하는 post-training recipe가 중요해졌다.
+- angle: “agent 경험은 로그 저장이 아니라 in-context learning과 distillation 사이의 데이터 자산” — trial-and-error trace, experience distillation, classical RL 대비 sample efficiency, eval replay를 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-learning, distillation, reinforcement-learning, experience]
+- status: idea
+
+### 2026-07-27 — [논문 리뷰] Multi-Turn On-Policy Distillation with Prefix Replay: agent distillation 비용 줄이기
+- type: paper
+- source: https://arxiv.org/abs/2607.04763
+- why-now: multi-turn tool-use agent를 teacher-student 방식으로 증류하려면 매 turn 온라인 rollout 비용이 커지고, prefix replay처럼 interaction history를 재사용하는 기법이 실용적 관심사로 떠올랐다.
+- angle: “agent distillation의 병목은 모델 forward가 아니라 환경 상호작용 history” — prefix replay, multi-turn imitation, off-policy risk, tool trajectory regression 관점으로 정리한다.
+- difficulty: high
+- freshness: 4
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-distillation, tool-use, post-training, replay]
+- status: idea
+
+### 2026-07-27 — [논문 리뷰] Streaming Multi-Agent Autoregressive Diffusion: world state register로 multi-agent scene 일관성 유지하기
+- type: paper
+- source: https://arxiv.org/abs/2607.21594
+- why-now: embodied/video world model이 단일 관찰 생성에서 여러 agent·view가 공유하는 persistent world state 생성 문제로 넘어가고 있다.
+- angle: “multi-agent world model에는 observation stream 밖의 공유 상태 레지스터가 필요하다” — autoregressive diffusion, world state register, agent별 observation consistency, simulation/eval harness 연결점을 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [world-model, multi-agent, diffusion, embodied-ai]
+- status: idea
+
+### 2026-07-27 — remnic: user-aware agent를 위한 scoped memory와 provenance layer
+- type: tech
+- source: https://github.com/joshuaswarren/remnic
+- why-now: 개인화 agent에서 memory는 “많이 저장하기”보다 scope, provenance, correction, retrieval quality, MCP/HTTP access boundary를 어떻게 노출하느냐가 핵심 설계 문제가 됐다.
+- angle: “agent memory를 vector DB가 아니라 user-aware contract로 설계하기” — scoped memory, provenance, correction workflow, eval hook, MCP/HTTP 인터페이스를 repo architecture로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, personal-agent, provenance, github-repo]
+- status: idea
+
+### 2026-07-27 — skUnit: MCP server와 agent를 테스트 가능한 AI unit으로 다루기
+- type: tech
+- source: https://github.com/mehrandvd/skunit
+- why-now: agent stack이 IChatClient, MCP server, tool, workflow graph처럼 작은 단위로 쪼개지면서 통합 테스트 전에 “AI unit”을 재현 가능하게 검증하는 도구가 필요해졌다.
+- angle: “agent QA는 end-to-end benchmark만으로 부족하다” — MCP server contract test, deterministic fixture, tool-call assertion, CI regression gate를 작은 팀의 agent testing workflow로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, mcp, testing, github-repo]
+- status: idea

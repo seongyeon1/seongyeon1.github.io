@@ -250,6 +250,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Schema-Bound MCP Skills — 과학 장비 조작 agent에 물리 경계 붙이기 | paper-review | Agent/MCP 실전 | | arXiv 2607.17012 — schema validation, physical bounds, host-process adapter로 lab automation agent 안전 경계 설계 |
 | 아이디어 | 미정 | [논문 리뷰] FedAgentKE — heterogeneous agent 사이의 경험 지식 진화 | paper-review | 논문 리뷰 | | arXiv 2607.21361 — local memory 고립을 넘는 federated semantic knowledge evolution과 privacy boundary |
 | 아이디어 | 미정 | codanna: AI coding agent를 위한 local code intelligence MCP server | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — local symbol graph, MCP interface, relation retrieval로 coding agent context budget 줄이기 |
+| 아이디어 | 미정 | [논문 리뷰] Tencent WorkBuddy Bench — contamination-resistant coding-agent benchmark | paper-review | 개발자 AI 워크플로 | | arXiv 2607.20911 — task construction, subset별 scoring, CodeBuddy/Claude Code harness를 coding-agent eval 운영법으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] LLMs Get Lost in Evolving User Intent — 협업 agent의 intent tracking 평가 | paper-review | AI 평가/운영 | | arXiv 2607.20734 — evolving intent, memory/update policy, clarification trigger를 personal agent eval로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] Sample-Efficient Learning from Agent Experience — 시행착오 trace 증류하기 | paper-review | 논문 리뷰 | | arXiv 2607.21051 — trial-and-error experience, in-context learning, experience distillation, eval replay 관점 |
+| 아이디어 | 미정 | remnic: user-aware agent를 위한 scoped memory와 provenance layer | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — scoped memory, provenance, correction workflow, eval hook, MCP/HTTP boundary 설계 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
