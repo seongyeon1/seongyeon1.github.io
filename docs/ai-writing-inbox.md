@@ -4838,7 +4838,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent-skills, eval, regression, tool-use]
-- status: idea
+- status: drafted
+- draft: content/posts/2026-07-28-regression-tax-agent-skills.mdx
 
 ### 2026-07-28 — [논문 리뷰] TRACE-ROUTER: agentic workflow에서 LLM router를 call 단위가 아니라 trajectory 단위로 보기
 - type: paper
@@ -4929,4 +4930,108 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [agent-tools, auth, mcp, github-repo]
+- status: idea
+
+### 2026-07-29 — [논문 리뷰] Multi-Turn Long-Horizon Planning: agentic distillation으로 계획 능력 만들기
+- type: paper
+- source: https://arxiv.org/abs/2607.24720
+- why-now: 장기 실행 agent의 성능 병목이 단일 응답 품질보다 multi-turn planning과 post-training 데이터 루프에 있다는 흐름이 강해지고 있다.
+- angle: “agent planning은 프롬프트 트릭이 아니라 on-policy trajectory distillation 문제” — pretraining, single/multi-teacher distillation, planning trace 평가를 agent 학습 파이프라인으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-planning, post-training, distillation, long-horizon]
+- status: idea
+
+### 2026-07-29 — [논문 리뷰] Eviction as Estimation: test-time memory를 고정 지연 추정 문제로 보기
+- type: paper
+- source: https://arxiv.org/abs/2607.24667
+- why-now: bounded working memory를 가진 LLM/agent가 무엇을 버릴지 결정하는 문제가 long-context 비용과 latency를 좌우하는 핵심 운영 이슈가 됐다.
+- angle: “메모리 eviction은 휴리스틱 캐시 정책이 아니라 미래 유용도 추정 문제” — fixed-lag smoothing, StreamingLLM/H2O/SnapKV 비교, agent memory tiering 정책으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [test-time-memory, kv-cache, inference, context-engineering]
+- status: idea
+
+### 2026-07-29 — [논문 리뷰] APS-RAG: scientific facility를 위한 corrective agentic hybrid RAG
+- type: paper
+- source: https://arxiv.org/abs/2607.24663
+- why-now: 실제 조직 지식은 문서·로그북·위키·채팅·제어 시스템 데이터가 섞여 있어 단일 검색 인덱스로 답하기 어렵고, operations-grounded RAG 평가가 필요해졌다.
+- angle: “enterprise RAG의 다음 단계는 검색 정확도보다 운영 근거와 corrective loop” — hybrid retrieval, agentic correction, live operation data, facility QA benchmark를 실무 RAG 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, enterprise-rag, evaluation, operations]
+- status: idea
+
+### 2026-07-29 — [논문 리뷰] Agentic Permissions Policy Algebra: taint confinement로 agent 권한 격리하기
+- type: paper
+- source: https://arxiv.org/abs/2607.24625
+- why-now: mixed-confidentiality 데이터를 처리하는 autonomous agent에서 prompt injection과 reasoning error가 권한 상승·정보 유출로 이어지는 사례가 늘고 있다.
+- angle: “agent 보안은 allowlist보다 정보 흐름 algebra가 필요하다” — taint tracking, permission policy, tool boundary, declassification rule을 MCP/agent gateway 설계로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, permissions, taint-tracking, tool-use]
+- status: idea
+
+### 2026-07-29 — [논문 리뷰] Looping Is Not Reliability: coding agent repair loop에 typed revision contract 붙이기
+- type: paper
+- source: https://arxiv.org/abs/2607.24604
+- why-now: generate-test-revise 루프만 반복하는 coding agent는 올바른 patch를 찾고도 상태·근거·제출 단계에서 실패할 수 있어, loop 자체보다 evidence retention과 contract가 중요해졌다.
+- angle: “코딩 에이전트의 신뢰성은 반복 횟수가 아니라 상태 경계와 revision contract에서 나온다” — state-bound evidence, typed patch contract, verifier handoff를 개발 워크플로로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, code-repair, verification, workflow]
+- status: idea
+
+### 2026-07-29 — Solace Agent Mesh: event-driven multi-agent framework로 workflow와 시스템 이벤트 잇기
+- type: tech
+- source: https://github.com/SolaceLabs/solace-agent-mesh
+- why-now: multi-agent system이 데모 챗봇을 넘어 실제 시스템 이벤트, 데이터 소스, 비동기 워크플로와 연결되면서 event-driven orchestration 패턴을 볼 필요가 있다.
+- angle: “multi-agent orchestration은 graph 호출뿐 아니라 event bus 설계 문제” — agent mesh, event routing, real-world system integration, observability를 framework architecture 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, event-driven, orchestration, framework]
+- status: idea
+
+### 2026-07-29 — nanobot: self-hosted personal AI agent framework의 최소 구성 살펴보기
+- type: tech
+- source: https://github.com/HKUDS/nanobot
+- why-now: 개인용 agent가 WebUI, tool, memory, MCP, automation을 한 런타임에 묶는 방향으로 빠르게 확산되고 있어 self-hosted 설계 기준을 정리할 만하다.
+- angle: “personal agent framework를 고를 때 봐야 할 것은 채팅 UI가 아니라 memory·tool·MCP·automation boundary” — repo 구조, 실행 루프, 권한 경계, 운영 체크리스트를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, self-hosted, mcp, framework]
+- status: idea
+
+### 2026-07-29 — coder_eval: Claude Code skills·MCP·CLI를 agent가 실제로 쓰는 방식으로 테스트하기
+- type: tech
+- source: https://github.com/UiPath/coder_eval
+- why-now: coding agent 생태계가 skills, MCP server, CLI로 확장되면서 “도구가 사람에게 동작한다”와 “agent가 안정적으로 쓴다” 사이의 검증 gap이 커지고 있다.
+- angle: “agent tool QA는 unit test가 아니라 sandboxed usage suite” — YAML scenario, activation check, A/B experiment, CI gate를 coding-agent 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, eval, github-repo]
 - status: idea

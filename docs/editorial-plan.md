@@ -254,11 +254,16 @@
 | 아이디어 | 미정 | [논문 리뷰] LLMs Get Lost in Evolving User Intent — 협업 agent의 intent tracking 평가 | paper-review | AI 평가/운영 | | arXiv 2607.20734 — evolving intent, memory/update policy, clarification trigger를 personal agent eval로 해석 |
 | 아이디어 | 미정 | [논문 리뷰] Sample-Efficient Learning from Agent Experience — 시행착오 trace 증류하기 | paper-review | 논문 리뷰 | | arXiv 2607.21051 — trial-and-error experience, in-context learning, experience distillation, eval replay 관점 |
 | 아이디어 | 미정 | remnic: user-aware agent를 위한 scoped memory와 provenance layer | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — scoped memory, provenance, correction workflow, eval hook, MCP/HTTP boundary 설계 |
-| 아이디어 | 미정 | [논문 리뷰] The Regression Tax — agent skill의 숨은 regression cost | paper-review | AI 평가/운영 | | arXiv 2607.22520 — skill library 추가가 평균 성능 뒤에서 만드는 task별 악화, rollback gate, regression budget 설계 |
+| 작성중 | 2026-07-28 | [논문 리뷰] The Regression Tax — agent skill의 숨은 regression cost | paper-review | AI 평가/운영 | | `content/posts/2026-07-28-regression-tax-agent-skills.mdx` — arXiv 2607.22520, skill library 추가가 평균 성능 뒤에서 만드는 task별 악화, rollback gate, regression budget 설계 |
 | 아이디어 | 미정 | [논문 리뷰] TRACE-ROUTER — agentic workflow에서 LLM router를 trajectory 단위로 보기 | paper-review | Agent/MCP 실전 | | arXiv 2607.22465 — call-level routing 한계를 넘어 trace consistency, cost-quality frontier, adaptive routing 정책 설계 |
 | 아이디어 | 미정 | [논문 리뷰] CausalForge — 연구 에이전트의 judge를 formal verifier로 바꾸기 | paper-review | 논문 리뷰 | | arXiv 2607.22511 — causal inference automated research loop, formal check, 실패 피드백, archive selection |
 | 아이디어 | 미정 | [논문 리뷰] DBA-Bench — production-fidelity database operations agent benchmark | paper-review | AI 평가/운영 | | arXiv 2607.22165 — live DB, multi-turn read/write, mutation boundary, rollback/verifier metric 기반 DB agent QA |
 | 아이디어 | 미정 | Orca: parallel coding agent fleet를 돌리는 ADE 구조 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — 여러 coding agent 병렬 실행, workspace isolation, 결과 비교·merge, fleet 운영 UX |
+| 아이디어 | 미정 | [논문 리뷰] Multi-Turn Long-Horizon Planning — agentic distillation으로 계획 능력 만들기 | paper-review | 논문 리뷰 | | arXiv 2607.24720 — on-policy trajectory distillation, planning trace 평가, post-training 데이터 루프를 agent 학습 파이프라인으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Eviction as Estimation — test-time memory를 고정 지연 추정 문제로 보기 | paper-review | AI 추론 최적화 | | arXiv 2607.24667 — bounded working memory, fixed-lag smoothing, KV cache/memory eviction 정책을 agent serving 관점으로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] APS-RAG — scientific facility를 위한 corrective agentic hybrid RAG | paper-review | Agentic RAG | | arXiv 2607.24663 — 로그북·문서·위키·실시간 운영 데이터를 묶는 corrective RAG와 operations-grounded 평가 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Agentic Permissions Policy Algebra — taint confinement로 agent 권한 격리하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.24625 — permission algebra, taint tracking, tool boundary, declassification rule을 agent gateway 보안 패턴으로 정리 |
+| 아이디어 | 미정 | coder_eval: Claude Code skills·MCP·CLI를 agent usage suite로 테스트하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — YAML scenario, activation check, sandboxed A/B experiment, CI gate로 coding-agent tool QA 운영 |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 
