@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 26 Jul 2026 09:31:04 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 28 Jul 2026 01:12:15 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] The Regression Tax — agent skill은 추가할수록 좋아질까</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-28-regression-tax-agent-skills/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-28-regression-tax-agent-skills/</guid>
+      <description>agent skill library는 평균 성공률만 보면 위험하다. skill이 만드는 gain과 regression을 분리해 운영해야 하는 이유를 정리한다.</description>
+      <pubDate>Tue, 28 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-skills</category>
+      <category>eval</category>
+      <category>regression</category>
+      <category>tool-use</category>
+    </item>
     <item>
       <title>AI 기본기 13: Data-centric AI — 모델보다 데이터셋 품질을 먼저 의심하는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-07-26-ai-fundamentals-data-centric-ai-dataset-quality-synthetic-evalsets/</link>
