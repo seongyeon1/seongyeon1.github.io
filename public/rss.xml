@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 28 Jul 2026 01:12:15 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 28 Jul 2026 14:10:33 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Kimi K3 — 오픈 모델도 3T급 에이전트 시스템을 겨냥한다</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-28-kimi-k3-open-frontier-agent-system/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-28-kimi-k3-open-frontier-agent-system/</guid>
+      <description>Kimi K3 technical report를 모델 아키텍처, 1M context, agentic RL, serving infrastructure 관점에서 정리한다. 핵심은 단순 오픈 LLM이 아니라 3T급 agent system stack이다.</description>
+      <pubDate>Tue, 28 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>Kimi</category>
+      <category>MoE</category>
+      <category>long-context</category>
+      <category>agent</category>
+      <category>multimodal</category>
+      <category>inference</category>
+    </item>
     <item>
       <title>[논문 리뷰] The Regression Tax — agent skill은 추가할수록 좋아질까</title>
       <link>https://seongyeon1.github.io/blog/2026-07-28-regression-tax-agent-skills/</link>
