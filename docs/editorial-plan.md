@@ -264,6 +264,10 @@
 | 아이디어 | 미정 | [논문 리뷰] APS-RAG — scientific facility를 위한 corrective agentic hybrid RAG | paper-review | Agentic RAG | | arXiv 2607.24663 — 로그북·문서·위키·실시간 운영 데이터를 묶는 corrective RAG와 operations-grounded 평가 설계 |
 | 아이디어 | 미정 | [논문 리뷰] Agentic Permissions Policy Algebra — taint confinement로 agent 권한 격리하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.24625 — permission algebra, taint tracking, tool boundary, declassification rule을 agent gateway 보안 패턴으로 정리 |
 | 아이디어 | 미정 | coder_eval: Claude Code skills·MCP·CLI를 agent usage suite로 테스트하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — YAML scenario, activation check, sandboxed A/B experiment, CI gate로 coding-agent tool QA 운영 |
+| 아이디어 | 미정 | [논문 리뷰] UniMem — episodic/parametric memory를 agent가 스스로 라우팅하기 | paper-review | 논문 리뷰 | | arXiv 2607.26017 — routing token, memory consolidation, boundary-agnostic task stream을 agent memory 운영 패턴으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Desktop-Delta Bench — GUI agent의 화면 전이 이해 평가 | paper-review | AI 평가/운영 | | arXiv 2607.26041 — stale observation, state verification, source tracking, recovery loop를 computer-use agent QA로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] MemLens — value-aware agent memory management | paper-review | AI 평가/운영 | | arXiv 2607.25992 — Shapley-style memory value, lifecycle dashboard, low-value memory pruning을 memory observability로 정리 |
+| 아이디어 | 미정 | Kody: agent의 memory·keys·automation을 MCP host 밖에 두는 home layer | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — portable assistant home, key boundary, memory/storage, automation surface를 personal agent infra로 소개 |
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 

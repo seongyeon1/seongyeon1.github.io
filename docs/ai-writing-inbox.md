@@ -5035,3 +5035,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, mcp, eval, github-repo]
 - status: idea
+
+### 2026-07-30 — [논문 리뷰] UniMem: episodic memory와 parametric memory를 agent가 스스로 라우팅하기
+- type: paper
+- source: https://arxiv.org/abs/2607.26017
+- why-now: 장기 실행 LLM agent에서 외부 memory는 빠르게 적응하지만 retrieval 비용과 잡음이 크고, parametric memory는 안정적이지만 task boundary가 필요하다는 trade-off가 계속 병목이 되고 있다.
+- angle: “agent memory는 vector DB 하나가 아니라 plasticity/stability 라우터” — routing token, episodic-to-parametric consolidation, boundary-agnostic task stream을 memory 운영 패턴으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, continual-learning, parametric-memory, routing]
+- status: idea
+
+### 2026-07-30 — [논문 리뷰] Desktop-Delta Bench: GUI agent가 화면 전이를 이해하는지 평가하기
+- type: paper
+- source: https://arxiv.org/abs/2607.26041
+- why-now: computer-use agent 평가는 최종 성공률이나 단일 화면 grounding에 치우쳐 있지만, 실제 장애는 action 이후 화면 변화가 지연·가려짐·stale observation으로 잘못 해석될 때 자주 발생한다.
+- angle: “GUI agent QA는 클릭 정답보다 state transition verification” — 2,013개 human-verified Linux trajectory, source tracking, progress verification, recovery loop를 desktop agent benchmark 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [gui-agent, computer-use, benchmark, state-verification]
+- status: idea
+
+### 2026-07-30 — [논문 리뷰] MemLens: agent memory를 Shapley-style value로 관리하는 시스템
+- type: paper
+- source: https://arxiv.org/abs/2607.25992
+- why-now: memory repository가 커질수록 모든 interaction record를 똑같이 저장하는 방식은 중복·저가치 기억을 쌓고, personalized agent의 품질과 비용을 동시에 악화시킨다.
+- angle: “agent memory를 first-class data object로 운영하기” — memory value evaluation, hierarchical visualization, value-aware storage, user-inspectable lifecycle을 memory observability 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, observability, memory-management, personalization]
+- status: idea
+
+### 2026-07-30 — [논문 리뷰] KuTIE: Kubernetes 보안 패치 agent에 runtime topology context가 필요한 이유
+- type: paper
+- source: https://arxiv.org/abs/2607.25995
+- why-now: LLM이 KSPM finding만 보고 Kubernetes hardening patch를 만들면 보안 규칙은 맞아도 live service dependency를 끊어 운영 장애를 만들 수 있다.
+- angle: “운영 agent는 정적 취약점 설명보다 runtime blast radius를 알아야 한다” — call graph context, security patch correctness, dependency-preserving remediation을 DevOps agent QA로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [devops-agent, kubernetes, security, runtime-context]
+- status: idea
+
+### 2026-07-30 — [논문 리뷰] Pass the Baton: on-policy distillation에서 teacher handoff를 어디에 넣을까
+- type: paper
+- source: https://arxiv.org/abs/2607.26057
+- why-now: agent/post-training에서 on-policy distillation이 중요해졌지만, student가 초반 prefix를 잘못 잡으면 이후 supervision 전체가 오염되는 prefix failure가 큰 비용으로 남는다.
+- angle: “distillation도 long-horizon trajectory 복구 문제” — teacher-student continuation asymmetry, label-free handoff trigger, relay budget을 reasoning model 학습 루프 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [on-policy-distillation, reasoning, post-training, trajectory]
+- status: idea
+
+### 2026-07-30 — Kody: agent의 memory·keys·automation을 MCP host 밖에 두는 home layer
+- type: tech
+- source: https://github.com/kentcdodds/kody
+- why-now: MCP host와 agent UI가 늘어나면서 memory, credential, automation을 특정 클라이언트 안에 묶지 않고 portable하게 관리하는 “assistant home” 패턴이 필요해졌다.
+- angle: “agent state를 채팅 앱이 아니라 독립된 home layer에 둔다” — Cloudflare Workers 기반 storage, key boundary, MCP host portability, automation surface를 personal agent infra로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, mcp, memory, github-repo]
+- status: idea
+
+### 2026-07-30 — RepoPrompt CE: macOS context engineering app과 MCP CLI로 coding agent 컨텍스트 만들기
+- type: tech
+- source: https://github.com/repoprompt/repoprompt-ce
+- why-now: coding agent 품질은 모델보다 “어떤 파일·symbol·instruction을 넣었는가”에 크게 좌우되고, GUI 기반 context engineering과 MCP CLI를 결합한 워크플로가 실무 도구로 자리 잡고 있다.
+- angle: “coding agent context는 자동 RAG만이 아니라 사람이 편집하는 artifact” — repo selection, prompt packaging, MCP CLI handoff, reviewable context bundle을 개발 워크플로 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, context-engineering, mcp, github-repo]
+- status: idea
+
+### 2026-07-30 — Hyperframes: HTML을 agent-native video rendering DSL로 쓰기
+- type: tech
+- source: https://github.com/heygen-com/hyperframes
+- why-now: agent가 문서·UI뿐 아니라 video artifact까지 생성하는 흐름에서, HTML/CSS를 renderable video scene graph로 삼는 방식은 기존 영상 편집 API보다 agent-friendly한 인터페이스가 될 수 있다.
+- angle: “agent용 미디어 생성 도구는 자연어 API보다 inspectable markup이 낫다” — HTML 기반 scene composition, deterministic rendering, reviewable artifact workflow를 agent content pipeline 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-tools, video-generation, html, github-repo]
+- status: idea
