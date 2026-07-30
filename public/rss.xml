@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 28 Jul 2026 14:10:33 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 30 Jul 2026 00:35:37 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Desktop-Delta Bench — GUI agent는 화면 변화를 이해하고 있나</title>
+      <link>https://seongyeon1.github.io/blog/2026-07-30-desktop-delta-bench-gui-agent-transitions/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-07-30-desktop-delta-bench-gui-agent-transitions/</guid>
+      <description>GUI agent 평가는 최종 성공률만으로 부족하다. action 이후 화면 전이를 검증하는 Desktop-Delta Bench를 운영 관점에서 읽는다.</description>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>gui-agent</category>
+      <category>computer-use</category>
+      <category>benchmark</category>
+      <category>state-verification</category>
+    </item>
     <item>
       <title>[논문 리뷰] Kimi K3 — 오픈 모델도 3T급 에이전트 시스템을 겨냥한다</title>
       <link>https://seongyeon1.github.io/blog/2026-07-28-kimi-k3-open-frontier-agent-system/</link>
