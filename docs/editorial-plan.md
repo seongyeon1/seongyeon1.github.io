@@ -265,9 +265,15 @@
 | 아이디어 | 미정 | [논문 리뷰] Agentic Permissions Policy Algebra — taint confinement로 agent 권한 격리하기 | paper-review | Agent/MCP 실전 | | arXiv 2607.24625 — permission algebra, taint tracking, tool boundary, declassification rule을 agent gateway 보안 패턴으로 정리 |
 | 아이디어 | 미정 | coder_eval: Claude Code skills·MCP·CLI를 agent usage suite로 테스트하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — YAML scenario, activation check, sandboxed A/B experiment, CI gate로 coding-agent tool QA 운영 |
 | 아이디어 | 미정 | [논문 리뷰] UniMem — episodic/parametric memory를 agent가 스스로 라우팅하기 | paper-review | 논문 리뷰 | | arXiv 2607.26017 — routing token, memory consolidation, boundary-agnostic task stream을 agent memory 운영 패턴으로 정리 |
-| 아이디어 | 미정 | [논문 리뷰] Desktop-Delta Bench — GUI agent의 화면 전이 이해 평가 | paper-review | AI 평가/운영 | | arXiv 2607.26041 — stale observation, state verification, source tracking, recovery loop를 computer-use agent QA로 해석 |
+| 작성중 | 2026-07-30 | [논문 리뷰] Desktop-Delta Bench — GUI agent의 화면 전이 이해 평가 | paper-review | AI 평가/운영 | | `content/posts/2026-07-30-desktop-delta-bench-gui-agent-transitions.mdx` — arXiv 2607.26041, stale observation, state verification, source tracking, recovery loop를 computer-use agent QA로 해석 |
 | 아이디어 | 미정 | [논문 리뷰] MemLens — value-aware agent memory management | paper-review | AI 평가/운영 | | arXiv 2607.25992 — Shapley-style memory value, lifecycle dashboard, low-value memory pruning을 memory observability로 정리 |
 | 아이디어 | 미정 | Kody: agent의 memory·keys·automation을 MCP host 밖에 두는 home layer | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — portable assistant home, key boundary, memory/storage, automation surface를 personal agent infra로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] MemSecBench — agent memory poisoning lifecycle 평가 | paper-review | AI 평가/운영 | | arXiv 2607.27080 — Write-Execute-Forget protocol, persistence-to-consequence trace, selective repair를 memory regression suite로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] InferScale — 개인화 memory를 KV cache로 주입하는 serving 설계 | paper-review | AI 추론 최적화 | | arXiv 2607.27090 — repeated prompt prefill 대신 reusable KV state와 vLLM paged cache injection으로 TTFT 줄이는 법 |
+| 아이디어 | 미정 | [논문 리뷰] Scores Are Not Decisions — tool acquisition의 cost-aware stopping | paper-review | Agent/MCP 실전 | | arXiv 2607.27083 — top-k tool ranking을 넘어 marginal utility, context load, privacy exposure를 함께 제어하는 runtime budget gate |
+| 아이디어 | 미정 | [논문 리뷰] SpecFirst — coding agent의 행동 명세 추출을 1단계로 분리하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.27167 — execute-only oracle probing, behavioral specification elicitation, context drift 방지 workflow |
+| 아이디어 | 미정 | Doberman-Core — agent runtime policy enforcement와 audit log 설계 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — guardrail, prompt-injection defense, tool permission, monitoring을 deployment 보안 체크리스트로 정리 |
+
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
 

@@ -5060,7 +5060,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [gui-agent, computer-use, benchmark, state-verification]
-- status: idea
+- status: drafted
+- draft: content/posts/2026-07-30-desktop-delta-bench-gui-agent-transitions.mdx
 
 ### 2026-07-30 — [논문 리뷰] MemLens: agent memory를 Shapley-style value로 관리하는 시스템
 - type: paper
@@ -5138,4 +5139,108 @@
 - confidence: 4
 - suggested-category: tutorial
 - suggested-tags: [agent-tools, video-generation, html, github-repo]
+- status: idea
+
+### 2026-07-31 — [논문 리뷰] MemSecBench: agent memory poisoning을 write-execute-forget lifecycle로 평가하기
+- type: paper
+- source: https://arxiv.org/abs/2607.27080
+- why-now: 장기 memory를 가진 agent가 늘면서 악성 지시가 저장되고, 나중에 recall되어 실제 action에 영향을 주는 persistence-to-consequence 공격면이 중요해졌다.
+- angle: “memory 보안은 저장 차단이 아니라 lifecycle QA” — Write-Execute-Forget protocol, memory backend 비교, selective repair를 agent memory regression suite로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, security, benchmark, poisoning]
+- status: idea
+
+### 2026-07-31 — [논문 리뷰] InferScale: 개인화 LLM serving에서 memory를 prompt가 아니라 KV cache로 주입하기
+- type: paper
+- source: https://arxiv.org/abs/2607.27090
+- why-now: personalized agent가 사용자 memory profile과 긴 대화 이력을 매 요청 prompt에 반복 주입하면서 TTFT와 prefill 비용이 빠르게 커지고 있다.
+- angle: “agent memory serving은 retrieval만이 아니라 cache layout 문제” — reusable KV state, semantic retrieval, vLLM paged cache injection, memory freshness trade-off를 production inference 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-serving, kv-cache, personalization, agent-memory]
+- status: idea
+
+### 2026-07-31 — [논문 리뷰] Scores Are Not Decisions: tool acquisition을 cost-aware stopping 문제로 보기
+- type: paper
+- source: https://arxiv.org/abs/2607.27083
+- why-now: agent tool router는 후보 도구를 잘 랭킹해도 “몇 개까지 가져올지”를 결정하지 못해 비용, context load, privacy exposure를 키우기 쉽다.
+- angle: “tool selection은 top-k retrieval이 아니라 marginal utility decision” — cost-aware stopping, payoff-weighted error, tool prefix policy를 agent harness의 runtime budget gate로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent-router, cost-control, decision-focused-learning]
+- status: idea
+
+### 2026-07-31 — [논문 리뷰] SpecFirst: coding agent가 구현 전에 행동 명세를 먼저 뽑아야 하는 이유
+- type: paper
+- source: https://arxiv.org/abs/2607.27167
+- why-now: 기존 codebase 수정은 잘하는 agent도 scratch program synthesis에서는 문서 해석, oracle probing, 구현을 한 번에 섞다가 초기 오해를 끝까지 끌고 가는 문제가 크다.
+- angle: “coding agent harness에 requirements engineering 단계를 넣자” — behavioral specification elicitation, execute-only oracle probing, context drift 방지를 source-free synthesis workflow로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, program-synthesis, specification, eval]
+- status: idea
+
+### 2026-07-31 — [논문 리뷰] Setoka: personalized agent가 사용자 이해를 어디까지 했는지 계층적으로 평가하기
+- type: paper
+- source: https://arxiv.org/abs/2607.27056
+- why-now: personalized agent 평가는 명시적으로 말한 사실 retrieval에 머무르는 경우가 많지만, 실제 assistant 품질은 행동 패턴과 성향 같은 추상 user model에 좌우된다.
+- angle: “agent memory eval을 fact lookup에서 user-model hierarchy로 올리기” — semantic/episodic memory, behavior pattern, personality trait 평가를 privacy-preserving benchmark 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [personalized-agent, memory, benchmark, user-modeling]
+- status: idea
+
+### 2026-07-31 — [논문 리뷰] Can AI agents conduct open-ended AI research? shadow evaluation으로 R&D 자동화 과장 걷어내기
+- type: paper
+- source: https://arxiv.org/abs/2607.27191
+- why-now: AI R&D 자동화 논의가 커지는 반면, 기존 평가는 좁은 verifiable task 또는 불안정한 peer review에 기대 open-ended research 능력을 제대로 재기 어렵다.
+- angle: “research agent 평가는 benchmark score보다 원저자 shadow evaluation” — 6일 compute budget, engineering completion과 연구 기여 실패의 차이, 평가 프로토콜을 research-agent QA 관점으로 본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, evaluation, benchmark, ai-rnd]
+- status: idea
+
+### 2026-07-31 — Doberman-Core: agent guardrail을 prompt injection 방어에서 runtime policy enforcement까지 확장하기
+- type: tech
+- source: https://github.com/fu351/Doberman-Core
+- why-now: coding agent와 MCP tool이 shell, network, credential에 가까워질수록 사전 prompt hardening만으로는 부족하고 tool-use permission, audit log, runtime monitor가 필요해진다.
+- angle: “agent 보안은 LLM wrapper가 아니라 policy enforcement layer” — guardrail, prompt-injection defense, tool permission, monitoring/audit log를 agent deployment checklist로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-security, guardrails, runtime-policy, github-repo]
+- status: idea
+
+### 2026-07-31 — android-agent: 실제 모바일 기기를 MCP tool surface로 노출하는 agent framework
+- type: tech
+- source: https://github.com/ghost-in-the-droid/android-agent
+- why-now: computer-use agent가 browser를 넘어 real phone, simulator, ADB/WebDriverAgent 기반 모바일 작업으로 확장되면서 mobile tool boundary와 observation loop가 중요해졌다.
+- angle: “mobile agent는 screenshot QA보다 device-control harness 설계” — ADB/iPhone automation, MCP tools, Python skills, dashboard, local/cloud LLM swap을 mobile agent runtime 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mobile-agent, mcp, computer-use, github-repo]
 - status: idea
