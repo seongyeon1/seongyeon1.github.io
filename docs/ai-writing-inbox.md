@@ -5244,3 +5244,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mobile-agent, mcp, computer-use, github-repo]
 - status: idea
+
+### 2026-08-01 — [논문 리뷰] OSReward: computer-use agent reward model 평가 표준화
+- type: paper
+- source: http://arxiv.org/abs/2607.28609v1
+- why-now: computer-use agent가 desktop/browser/mobile 환경으로 확장되면서 trajectory가 task instruction을 실제로 만족했는지 판단하는 reward model 자체의 표준 평가가 필요해졌다.
+- angle: “agent benchmark는 실행 성공률뿐 아니라 reward model/verifier의 신뢰도까지 같이 봐야 한다”는 관점으로 cross-platform CUA 평가, trajectory evidence, verifier drift를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, eval, reward-model, benchmark]
+- status: idea
+
+### 2026-08-01 — [논문 리뷰] ORCA-bench: oncall RCA agent는 코딩 벤치마크와 무엇이 다른가
+- type: paper
+- source: http://arxiv.org/abs/2607.28545v1
+- why-now: 운영 장애 대응은 코드 패치보다 로그·메트릭·트레이스·소스코드가 섞인 noisy evidence에서 원인을 좁히는 능력이 중요해지고 있다.
+- angle: “SWE-bench를 잘하는 agent가 oncall을 잘한다는 보장은 없다” — observability context, evidence triage, remediation boundary를 agent 평가 harness로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, oncall, observability, eval]
+- status: idea
+
+### 2026-08-01 — [논문 리뷰] Change2Task: repo 변경 이력을 executable coding-agent task로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2607.28591v1
+- why-now: coding agent 학습·평가에는 실제 repo 상태, 명세, 테스트 환경이 결합된 executable task 공급이 병목인데, 변경 이력을 task로 변환하는 접근이 구체화됐다.
+- angle: “PR history는 coding-agent 데이터 공장이다” — task extraction, environment reconstruction, verifier 생성, contamination 관리를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, benchmark, data, swe]
+- status: idea
+
+### 2026-08-01 — [논문 리뷰] AISPA: system prompt를 사용자 중심으로 감사하기
+- type: paper
+- source: http://arxiv.org/abs/2607.28617v1
+- why-now: 상용 LLM 앱의 system prompt는 제품 행동을 좌우하지만 사용자에게 불투명하고, policy·권한·데이터 사용 경계를 검증하기 어렵다.
+- angle: “system prompt도 배포 아티팩트라면 감사 가능한 configuration이어야 한다” — prompt disclosure 없이도 사용자 관점 risk를 점검하는 audit harness로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [system-prompt, audit, alignment, llm-app]
+- status: idea
+
+### 2026-08-01 — [논문 리뷰] MANTA: self-evolving multi-agent system의 topology 적응
+- type: paper
+- source: http://arxiv.org/abs/2607.28527v1
+- why-now: multi-agent system이 단순 역할 분담을 넘어 agent 간 연결 구조와 정보 흐름 자체를 task에 맞게 바꾸는 방향으로 발전하고 있다.
+- angle: “multi-agent 성능은 agent 수보다 communication topology 설계 문제” — topology adaptation, specialization, validation edge를 orchestration 패턴으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, orchestration, topology, self-evolving]
+- status: idea
+
+### 2026-08-01 — [논문 리뷰] DualG-MRAG: multimodal RAG에서 macro reasoning과 micro matching 분리하기
+- type: paper
+- source: http://arxiv.org/abs/2607.28580v1
+- why-now: multimodal RAG가 multi-hop reasoning으로 확장되면서 이미지/문서 단위 매칭과 전체 추론 계획을 한 루프에서 처리하는 한계가 드러난다.
+- angle: “RAG pipeline에서 retrieval matching과 reasoning control plane을 분리해야 하는 이유”를 multimodal agentic RAG 설계로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multimodal-rag, rag, reasoning, retrieval]
+- status: idea
+
+### 2026-08-01 — deja-vu: coding agent 세션 기록을 local memory로 재활용하기
+- type: tech
+- source: https://github.com/vshulcz/deja-vu
+- why-now: 여러 coding agent harness를 쓰는 팀에서 과거 세션·해결 흔적이 각 도구 폴더에 흩어지며, 이를 local-first memory로 재사용하려는 수요가 커지고 있다.
+- angle: “agent memory는 vector DB부터 시작할 필요가 없다” — 세션 로그 indexing, harness cross-compatibility, cold-start context injection을 개발 워크플로 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, memory, local-first, developer-tools]
+- status: idea
+
+### 2026-08-01 — pydantic-ai-backend: agent 파일·샌드박스 backend를 typed contract로 분리하기
+- type: tech
+- source: https://github.com/vstorm-co/pydantic-ai-backend
+- why-now: agent가 파일 시스템과 실행 환경을 직접 만질수록 storage backend, Docker sandbox, permission preset을 framework 바깥에서 테스트 가능하게 관리할 필요가 커진다.
+- angle: “agent tool은 함수 하나가 아니라 권한이 붙은 backend contract” — in-memory/local/containerized storage, sandboxed execution, permission preset을 Pydantic AI workflow에 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [pydantic-ai, sandbox, agent-tools, permissions]
+- status: idea

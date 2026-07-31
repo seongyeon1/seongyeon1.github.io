@@ -273,6 +273,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Scores Are Not Decisions — tool acquisition의 cost-aware stopping | paper-review | Agent/MCP 실전 | | arXiv 2607.27083 — top-k tool ranking을 넘어 marginal utility, context load, privacy exposure를 함께 제어하는 runtime budget gate |
 | 아이디어 | 미정 | [논문 리뷰] SpecFirst — coding agent의 행동 명세 추출을 1단계로 분리하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.27167 — execute-only oracle probing, behavioral specification elicitation, context drift 방지 workflow |
 | 아이디어 | 미정 | Doberman-Core — agent runtime policy enforcement와 audit log 설계 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — guardrail, prompt-injection defense, tool permission, monitoring을 deployment 보안 체크리스트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] OSReward — computer-use agent reward model 평가 표준화 | paper-review | AI 평가/운영 | | arXiv 2607.28609 — cross-platform CUA trajectory verifier, reward model 신뢰도, evaluator drift를 agent QA gate로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] ORCA-bench — oncall RCA agent는 코딩 벤치마크와 무엇이 다른가 | paper-review | AI 평가/운영 | | arXiv 2607.28545 — 로그·메트릭·트레이스·소스코드 evidence triage와 운영 장애 RCA agent 평가 harness |
+| 아이디어 | 미정 | [논문 리뷰] Change2Task — repo 변경 이력을 executable coding-agent task로 바꾸기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.28591 — PR history 기반 task extraction, environment reconstruction, verifier 생성, contamination 관리 |
+| 아이디어 | 미정 | [논문 리뷰] MANTA — self-evolving multi-agent system의 topology 적응 | paper-review | Agent/MCP 실전 | | arXiv 2607.28527 — agent 수보다 communication topology, specialization, validation edge 설계 관점 |
+| 아이디어 | 미정 | deja-vu — coding agent 세션 기록을 local memory로 재활용하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — 세션 로그 indexing, harness cross-compatibility, cold-start context injection을 local-first memory로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
