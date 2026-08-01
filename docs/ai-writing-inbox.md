@@ -5349,3 +5349,107 @@
 - suggested-category: tutorial
 - suggested-tags: [pydantic-ai, sandbox, agent-tools, permissions]
 - status: idea
+
+### 2026-08-02 — [논문 리뷰] ReToken: long visual context를 KV cache retrieval 문제로 바꾸기
+- type: paper
+- source: https://arxiv.org/abs/2607.28627v1
+- why-now: long-video·multi-image VLM에서 모든 visual token을 계속 context에 넣는 방식은 GPU memory와 latency가 병목이 되고, query-relevant token selection이 실무 inference 비용을 좌우한다.
+- angle: “멀티모달 RAG도 결국 cache-aware retrieval이다” — learnable retrieval token, pre-filled visual KV cache, sparse visual token selection, long-video transfer를 agentic multimodal serving 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multimodal, retrieval, kv-cache, long-context]
+- status: idea
+
+### 2026-08-02 — [논문 리뷰] AskChem: 문서 검색을 provenance-carrying claim retrieval로 바꾸기
+- type: paper
+- source: https://arxiv.org/abs/2607.28618v1
+- why-now: 연구 agent가 논문 목록을 반환하는 수준을 넘어, 여러 논문에 흩어진 주장과 근거 문장을 조립해 답해야 하는 literature synthesis 수요가 커지고 있다.
+- angle: “RAG의 retrieval unit은 문서가 아니라 검증 가능한 claim일 수 있다” — atomic claim extraction, DOI/source quote grounding, cross-paper answer assembly를 research-agent evidence layer로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, rag, provenance, literature-search]
+- status: idea
+
+### 2026-08-02 — [논문 리뷰] Beacon: visual reasoning agent가 tool을 언제 써야 하는지 배우기
+- type: paper
+- source: https://arxiv.org/abs/2607.28595v1
+- why-now: multimodal agent가 OCR, detection, crop, external vision tool을 무조건 많이 쓰면 비용만 커지고, 안 쓰면 복잡한 visual task에서 실패한다.
+- angle: “tool-use의 핵심은 도구 보유가 아니라 invocation policy” — mode adaptiveness, tool effect 측정, 불필요한 tool call 억제, visual reasoning budget gate를 computer-use agent 설계로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [visual-agent, tool-use, multimodal, reasoning]
+- status: idea
+
+### 2026-08-02 — [논문 리뷰] Local CUA Inference-Time Scaling: 작은 computer-use agent에서 compute를 어디에 써야 하나
+- type: paper
+- source: https://arxiv.org/abs/2607.28573v1
+- why-now: privacy와 비용 때문에 local computer-use agent를 돌리려는 수요가 커졌지만, frontier model식 test-time scaling을 그대로 적용하기에는 hardware budget이 빡빡하다.
+- angle: “local agent의 성능 향상은 무작정 더 생각하기가 아니라 compute allocation 문제” — contextual/temporal/structural/parallel scaling failure mode와 latency-quality trade-off를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, inference-time-scaling, local-llm, eval]
+- status: idea
+
+### 2026-08-02 — [논문 리뷰] Frontis-MA1: AI4AI agent를 MLE 환경에서 recursive self-improvement로 훈련하기
+- type: paper
+- source: https://arxiv.org/abs/2607.28568v1
+- why-now: AI가 AI 시스템을 개선하는 AI4AI 논의가 커지지만, 실제로는 검증 가능한 MLE task environment와 operator-level post-training loop가 부족했다.
+- angle: “recursive self-improvement를 말로 하지 말고 harness로 쪼개자” — OpenMLE-Gym/RL/Evo, program-evolution operator, long-horizon search를 research/coding agent post-training pipeline으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [ai4ai, mle-agent, post-training, recursive-self-improvement]
+- status: idea
+
+### 2026-08-02 — [논문 리뷰] PAIChecker: SWE-bench류 benchmark의 PR-Issue misalignment 잡기
+- type: paper
+- source: https://arxiv.org/abs/2607.28587v1
+- why-now: coding agent 평가가 SWE-bench류 task에 크게 의존하는데, PR과 issue가 어긋난 task는 agent 성능 숫자와 실제 문제 해결 능력을 동시에 왜곡한다.
+- angle: “benchmark도 data quality pipeline이 필요하다” — PR-issue alignment check, oracle 신뢰도, executable task curation을 coding-agent eval 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, benchmark, swe-bench, data-quality]
+- status: idea
+
+### 2026-08-02 — osaurus: macOS-native agent harness에 memory·execution·audit를 묶기
+- type: tech
+- source: https://github.com/osaurus-ai/osaurus
+- why-now: desktop agent가 terminal·files·browser·local context를 직접 다루기 시작하면서, macOS 안에서 model-agnostic 실행·지속 memory·audit trail을 묶는 harness 요구가 커졌다.
+- angle: “personal agent runtime은 앱이 아니라 local control plane” — native macOS surface, persistent memory, autonomous execution, cryptographic/audit boundary를 개인 agent infra 설계로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [desktop-agent, macos, memory, agent-runtime]
+- status: idea
+
+### 2026-08-02 — roam-code: local code graph와 MCP로 coding agent context를 구조화하기
+- type: tech
+- source: https://github.com/Cranot/roam-code
+- why-now: coding agent가 큰 repo에서 grep과 semantic search만으로 symbol relationship을 추적하면 context budget을 빨리 태우고, 반복 탐색 비용이 커진다.
+- angle: “코딩 에이전트의 코드 지능은 local graph server로 분리할 수 있다” — SQLite code graph, 다언어 indexing, MCP tool surface, symbol/relation query를 LSP+RAG 대안으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, code-intelligence, mcp, local-graph]
+- status: idea

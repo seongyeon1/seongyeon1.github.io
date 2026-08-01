@@ -277,7 +277,11 @@
 | 발행완료 | 2026-08-01 | [논문 리뷰] ORCA-bench — oncall RCA agent는 코딩 벤치마크와 다르다 | paper-review | AI 평가/운영 | | `content/posts/2026-08-01-orca-bench-oncall-rca-agents.mdx` — 자동 발행 완료, arXiv 2607.28545, telemetry·source·모호한 장애 신고를 엮는 oncall RCA agent 평가 harness |
 | 아이디어 | 미정 | [논문 리뷰] Change2Task — repo 변경 이력을 executable coding-agent task로 바꾸기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.28591 — PR history 기반 task extraction, environment reconstruction, verifier 생성, contamination 관리 |
 | 아이디어 | 미정 | [논문 리뷰] MANTA — self-evolving multi-agent system의 topology 적응 | paper-review | Agent/MCP 실전 | | arXiv 2607.28527 — agent 수보다 communication topology, specialization, validation edge 설계 관점 |
-| 아이디어 | 미정 | deja-vu — coding agent 세션 기록을 local memory로 재활용하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — 세션 로그 indexing, harness cross-compatibility, cold-start context injection을 local-first memory로 소개 |
+| 아이디어 | 미정 | deja-vu — coding agent 세션 기록을 local memory로 재활용하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — 세션 로그 indexing, harness cross-compatibility, cold-start context injection을 local-first memory로 소개한다 |
+| 아이디어 | 미정 | [논문 리뷰] ReToken — long visual context를 KV cache retrieval 문제로 바꾸기 | paper-review | AI 추론 최적화 | | arXiv 2607.28627 — learnable retrieval token, visual KV cache, sparse visual token selection을 multimodal agent serving으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Beacon — visual reasoning agent가 tool을 언제 써야 하는지 배우기 | paper-review | Agent/MCP 실전 | | arXiv 2607.28595 — mode adaptiveness, tool effect, 불필요한 tool call 억제를 visual agent budget gate로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] Local CUA Inference-Time Scaling — 작은 computer-use agent에서 compute를 어디에 써야 하나 | paper-review | AI 평가/운영 | | arXiv 2607.28573 — local CUA의 contextual/temporal/structural/parallel scaling failure mode와 latency-quality trade-off |
+| 아이디어 | 미정 | roam-code: local code graph와 MCP로 coding agent context를 구조화하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — SQLite code graph, 다언어 indexing, MCP tool surface를 coding-agent code intelligence layer로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
