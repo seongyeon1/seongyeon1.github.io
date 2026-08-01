@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 30 Jul 2026 00:35:37 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 01 Aug 2026 01:12:14 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] ORCA-bench — oncall RCA agent는 코딩 벤치마크와 다르다</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-01-orca-bench-oncall-rca-agents/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-01-orca-bench-oncall-rca-agents/</guid>
+      <description>ORCA-bench는 oncall RCA agent 평가를 코드 패치가 아니라 telemetry·source·모호한 장애 신고를 엮는 진단 문제로 다룬다.</description>
+      <pubDate>Sat, 01 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>oncall</category>
+      <category>observability</category>
+      <category>eval</category>
+    </item>
     <item>
       <title>[논문 리뷰] Desktop-Delta Bench — GUI agent는 화면 변화를 이해하고 있나</title>
       <link>https://seongyeon1.github.io/blog/2026-07-30-desktop-delta-bench-gui-agent-transitions/</link>

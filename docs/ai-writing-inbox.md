@@ -5269,7 +5269,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent, oncall, observability, eval]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-01-orca-bench-oncall-rca-agents.mdx
 
 ### 2026-08-01 — [논문 리뷰] Change2Task: repo 변경 이력을 executable coding-agent task로 바꾸기
 - type: paper

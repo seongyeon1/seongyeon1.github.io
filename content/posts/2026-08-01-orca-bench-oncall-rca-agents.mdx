@@ -1,0 +1,185 @@
+---
+title: "[논문 리뷰] ORCA-bench — oncall RCA agent는 코딩 벤치마크와 다르다"
+date: "2026-08-01"
+category: "paper-review"
+tags: ["agent", "oncall", "observability", "eval"]
+summary: "ORCA-bench는 oncall RCA agent 평가를 코드 패치가 아니라 telemetry·source·모호한 장애 신고를 엮는 진단 문제로 다룬다."
+---
+
+<Paper
+  title="ORCA-bench: How Ready Are Language Model Agents for Oncall?"
+  authors="Albert Gong, Kyuseong Choi, Abhineet Agarwal, Jason Schechner, Ryan Huang, Raj Agrawal, Anish Agarwal, Raaz Dwivedi"
+  year="2026"
+  venue="arXiv"
+  arxiv="2607.28545"
+/>
+
+## 한 줄 요약
+
+ORCA-bench는 general-purpose coding agent를 **production-fidelity oncall RCA(root cause analysis)** 상황에 던져 넣는 benchmark다. 핵심 메시지는 꽤 차갑다. 코드를 잘 고치는 agent가 곧바로 oncall을 맡을 수 있다는 생각은 아직 위험하다. 운영 장애 진단은 “테스트를 통과시키는 패치”가 아니라, 모호한 사용자 신고와 metrics·logs·traces·source code를 엮어 그럴듯한 원인을 좁히는 문제이기 때문이다.
+
+## 왜 SWE-bench류와 다른가
+
+코딩 벤치마크의 기본 구조는 대체로 명확하다.
+
+- repo가 주어진다.
+- 실패하는 테스트나 이슈 설명이 있다.
+- 코드를 수정한다.
+- verifier가 통과 여부를 판단한다.
+
+Oncall RCA는 다르다. 실제 장애에서는 “checkout이 이상하다”, “사이트가 느리다” 같은 애매한 신고가 먼저 온다. 장애가 시작된 시각과 신고 시각도 다를 수 있다. 원인은 하나가 아닐 수 있고, user-facing symptom이 없는 잡음성 fault도 섞인다. 게다가 evidence는 코드만이 아니라 Prometheus metric, OpenSearch log, Jaeger trace, deploy/config 변화, 서비스 topology로 흩어져 있다.
+
+그래서 RCA agent 평가에서 중요한 질문은 “패치를 만들 수 있나?”가 아니다.
+
+1. 실제 incident가 있었는지 구분하는가?
+2. 여러 telemetry source에서 같은 현상을 교차 검증하는가?
+3. root cause와 symptom을 혼동하지 않는가?
+4. plausible root cause가 여러 개일 때 과하게 단정하지 않는가?
+5. 모르겠을 때 hallucinated diagnosis를 만들지 않는가?
+
+내 의견은 이렇다. Oncall agent를 도입하려는 팀이 code benchmark 점수만 보고 신뢰도를 판단하면 안 된다. 운영 자동화의 failure mode는 PR 실패보다 비싸다. 잘못된 RCA는 사람을 엉뚱한 곳으로 보내고, mitigation 시간을 늘리고, 때로는 정상 컴포넌트를 건드리게 만든다.
+
+## ORCA-bench의 구성
+
+논문이 제안하는 ORCA-bench는 OpenTelemetry 기반 microservice system인 Astronomy Shop을 사용한다. 이 환경은 6일치 simulated user load를 돌리고, 다음 evidence surface를 agent에게 노출한다.
+
+- Prometheus metrics
+- OpenSearch logs
+- Jaeger traces
+- Grafana를 통한 telemetry query interface
+- 전체 source code access
+
+Task는 1,079개 RCA 문제로 구성된다. 단순 synthetic fault library를 주입하는 대신 feature flag를 토글해 fault를 만들고, task 조건을 여러 축으로 바꾼다.
+
+- **Issue specificity**: 사용자 신고가 얼마나 구체적인가
+- **Time-to-detection**: incident 시작과 조사 시작 사이의 지연이 얼마나 긴가. 논문은 15분부터 24시간 범위를 사용한다고 설명한다.
+- **Fault scenario**: isolated, independent, conflicting, cascading, sequential 같은 동시·연쇄 fault 구조
+
+이 설계가 괜찮은 이유는 RCA를 “정답 라벨 맞히기”가 아니라 **evidence triage 문제**로 만든다는 점이다. 특히 time-to-detection을 넣은 게 중요하다. 운영에서는 장애가 이미 지나갔거나, metric window가 길어졌거나, 다른 이벤트와 겹친 뒤에 조사하는 경우가 흔하다. 최근 trace 몇 개만 보고 찍는 agent는 이런 상황에서 쉽게 무너진다.
+
+## 평가 방식: root cause 하나가 아니라 plausible set
+
+ORCA-bench는 ground truth를 symptom level로 관리한다. 논문 설명에 따르면 expert SRE가 metrics, logs, traces에서 기대되는 symptom을 검증하고, task는 단일 정답 하나가 아니라 plausible root cause set에 대해 scoring된다. 또한 40개 task의 ORCA-bench Verified subset에서는 ground-truth label과 model score를 사람이 다시 확인했다.
+
+LLM-as-judge도 그냥 던져두지 않았다. GPT-5.4 기반 judge의 per-task score를 사람이 독립적으로 재채점했고, human re-score와의 Cohen's weighted kappa가 0.90이라고 보고한다. 숫자 자체보다 중요한 점은 방향이다. Agent 평가에서 judge도 production component처럼 검증해야 한다. 특히 RCA report는 자연어라서 exact match가 잘 안 된다. 그렇다고 judge를 무비판적으로 믿으면 benchmark가 모델이 아니라 judge 취향을 측정하게 된다.
+
+실무적으로는 이런 구조가 필요하다.
+
+```text
+incident task
+  -> agent investigation trace
+  -> structured RCA report
+  -> evidence-grounded judge
+  -> sampled human audit
+  -> regression dashboard
+```
+
+여기서 trace와 evidence citation이 빠지면 운영 QA가 어렵다. 최종 report만 남기면 agent가 맞혔는지, 우연히 맞힌 척했는지, 잘못된 로그를 근거로 맞는 결론에 도달했는지 구분하기 힘들다.
+
+## 결과: frontier agent도 아직 낮다
+
+논문의 headline result는 강하다. 다섯 개 frontier agent를 평가했을 때 best RCA Accuracy가 Medium difficulty에서 25.3%, Hard에서 10.0%라고 보고한다. Medium은 현실적인 입력 설정으로 설명된다. 또 가장 약한 모델은 incident report의 40%에서 plausible root cause와 맞지 않는 root cause를 hallucinate했다고 한다. Source code access를 제거하면 모든 metric이 악화됐다는 점도 보고한다.
+
+이 결과를 “모델이 별로다”로만 읽으면 얕다. 더 중요한 해석은 oncall RCA가 다음 능력을 동시에 요구한다는 것이다.
+
+- telemetry query를 계획하는 능력
+- noisy signal과 실제 symptom을 구분하는 능력
+- service dependency를 따라가는 능력
+- code path와 runtime evidence를 연결하는 능력
+- 시간축을 복원하는 능력
+- 여러 plausible hypothesis를 유지하다가 evidence로 줄이는 능력
+
+일반 coding agent는 repo-local reasoning에는 강해졌지만, 운영 환경의 시간성·관측성·불완전성을 다루는 훈련은 아직 부족하다. 특히 hallucinated RCA는 치명적이다. 코드 생성 hallucination은 테스트가 잡아줄 수 있지만, 운영 진단 hallucination은 사람이 믿고 움직이면 사고 처리 방향 자체가 틀어진다.
+
+## Oncall agent를 만든다면 benchmark를 어떻게 써야 하나
+
+ORCA-bench를 그대로 점수 경쟁용으로만 쓰기보다는, 팀 내부 oncall automation 설계 체크리스트로 읽는 편이 낫다.
+
+### 1. Agent에게 telemetry tool을 그냥 주지 말고 query plan을 요구하라
+
+Prometheus, log search, trace search를 tool로 붙이는 것은 시작일 뿐이다. 더 중요한 것은 조사 순서다.
+
+- 먼저 user-facing symptom을 metric으로 확인한다.
+- affected endpoint와 service를 좁힌다.
+- trace로 propagation path를 본다.
+- log로 error signature를 확인한다.
+- source code로 feature flag, config, dependency boundary를 해석한다.
+
+Agent가 이 순서를 report에 남기게 해야 한다. “무엇을 봤는가”보다 “왜 그 다음 query를 했는가”가 RCA 품질을 가른다.
+
+### 2. Root cause와 symptom을 schema로 분리하라
+
+RCA report schema에 최소한 아래 필드는 있어야 한다.
+
+```yaml
+incident_detected: true
+user_impact: "checkout request failure"
+symptoms:
+  - source: "metrics"
+    evidence: "500 rate spike on frontend checkout path"
+  - source: "traces"
+    evidence: "checkout span fails after product catalog call"
+hypotheses:
+  - cause: "product catalog feature flag failure"
+    confidence: "medium"
+    supporting_evidence: ["trace event", "source code path"]
+    contradicting_evidence: []
+unknowns:
+  - "exact rollout actor not verified"
+```
+
+이렇게 나눠야 hallucination을 줄일 수 있다. “에러가 있다”는 symptom이고, “어떤 feature flag가 어떤 service path를 망가뜨렸다”가 root cause다. 둘을 섞으면 agent는 관측한 현상을 원인으로 착각한다.
+
+### 3. No-incident와 multi-root-cause case를 반드시 넣어라
+
+운영 환경에는 false alarm도 있고, 동시에 여러 fault가 터지는 경우도 있다. Benchmark가 항상 “정답 root cause 하나”를 요구하면 agent는 무조건 원인을 만들어내는 습관을 배운다. ORCA-bench가 multiple/no root cause 가능성을 task instruction에 넣은 점은 좋은 방향이다.
+
+실무 eval에도 아래 케이스를 넣어야 한다.
+
+- 아무 incident가 없는 noisy alert
+- user-facing impact가 없는 internal warning
+- 같은 증상을 만드는 독립 fault 2개
+- cascading fault라서 upstream/downstream 판단이 필요한 case
+- 장애 시작 시각과 신고 시각이 크게 다른 case
+
+### 4. Source code access는 선택이 아니라 기본 evidence다
+
+논문은 source code access를 제거하면 metric이 악화된다고 보고한다. 당연하지만 자주 간과된다. Observability data만으로는 “무슨 일이 일어났는가”는 볼 수 있어도 “왜 그 path가 그렇게 실패했는가”는 부족하다.
+
+Oncall agent에는 최소한 다음 code-intelligence surface가 필요하다.
+
+- service ownership map
+- endpoint-to-handler mapping
+- feature flag/config reference search
+- dependency call graph
+- 최근 deploy/change history
+- error code와 exception path 검색
+
+여기서도 일반 semantic RAG만으로는 부족하다. LSP, static analysis, deploy metadata, tracing span name convention을 함께 써야 한다.
+
+## 한계와 조심해서 읽을 점
+
+이 논문 자체도 완전한 production substitute는 아니다. 논문이 강조하듯 ORCA-bench는 50GB, 6일치 testbed이고 task는 격리된 상태에서 조사된다. 실제 production은 더 크고, 더 지저분하고, 조직별 runbook과 tribal knowledge가 많이 들어간다. 또한 public benchmark가 되면 future agent가 여기에 과적합할 가능성도 있다.
+
+그래도 방향은 맞다. Oncall agent 평가는 “문제를 고쳤는가” 전에 “진단을 믿어도 되는가”를 봐야 한다. 자동 remediation은 그 다음 단계다. RCA가 흔들리면 remediation을 자동화하는 건 위험한 가속 페달이 된다.
+
+## 내 결론
+
+ORCA-bench는 agent 평가가 coding task에서 operations task로 넘어갈 때 무엇이 빠지는지 잘 보여준다. 앞으로 production agent를 만들려는 팀은 SWE-bench류 점수, tool-use 성공률, latency만 볼 게 아니라 **observability-grounded RCA eval**을 따로 만들어야 한다.
+
+나는 oncall agent의 MVP 기준을 이렇게 잡는 게 맞다고 본다.
+
+- incident/no-incident를 구분한다.
+- root cause를 단정하기 전에 symptom과 hypothesis를 분리한다.
+- metric·log·trace·source evidence를 최소 2종 이상 교차 검증한다.
+- confidence와 unknown을 report에 남긴다.
+- remediation은 suggestion까지만 하고, mutation은 사람 승인 뒤에 한다.
+
+지금 단계에서 agent에게 production oncall을 “맡기는” 건 이르다. 하지만 agent를 junior SRE처럼 evidence 수집·초기 hypothesis 정리·runbook 후보 제시에 쓰는 것은 충분히 현실적이다. 관건은 모델이 아니라 harness다. Tool surface, report schema, judge audit, human handoff를 제대로 설계해야 한다.
+
+## 참고 자료
+
+- [ORCA-bench: How Ready Are Language Model Agents for Oncall?](https://arxiv.org/abs/2607.28545)
+- [ORCA-bench PDF](https://arxiv.org/pdf/2607.28545)
+- [ORCA-bench public dataset](https://hub.harborframework.com/datasets/orca-bench/ORCA-bench)
+- [OpenTelemetry Demo: Astronomy Shop](https://github.com/open-telemetry/opentelemetry-demo)
