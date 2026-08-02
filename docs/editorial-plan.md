@@ -282,6 +282,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Beacon — visual reasoning agent가 tool을 언제 써야 하는지 배우기 | paper-review | Agent/MCP 실전 | | arXiv 2607.28595 — mode adaptiveness, tool effect, 불필요한 tool call 억제를 visual agent budget gate로 해석 |
 | 아이디어 | 미정 | [논문 리뷰] Local CUA Inference-Time Scaling — 작은 computer-use agent에서 compute를 어디에 써야 하나 | paper-review | AI 평가/운영 | | arXiv 2607.28573 — local CUA의 contextual/temporal/structural/parallel scaling failure mode와 latency-quality trade-off |
 | 아이디어 | 미정 | roam-code: local code graph와 MCP로 coding agent context를 구조화하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — SQLite code graph, 다언어 indexing, MCP tool surface를 coding-agent code intelligence layer로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] AskChem — claim-centered retrieval로 과학 문헌 synthesis 만들기 | paper-review | 논문 리뷰 | | arXiv 2607.28618 — provenance가 붙은 claim 단위 retrieval, cross-paper synthesis, research agent verifier boundary 설계 |
+| 아이디어 | 미정 | [논문 리뷰] GLM-RAG — Graph Language Model을 retriever로 쓰는 GraphRAG | paper-review | Agentic RAG | | arXiv 2607.28397 — graph topology와 semantic representation을 함께 쓰는 retriever, multi-hop KG QA 운영 포인트 |
+| 아이디어 | 미정 | [논문 리뷰] CoMem — LLM depth를 이용한 unbounded-context memory 설계 | paper-review | AI 추론 최적화 | | arXiv 2607.28263 — 중간 layer residual state cache, fixed retrieval budget, long-context read compute trade-off |
+| 아이디어 | 미정 | Serena: semantic retrieval과 editing을 MCP toolkit으로 제공하는 coding agent IDE | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — symbol-aware retrieval/editing, MCP contract, CLI coding agent용 code-intelligence layer |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

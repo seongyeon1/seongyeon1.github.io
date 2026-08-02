@@ -5453,3 +5453,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, code-intelligence, mcp, local-graph]
 - status: idea
+
+### 2026-08-03 — [논문 리뷰] AskChem: claim-centered retrieval로 과학 문헌 synthesis 만들기
+- type: paper
+- source: https://arxiv.org/abs/2607.28618v1
+- why-now: 연구 에이전트가 논문 리스트를 받는 수준을 넘어 provenance가 붙은 claim 단위 evidence를 조립해야 하는 흐름이 강해지고 있다.
+- angle: “research RAG의 검색 단위는 paper chunk가 아니라 검증 가능한 claim” — claim extraction, provenance, cross-paper synthesis, verifier boundary를 연구 에이전트 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, rag, evidence, literature-synthesis]
+- status: idea
+
+### 2026-08-03 — [논문 리뷰] GLM-RAG: Graph Language Model을 retriever로 쓰는 GraphRAG
+- type: paper
+- source: https://arxiv.org/abs/2607.28397v1
+- why-now: GraphRAG가 유행하지만 graph topology와 semantic representation을 어떻게 같이 retrieval score에 넣을지에 대한 구현 기준은 아직 흔들린다.
+- angle: “GraphRAG의 핵심은 그래프를 만들었다가 아니라 그래프 언어 모델로 어떤 edge/path를 읽을지 정하는 것” — GLM retriever, multi-hop reasoning, knowledge graph QA 운영 포인트를 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [graphrag, retrieval, graph-language-model, rag]
+- status: idea
+
+### 2026-08-03 — [논문 리뷰] CoMem: LLM depth를 이용한 unbounded-context memory 설계
+- type: paper
+- source: https://arxiv.org/abs/2607.28263v1
+- why-now: long-context 비용이 계속 커지면서 모든 토큰을 끝까지 forward하는 대신 중간 layer state를 memory처럼 재사용하는 접근이 주목할 만하다.
+- angle: “context memory는 텍스트 chunk 검색만이 아니라 residual state cache일 수 있다” — layer별 역할 분리, fixed retrieval budget, KV cache와 다른 memory/read compute trade-off를 inference 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-context, memory, inference, architecture]
+- status: idea
+
+### 2026-08-03 — [논문 리뷰] TCA-SIR: scientific inspiration retrieval을 target-conditioned abstraction으로 보기
+- type: paper
+- source: https://arxiv.org/abs/2607.28498v1
+- why-now: 연구 에이전트가 관련 논문 검색을 넘어 “현재 목표에 유용한 추상 아이디어”를 찾아야 하는데, 단순 semantic similarity는 이 목적에 약하다.
+- angle: “research agent의 retrieval은 유사 논문 찾기가 아니라 목표 조건부 abstraction mining” — target conditioning, inspiration evidence, novelty/utility 평가를 논문 탐색 에이전트로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, retrieval, scientific-discovery, abstraction]
+- status: idea
+
+### 2026-08-03 — [논문 리뷰] MixFrag: fragility-guided mixed-precision quantization
+- type: paper
+- source: https://arxiv.org/abs/2607.28589v1
+- why-now: 모델 압축은 평균 sensitivity만 보면 layer별 취약 구간을 놓치기 쉽고, edge/serving 환경에서 정확도 붕괴를 줄이는 mixed-precision 정책이 중요해졌다.
+- angle: “양자화는 몇 bit로 줄일지가 아니라 어떤 부분이 부서지기 쉬운지 찾는 문제” — fragility metric, mixed precision assignment, serving QA와 rollback gate를 추론 최적화 글로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [quantization, inference, mixed-precision, model-compression]
+- status: idea
+
+### 2026-08-03 — AWS CLI Agent Orchestrator: 여러 coding CLI agent를 tmux 격리 세션으로 조율하기
+- type: tech
+- source: https://github.com/awslabs/cli-agent-orchestrator
+- why-now: Claude Code, Codex, Kiro처럼 CLI 기반 coding agent가 늘면서 한 작업을 여러 격리 세션에 나눠 실행하고 결과를 비교·병합하는 orchestration 수요가 생겼다.
+- angle: “multi-agent coding은 프레임워크 API보다 workspace isolation과 session control이 먼저” — tmux session, 역할 분담, 결과 수집, 실패 격리를 개발자 workflow 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, multi-agent, orchestration, cli]
+- status: idea
+
+### 2026-08-03 — Serena: semantic retrieval과 editing을 MCP toolkit으로 제공하는 coding agent IDE
+- type: tech
+- source: https://github.com/oraios/serena
+- why-now: 코딩 에이전트가 repo 전체를 텍스트로 훑는 방식은 토큰·정확도 모두 한계가 있어, MCP 기반 semantic code retrieval/editing layer가 실무 핵심 도구로 올라오고 있다.
+- angle: “agent용 IDE는 화면이 아니라 symbol-aware tool surface” — semantic retrieval, safe editing, MCP contract, 기존 CLI agent와 붙이는 방식을 code-intelligence layer로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, code-intelligence, developer-tools]
+- status: idea
+
+### 2026-08-03 — OpenLIT: OpenTelemetry-native LLM observability를 agent eval과 guardrail에 묶기
+- type: tech
+- source: https://github.com/openlit/openlit
+- why-now: agent 앱 운영은 prompt 품질보다 trace, cost, eval, guardrail, GPU/LLM telemetry를 한 관측 모델에 묶는 일이 점점 중요해지고 있다.
+- angle: “agent observability는 로그 수집이 아니라 release gate의 입력 데이터” — OpenTelemetry span, LLM traces, eval dataset, guardrail feedback을 운영 체크리스트로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-observability, eval, opentelemetry, guardrails]
+- status: idea
