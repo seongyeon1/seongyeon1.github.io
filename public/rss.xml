@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 01 Aug 2026 01:12:14 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 02 Aug 2026 04:53:18 GMT</lastBuildDate>
+    <item>
+      <title>Sebastian Raschka 블로그로 따라가는 LLM 연구 읽기 지도</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-02-sebastian-raschka-llm-reading-map/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-02-sebastian-raschka-llm-reading-map/</guid>
+      <description>Sebastian Raschka의 RSS를 기준으로 LLM 아키텍처, reasoning, agent, post-training 글을 어떤 순서로 읽으면 좋은지 정리한다.</description>
+      <pubDate>Sun, 02 Aug 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>LLM</category>
+      <category>architecture</category>
+      <category>reasoning</category>
+      <category>agent</category>
+      <category>reading-list</category>
+    </item>
     <item>
       <title>[논문 리뷰] ORCA-bench — oncall RCA agent는 코딩 벤치마크와 다르다</title>
       <link>https://seongyeon1.github.io/blog/2026-08-01-orca-bench-oncall-rca-agents/</link>

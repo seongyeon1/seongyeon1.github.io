@@ -1,0 +1,196 @@
+---
+title: "Sebastian Raschka 블로그로 따라가는 LLM 연구 읽기 지도"
+date: "2026-08-02"
+category: "guide"
+tags: ["LLM", "architecture", "reasoning", "agent", "reading-list"]
+summary: "Sebastian Raschka의 RSS를 기준으로 LLM 아키텍처, reasoning, agent, post-training 글을 어떤 순서로 읽으면 좋은지 정리한다."
+---
+
+## 왜 이 블로그를 팔로업할 만한가
+
+LLM 분야 글은 너무 많다. 매일 새로운 모델, 벤치마크, agent framework, post-training 기법이 나온다. 문제는 “소식”이 아니라 **무엇을 계속 읽을지 고르는 필터**다.
+
+Sebastian Raschka의 블로그와 Ahead of AI 글은 그 필터로 꽤 좋다. 단순 뉴스 요약보다 모델 구조, 학습 레시피, 구현 관점, 평가 방식으로 내려오는 글이 많기 때문이다. 특히 최근 글들은 LLM 아키텍처와 open-weight model, reasoning model, coding agent 쪽을 꾸준히 다룬다.
+
+이 글은 그의 RSS 피드를 기준으로, 내가 앞으로 팔로업하면 좋겠다고 본 글들을 주제별 읽기 지도로 정리한 것이다.
+
+RSS 피드는 여기다.
+
+- [Sebastian Raschka RSS feed](https://sebastianraschka.com/rss_feed.xml)
+- 기준 시점: 2026-08-02
+- RSS item 수: 139개
+
+## 먼저 읽을 10개
+
+전체를 다 읽으려고 하면 금방 지친다. 지금 AI engineering 관점에서 우선순위를 둔다면 아래 10개부터 보는 게 좋다.
+
+1. [Kimi K3 Architecture Notes](https://sebastianraschka.com/blog/2026/kimi-k3-architecture-notes.html)
+2. [A Few Notable Open-Weight Models This Week](https://sebastianraschka.com/blog/2026/notable-open-weight-models-this-week.html)
+3. [Controlling Reasoning Effort in LLMs](https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms)
+4. [Inkling: A New Open-Weight 975B MoE with a Few Surprises](https://sebastianraschka.com/blog/2026/inkling-architecture-benchmark-notes.html)
+5. [Local Open-Weight LLMs in Coding Harnesses](https://sebastianraschka.com/blog/2026/local-open-weight-llms-coding-harnesses.html)
+6. [GLM-5.2 and IndexShare for Long-Context Sparse Attention](https://sebastianraschka.com/blog/2026/glm-5-2-indexshare.html)
+7. [VibeThinker-3B and the Strength of Post-Training](https://sebastianraschka.com/blog/2026/vibethinker-3b-post-training.html)
+8. [DeepSeek Sparse Attention From Scratch](https://sebastianraschka.com/blog/2026/deepseek-sparse-attention-from-scratch.html)
+9. [Recent Developments in LLM Architectures: KV Sharing, mHC, and Compressed Attention](https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures)
+10. [A Visual Guide to Attention Variants in Modern LLMs](https://magazine.sebastianraschka.com/p/visual-attention-variants)
+
+내가 보기엔 이 10개는 단순히 “좋은 글”이라기보다, 2026년 LLM 시스템을 이해하는 데 필요한 축을 잘 나눈다.
+
+- 긴 context를 어떻게 처리할 것인가
+- MoE는 어디까지 커지고 있는가
+- reasoning effort를 추론 시점에 어떻게 제어할 것인가
+- open-weight model을 coding harness 안에서 어떻게 쓸 것인가
+- post-training이 작은 모델의 체감 성능을 얼마나 바꿀 수 있는가
+
+## 1. 아키텍처: 긴 context와 MoE를 같이 봐야 한다
+
+요즘 LLM 아키텍처 글을 읽을 때는 “파라미터가 몇 개인가”보다 **context, attention, MoE routing, serving cost**를 같이 봐야 한다.
+
+추천 글은 이쪽이다.
+
+- [Kimi K3 Architecture Notes](https://sebastianraschka.com/blog/2026/kimi-k3-architecture-notes.html)
+- [Inkling: A New Open-Weight 975B MoE with a Few Surprises](https://sebastianraschka.com/blog/2026/inkling-architecture-benchmark-notes.html)
+- [GLM-5.2 and IndexShare for Long-Context Sparse Attention](https://sebastianraschka.com/blog/2026/glm-5-2-indexshare.html)
+- [Nemotron 3 Ultra and Latent MoE Scaling](https://sebastianraschka.com/blog/2026/nemotron-3-ultra-latent-moe.html)
+- [DeepSeek Sparse Attention From Scratch](https://sebastianraschka.com/blog/2026/deepseek-sparse-attention-from-scratch.html)
+- [Recent Developments in LLM Architectures: KV Sharing, mHC, and Compressed Attention](https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures)
+- [A Visual Guide to Attention Variants in Modern LLMs](https://magazine.sebastianraschka.com/p/visual-attention-variants)
+
+이 묶음에서 중요한 흐름은 하나다. 모델은 점점 “거대한 dense transformer” 하나가 아니라, 여러 효율화 장치를 조합한 시스템이 되고 있다.
+
+예전에는 attention을 이해하면 transformer의 핵심을 꽤 많이 이해할 수 있었다. 이제는 거기에 KV cache, MLA, sparse attention, recurrent state, expert routing, long-context scheduler까지 붙는다. 특히 agent나 RAG 시스템에서는 context가 길어질수록 모델 품질보다 **context 비용과 retrieval 실패 모드**가 먼저 문제가 된다.
+
+그래서 아키텍처 글은 논문 리뷰처럼 한 편씩 읽는 것보다, 다음 질문으로 묶어 읽는 편이 좋다.
+
+1. 이 모델은 full attention 비용을 어떻게 줄였나?
+2. 긴 context에서 global interaction은 어떻게 보존하나?
+3. MoE expert는 성능뿐 아니라 serving 관점에서 어떤 부담을 만드나?
+4. open-weight 모델로 실제 agent runtime을 만들 때 병목은 어디인가?
+
+## 2. Reasoning: 더 오래 생각하게 하는 것만으로는 부족하다
+
+Reasoning model을 볼 때 흔한 오해가 있다. “생각을 더 길게 하면 성능이 오른다”는 식의 단순한 이해다. 실제로는 reasoning effort를 어디에, 얼마나, 어떤 검증 루프로 쓸지 결정해야 한다.
+
+추천 글은 이쪽이다.
+
+- [Controlling Reasoning Effort in LLMs](https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms)
+- [Build a Reasoning Model From Scratch Is Out](https://sebastianraschka.com/blog/2026/build-a-reasoning-model-from-scratch-is-out.html)
+- [Categories of Inference-Time Scaling for Improved LLM Reasoning](https://magazine.sebastianraschka.com/p/categories-of-inference-time-scaling)
+- [The State of Reinforcement Learning for LLM Reasoning](https://magazine.sebastianraschka.com/p/the-state-of-llm-reasoning-model-training)
+- [Inference-Time Compute Scaling Methods to Improve Reasoning Models](https://magazine.sebastianraschka.com/p/state-of-llm-reasoning-and-inference-scaling)
+- [Understanding Reasoning LLMs](https://magazine.sebastianraschka.com/p/understanding-reasoning-llms)
+
+실무적으로는 reasoning을 세 층으로 나눠 보는 게 편하다.
+
+| 층 | 질문 | 시스템 설계 포인트 |
+|---|---|---|
+| 모델 내부 reasoning | 모델이 chain을 생성하고 검토하는가 | 학습 데이터, RL, verifier |
+| 추론 시점 scaling | 같은 문제에 compute를 더 쓸 것인가 | budget, sampling, self-consistency |
+| 제품 레벨 control | 언제 깊게 생각하게 할 것인가 | routing, latency, cost policy |
+
+내가 특히 보고 싶은 부분은 세 번째다. 사용자 요청마다 reasoning budget을 고정하면 낭비가 크다. 반대로 전부 짧게 답하게 하면 어려운 문제에서 무너진다. 결국 production에서는 “이 요청은 깊게 생각할 가치가 있는가”를 판단하는 controller가 필요하다.
+
+## 3. Agent와 coding harness: 모델보다 실행 환경이 더 중요해진다
+
+Coding agent를 볼 때 모델 성능만 비교하면 놓치는 게 많다. 실제 agent는 모델 하나가 아니라 file system, terminal, browser, test runner, diff, memory, permission, rollback이 붙은 runtime이다.
+
+추천 글은 이쪽이다.
+
+- [Using Local Coding Agents](https://sebastianraschka.com/blog/2026/using-local-coding-agents.html)
+- [Local Open-Weight LLMs in Coding Harnesses](https://sebastianraschka.com/blog/2026/local-open-weight-llms-coding-harnesses.html)
+- [North Mini Code and Agentic Coding Benchmarks](https://sebastianraschka.com/blog/2026/north-mini-code-agentic-coding.html)
+- [Components of A Coding Agent](https://magazine.sebastianraschka.com/p/components-of-a-coding-agent)
+
+여기서 핵심은 “open-weight LLM을 coding harness에 넣으면 어디까지 쓸 수 있나”다. 개인적으로 이 질문은 앞으로 꽤 중요해질 것 같다. 모든 작업을 proprietary frontier model로 보내는 방식은 비용, privacy, latency, customization에서 한계가 있다.
+
+하지만 local model을 붙인다고 바로 agent가 좋아지는 것은 아니다. 오히려 harness 쪽 설계가 더 중요하다.
+
+- 실패한 명령을 어떻게 요약해서 다시 넣을 것인가
+- test failure와 lint failure를 어떻게 구분할 것인가
+- context window가 넘칠 때 어떤 파일과 diff를 남길 것인가
+- dangerous command를 어떻게 막을 것인가
+- agent가 만든 변경을 어떻게 검증하고 되돌릴 것인가
+
+좋은 coding agent는 “코딩을 잘하는 모델”이 아니라 **검증 가능한 변경 루프를 안정적으로 굴리는 시스템**에 가깝다.
+
+## 4. Post-training: 작은 모델도 레시피에 따라 달라진다
+
+최근 글 중 [VibeThinker-3B and the Strength of Post-Training](https://sebastianraschka.com/blog/2026/vibethinker-3b-post-training.html)는 특히 post-training 관점에서 볼 만하다. 작은 모델이라도 post-training 레시피에 따라 reasoning, instruction following, coding에서 체감 성능이 크게 달라질 수 있기 때문이다.
+
+같이 보면 좋은 글은 이쪽이다.
+
+- [New LLM Pre-training and Post-training Paradigms](https://magazine.sebastianraschka.com/p/new-llm-pre-training-and-post-training)
+- [Instruction Pretraining LLMs](https://magazine.sebastianraschka.com/p/instruction-pretraining-llms)
+- [Developing an LLM: Building, Training, Finetuning](https://magazine.sebastianraschka.com/p/llms-building-training-finetuning)
+- [Improving LoRA: Implementing Weight-Decomposed Low-Rank Adaptation from Scratch](https://magazine.sebastianraschka.com/p/lora-and-dora-from-scratch)
+- [Parameter-Efficient LLM Finetuning With Low-Rank Adaptation](https://sebastianraschka.com/blog/2023/llm-finetuning-lora.html)
+
+이 묶음은 “모델을 직접 학습할 것인가”보다 “우리 도메인에서 어느 단계까지 손댈 수 있는가”라는 질문으로 읽는 게 좋다.
+
+- 프롬프트만 바꿀 것인가
+- retrieval context를 개선할 것인가
+- SFT 데이터를 만들 것인가
+- preference data를 수집할 것인가
+- LoRA나 DoRA로 domain adaptation을 할 것인가
+- 작은 모델을 특정 workflow용 specialist로 만들 것인가
+
+특히 사내 agent나 vertical agent를 만들 때는 frontier model 하나에 모든 걸 맡기는 것보다, 작은 모델과 workflow-specific evaluator를 같이 두는 쪽이 더 경제적일 수 있다.
+
+## 5. Evaluation: 벤치마크는 점수보다 실패 모드를 봐야 한다
+
+Raschka의 글 목록에는 evaluation과 benchmark 관련 글도 꾸준히 있다.
+
+- [A Few Notable Open-Weight Models This Week](https://sebastianraschka.com/blog/2026/notable-open-weight-models-this-week.html)
+- [North Mini Code and Agentic Coding Benchmarks](https://sebastianraschka.com/blog/2026/north-mini-code-agentic-coding.html)
+- [Understanding the 4 Main Approaches to LLM Evaluation From Scratch](https://magazine.sebastianraschka.com/p/llm-evaluation-4-approaches)
+- [The Big LLM Architecture Comparison](https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison)
+
+모델 평가에서 중요한 건 리더보드 숫자 하나가 아니다. 실제 시스템에서는 아래 질문이 더 중요하다.
+
+1. 어떤 task distribution에서 측정했나?
+2. judge가 사람의 판단과 얼마나 맞나?
+3. tool-use, long-context, multi-turn state가 평가에 포함됐나?
+4. 실패했을 때 비용이 얼마나 큰가?
+5. benchmark 점수가 우리 제품의 품질 지표와 연결되는가?
+
+Agent 시스템에서는 특히 “정답률”보다 failure mode가 중요하다. 모델이 틀리는 방식이 조용한 hallucination인지, command 실패인지, retrieval miss인지, over-confident diagnosis인지에 따라 운영 대응이 완전히 달라진다.
+
+## 내가 팔로업할 방식
+
+이 RSS는 그냥 새 글 알림으로만 쓰기보다, 블로그 소재 큐로 쓰는 게 좋다. 내가 보기엔 다음 순서가 자연스럽다.
+
+1. **아키텍처 계열**: Kimi K3, Inkling, GLM-5.2, DeepSeek sparse attention
+2. **Reasoning 계열**: reasoning effort control, inference-time scaling, RL for reasoning
+3. **Agent 계열**: local coding agent, coding harness, benchmark 실패 모드
+4. **Post-training 계열**: VibeThinker, instruction pretraining, LoRA/DoRA
+5. **Evaluation 계열**: open-weight roundup, LLM evaluation approaches
+
+각 글을 그대로 요약하는 것보다, 내 블로그에서는 다음 프레임으로 다시 소화하는 편이 낫다.
+
+- 이 기술이 나온 배경
+- 기존 접근의 병목
+- 구조나 학습 레시피의 핵심
+- agent/RAG/production 시스템에 주는 의미
+- 실제 도입할 때 조심할 점
+
+즉, “새 글이 올라왔다”에서 멈추지 않고 **AI engineering 관점의 읽기 노트**로 바꾸는 것이다.
+
+## 정리
+
+Sebastian Raschka의 RSS는 LLM 연구를 따라가기 위한 좋은 관찰 지점이다. 특히 2026년 글들은 LLM이 단순 모델 경쟁에서 system stack 경쟁으로 넘어가고 있다는 흐름을 잘 보여준다.
+
+내가 계속 보고 싶은 축은 네 가지다.
+
+- architecture: long-context, MoE, attention efficiency
+- reasoning: inference-time compute와 reasoning budget control
+- agent: coding harness와 local open-weight model의 결합
+- post-training/eval: 작은 모델을 어떻게 특화하고 검증할 것인가
+
+앞으로 새 글이 올라오면 이 축 중 어디에 들어가는지 먼저 분류하고, 블로그 글로 옮길 만한 글은 별도 리뷰나 구현 노트로 이어가면 좋겠다.
+
+## 참고 링크
+
+- [Sebastian Raschka homepage](https://sebastianraschka.com/)
+- [RSS feed](https://sebastianraschka.com/rss_feed.xml)
+- [Ahead of AI](https://magazine.sebastianraschka.com/)
