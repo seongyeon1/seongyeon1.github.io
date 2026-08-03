@@ -290,6 +290,11 @@
 | 아이디어 | 미정 | [논문 리뷰] ChronoMem — LLM agent memory를 version control과 semantic rollback으로 관리하기 | paper-review | 논문 리뷰 | | arXiv 2607.27773 — semantic diff, rollback, memory provenance, regression replay를 long-horizon assistant 설계로 해석 |
 | 아이디어 | 미정 | [논문 리뷰] SWE-NFI — coding agent를 non-functional improvement로 평가하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.27409 — 성능·안정성·리팩터링·보안 개선 task와 verifier를 coding-agent QA 관점으로 정리 |
 | 아이디어 | 미정 | amux: 병렬 Claude Code·Codex·Gemini 세션을 운영하는 open-source control plane | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — session orchestration, dashboard, failure recovery, 비용·결과 비교를 agent fleet 운영 아키텍처로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] TokTier — agentic LLM serving에서 tokenization state를 캐시하기 | paper-review | AI 추론 최적화 | | arXiv 2607.29678 — 긴 agent transcript의 재토큰화 비용, exact stateful tokenization, CPU/latency budget을 serving front-end 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] AgentHPOBench — LLM agent를 sequential hyperparameter optimizer로 평가하기 | paper-review | AI 평가/운영 | | arXiv 2607.29626 — 실험 예산 안에서 탐색 정책·regret·trajectory quality를 보는 scientific agent eval harness |
+| 아이디어 | 미정 | [논문 리뷰] ECLoop — coding agent의 premature commitment를 막는 evidence-conditioned execution | paper-review | 개발자 AI 워크플로 | | arXiv 2607.28815 — repo evidence threshold, 탐색→수정 phase boundary, 실행 권한 게이트를 coding agent 운영법으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SpecBox — MCP sandbox scheduling으로 agent serving latency 줄이기 | paper-review | Agent/MCP 실전 | | arXiv 2607.23933 — speculative sandbox scheduling, utilization-latency trade-off, MCP runtime resource policy |
+| 아이디어 | 미정 | HKUDS nanobot: self-hosted personal agent framework의 memory·MCP·multi-agent 구조 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — memory boundary, MCP tool surface, multi-agent/WebUI, deployment ownership을 framework 선택 기준으로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

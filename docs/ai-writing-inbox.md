@@ -5661,3 +5661,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, memory, context-engineering, developer-tools]
 - status: idea
+
+### 2026-08-04 — [논문 리뷰] TokTier: agentic LLM serving에서 tokenization state를 캐시하기
+- type: paper
+- source: http://arxiv.org/abs/2607.29678v1
+- why-now: 코딩 에이전트처럼 긴 transcript에 작은 tool result를 계속 붙여 재호출하는 워크로드에서는 KV cache뿐 아니라 재토큰화 비용도 눈에 띄는 병목이 된다.
+- angle: “agent serving 최적화는 GPU KV cache만이 아니라 tokenizer front-end state까지 포함한다” — exact stateful tokenization, append-heavy transcript, latency/CPU budget을 serving architecture 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-serving, tokenization, inference, coding-agent]
+- status: idea
+
+### 2026-08-04 — [논문 리뷰] AgentHPOBench: LLM agent를 sequential hyperparameter optimizer로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.29626v1
+- why-now: 과학·ML 자동화 agent는 단발 코드 생성보다 실험을 반복하며 다음 설정을 고르는 sequential decision 능력이 중요해지고 있다.
+- angle: “AI 연구 에이전트 평가는 정답 코드가 아니라 실험 예산 안에서 어떤 탐색 정책을 쓰는지 봐야 한다” — HPO trajectory, budget-aware exploration, regret/quality metric을 agent eval harness로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [scientific-agent, hpo, benchmark, eval]
+- status: idea
+
+### 2026-08-04 — [논문 리뷰] Zero-Mem: LLM agent memory operation의 token overhead 없애기
+- type: paper
+- source: http://arxiv.org/abs/2607.29377v1
+- why-now: 장기 대화·작업 agent에서 memory read/write를 별도 LLM call로 처리하면 품질보다 운영비와 지연이 먼저 한계가 된다.
+- angle: “agent memory는 더 많은 요약 토큰이 아니라 zero-token operation으로 runtime에 붙어야 할 수 있다” — memory operation placement, token budget, latency-quality trade-off를 실무 memory system 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, long-horizon, token-budget, runtime]
+- status: idea
+
+### 2026-08-04 — [논문 리뷰] ECLoop: coding agent의 premature commitment를 막는 evidence-conditioned execution
+- type: paper
+- source: http://arxiv.org/abs/2607.28815v1
+- why-now: 코딩 에이전트가 repo 근거를 충분히 보지 않고 바로 수정하는 실패가 실제 PR 품질과 리뷰 비용을 키우고 있다.
+- angle: “코딩 agent는 edit 권한을 바로 주기보다 evidence threshold를 넘었을 때만 실행하게 해야 한다” — evidence-conditioned gate, 탐색→수정 phase boundary, audit 가능한 실행 레이어를 개발 워크플로로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, evidence, execution-gate, software-engineering]
+- status: idea
+
+### 2026-08-04 — [논문 리뷰] SpecBox: MCP sandbox scheduling으로 agent serving latency 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2607.23933v1
+- why-now: MCP 기반 tool 실행이 늘수록 sandbox cold start와 resource scheduling이 agent 응답 지연의 load-bearing component가 된다.
+- angle: “tool-use agent 성능은 모델 추론뿐 아니라 sandbox를 언제 미리 띄우고 어떻게 회수하는지에 달려 있다” — speculative sandbox scheduling, utilization-latency trade-off, MCP runtime 운영법을 다룬다.
+- difficulty: high
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, sandbox, agent-serving, systems]
+- status: idea
+
+### 2026-08-04 — [논문 리뷰] VITAL-RAG: coding agent context allocation을 invariance race로 보기
+- type: paper
+- source: http://arxiv.org/abs/2607.26937v1
+- why-now: repo 전체를 대상으로 한 coding-agent RAG는 무엇을 넣고 무엇을 버릴지 결정하는 context allocation 문제가 병목이다.
+- angle: “코드 RAG는 top-k retrieval이 아니라 evidence 후보들이 context slot을 두고 경쟁하는 allocation 문제” — fragment invariance, context budget, patch correctness regression을 coding agent 운영 관점으로 설명한다.
+- difficulty: high
+- freshness: 4
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, rag, context-allocation, retrieval]
+- status: idea
+
+### 2026-08-04 — HKUDS nanobot: self-hosted personal agent framework의 memory·MCP·multi-agent 구조
+- type: tech
+- source: https://github.com/HKUDS/nanobot
+- why-now: 개인용·팀용 agent를 SaaS 챗봇이 아니라 self-hosted runtime으로 운영하려는 흐름에서 memory, MCP, multi-agent, WebUI가 한 repo에 묶인 사례가 빠르게 커지고 있다.
+- angle: “personal agent framework를 고를 때는 모델 연결보다 memory boundary, tool surface, deployment ownership을 먼저 보자” — nanobot의 구성요소를 production assistant checklist로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, self-hosted, mcp, memory]
+- status: idea
+
+### 2026-08-04 — katanemo Plano: agentic app을 위한 AI-native proxy/data plane 설계
+- type: tech
+- source: https://github.com/katanemo/plano
+- why-now: agent 앱이 여러 LLM, tool, policy, observability layer를 거치면서 application code 바깥의 proxy/data plane이 runtime 아키텍처 핵심으로 올라오고 있다.
+- angle: “agent infra는 SDK 안쪽 코드가 아니라 routing·observability·policy를 맡는 data plane으로 분리될 수 있다” — smart LLM routing, telemetry, agent orchestration boundary를 platform engineering 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-infra, llm-routing, observability, proxy]
+- status: idea
