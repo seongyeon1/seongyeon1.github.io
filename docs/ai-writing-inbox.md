@@ -5557,3 +5557,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-observability, eval, opentelemetry, guardrails]
 - status: idea
+
+### 2026-08-03 — [논문 리뷰] MemTxn: agent memory update에 transaction boundary 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2607.27834v1
+- why-now: 장기 실행 agent가 memory를 계속 갱신할수록 partial write, stale source, 잘못된 rollback이 실제 품질·안전 문제로 이어진다.
+- angle: “agent memory도 DB처럼 commit/rollback boundary가 필요하다” — source-supported update, complete-state recovery, audit 가능한 memory transaction을 personal/coding agent 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, transaction, recovery, audit]
+- status: idea
+
+### 2026-08-03 — [논문 리뷰] ChronoMem: LLM agent memory를 version control과 semantic rollback으로 관리하기
+- type: paper
+- source: http://arxiv.org/abs/2607.27773v1
+- why-now: agent memory가 단순 append-only log에서 사용자의 수정·삭제·시간 이동을 반영해야 하는 상태 저장소로 진화하고 있다.
+- angle: “메모리는 벡터 검색보다 versioned state management 문제” — semantic diff, rollback, memory provenance, regression replay를 long-horizon assistant 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, version-control, rollback, provenance]
+- status: idea
+
+### 2026-08-03 — [논문 리뷰] SWE-NFI: coding agent를 기능 구현이 아니라 non-functional improvement로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.27409v1
+- why-now: 실제 개발 업무에는 성능, 안정성, 리팩터링, 보안 같은 non-functional improvement가 많지만 SWE-bench류 평가는 기능 버그 수정에 치우쳐 있다.
+- angle: “코딩 에이전트 평가는 pass/fail 테스트뿐 아니라 품질 속성 개선을 봐야 한다” — NFI task curation, verifier, metric design을 developer-agent QA로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, benchmark, software-quality, eval]
+- status: idea
+
+### 2026-08-03 — [논문 리뷰] Agent Harness Distillation: multi-agent harness를 inference-time artifact로 추출하기
+- type: paper
+- source: http://arxiv.org/abs/2607.28147v1
+- why-now: agent 성능이 모델만이 아니라 prompt, tool, role, routing이 합쳐진 harness에 크게 의존하면서 harness 자체를 공격·복제·증류하는 문제가 생겼다.
+- angle: “agent IP와 보안 경계는 모델 weight가 아니라 harness configuration에도 있다” — inference-time harness extraction, role/tool leakage, 방어 가능한 runtime boundary를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, harness, security, inference]
+- status: idea
+
+### 2026-08-03 — [논문 리뷰] OmegaUse-OfficeVal: 장기 office-suite task로 computer-use agent 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2607.27155v1
+- why-now: browser/desktop agent가 실제 지식노동 workflow로 들어가려면 문서·스프레드시트·메일류 장기 작업을 경제적 가치와 함께 평가해야 한다.
+- angle: “computer-use agent benchmark는 클릭 성공률이 아니라 office workflow의 가치·시간·오류 비용을 봐야 한다” — long-horizon task, economic grounding, verifier 설계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, office, benchmark, eval]
+- status: idea
+
+### 2026-08-03 — automagik genie: PR 생성 전 인터뷰·계획·parallel worktree review를 묶는 coding agent CLI
+- type: tech
+- source: https://github.com/automagik-dev/genie
+- why-now: “바로 코드 쓰는 agent”보다 요구사항 인터뷰, 계획 검토, 격리 worktree 실행, 자체 리뷰를 묶은 개발 워크플로가 실무형 패턴으로 떠오르고 있다.
+- angle: “coding agent UX의 핵심은 생성 버튼이 아니라 spec→plan→parallel execution→review contract” — CLI flow, worktree isolation, review loop를 개발팀 도입 체크리스트로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, cli, worktree, review]
+- status: idea
+
+### 2026-08-03 — amux: 병렬 Claude Code·Codex·Gemini 세션을 운영하는 open-source control plane
+- type: tech
+- source: https://github.com/mixpeek/amux
+- why-now: coding agent를 한 세션씩 쓰는 단계를 넘어 여러 agent run을 동시에 띄우고 모니터링·재시작·비교하는 운영 수요가 커지고 있다.
+- angle: “agent fleet 운영은 채팅 UX가 아니라 control plane 문제” — session orchestration, dashboard, failure recovery, 비용·결과 비교를 coding-agent 운영 아키텍처로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, control-plane, orchestration, github-repo]
+- status: idea
+
+### 2026-08-03 — docmancer: Claude Code·Codex·Cursor가 남긴 memory/rules를 재사용하는 agent context layer
+- type: tech
+- source: https://github.com/docmancer/docmancer
+- why-now: 여러 coding agent가 각자 만든 rules, instructions, session memory가 로컬에 흩어지면서 tool 간 context portability가 실제 병목이 되고 있다.
+- angle: “agent context는 repo 파일뿐 아니라 agent들이 남긴 운영 지식까지 포함한다” — local indexing, memory portability, instruction reuse, privacy boundary를 developer workflow로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, memory, context-engineering, developer-tools]
+- status: idea

@@ -286,6 +286,10 @@
 | 아이디어 | 미정 | [논문 리뷰] GLM-RAG — Graph Language Model을 retriever로 쓰는 GraphRAG | paper-review | Agentic RAG | | arXiv 2607.28397 — graph topology와 semantic representation을 함께 쓰는 retriever, multi-hop KG QA 운영 포인트 |
 | 아이디어 | 미정 | [논문 리뷰] CoMem — LLM depth를 이용한 unbounded-context memory 설계 | paper-review | AI 추론 최적화 | | arXiv 2607.28263 — 중간 layer residual state cache, fixed retrieval budget, long-context read compute trade-off |
 | 아이디어 | 미정 | Serena: semantic retrieval과 editing을 MCP toolkit으로 제공하는 coding agent IDE | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — symbol-aware retrieval/editing, MCP contract, CLI coding agent용 code-intelligence layer |
+| 아이디어 | 미정 | [논문 리뷰] MemTxn — agent memory update에 transaction boundary 붙이기 | paper-review | 논문 리뷰 | | arXiv 2607.27834 — source-supported update, complete-state recovery, audit 가능한 memory transaction을 agent memory 운영 패턴으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] ChronoMem — LLM agent memory를 version control과 semantic rollback으로 관리하기 | paper-review | 논문 리뷰 | | arXiv 2607.27773 — semantic diff, rollback, memory provenance, regression replay를 long-horizon assistant 설계로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] SWE-NFI — coding agent를 non-functional improvement로 평가하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2607.27409 — 성능·안정성·리팩터링·보안 개선 task와 verifier를 coding-agent QA 관점으로 정리 |
+| 아이디어 | 미정 | amux: 병렬 Claude Code·Codex·Gemini 세션을 운영하는 open-source control plane | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — session orchestration, dashboard, failure recovery, 비용·결과 비교를 agent fleet 운영 아키텍처로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
