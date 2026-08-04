@@ -295,6 +295,11 @@
 | 아이디어 | 미정 | [논문 리뷰] ECLoop — coding agent의 premature commitment를 막는 evidence-conditioned execution | paper-review | 개발자 AI 워크플로 | | arXiv 2607.28815 — repo evidence threshold, 탐색→수정 phase boundary, 실행 권한 게이트를 coding agent 운영법으로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] SpecBox — MCP sandbox scheduling으로 agent serving latency 줄이기 | paper-review | Agent/MCP 실전 | | arXiv 2607.23933 — speculative sandbox scheduling, utilization-latency trade-off, MCP runtime resource policy |
 | 아이디어 | 미정 | HKUDS nanobot: self-hosted personal agent framework의 memory·MCP·multi-agent 구조 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — memory boundary, MCP tool surface, multi-agent/WebUI, deployment ownership을 framework 선택 기준으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Real-Time Detection and Repair — LLM agent 실패를 실행 중 고치기 | paper-review | AI 평가/운영 | | arXiv 2608.02464 — mid-episode agent failure detector, intervention trigger, cost-aware repair policy를 runtime QA loop로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] LiveMem — long-running LLM inference에서 memory state continuity 유지하기 | paper-review | 논문 리뷰 | | arXiv 2608.02515 — context window를 넘어서는 assistant/agent interaction stream에서 지속 state를 보존하는 inference-time memory 설계 |
+| 아이디어 | 미정 | [논문 리뷰] SkillTrace — query-skill graph로 composable agent skill 찾기 | paper-review | Agent/MCP 실전 | | arXiv 2608.02356 — skill top-k retrieval 한계를 넘어 skill graph traversal과 composition path를 harness 운영법으로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] Diagnosing Search Behavior — long-horizon search agent 실패 모드 분석 | paper-review | AI 평가/운영 | | arXiv 2608.01913 — search trajectory diagnosis, evidence coverage, effort-quality curve, 실패 taxonomy 기반 research agent 평가 |
+| 아이디어 | 미정 | SAF-MCP: agent 생태계 threat modeling과 MCP 보안 프레임워크 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP/agent tool threat model, mitigation catalog, controls를 platform 보안 체크리스트로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

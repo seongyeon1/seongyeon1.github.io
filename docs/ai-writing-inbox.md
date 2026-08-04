@@ -5766,3 +5766,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-infra, llm-routing, observability, proxy]
 - status: idea
+
+### 2026-08-05 — [논문 리뷰] Real-Time Detection and Repair: LLM agent 실패를 실행 중 고치기
+- type: paper
+- source: http://arxiv.org/abs/2608.02464v1
+- why-now: 장기 실행 agent가 loop, tool error cascade, goal drift, corrupted content 흡수 같은 mid-episode 실패를 만들 때 매 step LLM judge를 붙이는 방식은 비용이 너무 크다.
+- angle: “agent QA는 사후 리포트가 아니라 runtime repair loop여야 한다” — 실패 detector, intervention trigger, cost-aware repair policy를 production agent 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, failure-detection, runtime-repair, eval]
+- status: idea
+
+### 2026-08-05 — [논문 리뷰] LiveMem: long-running LLM inference에서 memory state continuity 유지하기
+- type: paper
+- source: http://arxiv.org/abs/2608.02515v1
+- why-now: 장기 assistant와 agent가 context window를 넘어서는 상호작용 스트림을 다루면서, 단순 요약/RAG만으로는 지속적인 memory state를 보존하기 어렵다는 문제가 커지고 있다.
+- angle: “agent memory는 과거 검색이 아니라 현재 실행 상태의 연속성 문제” — state continuity, context retention, inference-time memory boundary를 long-running assistant 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, inference, long-running, context]
+- status: idea
+
+### 2026-08-05 — [논문 리뷰] SkillTrace: query-skill graph로 composable agent skill 찾기
+- type: paper
+- source: http://arxiv.org/abs/2608.02356v1
+- why-now: skill library 기반 agent가 늘어나지만 개별 skill top-k 검색만으로는 복합 작업에 필요한 skill chain과 dependency를 안정적으로 찾기 어렵다.
+- angle: “agent skill 검색은 파일 검색이 아니라 query와 skill 사이의 graph traversal 문제” — skill graph, composition path, retrieval failure를 harness/skills 운영법으로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, retrieval, graph, orchestration]
+- status: idea
+
+### 2026-08-05 — [논문 리뷰] Diagnosing Search Behavior: long-horizon search agent 실패 모드 분석
+- type: paper
+- source: http://arxiv.org/abs/2608.01913v1
+- why-now: deep search agent가 query를 반복하며 근거를 모아도 더 오래 검색하는 것이 항상 더 좋은 답으로 이어지는지, 어떤 탐색 실패가 생기는지 명확한 진단이 필요하다.
+- angle: “research agent 평가는 최종 답변 점수보다 search trajectory diagnosis가 중요하다” — query reformulation, evidence coverage, effort-quality curve, 실패 taxonomy를 실무 평가 하네스로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [search-agent, research-agent, eval, retrieval]
+- status: idea
+
+### 2026-08-05 — [논문 리뷰] Structured Memory for Edge LMs: O(1) SSM state injection으로 persistent context 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2608.02560v1
+- why-now: RAG는 retrieved context prefill과 KV cache 증가 비용이 커서 edge/on-device language model에서는 persistent memory를 더 싸게 주입하는 구조가 중요해지고 있다.
+- angle: “edge agent memory는 Transformer KV cache만의 문제가 아니라 SSM state injection 설계 공간” — corpus retrieval, persistent state, on-device latency/memory budget을 inference 최적화 관점으로 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [edge-llm, memory, ssm, inference]
+- status: idea
+
+### 2026-08-05 — SAF-MCP: agent 생태계 threat modeling과 MCP 보안 프레임워크
+- type: tech
+- source: https://github.com/secure-agentic-framework/saf-mcp
+- why-now: MCP server와 agent tool 생태계가 커지면서 prompt injection, tool misuse, data exfiltration 같은 위협을 개별 앱이 아니라 공통 threat model로 문서화·완화할 필요가 커졌다.
+- angle: “MCP 보안은 서버별 README가 아니라 재사용 가능한 threat model과 mitigation catalog가 필요하다” — SAF-MCP의 위협 분류, controls, 운영 체크리스트를 agent platform 보안 글로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp-security, agent-security, threat-modeling, github-repo]
+- status: idea
+
+### 2026-08-05 — memstack: Claude Code용 skill·memory·MCP 관리 대시보드 구조 보기
+- type: tech
+- source: https://github.com/cwinvestments/memstack
+- why-now: coding agent가 단일 CLI를 넘어 skill library, session memory, MCP tools, multi-agent orchestration을 함께 관리해야 하는 운영 도구로 진화하고 있다.
+- angle: “Claude Code 확장의 핵심은 프롬프트 조각이 아니라 skill inventory와 session memory 운영 UX” — skill framework, localhost dashboard, MCP tool management, handoff boundary를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, claude-code, skills, memory]
+- status: idea
+
+### 2026-08-05 — model-compose: YAML 하나로 agents·RAG·MCP 서비스를 배포하는 패턴
+- type: tech
+- source: https://github.com/hanyeol/model-compose
+- why-now: agent/RAG/MCP 서비스를 product runtime으로 올리려면 notebook 코드보다 선언형 배포, provider abstraction, local-to-cloud portability가 중요해지고 있다.
+- angle: “AI 서비스 배포를 docker-compose처럼 선언형으로 만들면 무엇이 좋아지나” — YAML schema, agent/RAG pipeline composition, MCP server packaging, 운영 재현성을 platform engineering 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-deployment, rag, mcp, github-repo]
+- status: idea
