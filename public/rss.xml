@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 02 Aug 2026 04:53:18 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 04 Aug 2026 01:14:28 GMT</lastBuildDate>
+    <item>
+      <title>PyTorch profiling: nn.Linear에서 fused MLP까지 병목 읽기</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-04-pytorch-profiling-linear-fused-mlp/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-04-pytorch-profiling-linear-fused-mlp/</guid>
+      <description>PyTorch profiler trace로 nn.Linear와 MLP 병목을 읽고 fusion 최적화를 판단하는 실무 기준을 정리한다.</description>
+      <pubDate>Tue, 04 Aug 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>pytorch</category>
+      <category>profiling</category>
+      <category>inference</category>
+      <category>optimization</category>
+    </item>
     <item>
       <title>Sebastian Raschka 블로그로 따라가는 LLM 연구 읽기 지도</title>
       <link>https://seongyeon1.github.io/blog/2026-08-02-sebastian-raschka-llm-reading-map/</link>

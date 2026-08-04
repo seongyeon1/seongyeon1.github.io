@@ -52,7 +52,7 @@
 | 발행완료 | 2026-06-22 | [논문 리뷰] HyperTool — 에이전트의 도구 호출 단위를 다시 설계하기 | paper-review | 논문 리뷰 | 9 | `2026-06-15-hypertool-agent-tool-call-granularity.mdx` — 자동 발행 완료 |
 | 발행완료 | 2026-06-23 | GitHub Agentic Workflows: 에이전트를 repo 안으로 넣으면 달라지는 것 | tutorial | 개발자 AI 워크플로 | 1 | `2026-06-15-github-agentic-workflows-repo-native-agents.mdx` — 자동 발행 완료 |
 | 아이디어 | 미정 | olmo-eval: 모델 개발 루프를 위한 평가 워크벤치 | tutorial | AI 평가/운영 | | HF/AllenAI 글 기반 — benchmark selection, regression tracking, release QA를 개발 루프에 넣는 법 |
-| 아이디어 | 미정 | PyTorch profiling: nn.Linear에서 fused MLP까지 병목을 줄이는 법 | tutorial | AI 추론 최적화 | | HF 글 기반 — profiler trace, operator breakdown, fused MLP 실전 튜토리얼 |
+| 발행완료 | 2026-08-04 | PyTorch profiling: nn.Linear에서 fused MLP까지 병목을 줄이는 법 | guide | AI 추론 최적화 | | `content/posts/2026-08-04-pytorch-profiling-linear-fused-mlp.mdx` — 자동 발행 완료, HF 글 기반, profiler trace, operator breakdown, fused MLP 실전 가이드 |
 | 아이디어 | 미정 | Copilot code review controls: AI 리뷰어를 팀 규칙에 맞추는 방법 | tutorial | 개발자 AI 워크플로 | 2 | GitHub changelog 기반 — review scope, content exclusion, custom instruction 체크리스트 |
 | 아이디어 | 미정 | TensorRT FP8 quantization: 체크포인트를 고성능 inference engine으로 바꾸기 | tutorial | AI 추론 최적화 | | NVIDIA 글 기반 — FP8, calibration, TensorRT engine build, latency/accuracy trade-off |
 | 아이디어 | 미정 | OpenEnv: Agentic RL에서 환경 표준화가 중요한 이유 | study | Agentic RL | | HF 글 기반 — environment API, reward, reset/replay, benchmark 재현성 |

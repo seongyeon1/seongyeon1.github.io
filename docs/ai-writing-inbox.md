@@ -148,9 +148,10 @@
 - freshness: 5
 - practicality: 5
 - confidence: 4
-- suggested-category: tutorial
+- suggested-category: guide
 - suggested-tags: [pytorch, profiling, inference, optimization]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-04-pytorch-profiling-linear-fused-mlp.mdx
 
 ### 2026-06-15 — North Mini Code: 개발자용 코드 모델을 볼 때 확인할 것들
 - type: tech
