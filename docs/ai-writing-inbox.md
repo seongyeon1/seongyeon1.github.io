@@ -5870,3 +5870,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-deployment, rag, mcp, github-repo]
 - status: idea
+
+### 2026-08-06 — [논문 리뷰] TurnSight: tool-integrated reasoning에 turn-level hindsight distillation 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2608.04007v1
+- why-now: tool-using reasoning agent 학습이 trajectory-level reward에 치우치면 어느 tool turn이 실제로 성공/실패를 만들었는지 credit assignment가 흐려진다.
+- angle: “agent RL은 최종 성공 보상보다 turn-level hindsight가 중요하다” — tool call별 판단 근거, self-distillation, 실패 turn 재학습을 eval/reward pipeline 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, reasoning, agent-rl, credit-assignment]
+- status: idea
+
+### 2026-08-06 — [논문 리뷰] PAST-Bench: personal agent의 recursive self-improvement 기반 평가
+- type: paper
+- source: http://arxiv.org/abs/2608.04003v1
+- why-now: personal agent가 preferences, task histories, tool routines, memory를 장기간 축적하면서 “경험을 다음 행동 개선으로 바꾸는가”를 평가하는 기준이 필요해졌다.
+- angle: “개인 비서 agent의 발전은 모델 업데이트가 아니라 experience→policy patch 루프다” — memory artifact, skill refinement, self-improvement benchmark를 운영 관점으로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [personal-agent, self-improvement, memory, benchmark]
+- status: idea
+
+### 2026-08-06 — [논문 리뷰] MAFIA: audited memory agent를 query-only probing으로 공격하기
+- type: paper
+- source: http://arxiv.org/abs/2608.03844v1
+- why-now: memory-augmented agent가 감사 로그와 write gate를 갖춰도, 외부 사용자가 질의만으로 memory behavior를 탐색하고 factual injection을 유도할 수 있는 공격면이 남는다.
+- angle: “memory 보안은 write API만 막는다고 끝나지 않는다” — probing, factual injection, poisoned record persistence, audit signal 한계를 agent memory threat model로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, security, probing, poisoning]
+- status: idea
+
+### 2026-08-06 — [논문 리뷰] TARL: long-term agent memory에 transaction-aware ledger 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2608.03699v1
+- why-now: 장기 agent memory는 한 번의 잘못된 update가 이후 retrieval과 reasoning을 반복적으로 왜곡하기 때문에 Write/Hold 이진 결정보다 세밀한 실행 원장이 필요하다.
+- angle: “agent memory update는 CRUD가 아니라 transaction log와 rollback policy가 있는 데이터베이스 문제” — memory operation 분류, reliable ledger, recovery gate를 실무 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, ledger, reliability, long-term-agent]
+- status: idea
+
+### 2026-08-06 — [논문 리뷰] SciRet: scientific RAG에서 retrieval·reranking 비용을 같이 재기
+- type: paper
+- source: http://arxiv.org/abs/2608.03860v1
+- why-now: 과학 문헌 RAG는 정확도만 높이는 것보다 corpus scale, retriever, reranker, compute budget 사이의 trade-off를 명시적으로 봐야 실무 적용이 가능하다.
+- angle: “RAG 평가는 top-k accuracy가 아니라 compute-aware retrieval budget 설계” — CORD-19 기반 실험을 통해 scientific QA pipeline의 reranking 비용/효과를 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [scientific-rag, retrieval, reranking, eval]
+- status: idea
+
+### 2026-08-06 — [논문 리뷰] Test-Time Scaling in Reasoning LLMs: inference regime과 재현성 체크리스트
+- type: paper
+- source: http://arxiv.org/abs/2608.04001v1
+- why-now: reasoning model의 test-time scaling이 단일 기법처럼 불리지만 실제로는 single trajectory, sampling, verification, search 등 서로 다른 inference regime이 섞여 평가 재현성을 흔든다.
+- angle: “더 오래 생각하게 했다는 말만으로는 부족하다” — inference-time compute budget, evaluation protocol, reproducibility pitfall을 reasoning serving 운영 기준으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, inference, test-time-scaling, eval]
+- status: idea
+
+### 2026-08-06 — Qwen Code: terminal-native coding agent를 오픈소스로 운영할 때 볼 것들
+- type: tech
+- source: https://github.com/QwenLM/qwen-code
+- why-now: terminal coding agent가 Claude Code/Codex류 상용 도구에서 오픈소스 런타임으로도 확산되면서, repo-level editing과 tool execution을 어떻게 노출하는지가 중요해졌다.
+- angle: “coding agent를 모델 데모가 아니라 로컬 개발 런타임으로 볼 때 확인할 것” — CLI UX, tool boundary, context collection, patch/review workflow를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, terminal, qwen, github-repo]
+- status: idea
+
+### 2026-08-06 — Engraphis: coding agent를 위한 local-first durable memory layer
+- type: tech
+- source: https://github.com/Coding-Dev-Tools/engraphis
+- why-now: 코딩 에이전트 세션이 길어지고 repo를 넘나들수록 매번 처음부터 context를 읽는 방식은 비용과 일관성 면에서 한계가 있다.
+- angle: “coding agent memory는 chat history가 아니라 repo-aware durable context cache여야 한다” — local-first 저장, code-aware recall, 세션 간 context reuse, privacy boundary를 개발 워크플로 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, memory, local-first, github-repo]
+- status: idea
