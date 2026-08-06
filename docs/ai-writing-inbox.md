@@ -5975,3 +5975,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, memory, local-first, github-repo]
 - status: idea
+
+### 2026-08-07 — [논문 리뷰] Argus: long-horizon reasoning agent를 위한 persistent runtime
+- type: paper
+- source: http://arxiv.org/abs/2608.05144v1
+- why-now: 장기 실행 agent가 실패 신호를 보고 pivot하거나, 현재 접근이 맞다는 근거를 축적하며 mission을 이어가는 runtime 구조가 agent 품질의 핵심 병목으로 올라왔다.
+- angle: “좋은 agent는 prompt가 아니라 durable profile, bounded mission, reviewer loop를 가진 runtime이다” — Manager/Planner/Engineer/Reviewer 역할 분리와 self-evolving runtime을 production agent harness 관점으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-runtime, long-horizon, reasoning, orchestration]
+- status: idea
+
+### 2026-08-07 — [논문 리뷰] ABSeeker: long-horizon search agent의 answer-backtracked credit assignment
+- type: paper
+- source: http://arxiv.org/abs/2608.05102v1
+- why-now: deep research/search agent는 검색·검증·통합 step이 길어질수록 어떤 action이 최종 답에 기여했는지 학습 신호가 흐려진다.
+- angle: “search agent 학습은 모든 step을 똑같이 보상하면 안 된다” — answer에서 거꾸로 evidence/action credit을 추적하는 방식과 SFT/RL 데이터 구성 포인트를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [search-agent, credit-assignment, retrieval, agent-rl]
+- status: idea
+
+### 2026-08-07 — [논문 리뷰] Hierarchical Graph Memory: agent memory를 path 단위로 localization·rewrite하기
+- type: paper
+- source: http://arxiv.org/abs/2608.05095v1
+- why-now: agent memory가 장기간 업데이트되면 flat graph는 노이즈와 충돌이 누적되어 retrieval quality와 reasoning reliability를 동시에 떨어뜨리기 쉽다.
+- angle: “agent memory update는 노드 추가가 아니라 경로 단위 localization과 rewrite 문제” — hierarchical graph, stale fact 갱신, memory regression test를 운영 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, graph-memory, retrieval, memory-update]
+- status: idea
+
+### 2026-08-07 — [논문 리뷰] State2State: environment-derived mid-training으로 agent 데이터 병목 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2608.04934v1
+- why-now: agent 학습은 handcrafted task와 expert trajectory에 의존하면 다양성과 확장성이 막히는데, 환경에서 상태 전이를 뽑아 mid-training 데이터로 쓰는 흐름이 구체화됐다.
+- angle: “agent 데이터는 사람 답안보다 environment transition에서 나올 수 있다” — state-to-state prediction, task-free supervision, agent post-training 데이터 flywheel로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-training, environment, mid-training, data]
+- status: idea
+
+### 2026-08-07 — [논문 리뷰] EvolveNet: collaborative harness evolution으로 agent를 자가 개선하기
+- type: paper
+- source: http://arxiv.org/abs/2608.04968v1
+- why-now: agent 성능 개선이 모델 weight 업데이트보다 harness prompt/tool/verifier/recovery loop 진화에서 나오는 사례가 늘고 있다.
+- angle: “agent self-improvement의 단위는 모델이 아니라 harness patch일 수 있다” — collaborative harness evolution, 검증 가능한 변경, rollback gate를 개발자 agent 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, self-improvement, eval, orchestration]
+- status: idea
+
+### 2026-08-07 — Whale: terminal-first DeepSeek coding agent의 prompt cache와 dynamic workflow
+- type: tech
+- source: https://github.com/usewhale/Whale
+- why-now: terminal coding agent가 local workflow에 들어오면서 1M context, MCP tools, prompt cache hit rate, dynamic workflow 같은 runtime 설계 요소가 도구 선택 기준이 되고 있다.
+- angle: “coding agent CLI는 모델 wrapper가 아니라 cache·context·tool workflow runtime” — prompt cache 전략, MCP tool boundary, terminal UX, 비용/latency trade-off를 repo introduction으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, terminal, prompt-cache, github-repo]
+- status: idea
+
+### 2026-08-07 — Boucle Framework: structured memory와 safety hooks를 갖춘 autonomous agent loop
+- type: tech
+- source: https://github.com/Bande-a-Bonnot/Boucle-framework
+- why-now: autonomous agent framework가 단순 loop에서 structured memory, safety hooks, loop management를 명시적으로 제공하는 방향으로 수렴하고 있다.
+- angle: “agent loop의 최소 운영 단위는 memory schema, safety hook, stop/retry policy다” — Boucle의 구성요소를 lightweight autonomous agent runtime 체크리스트로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, memory, safety-hooks, autonomous-agent]
+- status: idea
+
+### 2026-08-07 — pi-mcp-adapter: Pi coding agent를 위한 token-efficient MCP adapter
+- type: tech
+- source: https://github.com/nicobailon/pi-mcp-adapter
+- why-now: MCP tool을 coding agent에 붙일 때 도구 설명·스키마·출력 전달이 context budget을 크게 먹으면서 adapter 계층의 token efficiency가 중요해졌다.
+- angle: “MCP adapter는 연결 코드가 아니라 context budget control layer” — tool description 압축, schema 전달, coding agent용 MCP gateway 패턴을 repo 중심으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, coding-agent, token-efficiency, github-repo]
+- status: idea
