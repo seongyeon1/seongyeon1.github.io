@@ -304,7 +304,7 @@
 | 아이디어 | 미정 | [논문 리뷰] PAST-Bench — personal agent의 recursive self-improvement 평가 | paper-review | AI 평가/운영 | | arXiv 2608.04003 — preferences·task history·tool routine·memory가 다음 행동 개선으로 이어지는지 보는 personal agent benchmark |
 | 아이디어 | 미정 | [논문 리뷰] MAFIA — audited memory agent의 query-only memory attack | paper-review | 논문 리뷰 | | arXiv 2608.03844 — memory probing, factual injection, poisoned record persistence, audit signal 한계를 agent memory threat model로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] SciRet — scientific RAG retrieval·reranking 비용 같이 재기 | paper-review | Agentic RAG | | arXiv 2608.03860 — corpus scale, retriever, reranker, compute budget trade-off를 scientific QA RAG 운영 체크리스트로 정리 |
-| 아이디어 | 미정 | Qwen Code: terminal-native coding agent를 오픈소스로 운영할 때 볼 것들 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — CLI UX, tool boundary, context collection, patch/review workflow를 coding-agent 런타임 관점으로 소개 |
+| 발행완료 | 2026-08-06 | Qwen Code: terminal-native coding agent를 오픈소스로 운영할 때 볼 것들 | tool | 개발자 AI 워크플로 | | `content/posts/2026-08-06-qwen-code-terminal-native-coding-agent.mdx` — 자동 발행 완료, GitHub repo 기반, CLI UX, tool boundary, context collection, patch/review workflow를 coding-agent 런타임 관점으로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

@@ -5958,9 +5958,10 @@
 - freshness: 5
 - practicality: 5
 - confidence: 4
-- suggested-category: tutorial
+- suggested-category: tool
 - suggested-tags: [coding-agent, terminal, qwen, github-repo]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-06-qwen-code-terminal-native-coding-agent.mdx
 
 ### 2026-08-06 — Engraphis: coding agent를 위한 local-first durable memory layer
 - type: tech

@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 04 Aug 2026 01:14:28 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 06 Aug 2026 01:13:53 GMT</lastBuildDate>
+    <item>
+      <title>Qwen Code: terminal-native coding agent를 볼 때 체크할 것들</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-06-qwen-code-terminal-native-coding-agent/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-06-qwen-code-terminal-native-coding-agent/</guid>
+      <description>Qwen Code를 모델 데모가 아니라 로컬 개발 런타임으로 볼 때 확인해야 할 CLI UX, 도구 경계, 컨텍스트 수집, 리뷰 흐름을 정리한다.</description>
+      <pubDate>Thu, 06 Aug 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>coding-agent</category>
+      <category>terminal</category>
+      <category>qwen</category>
+      <category>github-repo</category>
+    </item>
     <item>
       <title>PyTorch profiling: nn.Linear에서 fused MLP까지 병목 읽기</title>
       <link>https://seongyeon1.github.io/blog/2026-08-04-pytorch-profiling-linear-fused-mlp/</link>
