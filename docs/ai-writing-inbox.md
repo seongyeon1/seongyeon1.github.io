@@ -6079,3 +6079,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, coding-agent, token-efficiency, github-repo]
 - status: idea
+
+### 2026-08-08 — [논문 리뷰] TRAJDEBUG: long-horizon agent trajectory에서 첫 치명 오류 찾기
+- type: paper
+- source: http://arxiv.org/abs/2608.06346v1
+- why-now: 장기 실행 agent가 복잡해질수록 최종 실패보다 “어느 step이 cascade를 시작했나”를 찾는 debugging/eval 하네스가 필요해졌다.
+- angle: “agent 관측성의 핵심은 trace 저장이 아니라 critical failure localization” — trajectory lifecycle, root-cause step, replay 기반 regression test를 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, trajectory, debugging, eval]
+- status: idea
+
+### 2026-08-08 — [논문 리뷰] The Bitter Lesson of Tool Calling: tool을 코드로 호출하면 무엇이 달라지나
+- type: paper
+- source: http://arxiv.org/abs/2608.06370v1
+- why-now: JSON tool call 중심 agent 설계가 scripts-as-tools, parallel tool orchestration, programmatic delegation으로 확장되고 있다.
+- angle: “도구 호출은 API 선택 문제가 아니라 execution substrate 선택 문제” — rigid schema call과 code-based chaining의 비용, 안전성, 평가 방식을 비교한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent, code-execution, eval]
+- status: idea
+
+### 2026-08-08 — [논문 리뷰] HarnessOpt-Bench: agent 성능을 model이 아니라 harness 최적화로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.06301v1
+- why-now: prompt, tool, control flow, memory, orchestration 코드가 agent 성능을 좌우하면서 harness 자체를 자동 최적화하고 평가하는 benchmark가 중요해졌다.
+- angle: “agent 개선은 모델 교체보다 harness patch와 rollback loop일 때가 많다” — eval-guided harness optimization, verifier, regression budget을 개발 워크플로로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, optimization, eval, orchestration]
+- status: idea
+
+### 2026-08-08 — [논문 리뷰] Selective Context Preference Optimization: RAG context를 언제 믿을지 학습하기
+- type: paper
+- source: http://arxiv.org/abs/2608.06377v1
+- why-now: RAG/agent가 외부 context에 의존할수록 misleading context를 무시하되 유용한 context는 활용하는 선택적 신뢰 정책이 핵심 문제가 된다.
+- angle: “robust RAG는 context를 덜 쓰는 모델이 아니라 context 신뢰도를 판단하는 모델” — grounding gate, conflict handling, fallback routing 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, context, preference-optimization, grounding]
+- status: idea
+
+### 2026-08-08 — [논문 리뷰] CalibForge: terminal agent task를 solver 난이도로 보정하기
+- type: paper
+- source: http://arxiv.org/abs/2608.06352v1
+- why-now: terminal/coding agent 학습에는 executable task뿐 아니라 현재 solver에게 너무 쉽지도 어렵지도 않은 calibrated task가 필요하다.
+- angle: “agentic RL 환경은 실행 가능성보다 난이도 calibration이 먼저다” — adversarial solver calibration, curriculum, validation harness를 task-generation pipeline으로 소개한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [terminal-agent, agentic-rl, benchmark, calibration]
+- status: idea
+
+### 2026-08-08 — BaKron: Kronecker-factored Hessian으로 LLM quantization 빠르게 하기
+- type: paper
+- source: http://arxiv.org/abs/2608.06291v1
+- why-now: 추론 비용 최적화가 serving stack의 기본 과제가 되면서 GPTQ 계열 양자화의 계산 비용과 정확도 trade-off를 더 정교하게 다룰 필요가 있다.
+- angle: “양자화는 bit 줄이기가 아니라 weight geometry를 얼마나 싸게 근사하느냐” — Hessian approximation, adaptive rounding, inference QA를 실무 관점으로 풀어본다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [quantization, inference, hessian, optimization]
+- status: idea
+
+### 2026-08-08 — AgenticX: Meta-Agent orchestration과 Studio를 갖춘 production multi-agent platform
+- type: tech
+- source: https://github.com/DemonDamon/AgenticX
+- why-now: multi-agent framework가 SDK만 제공하는 단계를 넘어 CLI, Studio, desktop app, orchestration layer를 함께 묶는 productized runtime으로 진화하고 있다.
+- angle: “multi-agent platform 선택 기준은 agent API보다 운영 surface다” — meta-agent, workflow, observability, human debugging UI, deployment boundary를 repo architecture로 뜯어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, agent-framework, orchestration, github-repo]
+- status: idea
+
+### 2026-08-08 — mnemo-cortex: persistent recall과 verified facts를 갖춘 agent memory coprocessor
+- type: tech
+- source: https://github.com/GuyMannDude/mnemo-cortex
+- why-now: 장기 agent 운영에서 memory를 vector DB 부가 기능이 아니라 active recall, 검증된 fact, sync boundary를 가진 독립 coprocessor로 분리하려는 흐름이 강해지고 있다.
+- angle: “agent memory는 저장소가 아니라 별도 운영 프로세스다” — persistent recall, semantic search, fact verification, encrypted sync를 personal agent memory architecture로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, personal-agent, semantic-search, github-repo]
+- status: idea

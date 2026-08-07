@@ -310,6 +310,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Hierarchical Graph Memory — agent memory path localization과 rewrite | paper-review | 논문 리뷰 | | arXiv 2608.05095 — flat graph memory의 노이즈·충돌 누적을 path-level localization, rewrite, memory regression test로 다루는 운영 패턴 |
 | 아이디어 | 미정 | [논문 리뷰] EvolveNet — collaborative harness evolution으로 agent 자가 개선하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.04968 — 모델 weight가 아니라 harness prompt/tool/verifier/recovery loop patch를 검증·rollback하는 self-improvement 운영법 |
 | 아이디어 | 미정 | Whale: terminal-first DeepSeek coding agent의 prompt cache와 dynamic workflow | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — 1M context, MCP tools, prompt cache, terminal UX를 coding-agent runtime 선택 체크리스트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] TRAJDEBUG: long-horizon agent trajectory에서 첫 치명 오류 찾기 | paper-review | AI 평가/운영 | | arXiv 2608.06346 — critical failure localization, replay, regression test를 agent observability 운영 패턴으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] The Bitter Lesson of Tool Calling: tool을 코드로 호출하면 무엇이 달라지나 | paper-review | Agent/MCP 실전 | | arXiv 2608.06370 — JSON tool call vs code-based tool orchestration, 병렬화, sandbox/eval trade-off |
+| 아이디어 | 미정 | [논문 리뷰] HarnessOpt-Bench: agent 성능을 model이 아니라 harness 최적화로 보기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.06301 — prompt/tool/control-flow/memory 최적화, verifier, rollback loop를 harness patch workflow로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] Selective Context Preference Optimization: RAG context를 언제 믿을지 학습하기 | paper-review | Agentic RAG | | arXiv 2608.06377 — misleading context에 강하면서 useful context는 쓰는 grounding gate와 fallback routing 설계 |
+| 아이디어 | 미정 | AgenticX: Meta-Agent orchestration과 Studio를 갖춘 production multi-agent platform | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — SDK·CLI·Studio·desktop app을 묶은 multi-agent 운영 surface와 observability 체크리스트 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
