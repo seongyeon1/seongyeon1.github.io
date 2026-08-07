@@ -1,0 +1,238 @@
+---
+title: "Agent-as-Retriever: RAG가 기본값이 아니게 된 이유"
+date: "2026-08-07"
+category: "guide"
+tags: ["Agentic Search", "RAG", "Context Engineering", "MCP", "Coding Agent"]
+summary: "Vector RAG를 먼저 만들고 agent를 붙이는 방식에서, agent가 grep·read·tool call로 필요한 context를 직접 찾는 구조로 이동하는 흐름을 정리한다."
+---
+
+## 요약부터
+
+최근 agent retrieval 쪽에서 중요한 흐름은 단순하다.
+
+> 예전 기본값은 “문서를 미리 chunking하고 embedding해서 vector DB에 넣은 뒤, 질문이 오면 top-k를 가져오는 RAG”였다. 이제 coding agent와 실시간 업무 agent에서는 “agent가 필요할 때 tool로 직접 찾고 읽는 방식”이 기본값이 되어가고 있다.
+
+Medium 글 [AI Agents Don’t Need Vector Search Anymore](https://buzzgrewal.medium.com/ai-agents-dont-need-vector-search-anymore-inside-the-agentic-search-stack-replacing-rag-in-2026-58efcabe4f6f)는 이 흐름을 **agent-as-retriever**, **agentic search**, **just-in-time context loading**, **vectorless RAG**라는 이름으로 정리한다.
+
+핵심은 “vector search가 죽었다”가 아니다. 더 정확히는 이거다.
+
+> Vector DB는 default retrieval layer에서 fallback 또는 hybrid layer로 내려가고 있다.
+
+특히 코드베이스, 로그, 티켓, CRM, 대시보드처럼 계속 바뀌는 corpus에서는 미리 만든 index보다 agent가 현재 상태를 직접 탐색하는 쪽이 더 자연스럽다.
+
+## 왜 기존 Vector RAG가 coding agent에서 약했나
+
+Vector RAG는 정적인 문서 QA에는 여전히 좋다. 문제는 코드와 운영 데이터처럼 “살아있는 corpus”다.
+
+코드베이스에서 retrieval은 보통 이런 질문을 다룬다.
+
+- 이 함수가 어디서 호출되는가?
+- 이 에러 메시지는 어느 경로에서 발생하는가?
+- config flag가 실제 runtime에서 어떻게 흘러가는가?
+- 최근 변경된 diff가 어느 테스트를 깨뜨렸는가?
+
+이런 질문은 embedding similarity보다 **정확한 symbol, path, import, call chain, git diff, test output**이 더 중요하다. `retry policy`를 찾는다고 해도 실제 코드에는 `backoff`, `requeue`, `circuit_breaker` 같은 이름으로 흩어져 있을 수 있다. 한 번의 vector lookup으로 끝나기보다, 여러 번 검색하고 읽고 좁혀가는 과정이 필요하다.
+
+Medium 글은 Claude Code 초기 버전이 local vector DB 기반 RAG를 쓰다가 agentic search로 바꿨다는 Anthropic 쪽 발언을 중심 사례로 든다. 이유는 네 가지로 정리된다.
+
+1. **정확도**: LLM이 `grep`을 여러 번 돌리며 query를 바꾸고, 주변 파일을 읽고, import를 따라가는 loop가 단발성 embedding lookup보다 나을 수 있다.
+2. **최신성**: 파일을 방금 수정해도 agent는 바로 현재 bytes를 읽는다. vector index는 다시 embedding되기 전까지 stale하다.
+3. **보안과 privacy**: 별도 vector index는 원본 코드의 또 다른 복사본이다. enterprise 환경에서는 저장 위치, 접근 권한, 삭제 정책이 모두 부담이다.
+4. **신뢰성**: embedding model, chunking pipeline, vector DB, re-indexing job이 줄어들면 장애 지점도 줄어든다.
+
+이 관점에서 보면 agentic search는 fancy한 기법이라기보다, 오히려 더 boring한 시스템 설계다. `Glob`, `Grep`, `Read`, `Bash` 같은 원시 도구를 잘 노출하고, 모델이 필요한 만큼 반복해서 쓰게 한다.
+
+## Just-in-time context loading
+
+Anthropic은 이 패턴을 **just-in-time context loading**으로 설명한다. 모든 데이터를 미리 prompt나 index에 넣는 것이 아니라, agent가 lightweight identifier를 들고 있다가 runtime에 필요한 내용만 context로 불러오는 방식이다.
+
+예를 들면 이런 흐름이다.
+
+```text
+질문 수신
+  ↓
+파일명/심볼/에러 메시지로 glob 또는 grep
+  ↓
+후보 파일 일부 read
+  ↓
+import, call site, test, config로 검색 범위 확장
+  ↓
+필요한 조각만 context에 유지
+  ↓
+답변 또는 수정 실행
+```
+
+이 구조에서는 retrieval이 별도 시스템이 아니라 agent loop 안으로 들어온다. 검색 결과를 모델에 주는 것이 아니라, **모델이 검색 전략을 세운다**.
+
+그래서 retrieval 품질은 vector DB의 recall만으로 결정되지 않는다. 다음 요소가 같이 중요해진다.
+
+- tool 이름과 설명이 명확한가
+- 검색 결과가 token budget 안에 들어오도록 잘 잘리는가
+- 파일 일부 읽기, line range 읽기, symbol 단위 읽기가 가능한가
+- 실패한 검색을 agent가 다른 query로 복구할 수 있는가
+- context window가 찼을 때 무엇을 버리고 무엇을 요약할지 정해져 있는가
+
+좋은 agent runtime은 결국 context management system이다.
+
+## Agent-as-Retriever 아키텍처
+
+Medium 글에서 정리한 Claude Code류 구조는 대략 다음과 같다.
+
+| 계층 | 역할 |
+|---|---|
+| Glob | 파일 경로와 패턴으로 후보를 좁힌다 |
+| Grep | 정확한 문자열, regex, symbol, 에러 메시지를 찾는다 |
+| Read | 필요한 파일 또는 line range만 context에 올린다 |
+| Bash | `git log`, `jq`, `find`, test command 같은 긴 꼬리를 처리한다 |
+| Explore subagent | 넓은 탐색을 병렬로 나눠 수행한다 |
+
+여기서 중요한 점은 tool이 많아서 좋은 것이 아니라는 점이다. 오히려 tool surface는 작고 명확해야 한다. 사람이 봐도 어떤 상황에 어떤 tool을 써야 할지 애매하면 agent도 헷갈린다.
+
+이 패턴이 작동하려면 context 압축도 같이 있어야 한다. 검색을 반복하면 context는 금방 찬다. 그래서 최신 coding agent들은 오래된 tool output을 버리거나, 긴 내용을 요약하거나, 이전 turn을 collapse하는 compaction pipeline을 갖는다.
+
+즉, agent-as-retriever는 단순히 “grep 쓰자”가 아니다.
+
+> 검색 tool + 읽기 tool + 반복 계획 + context 압축 + permission + 검증 루프가 함께 있어야 production 구조가 된다.
+
+## 2026년 retrieval stack은 하나가 아니다
+
+글에서 흥미로운 부분은 “RAG vs grep”처럼 이분법으로 보지 않는다는 점이다. 실제 제품들은 여러 flavor로 나뉜다.
+
+### 1. Pure agentic
+
+Claude Code나 Devin류에 가깝다. 별도 persistent index 없이 agent가 `grep`, `read`, shell, test runner를 직접 호출한다. 코드가 계속 바뀌는 환경에서는 freshness와 privacy가 강점이다.
+
+### 2. Hybrid lexical + semantic
+
+Cursor, Sourcegraph Amp류에 가깝다. exact symbol이나 파일명은 grep류가 빠르고, 개념적 질문은 semantic search가 낫다. 그래서 agent가 query shape에 따라 lexical search와 semantic search를 골라 쓴다.
+
+개인적으로는 이쪽이 가장 현실적인 default라고 본다. “vector를 버린다”보다 “vector를 작고 필요한 곳에만 둔다”가 더 오래갈 구조다.
+
+### 3. Structural / AST-aware
+
+`ast-grep`, Probe, Cline류 접근이다. 문자열도 아니고 embedding도 아니라, syntax tree를 기준으로 함수 정의, class, import, call pattern을 찾는다.
+
+코드 retrieval에서는 이 층이 꽤 중요해질 가능성이 높다. agent가 `grep` 열 번으로 찾을 것을 AST query 한 번으로 줄일 수 있기 때문이다.
+
+### 4. Specialized retrieval model
+
+Windsurf의 SWE-grep, Chroma의 Context-1 같은 방향이다. frontier model이 모든 검색을 직접 수행하면 token과 latency가 커진다. 그래서 retrieval만 잘하는 작은 모델이나 특화 모델을 붙여 agent loop 비용을 낮추는 식이다.
+
+### 5. RL-trained retrieval policy
+
+Search-R1류 접근이다. 검색 query를 어떻게 만들고, 언제 다시 검색하고, 언제 답변할지를 prompt heuristic이 아니라 reinforcement learning으로 학습한다.
+
+이 방향은 앞으로 중요해질 것 같다. agent 성능은 “모델이 똑똑한가”뿐 아니라 **언제 어떤 tool을 얼마나 써야 하는가**에 달려 있기 때문이다.
+
+## 언제 Vector RAG가 여전히 맞나
+
+이 글을 잘못 읽으면 “이제 vector DB 필요 없다”로 흘러가기 쉽다. 그건 위험한 결론이다.
+
+Vector RAG가 여전히 맞는 경우는 분명하다.
+
+- 제품 FAQ, 정책 문서, 용어집처럼 비교적 안정적인 knowledge base
+- latency가 매우 중요한 사용자-facing chat
+- 수백만, 수십억 문서를 대상으로 한 global semantic search
+- 표현은 다르지만 의미가 비슷한 문서를 찾아야 하는 질문
+- retrieval 결과를 deterministic하게 cache하고 싶은 경우
+
+반대로 agent-as-retriever가 강한 경우는 이쪽이다.
+
+- private codebase
+- 빠르게 바뀌는 repo, log, ticket, dashboard
+- 현재 파일 상태가 중요한 coding task
+- 보안상 별도 index를 만들기 부담스러운 환경
+- 검색 과정 자체가 multi-step reasoning인 업무
+
+내 기준으로 의사결정표를 만들면 이렇다.
+
+| 상황 | 기본 선택 |
+|---|---|
+| 안정적인 문서 QA | Vector RAG + reranker |
+| private repo coding agent | Agent-as-retriever 또는 hybrid |
+| 대형 monorepo cross-service 질문 | Hybrid + structural search |
+| 로그/티켓/CRM처럼 계속 바뀌는 데이터 | MCP tool 기반 agentic search |
+| layout-heavy PDF | visual retrieval 또는 `pdfgrep` 기반 agentic search |
+| latency-critical chat | specialized retriever + cache |
+| 넓은 research task | multi-agent + agentic search, 단 token 비용 주의 |
+
+## MCP가 중요한 이유
+
+이 흐름에서 MCP는 단순 plugin 규격이 아니다. MCP의 의미는 retrieval 대상을 “DB query”가 아니라 **agent가 호출할 수 있는 tool/resource**로 표준화한다는 데 있다.
+
+예전에는 새로운 데이터 소스를 붙일 때 이런 질문을 했다.
+
+> 이 데이터를 어떻게 chunking하고 embedding해서 vector DB에 넣을까?
+
+agent-as-retriever 관점에서는 질문이 바뀐다.
+
+> 이 데이터를 agent가 안전하고 명확하게 탐색하려면 어떤 tool과 resource로 노출해야 할까?
+
+예를 들어 사내 시스템이라면 이런 MCP server들이 retrieval layer가 된다.
+
+- filesystem MCP: 코드와 문서 읽기
+- database MCP: readonly SQL query
+- observability MCP: log, trace, metric 조회
+- ticket MCP: Jira, Linear, GitHub issue 검색
+- docs MCP: Notion, Confluence, Google Drive 문서 조회
+
+이렇게 보면 RAG pipeline보다 tool contract 설계가 더 중요해진다. 입력 파라미터, output cap, 권한, audit log, error message가 retrieval 품질과 안전성을 좌우한다.
+
+## 실무 설계로 옮기면
+
+내가 agent retrieval stack을 설계한다면, 처음부터 거대한 vector DB를 만들기보다 아래 순서로 시작할 것 같다.
+
+### 1. lexical search를 먼저 안정화한다
+
+파일명, symbol, 에러 메시지, exact phrase는 embedding보다 lexical search가 낫다. `ripgrep`, SQL `LIKE`/FTS, log query, issue search 같은 기본기를 먼저 깐다.
+
+### 2. read API를 line range 단위로 만든다
+
+검색보다 더 중요한 것은 읽기다. agent가 파일 전체를 매번 읽으면 context가 터진다. `read(path, offset, limit)`처럼 부분 읽기가 가능해야 한다.
+
+### 3. output cap과 ranking을 tool 쪽에서 처리한다
+
+agent에게 10만 줄짜리 grep 결과를 주면 망한다. tool은 match count, path, line, small context를 적당히 잘라서 돌려줘야 한다.
+
+### 4. semantic search는 fallback으로 붙인다
+
+동의어, 추상 개념, topic discovery가 필요한 경우에만 vector search를 붙인다. 특히 “retry라는 단어는 없지만 재시도 정책에 해당하는 코드” 같은 질문에는 semantic layer가 도움이 된다.
+
+### 5. structural search를 코드 agent의 2단계로 둔다
+
+코드에서는 AST-aware search가 비용 대비 효율이 좋다. 함수 정의, import graph, class method, call pattern을 구조적으로 찾을 수 있으면 agent loop가 짧아진다.
+
+### 6. compaction과 검증을 retrieval의 일부로 본다
+
+retrieval은 “찾기”에서 끝나지 않는다. 찾은 내용을 어떻게 줄이고, 어떤 근거를 남기고, 어떤 테스트로 확인할지까지 포함해야 한다.
+
+## 내 결론
+
+RAG의 시대가 끝났다는 말은 과장이다. 하지만 “모든 AI app은 일단 vector DB부터 붙인다”는 시대는 확실히 약해지고 있다.
+
+Agent가 실제 업무를 하려면 정적인 지식 조각보다 **현재 상태를 읽는 능력**이 중요하다. 코드 파일은 바뀌고, 로그는 흐르고, 티켓은 갱신되고, 대시보드는 실시간으로 변한다. 이런 환경에서는 미리 만든 embedding index보다 agent가 tool을 통해 직접 확인하는 구조가 더 자연스럽다.
+
+앞으로의 retrieval stack은 아마 이렇게 갈 것 같다.
+
+```text
+lexical search
++ partial read
++ structural search
++ semantic fallback
++ MCP tool layer
++ context compaction
++ eval / tracing
+```
+
+이 조합이 2026년형 RAG다. 이름은 RAG일 수도 있고 agentic search일 수도 있지만, 핵심은 같다.
+
+> Retrieval은 더 이상 “모델 앞에 붙은 검색기”가 아니라, agent runtime 안에서 계획되고 실행되는 행동이 되고 있다.
+
+## 참고 자료
+
+- [AI Agents Don’t Need Vector Search Anymore: Inside the Agentic Search Stack Replacing RAG in 2026](https://buzzgrewal.medium.com/ai-agents-dont-need-vector-search-anymore-inside-the-agentic-search-stack-replacing-rag-in-2026-58efcabe4f6f)
+- [Anthropic: Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- [Anthropic: Building effective agents](https://www.anthropic.com/research/building-effective-agents)
+- [Anthropic: Introducing the Model Context Protocol](https://www.anthropic.com/news/model-context-protocol)
+- [Keyword Search is All You Need](https://arxiv.org/abs/2602.23368)
+- [Search-R1: Training LLMs to Reason and Leverage Search Engines with Reinforcement Learning](https://arxiv.org/abs/2503.09516)

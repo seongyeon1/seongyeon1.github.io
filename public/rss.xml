@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 06 Aug 2026 01:13:53 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 07 Aug 2026 12:19:36 GMT</lastBuildDate>
+    <item>
+      <title>Agent-as-Retriever: RAG가 기본값이 아니게 된 이유</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-07-agent-as-retriever-rag/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-07-agent-as-retriever-rag/</guid>
+      <description>Vector RAG를 먼저 만들고 agent를 붙이는 방식에서, agent가 grep·read·tool call로 필요한 context를 직접 찾는 구조로 이동하는 흐름을 정리한다.</description>
+      <pubDate>Fri, 07 Aug 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>Agentic Search</category>
+      <category>RAG</category>
+      <category>Context Engineering</category>
+      <category>MCP</category>
+      <category>Coding Agent</category>
+    </item>
     <item>
       <title>Qwen Code: terminal-native coding agent를 볼 때 체크할 것들</title>
       <link>https://seongyeon1.github.io/blog/2026-08-06-qwen-code-terminal-native-coding-agent/</link>
