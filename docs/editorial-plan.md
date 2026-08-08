@@ -315,6 +315,11 @@
 | 아이디어 | 미정 | [논문 리뷰] HarnessOpt-Bench: agent 성능을 model이 아니라 harness 최적화로 보기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.06301 — prompt/tool/control-flow/memory 최적화, verifier, rollback loop를 harness patch workflow로 해석 |
 | 아이디어 | 미정 | [논문 리뷰] Selective Context Preference Optimization: RAG context를 언제 믿을지 학습하기 | paper-review | Agentic RAG | | arXiv 2608.06377 — misleading context에 강하면서 useful context는 쓰는 grounding gate와 fallback routing 설계 |
 | 아이디어 | 미정 | AgenticX: Meta-Agent orchestration과 Studio를 갖춘 production multi-agent platform | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — SDK·CLI·Studio·desktop app을 묶은 multi-agent 운영 surface와 observability 체크리스트 |
+| 아이디어 | 미정 | [논문 리뷰] Beyond Top-K — RAG retrieval을 해석 가능한 agentic operation으로 바꾸기 | paper-review | Agentic RAG | | arXiv 2608.06305 — chunk embedding top-k 한계를 넘어 structured document operation, provenance, tool-like retrieval을 agentic RAG 설계로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] AV-AIVAT — agent 평가를 anytime-valid stopping으로 74배 싸게 만들기 | paper-review | AI 평가/운영 | | arXiv 2608.06362 — fixed-budget eval 대신 confidence sequence와 anytime-valid stopping으로 episode 비용·오판 위험을 함께 제어하는 방법 |
+| 아이디어 | 미정 | [논문 리뷰] NeSy-RAG — reasoning step을 검증 가능한 symbolic artifact로 꺼내기 | paper-review | Agentic RAG | | arXiv 2608.06292 — neuro-symbolic decomposition, attribution, verifier gate를 production RAG QA 패턴으로 정리 |
+| 아이디어 | 미정 | waku-agent: 오후 안에 읽히는 local-first agent harness | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — loop, memory, eval boundary를 직접 읽고 고칠 수 있는 lightweight local agent framework 선택 기준 |
+| 아이디어 | 미정 | yantrikdb-mcp: contradiction detection이 있는 agent persistent memory MCP 서버 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — temporal decay, contradiction detection, knowledge graph, autonomous consolidation을 MCP memory runtime으로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

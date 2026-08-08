@@ -6184,3 +6184,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-memory, personal-agent, semantic-search, github-repo]
 - status: idea
+
+### 2026-08-09 — [논문 리뷰] AV-AIVAT: agent 평가를 anytime-valid stopping으로 74배 싸게 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.06362v1
+- why-now: agent benchmark가 게임·시뮬레이션·tool-use 환경으로 길어지면서 “몇 episode를 돌려야 충분한가”가 비용과 신뢰도의 병목이 됐다.
+- angle: “agent eval은 고정 budget 리더보드가 아니라 통계적으로 멈출 수 있는 실험이어야 한다” — anytime-valid stopping, confidence sequence, 평가 비용/오판 위험 trade-off를 운영 QA 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, benchmark, statistical-testing, cost-optimization]
+- status: idea
+
+### 2026-08-09 — [논문 리뷰] Benchmarking the Benchmarks: conversational agent 벤치마크 품질을 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.06329v1
+- why-now: task-oriented conversational agent 성능 숫자가 늘어나는 만큼 benchmark 자체의 policy coverage, inconsistency, task realism을 검증해야 한다는 요구가 커지고 있다.
+- angle: “평가셋도 테스트 대상이다” — benchmark reference evaluation, task consistency check, coverage audit를 agent QA pipeline에 넣는 방법으로 풀어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [conversational-agent, eval, benchmark-quality, qa]
+- status: idea
+
+### 2026-08-09 — [논문 리뷰] Beyond Top-K: RAG retrieval을 해석 가능한 agentic operation으로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2608.06305v1
+- why-now: 긴 재무·감사·규제 문서 RAG에서 chunk embedding top-k만으로는 구조적 계산과 근거 추적을 설명하기 어렵다는 한계가 선명해지고 있다.
+- angle: “RAG는 비슷한 문단 검색이 아니라 문서 위에서 실행되는 해석 가능한 operation plan일 수 있다” — structured document operation, provenance, tool-like retrieval 설계를 agentic RAG로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, agentic-rag, retrieval, interpretability]
+- status: idea
+
+### 2026-08-09 — [논문 리뷰] NeSy-RAG: Neuro-Symbolic RAG로 reasoning step을 검증 가능하게 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.06292v1
+- why-now: RAG 답변이 외부 지식에 grounded되어도 중간 reasoning step이 opaque하면 production QA와 감사에서 병목이 된다.
+- angle: “RAG hallucination 방어는 citation 추가가 아니라 reasoning step을 symbolic artifact로 꺼내는 문제” — neuro-symbolic decomposition, attribution, verifier gate를 실무 RAG 평가로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, neuro-symbolic, explainability, verifier]
+- status: idea
+
+### 2026-08-09 — [논문 리뷰] Resourced Authority: 배포된 AI agent 권한을 compute budget으로 통제하기
+- type: paper
+- source: http://arxiv.org/abs/2608.06353v1
+- why-now: autonomous agent가 배포 후 계속 행동하는 환경에서는 one-time approval보다 resource allocation과 authorization을 결합한 governance model이 필요해지고 있다.
+- angle: “agent 권한은 허용/차단 플래그가 아니라 예산과 책임이 붙은 실행 권리다” — compute budget, participatory governance, self-enforcing authorization을 agent control plane 설계로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-governance, authorization, mechanism-design, safety]
+- status: idea
+
+### 2026-08-09 — waku-agent: 오후 안에 읽히는 local-first agent harness
+- type: tech
+- source: https://github.com/ShenSeanChen/waku-agent
+- why-now: 개인/소규모 팀 agent는 거대한 platform보다 loop, memory, eval을 코드로 바로 읽고 수정할 수 있는 lightweight harness가 더 실용적인 경우가 많다.
+- angle: “agent framework 선택의 첫 기준은 추상화 풍부함보다 run loop를 이해하고 고칠 수 있느냐” — harness 구조, memory/eval boundary, local laptop 운영 흐름을 repo introduction으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, local-first, eval, github-repo]
+- status: idea
+
+### 2026-08-09 — yantrikdb-mcp: contradiction detection이 있는 agent persistent memory MCP 서버
+- type: tech
+- source: https://github.com/yantrikos/yantrikdb-mcp
+- why-now: Claude Code/Cursor/Windsurf 같은 agent host에 memory를 붙일 때 단순 저장보다 temporal decay, contradiction detection, consolidation이 핵심 기능으로 올라오고 있다.
+- angle: “MCP memory server는 vector search adapter가 아니라 기억의 수명·충돌·통합 정책을 실행하는 runtime이다” — temporal decay, knowledge graph, autonomous consolidation을 agent memory 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-memory, contradiction-detection, github-repo]
+- status: idea
+
+### 2026-08-09 — Brigade: agent가 실제로 실행했는지 증명하는 check-run harness
+- type: tech
+- source: https://github.com/escoffier-labs/brigade
+- why-now: coding agent가 “테스트를 돌렸다”고 말해도 실제 exit code와 영향 범위가 검증되지 않으면 PR 자동화에서 신뢰할 수 없다.
+- angle: “agent QA는 말이 아니라 artifact와 exit code로 증명해야 한다” — check run proof, code graph, MCP/tool/skill catalog sync, memory review gate를 coding-agent 운영 하네스로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, eval, mcp, github-repo]
+- status: idea
