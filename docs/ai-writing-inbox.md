@@ -6091,7 +6091,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent, trajectory, debugging, eval]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-08-trajdebug-critical-failure-localization.mdx
 
 ### 2026-08-08 — [논문 리뷰] The Bitter Lesson of Tool Calling: tool을 코드로 호출하면 무엇이 달라지나
 - type: paper

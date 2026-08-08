@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 07 Aug 2026 12:19:36 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 08 Aug 2026 01:14:58 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] TRAJDEBUG — long-horizon agent trajectory에서 첫 치명 오류 찾기</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-08-trajdebug-critical-failure-localization/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-08-trajdebug-critical-failure-localization/</guid>
+      <description>TRAJDEBUG는 장기 agent 실패에서 최종 증상이 아니라 실패를 만든 최초 critical error step을 evidence 기반으로 찾는 프레임워크다.</description>
+      <pubDate>Sat, 08 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>trajectory</category>
+      <category>debugging</category>
+      <category>eval</category>
+    </item>
     <item>
       <title>Agent-as-Retriever: RAG가 기본값이 아니게 된 이유</title>
       <link>https://seongyeon1.github.io/blog/2026-08-07-agent-as-retriever-rag/</link>
