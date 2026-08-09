@@ -320,6 +320,11 @@
 | 아이디어 | 미정 | [논문 리뷰] NeSy-RAG — reasoning step을 검증 가능한 symbolic artifact로 꺼내기 | paper-review | Agentic RAG | | arXiv 2608.06292 — neuro-symbolic decomposition, attribution, verifier gate를 production RAG QA 패턴으로 정리 |
 | 아이디어 | 미정 | waku-agent: 오후 안에 읽히는 local-first agent harness | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — loop, memory, eval boundary를 직접 읽고 고칠 수 있는 lightweight local agent framework 선택 기준 |
 | 아이디어 | 미정 | yantrikdb-mcp: contradiction detection이 있는 agent persistent memory MCP 서버 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — temporal decay, contradiction detection, knowledge graph, autonomous consolidation을 MCP memory runtime으로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] AgentOPSD — recursive self-distillation으로 agentic RL 안정화하기 | paper-review | AI 평가/운영 | | arXiv 2608.05987 — 실패-복구 trace를 재귀적으로 증류하는 agent self-improvement 데이터 루프와 regression gate |
+| 아이디어 | 미정 | [논문 리뷰] EnvACE — world rehearsal로 환경 동역학을 내재화하는 agentic RL | paper-review | Agent/MCP 실전 | | arXiv 2608.06197 — environment model, rollout budget, failure recovery를 agent harness 설계로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] DataSpace — heterogeneous workspace 위의 verifiable data agent benchmark | paper-review | AI 평가/운영 | | arXiv 2608.03451 — workspace navigation, transformation, evidence artifact, verifier를 data-agent benchmark로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Activity Frames — 화면 활동을 agent memory와 replay 단위로 컴파일하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.05784 — screen event compilation, provenance, replay, regression test를 GUI agent memory 운영 패턴으로 소개 |
+| 아이디어 | 미정 | engraphis: coding agent를 위한 bi-temporal local memory | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — bi-temporal history, code-aware recall, MCP surface, self-hosted UI를 coding-agent memory architecture로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

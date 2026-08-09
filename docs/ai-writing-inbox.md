@@ -6288,3 +6288,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, eval, mcp, github-repo]
 - status: idea
+
+### 2026-08-10 — [논문 리뷰] AgentOPSD: agentic RL을 recursive self-distillation으로 안정화하기
+- type: paper
+- source: http://arxiv.org/abs/2608.05987v1
+- why-now: Hugging Face Daily Papers에 올라온 최신 agentic RL 논문으로, long-horizon agent 학습에서 실패 trajectory를 어떻게 다시 학습 신호로 만들지에 대한 관심이 커지고 있다.
+- angle: “agent self-improvement는 더 큰 모델 호출이 아니라 실패-복구 trace를 재귀적으로 증류하는 데이터 루프” — rollout, verifier, self-distillation, regression gate를 post-training 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, self-distillation, post-training, eval]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] EnvACE: world rehearsal로 환경 동역학을 내재화하는 agentic RL
+- type: paper
+- source: http://arxiv.org/abs/2608.06197v1
+- why-now: agentic RL에서 policy만 키우는 대신 환경 dynamics를 내부화해 planning/recovery를 개선하려는 흐름이 강해지고 있다.
+- angle: “좋은 agent는 tool을 많이 쓰기 전에 환경의 상태 전이를 rehearsal한다” — world rehearsal, environment model, rollout budget, failure recovery를 agent harness 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, world-model, planning, environment]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] DataSpace: heterogeneous workspace 위의 verifiable data agent benchmark
+- type: paper
+- source: http://arxiv.org/abs/2608.03451v1
+- why-now: 데이터 분석 agent가 파일, 표, 노트북, 문서가 섞인 실제 작업공간에서 검증 가능한 결과를 내야 하는 요구가 커지고 있다.
+- angle: “data agent 평가는 SQL 정답 하나가 아니라 workspace navigation, transformation, evidence artifact를 같이 봐야 한다” — verifier, workspace schema, heterogeneous source QA를 실무 benchmark 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [data-agent, benchmark, verifiable-analytics, eval]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] Activity Frames: 화면 활동을 agent memory와 replay 단위로 컴파일하기
+- type: paper
+- source: http://arxiv.org/abs/2608.05784v1
+- why-now: computer-use agent는 스크린샷 로그만으로는 재현·검증·메모리화가 어렵고, deterministic screen-activity representation이 필요한 단계로 가고 있다.
+- angle: “GUI agent memory는 이미지 더미가 아니라 replay 가능한 activity frame이어야 한다” — screen event compilation, provenance, replay, regression test를 desktop agent 운영 패턴으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, memory, replay, gui-agent]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] CalibForge: terminal task solver의 calibration을 adversarial하게 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.06352v1
+- why-now: coding/terminal agent가 “풀 수 있다”고 판단하는 신뢰도와 실제 성공 가능성 사이의 calibration gap이 운영 비용과 안전성 문제로 이어지고 있다.
+- angle: “agent에게 맡길지 말지는 점수보다 calibrated confidence가 먼저” — terminal task, adversarial solver calibration, escalation policy를 coding-agent eval gate로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, calibration, terminal-task, eval]
+- status: idea
+
+### 2026-08-10 — engraphis: coding agent를 위한 bi-temporal local memory
+- type: tech
+- source: https://github.com/Coding-Dev-Tools/engraphis
+- why-now: GitHub search에서 최근 활발히 업데이트되는 coding-agent memory repo로, 세션과 repo를 넘나드는 durable context가 agent UX의 핵심 병목이 되고 있다.
+- angle: “coding agent memory는 단순 vector DB가 아니라 시간축이 있는 inspectable context ledger” — bi-temporal history, code-aware recall, MCP surface, self-hosted UI를 repo architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, mcp, github-repo]
+- status: idea
+
+### 2026-08-10 — osaurus: macOS-native local agent harness의 offline-first 설계
+- type: tech
+- source: https://github.com/osaurus-ai/osaurus
+- why-now: 개인 agent runtime이 cloud SaaS만이 아니라 로컬 실행, persistent memory, cryptographic identity, offline operation을 요구하는 방향으로 갈라지고 있다.
+- angle: “personal agent runtime을 macOS 앱으로 만들면 권한·메모리·실행 경계가 어떻게 달라지나” — native sandbox, offline model, identity, autonomous execution을 framework 선택 기준으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, local-first, macos, github-repo]
+- status: idea
+
+### 2026-08-10 — ouroboros: specification-first agent OS와 ambiguity gate
+- type: tech
+- source: https://github.com/Q00/ouroboros
+- why-now: Claude Code, Codex, Gemini CLI 같은 여러 런타임이 늘어나면서 “프롬프트를 잘 쓰기”보다 spec quality와 evaluation gate를 앞단에서 표준화하려는 repo가 주목받고 있다.
+- angle: “agent OS의 핵심은 실행 버튼이 아니라 ambiguity score와 3단계 evaluation gate” — spec interview, budgeted evolution loop, MCP server, multi-runtime integration을 coding-agent workflow로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, specification, mcp, github-repo]
+- status: idea
