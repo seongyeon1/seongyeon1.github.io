@@ -6392,3 +6392,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, specification, mcp, github-repo]
 - status: idea
+
+### 2026-08-10 — [논문 리뷰] Comparative Agent Retrieval: 큰 skill library에서 무엇을 로드할까
+- type: paper
+- source: http://arxiv.org/abs/2608.06196v1
+- why-now: agent skill library가 수백 개 규모로 커지면 전체를 context에 넣는 방식은 비용·순서·의존성 문제를 만든다. 최신 arXiv에서 690개 skill corpus와 117개 realistic query로 hybrid ranker와 typed knowledge graph를 비교했다.
+- angle: “agent context manager는 검색기이면서 workflow planner다” — lexical+dense retrieval, prerequisite/data-flow graph, top-k skill loading을 AGENTS.md/skill 운영 패턴으로 풀어본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, retrieval, context-management, eval]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] Learning Globally Reusable Skills: coding agent skill bank를 그래프로 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2608.06153v1
+- why-now: coding agent가 실행 궤적에서 skill을 계속 쌓는 흐름이 강해졌지만, local update만 반복하면 task-specific overfitting과 skill 간 충돌이 생긴다. GSE는 Skill Relation Graph로 호환성과 일반화를 함께 최적화한다.
+- angle: “skill은 파일 몇 개의 모음이 아니라 compatibility graph다” — skill relation graph, generalization gate, regression test를 coding-agent harness 운영법으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, agent-skills, skill-graph, self-improvement]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] AgentExecutor: partial code execution을 multi-agent context generation으로 풀기
+- type: paper
+- source: http://arxiv.org/abs/2608.05959v1
+- why-now: coding agent와 program analysis agent가 임의 코드 조각을 실행하려면 missing context와 dependency를 보강해야 한다. AgentExecutor는 partial code execution을 위한 multi-agent framework를 제안해 기존 LExecutor/Treefix류 한계를 겨냥한다.
+- angle: “코드 이해는 정적 검색만으로 끝나지 않고 실행 가능한 context를 합성해야 한다” — context generator, feedback loop, dependency stub, execution verifier를 coding-agent test harness로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, program-analysis, code-execution, multi-agent]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] Causal Episodic Memory: 실패 수정을 다음 episode의 repair memory로 남기기
+- type: paper
+- source: http://arxiv.org/abs/2608.05906v1
+- why-now: agent repair loop는 성공한 수정과 실패 방향을 버리면 같은 오류를 반복한다. MERIT는 Text-to-SQL episode에서 oracle-verified correction과 unsuccessful direction을 dual-polarity memory로 저장해 parameter update 없이 재사용한다.
+- angle: “agent memory는 성공 노트만이 아니라 실패 방향까지 causal하게 저장해야 한다” — failure type classifier, positive/negative memory, retrieval policy, repair regression suite를 실무 agent 운영으로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, repair, text-to-sql, eval]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] Pre-Commit Gating: self-evolving agent의 skill contamination 막기
+- type: paper
+- source: http://arxiv.org/abs/2608.05810v1
+- why-now: self-evolving agent가 skill을 많이 축적할수록 성능이 단조롭게 좋아진다는 가정이 흔들리고 있다. 이 논문은 defective skill이 다음 skill distillation의 reference가 되어 contamination chain을 만드는 phase transition을 분석한다.
+- angle: “skill 추가는 배포이며, merge 전에 반드시 regression gate를 통과해야 한다” — contamination chain, irreversible skill pollution, pre-commit evaluation, rollback policy를 agent skill marketplace 운영법으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, self-evolution, regression, safety]
+- status: idea
+
+### 2026-08-10 — [논문 리뷰] Hardware Keystores for AI Agent Signing: MCP에서 private key를 agent 밖으로 빼기
+- type: paper
+- source: http://arxiv.org/abs/2608.06130v1
+- why-now: agent가 Git commit signing, API auth, certificate issuance 같은 암호 작업을 수행하는 순간 private key가 software memory에 노출되는 문제가 커진다. 이 논문은 hardware keystore와 content-aware authorization을 결합한 zero-trust MCP enforcement를 제안한다.
+- angle: “agent에게 키를 주지 말고, 서명 의사결정만 검증 가능한 경계로 넘겨라” — hardware-backed key custody, content-aware approval, MCP policy enforcement, audit log를 agent infra 보안 패턴으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, agent-security, keystore, zero-trust]
+- status: idea
+
+### 2026-08-10 — Opendray: self-hosted coding-agent gateway와 공유 memory layer
+- type: tech
+- source: https://github.com/Opendray/opendray
+- why-now: Claude Code, Codex, OpenCode 같은 coding agent를 개인/팀 인프라에서 동시에 돌리려면 web/mobile/chat entrypoint, shared memory, execution gateway를 묶는 control plane이 필요해지고 있다. GitHub 검색 기준 최근 업데이트와 실사용 지표가 빠르게 붙고 있다.
+- angle: “coding agent 운영은 CLI 하나가 아니라 gateway·memory·channel adapter의 문제” — REST/WebSocket API, Slack/Discord/Telegram bridge, local-first memory, runner isolation을 self-hosted agent infra로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, gateway, self-hosted, github-repo]
+- status: idea
+
+### 2026-08-10 — shodh-memory: LLM-free deterministic memory for AI agents
+- type: tech
+- source: https://github.com/varun29ankuS/shodh-memory
+- why-now: agent memory를 LLM summarization이나 cloud vector DB에 의존하지 않고 offline Rust binary로 감사 가능하게 만들려는 흐름이 보인다. 최근 GitHub에서 MCP memory 계열 repo 중 활발히 업데이트되고 있다.
+- angle: “agent memory는 똑똑한 요약보다 deterministic하고 inspectable한 state machine일 때 운영하기 쉽다” — local binary, forgetting policy, auditability, MCP integration을 memory layer 선택 기준으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, local-first, rust, github-repo]
+- status: idea

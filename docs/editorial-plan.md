@@ -325,6 +325,10 @@
 | 아이디어 | 미정 | [논문 리뷰] DataSpace — heterogeneous workspace 위의 verifiable data agent benchmark | paper-review | AI 평가/운영 | | arXiv 2608.03451 — workspace navigation, transformation, evidence artifact, verifier를 data-agent benchmark로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] Activity Frames — 화면 활동을 agent memory와 replay 단위로 컴파일하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.05784 — screen event compilation, provenance, replay, regression test를 GUI agent memory 운영 패턴으로 소개 |
 | 아이디어 | 미정 | engraphis: coding agent를 위한 bi-temporal local memory | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — bi-temporal history, code-aware recall, MCP surface, self-hosted UI를 coding-agent memory architecture로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] Comparative Agent Retrieval — 큰 skill library에서 무엇을 로드할까 | paper-review | Agent/MCP 실전 | | arXiv 2608.06196 — hybrid ranker vs typed knowledge graph, prerequisite/data-flow 기반 skill loading, agent context manager 설계 |
+| 아이디어 | 미정 | [논문 리뷰] Learning Globally Reusable Skills — coding agent skill bank를 그래프로 진화시키기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.06153 — Skill Relation Graph, compatibility/generalization gate, skill regression test를 self-evolving coding agent 운영법으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Causal Episodic Memory — 실패 수정을 다음 episode의 repair memory로 남기기 | paper-review | AI 평가/운영 | | arXiv 2608.05906 — positive/negative repair memory, failure type classifier, retrieval policy를 agent memory regression suite로 연결 |
+| 아이디어 | 미정 | Opendray: self-hosted coding-agent gateway와 공유 memory layer | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — Claude Code/Codex/OpenCode gateway, REST/WebSocket, chat bridge, local-first shared memory와 runner isolation |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
