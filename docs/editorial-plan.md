@@ -329,6 +329,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Learning Globally Reusable Skills — coding agent skill bank를 그래프로 진화시키기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.06153 — Skill Relation Graph, compatibility/generalization gate, skill regression test를 self-evolving coding agent 운영법으로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] Causal Episodic Memory — 실패 수정을 다음 episode의 repair memory로 남기기 | paper-review | AI 평가/운영 | | arXiv 2608.05906 — positive/negative repair memory, failure type classifier, retrieval policy를 agent memory regression suite로 연결 |
 | 아이디어 | 미정 | Opendray: self-hosted coding-agent gateway와 공유 memory layer | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — Claude Code/Codex/OpenCode gateway, REST/WebSocket, chat bridge, local-first shared memory와 runner isolation |
+| 아이디어 | 미정 | [논문 리뷰] TEPA — stale memory를 철회하는 conflict-robust language agent | paper-review | 논문 리뷰 | | arXiv 2608.07429 — stale memory detection, conflict handling, temporal preference update, memory pollution regression test 설계 |
+| 아이디어 | 미정 | [논문 리뷰] CoinRAG — RAG KV cache를 information nugget 단위로 재사용하기 | paper-review | Agentic RAG | | arXiv 2608.07458 — chunk-level cache reuse를 넘어 nugget extraction과 KV cache reuse를 production RAG serving layer로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] SkillProx — self-evolving agent skill을 proximal update로 안정화하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.07449 — textual gradient descent, proximal constraint, skill regression gate, rollback policy |
+| 아이디어 | 미정 | [논문 리뷰] Fisher-R1 — 과학 가설 검정 agent를 신뢰 가능하게 학습하기 | paper-review | AI 평가/운영 | | arXiv 2608.07437 — hypothesis testing, code execution, inference error taxonomy, scientific-agent verifier 설계 |
+| 아이디어 | 미정 | Deuz-SDK: durable execution·memory·hybrid RAG·MCP를 묶은 TypeScript agent framework | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — durable task, memory/RAG abstraction, MCP integration을 production agent framework 체크리스트로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

@@ -6496,3 +6496,120 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-memory, local-first, rust, github-repo]
 - status: idea
+
+### 2026-08-11 — [논문 리뷰] CoinRAG: long-context RAG의 KV cache를 information nugget 단위로 재사용하기
+- type: paper
+- source: http://arxiv.org/abs/2608.07458v1
+- why-now: long-context RAG 최적화가 chunk-level cache reuse에서 더 세밀한 information nugget 단위로 내려가며, retrieval 품질과 serving 비용을 함께 다루는 흐름이 강해지고 있다.
+- angle: “RAG cache는 chunk 재사용이 아니라 근거 조각의 중복·노이즈를 제거하는 serving layer다” — nugget extraction, KV cache reuse, latency/quality Pareto frontier를 production RAG 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, kv-cache, inference, long-context]
+- status: idea
+
+### 2026-08-11 — [논문 리뷰] SkillProx: self-evolving agent skill을 proximal update로 안정화하기
+- type: paper
+- source: http://arxiv.org/abs/2608.07449v1
+- why-now: 에이전트가 반복 작업에서 textual skill을 계속 수정하는 흐름이 커지면서, 개선과 regression 사이를 제어하는 skill update 알고리즘이 필요해지고 있다.
+- angle: “agent skill은 prompt 조각이 아니라 versioned policy artifact다” — textual gradient descent, proximal constraint, skill regression gate, rollback policy를 agent harness 운영법으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, self-improvement, regression, harness]
+- status: idea
+
+### 2026-08-11 — [논문 리뷰] TEPA: stale memory를 철회하는 conflict-robust language agent
+- type: paper
+- source: http://arxiv.org/abs/2608.07429v1
+- why-now: 장기 메모리 agent에서 “기억을 잘 저장하기”보다 오래된 기억이 prompt를 오염시키지 않게 철회·무효화하는 문제가 실무 장애로 떠오르고 있다.
+- angle: “agent memory lifecycle의 핵심은 retrieve보다 revoke다” — stale memory detection, conflict handling, temporal preference update, memory pollution regression test를 설계 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, stale-memory, conflict-resolution, eval]
+- status: idea
+
+### 2026-08-11 — [논문 리뷰] Blast Radius: coding agent context eviction을 예측 가능한 memory layer로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.07440v1
+- why-now: agentic coding에서 토큰 낭비와 context bloat가 비용·성능 병목이 되면서, prompt가 코드베이스 어디까지 영향을 미칠지 예측해 context를 관리하는 접근이 나왔다.
+- angle: “coding agent context는 많이 넣는 게 아니라 영향 반경을 예측해 reversible eviction하는 문제” — code/context channel coupling, archive/restore, prompt reach estimation을 repo harness 설계로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, context-management, memory, token-budget]
+- status: idea
+
+### 2026-08-11 — [논문 리뷰] Fisher-R1: 과학 가설 검정 agent를 신뢰 가능하게 학습하기
+- type: paper
+- source: http://arxiv.org/abs/2608.07437v1
+- why-now: 데이터셋을 읽고 코드를 생성해 통계 검정을 수행하는 research agent가 늘지만, subtle inference error와 p-hacking성 실수를 자동화가 증폭할 수 있다는 문제가 크다.
+- angle: “scientific agent의 verifier는 답변 채점기가 아니라 통계적 주장 전체를 감사하는 실행 하네스여야 한다” — hypothesis testing, code execution, inference error taxonomy, QA gate를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, hypothesis-testing, eval, verifier]
+- status: idea
+
+### 2026-08-11 — [논문 리뷰] CoBa: test-time scaling을 compute-balanced routing 문제로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.07424v1
+- why-now: reasoning model 운영에서 더 긴 CoT, 더 많은 sample, 더 강한 evaluator 중 어디에 compute를 쓸지 정하는 문제가 serving 비용의 핵심 의사결정이 됐다.
+- angle: “추론 비용 최적화는 한 축을 키우는 게 아니라 reasoning/sample/evaluator compute를 라우팅하는 문제” — budget allocation, confidence routing, latency-quality frontier를 production inference 정책으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, test-time-scaling, inference, routing]
+- status: idea
+
+### 2026-08-11 — Deuz-SDK: durable execution·memory·hybrid RAG·MCP를 묶은 TypeScript agent framework
+- type: tech
+- source: https://github.com/Deuz-AI/Deuz-SDK
+- why-now: TypeScript agent framework가 prompt wrapper를 넘어 durable execution, long-term memory, hybrid RAG, MCP tool integration을 한 런타임에서 제공하는 방향으로 성숙하고 있다.
+- angle: “production agent framework의 기본값은 model call이 아니라 실행 지속성·메모리·도구 경계다” — zero-dependency SDK 구조, durable task, memory/RAG abstraction, MCP integration을 체크리스트로 본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, typescript, mcp, durable-execution]
+- status: idea
+
+### 2026-08-11 — Solace Agent Mesh: event-driven multi-agent orchestration을 메시지 버스로 설계하기
+- type: tech
+- source: https://github.com/SolaceLabs/solace-agent-mesh
+- why-now: multi-agent 시스템이 단일 프로세스 graph에서 벗어나 이벤트, workflow, enterprise integration 위에서 운영되면서 agent 간 통신·관측·확장성 설계가 중요해지고 있다.
+- angle: “multi-agent orchestration은 roleplay가 아니라 event bus와 routing contract 문제” — agent mesh, async event flow, tool/service integration, observability를 enterprise agent architecture로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, event-driven, orchestration, agent-framework]
+- status: idea
+
+### 2026-08-11 — RepoPrompt CE: macOS-native context engineering app을 MCP CLI로 agent에 붙이기
+- type: tech
+- source: https://github.com/repoprompt/repoprompt-ce
+- why-now: coding agent 품질이 모델보다 repo context 선택과 편집 범위 제어에 좌우되면서, native app + MCP CLI 형태의 context engineering 도구가 실무 워크플로로 들어오고 있다.
+- angle: “coding agent에게 전체 repo를 던지는 대신 사람이 context package를 설계하고 MCP로 전달하는 패턴” — file selection, token budget, prompt assembly, MCP handoff를 개발자 workflow로 소개한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, context-engineering, mcp, github-repo]
+- status: idea
