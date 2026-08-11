@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 08 Aug 2026 01:14:58 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 11 Aug 2026 01:12:05 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] TEPA — 오래된 agent memory를 철회하는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-11-tepa-revoking-stale-agent-memories/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-11-tepa-revoking-stale-agent-memories/</guid>
+      <description>TEPA는 장기 메모리 에이전트에서 오래된 기억을 삭제가 아니라 철회 가능한 evidence state로 다루는 방법을 제안한다.</description>
+      <pubDate>Tue, 11 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-memory</category>
+      <category>stale-memory</category>
+      <category>conflict-resolution</category>
+      <category>eval</category>
+    </item>
     <item>
       <title>[논문 리뷰] TRAJDEBUG — long-horizon agent trajectory에서 첫 치명 오류 찾기</title>
       <link>https://seongyeon1.github.io/blog/2026-08-08-trajdebug-critical-failure-localization/</link>

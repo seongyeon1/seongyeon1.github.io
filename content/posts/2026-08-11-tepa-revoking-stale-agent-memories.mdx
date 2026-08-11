@@ -1,0 +1,193 @@
+---
+title: "[논문 리뷰] TEPA — 오래된 agent memory를 철회하는 법"
+date: "2026-08-11"
+category: "paper-review"
+tags: ["agent-memory", "stale-memory", "conflict-resolution", "eval"]
+summary: "TEPA는 장기 메모리 에이전트에서 오래된 기억을 삭제가 아니라 철회 가능한 evidence state로 다루는 방법을 제안한다."
+---
+
+<Paper
+  title="TEPA: Revoking Stale Memories for Conflict-Robust Language Agents"
+  authors="Yan Zhou, Yue Ouyang, Kaiyang Zheng, Suncheng Xiang"
+  year="2026"
+  venue="arXiv"
+  arxiv="2608.07429"
+/>
+
+## 한 줄 요약
+
+TEPA는 장기 메모리를 가진 language agent에서 오래된 기억이 계속 검색되어 prompt를 오염시키는 문제를 **memory pollution**으로 정의하고, memory item에 “현재 유효한가”라는 상태를 명시적으로 붙여 충돌하는 새 evidence가 들어오면 이전 기억을 **revocation**하는 메커니즘을 제안한다.
+
+내 의견부터 말하면, 이 방향이 맞다. agent memory를 “더 많이 저장하고 더 잘 검색하는 기능”으로만 보면 언젠가 망한다. 실제 운영에서 중요한 것은 저장보다 **철회, 무효화, 감사, 재승격**이다. 사용자의 선호도, 파일 상태, 업무 규칙, API 응답은 바뀐다. 바뀐 뒤에도 예전 기억이 높은 유사도로 계속 검색되면, 모델은 그럴듯하게 틀린 행동을 반복한다.
+
+## 왜 지금 중요한가
+
+장기 메모리 agent는 이제 데모 기능이 아니다. 개인 비서, coding agent, customer support agent, research agent 모두 과거 관찰을 저장하고 다음 작업에서 재사용하려 한다. 문제는 세계가 정적이지 않다는 점이다.
+
+예를 들어 이런 상황을 생각해보자.
+
+- 사용자가 “내 기본 브랜치는 `main`”이라고 말했지만, 어떤 repo에서는 `trunk`로 바뀌었다.
+- 예전에는 staging DB에 write 가능했지만, 지금은 read-only 정책으로 바뀌었다.
+- 사용자가 “짧게 답해줘”라고 했지만, 특정 작업에서는 자세한 보고서를 요구했다.
+- 파일 기반 작업에서 config 값이 바뀌었는데 agent memory에는 이전 값이 남아 있다.
+
+append-only memory는 이런 변화에 약하다. 이전 기록을 모두 보존하는 것은 감사에는 좋지만, retrieval set에 계속 섞이면 실행 시점의 판단을 오염시킨다. last-write-wins는 단순 fact update에는 쓸 만하지만, 왜 바뀌었는지와 무엇이 철회됐는지 남기지 않으면 audit와 rollback이 어렵다.
+
+TEPA가 건드리는 지점은 정확히 이 사이에 있다. **현재 작업에는 최신 evidence만 쓰되, 철회된 history는 지우지 않고 남긴다.** 이건 memory를 cache가 아니라 lifecycle state machine으로 보는 접근이다.
+
+## 핵심 아이디어: memory item이 아니라 keyed precedent
+
+논문 요약 기준으로 TEPA는 observation을 단순 문장으로 저장하지 않고, key가 붙은 **precedent**로 표현한다. 같은 key 아래에서 새 evidence가 기존 active precedent와 충돌하면, 기존 precedent를 삭제하지 않고 revoked 상태로 바꾼다. 이후 retrieval은 active precedent를 우선 사용하고, revoked history는 감사나 분석용으로 보존한다.
+
+구조를 단순화하면 이런 모양에 가깝다.
+
+```json title="memory-precedent.json"
+{
+  "key": "repo.default_branch",
+  "value": "trunk",
+  "evidence": "2026-08-11 git symbolic-ref refs/remotes/origin/HEAD 결과",
+  "status": "active",
+  "supersedes": ["mem_2026_07_01_default_branch_main"],
+  "created_at": "2026-08-11"
+}
+```
+
+여기서 중요한 필드는 `status`다. 많은 memory system은 `value`와 embedding에 집착한다. 하지만 운영 관점에서는 아래 질문이 더 중요하다.
+
+- 이 memory는 아직 active인가?
+- 어떤 새 evidence가 이 memory를 무효화했나?
+- 같은 key의 이전 기록은 무엇인가?
+- revoked memory가 다시 active가 될 수 있는가?
+- retrieval 단계에서 revoked item을 확실히 제외하고 있는가?
+
+TEPA는 이 질문을 memory layer의 1급 연산으로 끌어올린다. 나는 이게 agent memory 설계에서 꽤 실용적인 기준이라고 본다.
+
+## 기존 memory 방식과의 차이
+
+장기 메모리 구현은 보통 세 부류로 흐른다.
+
+### 1. Append-only memory
+
+모든 관찰을 계속 쌓는다. 장점은 단순하고 손실이 적다는 것. 단점은 오래된 정보도 계속 검색될 수 있다는 것.
+
+agent에게는 이 단점이 치명적이다. LLM은 prompt 안에 들어온 stale evidence를 “과거에는 그랬지만 지금은 아님”으로 자동 판별하지 못한다. 특히 비슷한 문장 여러 개가 섞이면 최신성보다 표현의 강도나 위치에 끌릴 수 있다.
+
+### 2. Last-write-wins cache
+
+같은 key의 최신 값만 남긴다. 단일 hop fact consolidation에는 강하다. 논문도 clean MemoryAgentBench SH-6k에서는 TEPA가 강한 last-write-wins cache와 비슷한 수준을 보인다고 요약한다.
+
+하지만 last-write-wins는 history가 약하다. 왜 바뀌었는지, 어떤 evidence가 이전 값을 대체했는지, 이전 값이 나중에 다시 유효해질 수 있는지 추적하기 어렵다. 개인화 memory나 정책 memory에서는 이 차이가 중요하다.
+
+### 3. TEPA식 revocable evidence memory
+
+TEPA는 active set과 revoked history를 분리한다. 실행에는 active memory만 쓰고, 설명·감사·디버깅에는 revoked history를 볼 수 있게 한다.
+
+이 설계의 장점은 memory hygiene를 retrieval heuristic에 맡기지 않는다는 점이다. “최근 문서에 가중치를 더 준다” 같은 방식은 유용하지만 충분하지 않다. 충돌하는 evidence가 들어왔으면 이전 memory는 명시적으로 철회되어야 한다.
+
+## 실험 결과를 어떻게 읽을까
+
+arXiv abstract에 공개된 숫자만 보면, TEPA는 reversal이 있는 drift 환경에서 기존 방식보다 큰 차이를 보인다.
+
+- controlled drift 50 seeds에서 full reversal 시:
+  - append-only: `0.210`
+  - last-write-wins: `0.210`
+  - no memory: `0.309`
+  - TEPA: `0.950`
+- real file execution drift에서도 비슷한 패턴:
+  - append-only: `0.203`
+  - no memory: `0.298`
+  - TEPA: `0.950`
+
+이 숫자는 꽤 강한 메시지를 준다. 잘못 관리된 memory는 memory가 없는 것보다 나쁠 수 있다. 특히 reversal 상황에서는 “기억한다”는 능력이 오히려 실패 원인이 된다.
+
+다만 이 결과를 과대해석하면 안 된다. abstract 기준으로 TEPA가 잘하는 것은 **같은 key 아래의 conflict와 revocation**이다. 논문 요약에서도 multi-hop과 매우 긴 context 설정에서는 retrieval-chain과 context-selection bottleneck이 드러난다고 한다. 즉 TEPA는 memory 문제 전체의 해답이라기보다, fact-level validity tracking의 중요한 primitive로 보는 편이 안전하다.
+
+## 실무 agent memory에 적용한다면
+
+TEPA를 그대로 구현하지 않더라도, production agent memory에는 아래 네 가지가 들어가야 한다고 본다.
+
+### 1. Memory key를 명시하라
+
+자연어 summary만 저장하면 conflict detection이 어렵다. 최소한 memory를 key-value-ish 형태로 구조화해야 한다.
+
+예시:
+
+```json title="memory-key-examples.json"
+[
+  "user.response_style",
+  "repo.package_manager",
+  "repo.default_branch",
+  "project.deployment_policy",
+  "workspace.secret_handling_rule"
+]
+```
+
+key가 있어야 같은 주제의 새 evidence가 들어왔을 때 update인지, conflict인지, 별도 scope의 memory인지 판단할 수 있다.
+
+### 2. Active와 revoked를 분리하라
+
+삭제는 마지막 수단이다. 특히 agent가 왜 그런 판단을 했는지 나중에 봐야 하는 시스템에서는 history가 필요하다. 대신 retrieval path에서는 revoked item을 기본 제외해야 한다.
+
+```ts title="memory-retrieval-policy.ts"
+type MemoryStatus = "active" | "revoked" | "archived";
+
+function shouldInjectIntoPrompt(memory: { status: MemoryStatus }) {
+  return memory.status === "active";
+}
+```
+
+단순하지만, 이 경계가 없으면 prompt는 금방 쓰레기장이 된다.
+
+### 3. Revocation evidence를 남겨라
+
+“왜 이 memory가 철회됐는가”를 남기지 않으면 나중에 debugging이 불가능하다. 최소한 새 evidence, source, timestamp, actor를 저장해야 한다.
+
+```json title="revocation-record.json"
+{
+  "revoked_memory_id": "mem_old_default_branch",
+  "reason": "conflicting_new_evidence",
+  "new_evidence_id": "obs_git_remote_head_2026_08_11",
+  "actor": "tool:git",
+  "revoked_at": "2026-08-11T09:30:00+09:00"
+}
+```
+
+### 4. Memory regression test를 만들어라
+
+memory system은 unit test 없이 운영하면 위험하다. 특히 개인화 agent나 coding agent는 아래 케이스를 regression suite로 가져가야 한다.
+
+- 사용자가 선호도를 바꿨을 때 이전 선호가 prompt에 들어오지 않는가?
+- repo 설정이 바뀌었을 때 예전 command를 추천하지 않는가?
+- revoked memory가 audit view에는 보이지만 execution prompt에는 빠지는가?
+- 같은 key지만 다른 scope의 memory를 섞지 않는가?
+
+여기서 핵심은 최종 답변 점수만 보지 않는 것이다. retrieval set 자체를 snapshot으로 저장하고 diff해야 한다.
+
+## 한계와 주의점
+
+TEPA식 revocation은 유용하지만 공짜는 아니다.
+
+첫째, key 설계가 어렵다. 현실의 memory는 항상 깔끔한 key-value fact가 아니다. “성연은 마케팅 톤을 싫어한다”와 “이번 글은 약간 소개 톤이어도 된다”는 conflict인가 scope 차이인가? 이런 판단은 schema와 policy가 없으면 애매하다.
+
+둘째, contradiction detection이 병목이 될 수 있다. 새 observation이 기존 memory를 정말 무효화하는지 판단하려면 rule, classifier, LLM judge, tool evidence가 필요하다. 이 레이어가 부정확하면 멀쩡한 memory를 revoke하거나 stale memory를 남길 수 있다.
+
+셋째, multi-hop memory에는 부족할 수 있다. 논문 요약도 retrieval-chain과 context-selection bottleneck을 언급한다. 예를 들어 “A 프로젝트의 배포 정책이 바뀌었고, 그 정책 때문에 B 스크립트 사용이 금지됨” 같은 연쇄 관계는 단일 key revocation보다 복잡하다.
+
+그래서 TEPA는 완성형 memory architecture라기보다, agent memory lifecycle에서 반드시 필요한 **revocation primitive**로 보는 게 좋다.
+
+## 내 결론
+
+agent memory의 다음 단계는 “더 긴 context”나 “더 좋은 vector search”가 아니다. 기억의 유효성을 관리하는 운영 체계다.
+
+TEPA의 메시지는 실용적이다. 오래된 기억은 그냥 덜 중요한 정보가 아니라, active 상태로 남아 있으면 agent 행동을 망치는 오염원이다. 따라서 memory layer는 저장소가 아니라 작은 database처럼 동작해야 한다. key가 있고, 상태가 있고, transaction이 있고, audit log가 있어야 한다.
+
+개인 비서든 coding agent든 팀 자동화 agent든, 장기 memory를 붙일 계획이라면 먼저 이 질문부터 해야 한다.
+
+> 이 agent는 틀린 기억을 어떻게 철회할 것인가?
+
+이 질문에 답이 없다면, memory feature는 아직 production-ready가 아니다.
+
+## 참고 자료
+
+- [TEPA: Revoking Stale Memories for Conflict-Robust Language Agents — arXiv](https://arxiv.org/abs/2608.07429)
+- [arXiv API entry: 2608.07429](https://export.arxiv.org/api/query?id_list=2608.07429)

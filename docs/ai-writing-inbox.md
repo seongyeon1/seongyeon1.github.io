@@ -6534,7 +6534,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent-memory, stale-memory, conflict-resolution, eval]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-11-tepa-revoking-stale-agent-memories.mdx
 
 ### 2026-08-11 — [논문 리뷰] Blast Radius: coding agent context eviction을 예측 가능한 memory layer로 만들기
 - type: paper
