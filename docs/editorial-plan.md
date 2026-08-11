@@ -334,6 +334,11 @@
 | 아이디어 | 미정 | [논문 리뷰] SkillProx — self-evolving agent skill을 proximal update로 안정화하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.07449 — textual gradient descent, proximal constraint, skill regression gate, rollback policy |
 | 아이디어 | 미정 | [논문 리뷰] Fisher-R1 — 과학 가설 검정 agent를 신뢰 가능하게 학습하기 | paper-review | AI 평가/운영 | | arXiv 2608.07437 — hypothesis testing, code execution, inference error taxonomy, scientific-agent verifier 설계 |
 | 아이디어 | 미정 | Deuz-SDK: durable execution·memory·hybrid RAG·MCP를 묶은 TypeScript agent framework | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — durable task, memory/RAG abstraction, MCP integration을 production agent framework 체크리스트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SHE — LLM agent 안전성을 harness evolution 문제로 보기 | paper-review | Agent/MCP 실전 | | arXiv 2608.09885 — system prompt, rule bank, safety memory, tool policy를 trajectory attribution으로 진화시키는 운영 패턴 |
+| 아이디어 | 미정 | [논문 리뷰] OpRAG — multi-stage RAG를 GPU-backed deterministic runtime으로 운영하기 | paper-review | Agentic RAG | | arXiv 2608.08340 — retrieval·memory·context construction·generation·index update를 deterministic runtime과 resource contract로 설계 |
+| 아이디어 | 미정 | [논문 리뷰] OpenCodeReview — agent code review를 결정론적 verifier로 싸게 만들기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.09290 — bounded tool use, diff scope, static verifier, cost-effective review loop |
+| 아이디어 | 미정 | Skybridge: MCP Apps와 ChatGPT Apps를 type-safe full-stack으로 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP server와 app UI를 type-safe contract, React, auth/context boundary로 함께 설계 |
+| 아이디어 | 미정 | Nimbalyst: 여러 coding agent 작업을 visual workspace에서 비교·관리하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — parallel coding agent session, workspace isolation, diff review, merge decision UX |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

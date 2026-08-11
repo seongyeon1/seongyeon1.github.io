@@ -6614,3 +6614,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, context-engineering, mcp, github-repo]
 - status: idea
+
+### 2026-08-12 — [논문 리뷰] SHE: LLM agent 안전성을 harness evolution 문제로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.09885v1
+- why-now: agent 안전성이 모델 weight만이 아니라 system prompt, rule bank, safety memory, tool policy 같은 harness 구성요소에 의해 결정된다는 관점이 더 중요해지고 있다.
+- angle: “agent guardrail은 고정 정책 파일이 아니라 trajectory attribution으로 진화하는 runtime artifact다” — 실패 trajectory, 책임 분해, localized harness patch, rollback gate를 운영 패턴으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-safety, harness, tool-policy, trajectory]
+- status: idea
+
+### 2026-08-12 — [논문 리뷰] OpRAG: multi-stage RAG를 GPU-backed deterministic runtime으로 운영하기
+- type: paper
+- source: http://arxiv.org/abs/2608.08340v1
+- why-now: agentic RAG가 retrieval, memory access, context construction, generation, index update를 섞으면서 LLM decoding 바깥의 orchestration runtime이 병목과 장애 지점이 되고 있다.
+- angle: “RAG 운영 최적화는 retriever 점수만이 아니라 stage별 resource contract와 deterministic scheduling 문제” — GPU-backed workflow, memory/update 단계, latency envelope를 production RAG 관점으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, runtime, gpu, orchestration]
+- status: idea
+
+### 2026-08-12 — [논문 리뷰] OpenCodeReview: agent code review를 결정론적 verifier로 싸게 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.09290v1
+- why-now: LLM 기반 코드 리뷰 agent가 늘고 있지만 비결정적 tool 사용과 지역 context 부족 때문에 같은 PR에서도 결과가 흔들리는 문제가 실무 도입의 blocker가 되고 있다.
+- angle: “AI 코드 리뷰어의 신뢰도는 더 큰 모델보다 deterministic review contract에서 나온다” — diff scope, static verifier, bounded tool use, cost-effective review loop를 개발팀 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [code-review-agent, verifier, deterministic, developer-workflow]
+- status: idea
+
+### 2026-08-12 — [논문 리뷰] SkillSentry: LLM agent skill 실행을 runtime assurance로 보증하기
+- type: paper
+- source: http://arxiv.org/abs/2608.09253v1
+- why-now: reusable skill을 붙인 agent가 실제 실행에서는 precondition 누락, tool state drift, partial execution 때문에 불안정하게 동작하는 사례가 늘고 있다.
+- angle: “agent skill은 문서가 아니라 실행 중 감시해야 할 procedure contract다” — runtime monitor, skill pre/postcondition, failure intervention, regression suite를 skill 운영법으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, runtime-assurance, tool-use, eval]
+- status: idea
+
+### 2026-08-12 — [논문 리뷰] Governing the KV Cache: multi-tenant LLM inference의 timing side-channel 막기
+- type: paper
+- source: http://arxiv.org/abs/2608.09225v1
+- why-now: prefix/KV cache reuse가 serving throughput의 핵심 최적화가 되면서, 공유 cache가 tenant 간 정보 누출 통로가 될 수 있다는 보안 문제가 실제 infra 설계 이슈로 올라왔다.
+- angle: “LLM inference 보안은 prompt 필터만이 아니라 cache isolation 정책까지 포함한다” — timing side-channel, prefix reuse boundary, tenant isolation, throughput-security trade-off를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [inference, kv-cache, security, multi-tenant]
+- status: idea
+
+### 2026-08-12 — Skybridge: MCP Apps와 ChatGPT Apps를 type-safe full-stack으로 묶기
+- type: tech
+- source: https://github.com/alpic-ai/skybridge
+- why-now: agent tool 생태계가 MCP server, ChatGPT App, web UI로 갈라지면서 같은 capability를 여러 host에 안전하게 노출하는 full-stack framework 설계가 중요해지고 있다.
+- angle: “agent tool을 만들 때 backend MCP와 frontend app surface를 따로 설계하지 말자” — type-safe contract, React UI, platform-agnostic packaging, auth/context boundary를 framework 선택 기준으로 본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, chatgpt-apps, agent-framework, typescript]
+- status: idea
+
+### 2026-08-12 — Nimbalyst: 여러 coding agent 작업을 visual workspace에서 비교·관리하기
+- type: tech
+- source: https://github.com/nimbalyst/nimbalyst
+- why-now: Claude Code, Codex, OpenCode 같은 coding agent를 병렬로 돌리는 팀이 늘면서 terminal 로그만으로는 변경 의도, 충돌, 결과 비교를 관리하기 어렵다.
+- angle: “coding agent fleet 운영은 모델 선택보다 workspace isolation과 결과 review UX가 핵심” — parallel session, markdown workspace, diff review, merge decision workflow를 개발자 생산성 도구로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-workspace, parallel-agents, developer-workflow]
+- status: idea
+
+### 2026-08-12 — mnemo-cortex: active memory coprocessor로 agent 기억을 검증 가능한 사실로 관리하기
+- type: tech
+- source: https://github.com/GuyMannDude/mnemo-cortex
+- why-now: persistent memory를 단순 벡터 검색으로 붙이면 stale fact, hallucinated recall, provenance 손실이 누적되기 쉬워서 memory verification과 consolidation layer 수요가 커지고 있다.
+- angle: “agent memory는 저장소가 아니라 active coprocessor다” — verified facts, semantic recall, offline consolidation, encrypted sync를 personal/team agent memory architecture로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, memory-system, mcp, github-repo]
+- status: idea
