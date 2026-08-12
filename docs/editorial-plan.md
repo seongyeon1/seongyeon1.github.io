@@ -339,6 +339,10 @@
 | 아이디어 | 미정 | [논문 리뷰] OpenCodeReview — agent code review를 결정론적 verifier로 싸게 만들기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.09290 — bounded tool use, diff scope, static verifier, cost-effective review loop |
 | 아이디어 | 미정 | Skybridge: MCP Apps와 ChatGPT Apps를 type-safe full-stack으로 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP server와 app UI를 type-safe contract, React, auth/context boundary로 함께 설계 |
 | 아이디어 | 미정 | Nimbalyst: 여러 coding agent 작업을 visual workspace에서 비교·관리하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — parallel coding agent session, workspace isolation, diff review, merge decision UX |
+| 아이디어 | 미정 | [논문 리뷰] MESA — long-horizon agent memory의 task-adaptive evidence selection | paper-review | 논문 리뷰 | | arXiv 2608.10108 — multi-structure evidence selection, memory budget, retrieval policy, regression test를 agent memory 운영 관점으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Coding Agent Architecture — 코딩 에이전트 런타임을 구성요소로 분해하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.10934 — context manager, tool executor, patch loop, verifier boundary를 coding-agent 비교 체크리스트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] CommitKV — multi-turn agent KV cache를 lifecycle transition으로 압축하기 | paper-review | AI 추론 최적화 | | arXiv 2608.07855 — turn boundary, lifecycle-aware compression, cache quality, serving policy를 inference 운영법으로 해석 |
+| 아이디어 | 미정 | opencode-swarm: OpenCode 위에 hub-and-spoke coding agent swarm 붙이기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — architect hub, specialist delegation, code generation/review handoff, OpenCode plugin 구조 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

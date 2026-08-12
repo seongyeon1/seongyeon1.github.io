@@ -6718,3 +6718,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-memory, memory-system, mcp, github-repo]
 - status: idea
+
+### 2026-08-13 — [논문 리뷰] MESA: long-horizon agent memory에서 task-adaptive evidence selection하기
+- type: paper
+- source: http://arxiv.org/abs/2608.10108v1
+- why-now: long-horizon agent가 쌓아둔 memory/evidence를 전부 넣는 방식은 context bloat와 stale evidence 문제를 만들기 쉬워, 작업별 evidence 구조를 동적으로 고르는 memory layer가 중요해지고 있다.
+- angle: “agent memory retrieval은 top-k 검색이 아니라 task에 맞는 evidence structure 선택 문제” — multi-structure evidence selection, memory budget, retrieval policy, regression test를 운영 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, evidence-selection, long-horizon, context-engineering]
+- status: idea
+
+### 2026-08-13 — [논문 리뷰] Coding Agent Architecture: 코딩 에이전트 런타임을 구성요소로 분해하기
+- type: paper
+- source: http://arxiv.org/abs/2608.10934v1
+- why-now: Claude Code, Codex, Qwen Code류 도구가 빠르게 늘면서 “코딩 에이전트”를 모델이 아니라 planner, context manager, tool executor, verifier가 결합된 runtime architecture로 보는 기준이 필요해졌다.
+- angle: “coding agent 비교는 벤치마크 점수보다 architecture diff부터” — context collection, action loop, patch application, test/verifier boundary를 개발자 도구 선택 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, architecture, developer-workflow, eval]
+- status: idea
+
+### 2026-08-13 — [논문 리뷰] MEGA: wisdom graph로 self-evolving agent optimization 운영하기
+- type: paper
+- source: http://arxiv.org/abs/2608.10504v1
+- why-now: agent self-improvement가 단순 prompt rewrite를 넘어 실패 경험, skill, verifier 결과를 구조화된 지식으로 축적하는 방향으로 가고 있다.
+- angle: “agent improvement log를 changelog가 아니라 wisdom graph로 관리하면 무엇이 달라지나” — failure pattern, reusable improvement, rollback gate, harness optimization loop를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [self-evolving-agent, wisdom-graph, harness, optimization]
+- status: idea
+
+### 2026-08-13 — [논문 리뷰] Persistent Recursive Worlds: autonomous software evolution을 격리된 세계로 돌리기
+- type: paper
+- source: http://arxiv.org/abs/2608.10450v1
+- why-now: coding agent가 장기적으로 software를 진화시키려면 단발 PR 생성보다 persistent environment, recursive experiment, 검증 가능한 rollback boundary가 중요해지고 있다.
+- angle: “자율 소프트웨어 진화는 코드를 바로 고치는 게 아니라 실험 가능한 recursive world를 운영하는 문제” — sandbox world, state persistence, verification, merge policy를 agent fleet 운영법으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, software-evolution, sandbox, autonomous-agent]
+- status: idea
+
+### 2026-08-13 — [논문 리뷰] Personalized Skills for Coding Agents: 개발자 상호작용 기록은 정말 도움이 되나
+- type: paper
+- source: http://arxiv.org/abs/2608.10319v1
+- why-now: coding agent에 개인/팀별 memory와 skill을 붙이는 제품이 늘지만, interaction history가 실제 task 성공률과 regression에 어떤 영향을 주는지는 별도 평가가 필요하다.
+- angle: “personalized skill은 생산성 boost이면서 context pollution risk다” — developer history, skill retrieval, personalization regression, privacy boundary를 coding-agent 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, personalization, skills, memory]
+- status: idea
+
+### 2026-08-13 — [논문 리뷰] CommitKV: multi-turn agent KV cache를 lifecycle transition 기준으로 압축하기
+- type: paper
+- source: http://arxiv.org/abs/2608.07855v1
+- why-now: multi-turn agent serving은 긴 대화·tool trace 때문에 KV cache 비용이 커지는데, 단순 eviction보다 commit transition을 기준으로 상태를 압축하는 접근이 실무 latency/비용 이슈와 맞닿아 있다.
+- angle: “agent serving cache는 오래된 토큰을 버리는 게 아니라 상태 전이를 commit하는 문제” — lifecycle-aware compression, turn boundary, cache quality, serving policy를 inference 최적화 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [kv-cache, inference, multi-turn-agent, compression]
+- status: idea
+
+### 2026-08-13 — opencode-swarm: OpenCode 위에 hub-and-spoke coding agent swarm 붙이기
+- type: tech
+- source: https://github.com/ZaxbyHub/opencode-swarm
+- why-now: 단일 coding agent가 모든 판단을 하는 대신 architect 중심 hub와 specialist agent가 상담·구현·QA를 나눠 맡는 swarm 플러그인 패턴이 개발자 워크플로에 들어오고 있다.
+- angle: “coding swarm은 역할극이 아니라 consultation boundary와 QA handoff 설계” — hub-and-spoke orchestration, SME delegation, code generation/review loop, OpenCode plugin 구조를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, swarm, opencode, github-repo]
+- status: idea
+
+### 2026-08-13 — Brigade: agent가 한 일을 증명하게 만드는 MCP/catalog+code graph layer
+- type: tech
+- source: https://github.com/escoffier-labs/brigade
+- why-now: 개발자 에이전트가 테스트를 돌렸다고 주장하거나 변경 영향 범위를 놓치는 문제가 반복되면서, 실제 exit code 증명·code graph·MCP catalog sync를 묶은 검증 layer가 실용적이다.
+- angle: “agent trust는 자연어 보고가 아니라 재현 가능한 evidence artifact에서 나온다” — proof file, real exit code, call graph impact, MCP/skill catalog, memory review gate를 coding-agent governance로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, code-graph, governance]
+- status: idea
