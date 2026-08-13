@@ -6743,7 +6743,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [coding-agent, architecture, developer-workflow, eval]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-13-coding-agent-architecture-ark.mdx
 
 ### 2026-08-13 — [논문 리뷰] MEGA: wisdom graph로 self-evolving agent optimization 운영하기
 - type: paper

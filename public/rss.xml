@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 11 Aug 2026 01:12:05 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 13 Aug 2026 01:11:51 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Coding Agent Architecture — 코딩 에이전트 런타임을 분해하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-13-coding-agent-architecture-ark/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-13-coding-agent-architecture-ark/</guid>
+      <description>Ark 논문을 기준으로 코딩 에이전트를 agentic loop, prompt, tool, memory, context, error handling으로 분해해 본다.</description>
+      <pubDate>Thu, 13 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>coding-agent</category>
+      <category>architecture</category>
+      <category>developer-workflow</category>
+      <category>eval</category>
+    </item>
     <item>
       <title>[논문 리뷰] TEPA — 오래된 agent memory를 철회하는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-08-11-tepa-revoking-stale-agent-memories/</link>
