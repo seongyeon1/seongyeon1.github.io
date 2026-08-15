@@ -6823,3 +6823,120 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, mcp, code-graph, governance]
 - status: idea
+
+### 2026-08-16 — [논문 리뷰] AutoDesign: long-horizon agent harness를 meta-optimization 대상으로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.13560v1
+- why-now: 장기 작업 에이전트 성능이 모델 선택보다 harness alignment, reusable experience, evaluation loop 설계에 좌우된다는 흐름이 더 선명해지고 있다.
+- angle: “agent harness는 손으로 고정하는 prompt 묶음이 아니라 최적화 가능한 system artifact” — design prior, 경험 축적, meta-harness optimization, rollback 가능한 실험 루프를 개발자 워크플로로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, harness, optimization, long-horizon]
+- status: idea
+
+### 2026-08-16 — [논문 리뷰] RippleMem: isolated retrieval을 associative recollection으로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2608.13334v1
+- why-now: long-term agent memory에서 “관련 interaction 하나 찾기”보다 여러 상호작용에 흩어진 evidence를 함께 회상하는 문제가 실제 assistant 품질 병목으로 올라왔다.
+- angle: “agent memory retrieval은 top-k가 아니라 연상 경로를 구성하는 문제” — distributed evidence, recollection chain, memory regression test, stale context 억제를 운영 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, retrieval, long-term-memory, evidence]
+- status: idea
+
+### 2026-08-16 — [논문 리뷰] When Should Multi-Round RAG Stop? 검색 중단을 순차 의사결정으로 다루기
+- type: paper
+- source: http://arxiv.org/abs/2608.13237v1
+- why-now: multi-round RAG와 search agent는 더 검색할수록 비용과 noise가 늘어나므로, “충분한 근거가 모였는가”를 언제 판단할지에 대한 stopping policy가 중요해졌다.
+- angle: “RAG agent의 품질은 검색을 잘하는 것만큼 잘 멈추는 데서 나온다” — structured stopping judgment, retrieval reduction, first-STOP trajectory risk를 production RAG budget gate로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, retrieval, stopping-policy, eval]
+- status: idea
+
+### 2026-08-16 — [논문 리뷰] PIPES: provenance와 prior로 agent perception을 보호하기
+- type: paper
+- source: http://arxiv.org/abs/2608.12789v1
+- why-now: tool-using agent가 외부 데이터와 tool response를 사실로 받아들이면서, 누가 만든 정보인지·어떤 주장인지가 빠진 응답은 state corruption 공격면이 된다.
+- angle: “agent 보안은 tool 실행 전뿐 아니라 perception layer에서 시작된다” — provenance labeling, trust prior, state-corruption 방어, MCP/tool response schema 설계를 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, tool-use, provenance, perception]
+- status: idea
+
+### 2026-08-16 — [논문 리뷰] VAKRA: API와 문서 검색을 함께 보는 enterprise tool-use benchmark
+- type: paper
+- source: http://arxiv.org/abs/2608.12282v1
+- why-now: 기업 agent는 structured API와 unstructured knowledge base를 번갈아 써야 하는데, 기존 평가는 API call과 RAG를 따로 재는 경우가 많다.
+- angle: “enterprise agent 평가는 API reasoning과 retrieval grounding을 한 trajectory에서 봐야 한다” — multi-hop API+RAG task, tool policy, verifier, 실패 taxonomy를 운영 평가 하네스로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agentic-rag, enterprise-ai, benchmark]
+- status: idea
+
+### 2026-08-16 — [논문 리뷰] Retry, Switch, or Abstain? tool failure에 강한 agent policy 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.11977v1
+- why-now: 실제 tool은 timeout, stale result, silent failure를 만들기 때문에 성공률 높은 demo agent보다 실패 복구 정책을 명시적으로 학습·평가하는 agent가 필요하다.
+- angle: “robust tool-use는 재시도 횟수 문제가 아니라 retry/switch/abstain 전략 선택 문제” — controlled error injection, recovery policy, escalation gate를 agent runtime 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent-recovery, failure-handling, eval]
+- status: idea
+
+### 2026-08-16 — OpenAI Agents JS: multi-agent workflow와 voice agent를 TypeScript 런타임으로 보기
+- type: tech
+- source: https://github.com/openai/openai-agents-js
+- why-now: OpenAI Agents SDK가 Python을 넘어 TypeScript 생태계에서도 handoff, guardrail, tracing, voice workflow를 제공하면서 production agent 앱의 런타임 선택지가 넓어졌다.
+- angle: “agent framework를 고를 때 언어보다 handoff contract와 observability surface를 보자” — JS/TS SDK 구조, tool schema, guardrail, realtime voice integration을 프레임워크 선택 기준으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [openai-agents-js, typescript, multi-agent, voice-agent]
+- status: idea
+
+### 2026-08-16 — agent-native: 앱 자체를 agent-friendly surface로 설계하기
+- type: tech
+- source: https://github.com/BuilderIO/agent-native
+- why-now: 에이전트를 기존 UI 위에 얹는 방식보다, 애플리케이션이 처음부터 agent가 읽고 조작하기 쉬운 action/context contract를 제공해야 한다는 흐름이 커지고 있다.
+- angle: “agent-native app은 챗봇 추가가 아니라 UI·state·action을 agent contract로 노출하는 설계” — component/action schema, browser automation 한계, human handoff, testable UX를 개발자 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-native, ui, developer-tools, framework]
+- status: idea
+
+### 2026-08-16 — agentacct: coding agent 작업을 cost·tool·diff 단위로 회계 처리하기
+- type: tech
+- source: https://github.com/mikehasa/agentacct
+- why-now: Claude Code, Codex, OpenCode 같은 coding agent를 여러 번 돌리면 “무엇을 했고 얼마가 들었는지”를 task step 단위로 추적하는 운영 회계가 필요해진다.
+- angle: “agent observability는 trace 보기에서 끝나지 않고 비용과 변경 결과를 같이 봐야 한다” — work-step breakdown, tool usage, file diff, token/time cost를 local-first dashboard repo 소개로 정리한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, observability, cost-tracking, github-repo]
+- status: idea
