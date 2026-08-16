@@ -6940,3 +6940,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, observability, cost-tracking, github-repo]
 - status: idea
+
+### 2026-08-17 — [논문 리뷰] OmniScientist: omni-modal AI scientist를 평가 가능한 workflow로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.13558v1
+- why-now: AI scientist가 hypothesis 생성, code execution, manuscript 작성까지 확장되면서 “워크플로를 많이 덮는다”보다 evidence와 verification을 어떻게 남기는지가 핵심 쟁점이 됐다.
+- angle: “AI scientist는 자동 논문 작성기가 아니라 검증 가능한 연구 workflow runtime이어야 한다” — hypothesis, tool execution, artifact provenance, reviewer/verifier loop를 research agent 설계로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [ai-scientist, research-agent, eval, tool-use]
+- status: idea
+
+### 2026-08-17 — [논문 리뷰] QuoteBench: coding agent command path failure를 분리해 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.13547v1
+- why-now: coding agent의 bash command는 모델 출력, shell quoting, wrapper serialization, 실행 환경을 지나며 깨질 수 있는데 최종 성공률만 보면 어디서 실패했는지 알기 어렵다.
+- angle: “코딩 에이전트 평가는 command generation과 command transport를 분리해야 한다” — quoting/escaping, command wrapper, execution trace, CI verifier를 harness QA 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, eval, shell, harness]
+- status: idea
+
+### 2026-08-17 — [논문 리뷰] Vero: AI agent가 formally verified repo를 만들 수 있을까
+- type: paper
+- source: http://arxiv.org/abs/2608.13522v1
+- why-now: 코드 생성 에이전트가 더 많이 쓰일수록 “테스트 통과”를 넘어 machine-checked proof와 spec을 함께 생성하는 verified software workflow가 중요해진다.
+- angle: “coding agent의 다음 verifier는 unit test가 아니라 proof artifact일 수 있다” — specification, proof generation, repository-level verification, 실패 복구 loop를 개발자 워크플로로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, formal-verification, software-engineering, eval]
+- status: idea
+
+### 2026-08-17 — [논문 리뷰] Intern-S2-Preview: scientific agentic foundation model의 구성 요소
+- type: paper
+- source: http://arxiv.org/abs/2608.13505v1
+- why-now: 과학용 foundation model이 단순 QA 모델을 넘어 heterogeneous evidence, scientific tools, long-horizon task progress를 다루는 agentic model로 진화하고 있다.
+- angle: “scientific agent 모델을 볼 때는 benchmark 점수보다 modality, tool interface, evidence grounding, long-horizon state를 보자”는 체크리스트형 논문 리뷰.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [scientific-agent, multimodal, tool-use, foundation-model]
+- status: idea
+
+### 2026-08-17 — [논문 리뷰] DARTree: diffusion draft tree로 speculative decoding 병목 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2608.13524v1
+- why-now: reasoning/agent serving에서 latency가 커지면서 lossless speculative decoding과 diffusion-based drafter를 어떻게 조합할지가 inference 운영 주제로 올라왔다.
+- angle: “speculative decoding은 단일 draft가 아니라 tree와 verifier budget 설계 문제” — diffusion proposal, autoregressive verification, latency/acceptance trade-off를 serving 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [inference, speculative-decoding, diffusion, serving]
+- status: idea
+
+### 2026-08-17 — AssemblyZero: Claude Code와 Gemini를 위한 parameterized multi-agent orchestration
+- type: tech
+- source: https://github.com/martymcenroe/AssemblyZero
+- why-now: coding agent를 하나씩 수동 실행하는 방식에서 벗어나, agent role과 parameter를 선언하고 여러 provider를 조합하는 lightweight orchestration repo가 늘고 있다.
+- angle: “multi-agent framework의 실전 가치는 roleplay가 아니라 parameterized orchestration과 provider boundary” — Claude Code/Gemini 조합, task decomposition, 결과 검증·handoff 패턴을 repo 중심으로 본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 3
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, coding-agent, orchestration, github-repo]
+- status: idea
+
+### 2026-08-17 — taOS: self-hosted agent OS에서 memory와 file boundary 보기
+- type: tech
+- source: https://github.com/jaylfc/taOS
+- why-now: 개인/팀 에이전트가 클라우드 SaaS에 모든 memory와 파일을 맡기기보다 local-first, offline-capable runtime을 원한다는 요구가 커지고 있다.
+- angle: “agent OS의 핵심은 채팅 UI가 아니라 memory ownership, file boundary, offline/cloud 선택권” — self-hosted assistant runtime, local memory, agent/file integration을 아키텍처 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 3
+- suggested-category: tutorial
+- suggested-tags: [agent-os, self-hosted, memory, local-first]
+- status: idea
+
+### 2026-08-17 — rails-ai-context: Rails 앱 ground truth를 coding agent MCP tools로 노출하기
+- type: tech
+- source: https://github.com/crisnahine/rails-ai-context
+- why-now: Rails 같은 convention-heavy framework에서는 coding agent가 schema, routes, models, jobs, views를 정확히 알아야 하며, 이를 MCP tool로 제공하는 repo 패턴이 실용적이다.
+- angle: “프레임워크별 code intelligence는 generic RAG보다 domain-aware MCP tool이 낫다” — Rails schema/routes/model introspection, convention grounding, agent-safe refactor workflow를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, rails, code-intelligence]
+- status: idea

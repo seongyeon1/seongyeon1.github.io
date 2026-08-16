@@ -348,6 +348,11 @@
 | 아이디어 | 미정 | [논문 리뷰] When Should Multi-Round RAG Stop? 검색 중단 policy 설계 | paper-review | Agentic RAG | | arXiv 2608.13237 — structured stopping judgment, retrieval reduction, first-STOP trajectory risk를 RAG budget gate로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] PIPES — provenance와 prior로 agent perception 보호하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.12789 — tool response provenance, trust prior, state-corruption 방어를 MCP/tool schema 설계로 연결 |
 | 아이디어 | 미정 | OpenAI Agents JS: multi-agent workflow와 voice agent를 TypeScript 런타임으로 보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — handoff, guardrail, tracing, realtime voice integration을 TS agent framework 선택 기준으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] OmniScientist — omni-modal AI scientist를 평가 가능한 workflow로 만들기 | paper-review | AI 평가/운영 | | arXiv 2608.13558 — hypothesis, tool execution, artifact provenance, reviewer/verifier loop를 research agent 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] QuoteBench — coding agent command path failure를 분리해 보기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.13547 — shell quoting, command wrapper, execution trace, CI verifier를 harness QA 체크리스트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Vero — AI agent가 formally verified repo를 만들 수 있을까 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.13522 — specification, proof generation, repository-level verification, 실패 복구 loop |
+| 아이디어 | 미정 | [논문 리뷰] DARTree — diffusion draft tree로 speculative decoding 병목 줄이기 | paper-review | AI 추론 최적화 | | arXiv 2608.13524 — diffusion proposal, autoregressive verification, latency/acceptance trade-off를 serving 관점으로 설명 |
+| 아이디어 | 미정 | rails-ai-context: Rails 앱 ground truth를 coding agent MCP tools로 노출하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — schema/routes/model introspection, convention grounding, agent-safe refactor workflow |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
