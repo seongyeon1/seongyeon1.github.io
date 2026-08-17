@@ -353,6 +353,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Vero — AI agent가 formally verified repo를 만들 수 있을까 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.13522 — specification, proof generation, repository-level verification, 실패 복구 loop |
 | 아이디어 | 미정 | [논문 리뷰] DARTree — diffusion draft tree로 speculative decoding 병목 줄이기 | paper-review | AI 추론 최적화 | | arXiv 2608.13524 — diffusion proposal, autoregressive verification, latency/acceptance trade-off를 serving 관점으로 설명 |
 | 아이디어 | 미정 | rails-ai-context: Rails 앱 ground truth를 coding agent MCP tools로 노출하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — schema/routes/model introspection, convention grounding, agent-safe refactor workflow |
+| 아이디어 | 미정 | [논문 리뷰] Beyond Final Scores — long-horizon AI R&D agent 평가는 trajectory를 봐야 한다 | paper-review | AI 평가/운영 | | arXiv 2608.13417 — final score 대신 progress gain/loss, accumulated experience, intervention point를 보는 연구 에이전트 평가 운영법 |
+| 아이디어 | 미정 | [논문 리뷰] SkillShapley — agent skill의 어느 step이 성능을 만들었나 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.13173 — skill step attribution, task별 영향도, regression-prone instruction pruning과 rollback 가능한 skill library 운영 |
+| 아이디어 | 미정 | [논문 리뷰] GEM — reasoning query를 retrieval embedding으로 바꾸는 generative embedding model | paper-review | Agentic RAG | | arXiv 2608.13200 — complex information need를 generative embedding/retriever-router로 번역하는 production RAG 설계 |
+| 아이디어 | 미정 | AWS cli-agent-orchestrator: coding CLI agent를 tmux 격리 세션으로 조율하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — Claude Code/Kiro/Codex 병렬 실행, isolated tmux session, coordinator handoff, review/merge workflow |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

@@ -7044,3 +7044,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, mcp, rails, code-intelligence]
 - status: idea
+
+### 2026-08-17 — [논문 리뷰] Beyond Final Scores: long-horizon AI R&D agent 평가는 trajectory를 봐야 한다
+- type: paper
+- source: http://arxiv.org/abs/2608.13417v1
+- why-now: autonomous agent가 모델·시스템을 장기 실험으로 개선하는 흐름에서 최종 점수만으로는 어느 단계에서 경험이 쌓이고 어디서 실패하는지 설명할 수 없다.
+- angle: “AI R&D agent 평가는 leaderboard 점수가 아니라 experiment trajectory audit” — progress gain/loss, accumulated experience, intervention point, regression dashboard를 연구 에이전트 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, eval, long-horizon, trajectory]
+- status: idea
+
+### 2026-08-17 — [논문 리뷰] Teach the Magnitude: multi-turn tool agent의 credit assignment 다시 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.13179v1
+- why-now: RLVR 기반 tool-use agent 학습이 늘고 있지만 trajectory-level reward는 어떤 turn이 실제로 성능을 만든 것인지 흐리게 만든다.
+- angle: “tool agent 학습에서 중요한 건 정답 방향보다 turn별 기여 크기를 분리하는 것” — verifier-bounded credit assignment, per-turn supervision, reward ceiling, post-training eval loop를 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent-rl, credit-assignment, eval]
+- status: idea
+
+### 2026-08-17 — [논문 리뷰] SkillShapley: agent skill의 어느 step이 성능을 만들었나
+- type: paper
+- source: http://arxiv.org/abs/2608.13173v1
+- why-now: AGENTS.md, skill file, workflow recipe가 커질수록 “어떤 지시가 도움이 되고 어떤 지시가 regression을 만든다”를 정량화해야 한다.
+- angle: “agent skill 운영은 추가보다 attribution과 pruning이 어렵다” — boundary-adaptive Shapley valuation, skill step attribution, task별 영향도, rollback 가능한 skill library 운영을 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, eval, attribution, coding-agent]
+- status: idea
+
+### 2026-08-17 — [논문 리뷰] vToken: reclaimable KV cache를 위한 token-level virtualization
+- type: paper
+- source: http://arxiv.org/abs/2608.13263v1
+- why-now: long-context agent serving에서는 KV cache가 가장 큰 메모리 병목이고, block-level PagedAttention과 token-level eviction 사이의 mismatch가 운영 비용으로 이어진다.
+- angle: “KV cache 최적화는 eviction algorithm만이 아니라 memory virtualization 계층 문제” — token-level reclaim, fragmentation, serving scheduler, latency/memory trade-off를 inference 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [inference, kv-cache, serving, memory-management]
+- status: idea
+
+### 2026-08-17 — [논문 리뷰] GEM: reasoning query를 retrieval embedding으로 바꾸는 generative embedding model
+- type: paper
+- source: http://arxiv.org/abs/2608.13200v1
+- why-now: 사용자는 복잡한 reasoning intent로 질문하지만 retriever는 여전히 surface matching 중심이라 RAG에서 query understanding과 retrieval 사이의 gap이 커지고 있다.
+- angle: “RAG retriever는 query를 벡터로 압축하는 모델이 아니라 reasoning intent를 생성형으로 번역하는 계층” — generative embedding, instruction-following query, retriever-router, production RAG 평가를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, retrieval, embedding, reasoning]
+- status: idea
+
+### 2026-08-17 — MARC v1: clinical multi-agent reasoning을 deterministic orchestration으로 만들기
+- type: tech
+- source: http://arxiv.org/abs/2608.13476v1
+- why-now: 의료/임상 agent처럼 책임 소재가 큰 도메인에서는 monolithic prompt보다 역할 분리, 명시적 context passing, traceable intermediate result가 더 중요해지고 있다.
+- angle: “domain agent framework의 핵심은 전문가 역할극이 아니라 deterministic coordination과 audit trail” — extraction/reasoning/generation/evaluation agent 분리, context contract, 임상 도메인 적용 한계를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: study
+- suggested-tags: [multi-agent, clinical-ai, orchestration, audit]
+- status: idea
+
+### 2026-08-17 — ironcurtain: plain-English constitution으로 agent runtime policy 걸기
+- type: tech
+- source: https://github.com/provos/ironcurtain
+- why-now: autonomous agent가 file, network, shell tool을 직접 만지는 범위가 커지면서, framework 내부 guardrail보다 runtime-level policy enforcement가 필요해졌다.
+- angle: “agent 보안 정책은 prompt가 아니라 실행 전 runtime gate로 내려와야 한다” — natural-language constitution, policy compilation, tool boundary, audit/deny workflow를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-security, runtime-policy, tool-use, github-repo]
+- status: idea
+
+### 2026-08-17 — AWS cli-agent-orchestrator: coding CLI agent를 tmux 격리 세션으로 조율하기
+- type: tech
+- source: https://github.com/awslabs/cli-agent-orchestrator
+- why-now: Claude Code, Kiro, Codex 같은 CLI coding agent를 병렬로 돌릴 때 workspace/session isolation, 결과 비교, coordinator handoff가 실무 병목이 된다.
+- angle: “multi-agent coding orchestration은 거대한 프레임워크보다 격리된 CLI session과 검증 가능한 handoff에서 시작한다” — tmux session, orchestrator role, 파일 충돌 방지, review/merge workflow를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, multi-agent, cli, orchestration]
+- status: idea
