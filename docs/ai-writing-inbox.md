@@ -7148,3 +7148,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, multi-agent, cli, orchestration]
 - status: idea
+
+### 2026-08-18 — [논문 리뷰] Handover of In-Context Learning State: 세션 경계를 넘는 agent state 전달
+- type: paper
+- source: http://arxiv.org/abs/2608.14528v1
+- why-now: long-running assistant와 coding agent가 context limit, 앱 재시작, subagent delegation 때문에 세션을 넘겨야 하는 상황이 늘고 있어 handover state 품질이 곧 작업 지속성의 핵심이 됐다.
+- angle: “handover는 요약문 작성이 아니라 in-context learning state를 보존하는 protocol 문제” — 무엇을 버리고 무엇을 전달할지, 검증 가능한 resume packet, subagent 인수인계 실패 모드를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, context-management, handover, long-running]
+- status: idea
+
+### 2026-08-18 — [논문 리뷰] Twin: test-time digital twin으로 unknown game agent 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.14490v1
+- why-now: frontier coding agent가 실행 가능한 world model을 test-time에 직접 작성해 unknown environment를 풀어가는 패턴은 ARC-AGI류 continual task와 agentic RL에서 중요한 설계 방향이다.
+- angle: “agent의 world model을 pretraining 지식이 아니라 test-time executable artifact로 만들면 무엇이 달라지나” — simulation, rule inference, validation loop, digital twin failure를 agent harness 관점으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [world-model, agent, test-time-compute, coding-agent]
+- status: idea
+
+### 2026-08-18 — [논문 리뷰] SheetCompass: spreadsheet agent를 hierarchical relation graph로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.14452v1
+- why-now: 실제 업무 agent가 스프레드시트·반정형 데이터를 다루려면 셀 flattening이 아니라 table/column/cross-sheet 관계를 구조적으로 이해해야 한다.
+- angle: “spreadsheet agent의 RAG는 셀 검색이 아니라 workbook graph construction” — hierarchical relation graph, column dependency, spatial layout, tool-based verification을 data agent 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [data-agent, spreadsheet, graph, eval]
+- status: idea
+
+### 2026-08-18 — [논문 리뷰] Knowing When to Stop: LLM 평가를 Bayesian optimal stopping으로 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2608.14425v1
+- why-now: agent eval과 LLM regression test 비용이 커지면서 모든 item을 고정 횟수로 샘플링하는 방식보다 uncertainty에 따라 멈추는 평가 runtime이 필요해졌다.
+- angle: “평가도 inference처럼 budget scheduler가 필요하다” — precision-based adaptive stopping, confidence/uncertainty threshold, CI regression suite 비용 절감을 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-eval, bayesian, cost-optimization, regression-test]
+- status: idea
+
+### 2026-08-18 — [논문 리뷰] Wrong but Useful: multi-agent message는 정답 여부만 보면 안 된다
+- type: paper
+- source: http://arxiv.org/abs/2608.14375v1
+- why-now: multi-agent reasoning에서 agreement나 correctness 기반 필터링만 쓰면 틀렸지만 유용한 decomposition, constraint, scientific principle을 버릴 수 있다는 문제가 드러나고 있다.
+- angle: “multi-agent aggregation은 정답 투표가 아니라 trajectory value 평가 문제” — message utility, decomposition reuse, final-answer correctness와 process value를 분리한 evaluator 설계를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, reasoning, eval, aggregation]
+- status: idea
+
+### 2026-08-18 — Microsoft Agent Framework: Python/.NET agent orchestration을 enterprise runtime으로 보기
+- type: tech
+- source: https://github.com/microsoft/agent-framework
+- why-now: Microsoft가 Python과 .NET을 함께 지원하는 agent framework를 활발히 업데이트하면서, enterprise 팀이 orchestration, deployment, observability를 한 런타임에서 비교할 기준이 생겼다.
+- angle: “agent framework 선택 기준은 샘플 챗봇보다 운영 runtime surface” — workflow orchestration, multi-agent handoff, deployment path, .NET/Python 통합 포인트를 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [microsoft-agent-framework, agent-framework, orchestration, enterprise-ai]
+- status: idea
+
+### 2026-08-18 — Moor: Mac 로컬 MCP control plane으로 coding agent 도구를 안전하게 묶기
+- type: tech
+- source: https://github.com/varandrew/moor
+- why-now: MCP 서버가 늘어나면서 로컬 개발 환경에서 각 coding agent가 제각각 도구를 붙이는 대신 safe, observable, configurable gateway를 두려는 요구가 커졌다.
+- angle: “MCP 운영의 다음 병목은 server 개수가 아니라 local control plane” — server registry, policy, observability, per-agent configuration을 Mac 개발자 workflow 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, coding-agent, control-plane, macos]
+- status: idea
+
+### 2026-08-18 — Open SWE: 비동기 coding agent를 repo workflow에 넣는 법
+- type: tech
+- source: https://github.com/langchain-ai/open-swe
+- why-now: coding agent가 IDE 안의 대화형 도우미를 넘어 issue/PR 단위 비동기 작업자로 운영되면서, task lifecycle과 review/merge boundary 설계가 중요해졌다.
+- angle: “coding agent를 pair programmer가 아니라 asynchronous worker로 보면 runtime이 달라진다” — task queue, repo context, patch generation, reviewer handoff, CI feedback loop를 repo introduction으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, asynchronous-agent, langchain, github-repo]
+- status: idea
