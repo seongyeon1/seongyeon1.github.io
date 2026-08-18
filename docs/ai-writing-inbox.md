@@ -7160,7 +7160,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent, context-management, handover, long-running]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-18-handover-in-context-learning-state.mdx
 
 ### 2026-08-18 — [논문 리뷰] Twin: test-time digital twin으로 unknown game agent 만들기
 - type: paper

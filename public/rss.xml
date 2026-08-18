@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 13 Aug 2026 01:11:51 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 18 Aug 2026 01:12:08 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Handover of In-Context Learning State — 세션 경계를 넘는 agent state 전달</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-18-handover-in-context-learning-state/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-18-handover-in-context-learning-state/</guid>
+      <description>세션 handover를 단순 요약이 아니라 task-relative ICL state 전달 문제로 보고, long-running agent의 resume packet 설계를 정리한다.</description>
+      <pubDate>Tue, 18 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>context-management</category>
+      <category>handover</category>
+      <category>long-running</category>
+    </item>
     <item>
       <title>[논문 리뷰] Coding Agent Architecture — 코딩 에이전트 런타임을 분해하기</title>
       <link>https://seongyeon1.github.io/blog/2026-08-13-coding-agent-architecture-ark/</link>
