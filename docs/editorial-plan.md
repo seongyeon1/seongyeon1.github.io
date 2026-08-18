@@ -361,6 +361,10 @@
 | 아이디어 | 미정 | [논문 리뷰] SheetCompass — spreadsheet agent를 hierarchical relation graph로 평가하기 | paper-review | AI 평가/운영 | | arXiv 2608.14452 — workbook graph, column dependency, spatial layout을 data agent verifier로 쓰는 법 |
 | 아이디어 | 미정 | [논문 리뷰] Knowing When to Stop — LLM 평가를 Bayesian optimal stopping으로 줄이기 | paper-review | AI 평가/운영 | | arXiv 2608.14425 — uncertainty 기반 adaptive stopping으로 agent eval·CI regression 비용 줄이기 |
 | 아이디어 | 미정 | Moor: Mac 로컬 MCP control plane으로 coding agent 도구를 안전하게 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP server registry, policy, observability, per-agent configuration을 local gateway로 관리 |
+| 아이디어 | 미정 | [논문 리뷰] GRIP — RAG에서 query dominance를 막는 evidence gate | paper-review | Agentic RAG | | arXiv 2608.16776 — information-restricted premise, evidence relevance, query dominance detector를 agentic RAG QA gate로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Quipu — agent가 쓰는 knowledge graph에 bitemporal governance 붙이기 | paper-review | 논문 리뷰 | | arXiv 2608.16813 — valid/transaction time, writer trust, write policy, rollback/audit workflow를 agent memory store 설계로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] ClawGym II — agent harness 위에서 black-box RL을 돌리기 | paper-review | AI 평가/운영 | | arXiv 2608.16798 — 복잡한 harness를 RL loop로 최적화할 때의 trajectory logging, reward/cost, mutation boundary |
+| 아이디어 | 미정 | [논문 리뷰] TDD-Agent — 코드 생성을 test-driven reasoning loop로 만들기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.16742 — 테스트를 사후 검증이 아니라 구현 reasoning을 움직이는 steering signal로 쓰는 coding-agent workflow |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

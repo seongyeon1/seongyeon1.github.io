@@ -7253,3 +7253,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, asynchronous-agent, langchain, github-repo]
 - status: idea
+
+### 2026-08-19 — [논문 리뷰] GRIP: RAG에서 query dominance를 막는 evidence gate
+- type: paper
+- source: http://arxiv.org/abs/2608.16776v1
+- why-now: RAG가 검색 결과를 넣어도 강한 query prior가 latent state를 지배하면 evidence가 사실상 무시되는 문제가 production QA에서 반복된다.
+- angle: “RAG grounding은 top-k retrieval이 아니라 premise를 제한하는 reasoning protocol” — information-restricted premise, evidence relevance, query dominance detector를 agentic RAG gate로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, grounding, reasoning, eval]
+- status: idea
+
+### 2026-08-19 — [논문 리뷰] Quipu: agent가 쓰는 knowledge graph에 bitemporal governance 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2608.16813v1
+- why-now: agent가 memory와 knowledge graph에 직접 write하는 흐름이 커지면서 “나중에 정리” 방식의 KG store는 provenance, trust, time axis 문제를 감당하기 어렵다.
+- angle: “agent memory store는 append-only 메모장이 아니라 governed bitemporal database여야 한다” — valid/transaction time, writer trust, write policy, rollback/audit workflow를 설계 관점으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, knowledge-graph, governance, provenance]
+- status: idea
+
+### 2026-08-19 — [논문 리뷰] ClawGym II: agent harness 위에서 black-box RL을 돌리기
+- type: paper
+- source: http://arxiv.org/abs/2608.16798v1
+- why-now: long-horizon agent 성능은 harness 설계에 크게 좌우되지만, 복잡한 harness 자체를 RL loop로 최적화하는 방법은 아직 초기 단계다.
+- angle: “agent RL은 모델 policy만 학습하는 게 아니라 harness interaction protocol까지 학습 대상으로 봐야 한다” — black-box RL, trajectory logging, reward/cost, harness mutation boundary를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, harness, black-box-optimization, eval]
+- status: idea
+
+### 2026-08-19 — [논문 리뷰] When Agents Coordinate: multi-agent coding에서 협업을 어떻게 측정할까
+- type: paper
+- source: http://arxiv.org/abs/2608.16801v1
+- why-now: coding agent fleet와 multi-agent PR workflow가 늘고 있지만, 성공률·비용만으로는 agent들이 실제로 협업했는지 알기 어렵다.
+- angle: “multi-agent coding의 품질 지표는 task success뿐 아니라 coordination trace” — handoff, conflict, redundancy, shared context를 계측해 agent team 운영 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, coding-agent, coordination, eval]
+- status: idea
+
+### 2026-08-19 — [논문 리뷰] TDD-Agent: 코드 생성을 test-driven reasoning loop로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.16742v1
+- why-now: repo-level code generation에서 테스트를 사후 검증으로만 쓰면 구현 방향을 충분히 제어하지 못하고, generated test의 품질도 불안정하다.
+- angle: “coding agent의 test는 마지막 채점자가 아니라 reasoning을 움직이는 steering signal” — test generation, implementation loop, false confidence, CI verifier boundary를 개발 워크플로로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, tdd, code-generation, verification]
+- status: idea
+
+### 2026-08-19 — [논문 리뷰] Proteus: long-context sequence modeling을 incremental memory activation으로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.16844v1
+- why-now: long-context와 agent transcript가 길어질수록 모든 memory를 항상 노출하는 방식은 비용·노이즈·간섭을 키운다.
+- angle: “long-context memory는 저장보다 activation policy가 중요하다” — incremental memory activation, early-token forgetting, serving-time context budget을 agent inference 최적화로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-context, memory, inference, architecture]
+- status: idea
+
+### 2026-08-19 — Executor: OpenAPI·MCP·GraphQL을 agent-safe integration layer로 묶기
+- type: tech
+- source: https://github.com/UsefulSoftwareCo/executor
+- why-now: agent가 외부 API와 MCP tool을 많이 호출할수록 integration layer는 단순 wrapper가 아니라 auth, sandbox, schema, observability를 함께 책임져야 한다.
+- angle: “tool 목록을 늘리는 것보다 안전한 execution boundary를 표준화하는 게 먼저” — OpenAPI/MCP/GraphQL adapter, secure runtime, typed function surface를 agent platform 설계로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-tools, mcp, api-integration, sandbox]
+- status: idea
+
+### 2026-08-19 — Railtracks: resilient agentic system을 위한 운영 프레임워크
+- type: tech
+- source: https://github.com/RailtownAI/railtracks
+- why-now: agent framework가 데모를 넘어 production workflow로 들어가면서 실패 복구, observability, resilient execution을 기본값으로 요구하는 팀이 늘고 있다.
+- angle: “agentic system은 prompt chain이 아니라 failure-aware runtime” — retry/recovery, trace, task boundary, 운영 편의성을 repo architecture 중심으로 점검한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 3
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, resilience, observability, github-repo]
+- status: idea
