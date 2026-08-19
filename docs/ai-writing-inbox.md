@@ -7357,3 +7357,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-framework, resilience, observability, github-repo]
 - status: idea
+
+### 2026-08-20 — [논문 리뷰] Fragility of Self-Improving Agents: memory agent는 왜 순서와 분산에 약한가
+- type: paper
+- source: http://arxiv.org/abs/2608.18066v1
+- why-now: memory-based self-improving agent가 online task stream에서 좋아진다는 주장 뒤에 variance, task order, underspecification 문제가 숨어 있다는 최신 분석이 나왔다.
+- angle: “self-improvement는 평균 점수보다 stability와 rollback gate가 먼저” — memory bank update policy, task-order sensitivity, regression suite를 long-running agent 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [self-improving-agent, memory, eval, regression-test]
+- status: idea
+
+### 2026-08-20 — [논문 리뷰] StagedWorkspace: knowledge-work agent에 versioned workspace가 필요한 이유
+- type: paper
+- source: http://arxiv.org/abs/2608.18050v1
+- why-now: code, 문서, 스프레드시트, 슬라이드 같은 persistent artifact를 다루는 agent가 늘면서 parsed view, native file, diff, submission artifact 사이의 불일치가 실제 실패 원인이 되고 있다.
+- angle: “agent workspace는 파일 폴더가 아니라 versioned contract surface” — view/edit/review/submit 단계의 provenance, snapshot, diff boundary를 coding·knowledge-work agent harness 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [knowledge-work-agent, workspace, provenance, versioning]
+- status: idea
+
+### 2026-08-20 — [논문 리뷰] Chain-of-Experience: inference-time 경험으로 LLM을 계속 개선하기
+- type: paper
+- source: http://arxiv.org/abs/2608.18027v1
+- why-now: LLM 평가가 단일 문제 풀이에서 끝나지 않고, 반복 경험을 통해 test-time에 개선되는지를 보는 방향으로 확장되고 있다.
+- angle: “agent 학습 데이터는 offline dataset만이 아니라 실행 중 경험 로그” — experience abstraction, retrieval trigger, 실패-성공 trace 증류, eval replay를 agent improvement loop로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [continual-learning, agent-memory, inference-time-learning, eval]
+- status: idea
+
+### 2026-08-20 — [논문 리뷰] TokEval: tokenizer도 모델 평가의 일부로 봐야 하는 이유
+- type: paper
+- source: http://arxiv.org/abs/2608.18062v1
+- why-now: tokenizer 선택은 대개 관성적으로 이뤄지지만 code, multilingual, long-context, tool-call payload에서 downstream capability와 비용에 직접 영향을 준다.
+- angle: “tokenizer는 전처리 부품이 아니라 serving·eval·agent UX를 좌우하는 interface” — compression, fragmentation, special token, tool schema 비용을 모델 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tokenizer, llm-eval, inference, model-ops]
+- status: idea
+
+### 2026-08-20 — [논문 리뷰] Policy-Invariant Reward Shaping: LLM feedback을 RL agent 보상으로 써도 되는 조건
+- type: paper
+- source: http://arxiv.org/abs/2608.18008v1
+- why-now: LLM-planner와 RL-controller를 결합한 hybrid agent가 늘지만, LLM-derived reward가 정책을 바꿔버리는지에 대한 이론적 안전장치가 부족하다.
+- angle: “LLM feedback은 편한 reward label이 아니라 policy invariance 조건을 만족해야 한다” — reward shaping, goal-augmented MDP, hybrid RL agent verifier를 agentic RL 운영 관점으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, reward-shaping, llm-feedback, verification]
+- status: idea
+
+### 2026-08-20 — agent-skills-hub: skills·tools·MCP 서버를 점수화해 고르는 registry 패턴
+- type: tech
+- source: https://github.com/zhuyansen/agent-skills-hub
+- why-now: Claude Code skills, MCP servers, agent tools가 급증하면서 “어떤 도구를 context에 로드할지”를 사람이 감으로 고르는 방식이 한계에 부딪히고 있다.
+- angle: “agent registry는 링크 모음이 아니라 quality scoring과 context routing infrastructure” — metadata, freshness score, compatibility, skill selection policy를 harness 운영 패턴으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-skills, mcp, registry, context-routing]
+- status: idea
+
+### 2026-08-20 — comfyui-mcp: 생성형 워크플로 그래프를 MCP tool surface로 바꾸기
+- type: tech
+- source: https://github.com/artokun/comfyui-mcp
+- why-now: 이미지·비디오 생성 워크플로도 단순 프롬프트 호출이 아니라 graph editing, workflow execution, artifact review를 agent가 안전하게 다뤄야 하는 영역이 됐다.
+- angle: “멀티모달 agent tool은 API 하나가 아니라 editable workflow graph” — ComfyUI graph, tool schema, local-first 실행, human review boundary를 MCP 서버 설계 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, multimodal-agent, comfyui, workflow-graph]
+- status: idea
+
+### 2026-08-20 — Azure DevOps MCP: enterprise 개발 플랫폼을 agent tool로 노출할 때의 경계
+- type: tech
+- source: https://github.com/microsoft/azure-devops-mcp
+- why-now: Azure DevOps 같은 조직 핵심 개발 플랫폼이 MCP 서버로 노출되면 issue, repo, pipeline, wiki 접근 권한과 audit boundary를 agent-native하게 재설계해야 한다.
+- angle: “enterprise MCP 서버의 핵심은 기능 수보다 permission·audit·workflow contract” — project-scoped auth, pipeline read/write boundary, CI failure triage agent 패턴을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, azure-devops, enterprise-ai, developer-workflow]
+- status: idea
