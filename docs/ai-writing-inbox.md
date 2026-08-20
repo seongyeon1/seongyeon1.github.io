@@ -7462,3 +7462,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, azure-devops, enterprise-ai, developer-workflow]
 - status: idea
+
+### 2026-08-21 — [논문 리뷰] SPADE: adaptive executable environment에서 self-play agent RL 하기
+- type: paper
+- source: http://arxiv.org/abs/2608.19197v1
+- why-now: language agent post-training이 정적 벤치마크와 frozen verifier에 갇히지 않고, 학습자가 커질수록 환경 자체도 적응해야 한다는 문제가 최신 agentic RL 주제로 올라왔다.
+- angle: “agent RL의 병목은 model policy보다 goal/environment generator일 수 있다” — executable environment, self-play goal generation, verifier drift, curriculum 운영을 harness 설계로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, self-play, environment, post-training]
+- status: idea
+
+### 2026-08-21 — [논문 리뷰] Verifiable Latent Alignments: multi-agent의 숨은 latent communication 감시하기
+- type: paper
+- source: http://arxiv.org/abs/2608.19161v1
+- why-now: multi-agent 시스템이 public transcript 밖의 hidden state로 조율할 수 있다면, 기존 로그 기반 audit와 monitor는 실제 coordination을 놓칠 수 있다.
+- angle: “agent audit log는 메시지 텍스트만 보면 부족하다” — latent channel, public action 연결, covert coordination monitor를 multi-agent safety architecture로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, latent-communication, safety, monitoring]
+- status: idea
+
+### 2026-08-21 — [논문 리뷰] Harness Continual Learning: model parameter 밖의 agent 상태를 어떻게 업데이트할까
+- type: paper
+- source: http://arxiv.org/abs/2608.19013v1
+- why-now: 현대 agent는 prompt, memory, tool, skill, routing rule이 함께 변하면서 성능이 바뀌는데, continual learning 논의는 아직 model parameter 중심에 머물러 있다.
+- angle: “agent 업데이트는 fine-tuning보다 harness migration 문제에 가깝다” — skill/memory/rule 변경, regression risk, rollback gate, evaluation protocol을 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, continual-learning, memory, regression-test]
+- status: idea
+
+### 2026-08-21 — [논문 리뷰] Eureka: task-conditioned meta-agent가 obligation graph를 컴파일하는 법
+- type: paper
+- source: http://arxiv.org/abs/2608.19047v1
+- why-now: long-horizon scientific discovery agent는 고정된 역할극 agent 묶음보다 task 조건에 맞춰 topology, tool, verifier, memory를 동적으로 편성하는 방향으로 가고 있다.
+- angle: “multi-agent orchestration은 역할 목록이 아니라 obligation graph compilation” — acceptance semantics, macro-agent promotion, cost-benefit evolution을 research agent runtime 설계로 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [meta-agent, multi-agent, scientific-discovery, orchestration]
+- status: idea
+
+### 2026-08-21 — [논문 리뷰] MissDiag: incomplete KG-RAG에서 실패 원인을 진단하기
+- type: paper
+- source: http://arxiv.org/abs/2608.18489v1
+- why-now: production KGQA/KG-RAG는 sparse, outdated, incomplete graph를 전제로 해야 하는데, 기존 평가는 근거가 빠졌을 때 점수 변화만 보고 원인 진단은 약하다.
+- angle: “RAG robustness 평가는 aggregate score가 아니라 missing evidence diagnosis” — sparse KG, degradation source, retrieval/evidence QA를 GraphRAG 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [kg-rag, robustness, eval, diagnosis]
+- status: idea
+
+### 2026-08-21 — mcp-ts-core: TypeScript MCP server를 agent-native framework로 만들기
+- type: tech
+- source: https://github.com/cyanheads/mcp-ts-core
+- why-now: MCP server가 빠르게 늘면서 단순 SDK 샘플보다 auth, storage backend, observability, Node/Bun/Cloudflare runtime을 함께 다루는 프레임워크가 필요해졌다.
+- angle: “MCP 서버는 wrapper가 아니라 production integration surface” — declarative tool definition, auth boundary, OpenTelemetry, multi-runtime deployment를 TypeScript 팀 기준으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, typescript, agent-tools, observability]
+- status: idea
+
+### 2026-08-21 — SkillSpector: Claude Code·Codex·MCP skill supply chain을 스캔하기
+- type: tech
+- source: https://github.com/NVIDIA/SkillSpector
+- why-now: agent skills와 MCP tools를 외부에서 설치하는 workflow가 보편화되면서 prompt injection, exfiltration, malicious hook 같은 supply-chain 위험을 사전에 검사해야 한다.
+- angle: “agent skill 설치는 npm install처럼 supply-chain gate가 필요하다” — skill manifest, tool permission, prompt-injection pattern, quarantine workflow를 developer-agent 보안 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-security, coding-agent, skills, supply-chain]
+- status: idea
+
+### 2026-08-21 — MCP Gateway Registry: 흩어진 MCP 서버를 governed tool platform으로 묶기
+- type: tech
+- source: https://github.com/agentic-community/mcp-gateway-registry
+- why-now: 팀마다 MCP 서버를 직접 붙이면 인증, 도구 발견, audit, tenant boundary가 흩어져 enterprise agent 운영의 병목이 된다.
+- angle: “MCP 생태계의 다음 단계는 server catalog가 아니라 governed gateway” — OAuth/Entra 연동, dynamic discovery, unified access, audit log를 platform architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, gateway, enterprise-ai, governance]
+- status: idea
