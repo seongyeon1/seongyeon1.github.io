@@ -7382,7 +7382,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [knowledge-work-agent, workspace, provenance, versioning]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-20-stagedworkspace-versioned-workspace-agents.mdx
 
 ### 2026-08-20 — [논문 리뷰] Chain-of-Experience: inference-time 경험으로 LLM을 계속 개선하기
 - type: paper

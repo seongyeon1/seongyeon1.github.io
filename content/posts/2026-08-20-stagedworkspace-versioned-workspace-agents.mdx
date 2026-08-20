@@ -1,0 +1,187 @@
+---
+title: "[논문 리뷰] StagedWorkspace — 지식 작업 에이전트에 versioned workspace가 필요한 이유"
+date: "2026-08-20"
+category: "paper-review"
+tags: ["knowledge-work-agent", "workspace", "provenance", "versioning"]
+summary: "parsed view, native file, diff, 제출 artifact가 어긋나는 문제를 workspace-state contract로 보고 agent harness 설계를 정리한다."
+---
+
+<Paper
+  title="StagedWorkspace: A Versioned Workspace for Knowledge-Work Agents"
+  authors="Yining Hua, Hongbin Na, Yifan Zhou, Akshay Kalose, Cyrus Ayubcha, Levi Lian"
+  year="2026"
+  venue="arXiv"
+  arxiv="2608.18050"
+/>
+
+## 한 줄 요약
+
+이 논문은 code repository, 문서, 스프레드시트, 슬라이드, 리포트처럼 **지속적으로 수정되는 digital artifact를 다루는 agent**에게 필요한 workspace contract를 제안한다. 핵심은 간단하다. agent가 검색하는 parsed view, 실제 편집하는 native file, 리뷰하는 diff, 최종 제출하는 artifact가 모두 같은 버전의 작업물을 가리키도록 묶어야 한다.
+
+내 의견부터 말하면, 이건 “문서 에이전트도 git처럼 만들자”에 가깝다. 지금 많은 knowledge-work agent는 파일을 읽고, 중간 representation을 만들고, patch를 만들고, 최종 파일을 저장하지만 각 단계가 어떤 workspace state에서 나온 것인지 느슨하다. 그 상태에서 모델 성능만 올리면 에이전트가 더 빠르게 틀릴 뿐이다.
+
+## 왜 지금 중요한가
+
+코딩 에이전트는 비교적 운이 좋다. repo에는 이미 상태를 다루는 관습이 있다.
+
+- 파일 경로와 커밋/working tree가 있다.
+- search result는 특정 파일 내용에 묶인다.
+- diff로 변경분을 리뷰할 수 있다.
+- test로 최종 상태를 검증할 수 있다.
+
+반면 일반 지식 작업은 훨씬 지저분하다. PDF를 파싱한 text chunk, 엑셀의 셀 값, 슬라이드 이미지, 노트북 출력, 최종 제출 파일이 서로 다른 표현으로 존재한다. agent가 “문서 3페이지의 표를 고쳤다”고 말해도 실제 native file, parsed record, review diff가 같은 버전을 가리키는지 확인하지 않으면 믿기 어렵다.
+
+논문은 이 문제를 **workspace-state contract**라고 부른다. 모든 view는 진화하는 workspace state의 특정 버전에 명시적으로 연결되어야 한다는 주장이다. 이 관점이 좋다. agent에게 파일 접근 권한을 주는 순간, context engineering은 retrieval 문제가 아니라 state management 문제가 된다.
+
+## 핵심 아이디어: view마다 content hash를 붙인다
+
+StagedWorkspace의 설계는 parsed record와 review diff를 native file의 content hash에 묶는다. 즉 “이 chunk는 어느 파일의 어느 버전에서 나온 것인가”, “이 diff는 어떤 상태에서 어떤 상태로 넘어가는 변경인가”를 추적한다.
+
+간단히 타입으로 쓰면 이런 느낌이다.
+
+```ts title="workspace-state.ts"
+type WorkspaceState = {
+  id: string;
+  files: Array<{
+    path: string;
+    contentHash: string;
+    mimeType: string;
+  }>;
+};
+
+type ParsedRecord = {
+  sourcePath: string;
+  sourceHash: string;
+  recordId: string;
+  text: string;
+  locator: string; // page, sheet/cell range, slide id 등
+};
+
+type StagedEdit = {
+  baseStateId: string;
+  targetPath: string;
+  beforeHash: string;
+  afterHash: string;
+  diff: string;
+};
+```
+
+중요한 건 `ParsedRecord`가 그냥 텍스트 조각이 아니라는 점이다. `sourceHash`가 있어야 한다. 그래야 agent가 오래된 parsed view를 보고 최신 native file을 수정하는 실수를 잡을 수 있다.
+
+## agent 실패는 종종 모델 문제가 아니라 state mismatch다
+
+knowledge-work agent의 흔한 실패는 이런 식으로 생긴다.
+
+1. agent가 스프레드시트를 파싱한 view를 읽는다.
+2. 그 사이 다른 tool이나 사람이 native file을 바꾼다.
+3. agent는 오래된 view를 기준으로 edit plan을 만든다.
+4. 최종 파일은 저장됐지만 review diff는 다른 상태를 기준으로 만들어진다.
+5. 제출 artifact는 그럴듯하지만, 요구사항 일부가 누락되거나 충돌한다.
+
+이런 실패를 LLM hallucination으로만 부르면 해결이 늦어진다. 실제 원인은 “모델이 바보라서”가 아니라 **agent runtime이 state transition을 명시하지 않았기 때문**일 수 있다.
+
+그래서 이 논문은 agent benchmark와 harness가 final answer만 볼 게 아니라 evidence, staged edit, submitted artifact를 상태 전이로 채점해야 한다고 주장한다. 동의한다. 특히 문서/스프레드시트/슬라이드 agent는 최종 파일만 열어보면 중간에 어떤 근거로 수정했는지 사라진다. 운영 환경에서는 이게 치명적이다.
+
+## 실험 결과를 어떻게 읽을까
+
+논문이 보고한 주요 수치는 꽤 크다.
+
+- OfficeQA Pro와 APEX-Agents의 fixed-harness ablation에서 **dual parsed/native access**가 테스트한 모든 모델에서 가장 높은 point estimate를 보였다.
+- 더 제한적인 single view 대비 OfficeQA Pass@1이 **8.3~12.1 points** 개선됐고, APEX mean rubric score는 **4.7~9.2 points** 개선됐다.
+- SW-AGENT는 Gemini 3.1 Pro로 OfficeQA **63.9%**, GPT-5.4 Nano로 APEX **42.1**을 기록했다고 보고한다. 논문은 이를 같은 모델의 공개 점수인 29.3%, 25.5와 비교한다.
+- 57개 file-editing task의 paired review-axis ablation에서는 diff가 보일 때 관측 점수가 더 높았다고 한다.
+
+다만 이 숫자는 “StagedWorkspace를 붙이면 모든 agent가 두 배 좋아진다”로 읽으면 안 된다. 논문이 보여주는 더 중요한 메시지는 **workspace state 자체가 실험 변수**라는 점이다. 즉 모델, 프롬프트, tool set만 비교하면 안 되고, agent가 어떤 workspace contract 위에서 작업했는지도 같이 비교해야 한다.
+
+## 실무 설계로 바꾸면: staged workspace checklist
+
+내가 agent harness를 만든다면 최소한 아래 항목은 넣겠다.
+
+### 1. parsed view는 항상 native file hash를 가진다
+
+문서 파서, OCR, spreadsheet extractor, slide parser가 만든 record에는 반드시 원본 파일 hash와 locator가 있어야 한다.
+
+```ts title="parsed-view-contract.ts"
+type EvidenceChunk = {
+  source: {
+    path: string;
+    hash: string;
+    locator: string;
+  };
+  content: string;
+  parserVersion: string;
+  extractedAt: string;
+};
+```
+
+`path`만으로는 부족하다. 같은 경로의 파일도 시간이 지나면 다른 파일이다.
+
+### 2. edit는 바로 commit하지 말고 stage한다
+
+agent가 native file을 수정할 수 있더라도, 바로 최종 제출하지 말고 staged edit로 둔다. 사람이 보든 verifier가 보든 diff를 먼저 봐야 한다.
+
+```ts title="edit-flow.ts"
+async function applyAgentEdit(edit: ProposedEdit) {
+  const base = await snapshotWorkspace();
+  const staged = await applyToCopy(base, edit);
+  const diff = await diffWorkspace(base, staged);
+
+  await runVerifiers(staged);
+  await requestReview({ base, staged, diff });
+
+  return { baseState: base.id, stagedState: staged.id, diff };
+}
+```
+
+이 패턴은 코딩뿐 아니라 보고서, 표, 슬라이드에도 필요하다. 변경을 만들 수 있다는 것과 변경을 제출해도 된다는 것은 다르다.
+
+### 3. stale view detector를 둔다
+
+agent가 참조한 evidence의 `sourceHash`와 현재 파일 hash가 다르면 경고하거나 재파싱해야 한다.
+
+```ts title="stale-view-check.ts"
+function assertFresh(record: EvidenceChunk, currentHash: string) {
+  if (record.source.hash !== currentHash) {
+    throw new Error(`stale parsed view: ${record.source.path}`);
+  }
+}
+```
+
+이런 결정론적 gate는 LLM judge보다 싸고 믿을 만하다. “이 근거가 최신 파일에서 온 것인가”는 모델에게 물어볼 문제가 아니다.
+
+### 4. 제출 artifact를 별도 상태로 남긴다
+
+최종 제출물은 단순히 “현재 파일”이 아니라 `submittedStateId`를 가져야 한다. 그래야 나중에 실패를 재현할 수 있다.
+
+```ts title="submission-record.ts"
+type SubmissionRecord = {
+  taskId: string;
+  evidenceStateId: string;
+  stagedStateId: string;
+  submittedStateId: string;
+  verifierResults: Array<{ name: string; status: "pass" | "fail" }>;
+};
+```
+
+agent 평가와 운영에서 재현성은 선택사항이 아니다. 특히 고객 문서나 업무 산출물을 만지는 agent라면 “무엇을 보고 무엇을 냈는가”를 추적해야 한다.
+
+## 이 논문의 한계와 조심할 점
+
+첫째, workspace contract는 성능을 공짜로 올려주지 않는다. hash, snapshot, parser version, diff, verifier를 관리하려면 runtime 복잡도가 늘어난다. 작은 toy agent에는 과할 수 있다.
+
+둘째, parsed/native dual access는 강력하지만 보안 surface도 넓힌다. agent가 원본 파일과 파싱 결과를 모두 볼 수 있으면 개인정보, 숨겨진 sheet, metadata, embedded object를 어떻게 제한할지 별도 정책이 필요하다.
+
+셋째, 논문이 보고한 수치만으로는 task 구성, verifier rubric, 모델별 편차까지 충분히 판단하기 어렵다. 여기서는 숫자를 그대로 인용하되, “일반 법칙”처럼 단정하지 않는다. 더 중요한 결론은 특정 모델 점수보다 workspace contract 자체가 평가 결과를 흔드는 실험 변수라는 점이다.
+
+## 내 결론
+
+StagedWorkspace의 핵심 메시지는 실용적이다. knowledge-work agent는 더 긴 context나 더 좋은 모델만으로 안정화되지 않는다. 파일, parsed view, diff, 제출물을 하나의 versioned state machine으로 다뤄야 한다.
+
+개인적으로는 이 방향이 agent infra의 기본값이 될 가능성이 높다고 본다. 코딩 에이전트가 git, diff, test 덕분에 빠르게 발전한 것처럼, 문서·스프레드시트·슬라이드 에이전트도 비슷한 상태 계약이 필요하다. “에이전트가 파일을 수정했다”가 아니라 “어떤 workspace state에서 어떤 근거를 보고 어떤 diff를 stage했고 어떤 verifier를 통과해 제출했는가”까지 남겨야 한다.
+
+요약하면, agent workspace를 그냥 shared folder로 두지 말자. versioned contract surface로 만들어야 한다.
+
+## 참고 자료
+
+- arXiv: [StagedWorkspace: A Versioned Workspace for Knowledge-Work Agents](http://arxiv.org/abs/2608.18050v1)
+- arXiv API 메타데이터: [2608.18050](http://export.arxiv.org/api/query?id_list=2608.18050)

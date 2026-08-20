@@ -366,7 +366,7 @@
 | 아이디어 | 미정 | [논문 리뷰] ClawGym II — agent harness 위에서 black-box RL을 돌리기 | paper-review | AI 평가/운영 | | arXiv 2608.16798 — 복잡한 harness를 RL loop로 최적화할 때의 trajectory logging, reward/cost, mutation boundary |
 | 아이디어 | 미정 | [논문 리뷰] TDD-Agent — 코드 생성을 test-driven reasoning loop로 만들기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.16742 — 테스트를 사후 검증이 아니라 구현 reasoning을 움직이는 steering signal로 쓰는 coding-agent workflow |
 | 아이디어 | 미정 | [논문 리뷰] Fragility of Self-Improving Agents — memory agent는 왜 순서와 분산에 약한가 | paper-review | AI 평가/운영 | | arXiv 2608.18066 — memory bank update policy, task-order sensitivity, self-improvement regression gate 설계 |
-| 아이디어 | 미정 | [논문 리뷰] StagedWorkspace — knowledge-work agent에 versioned workspace가 필요한 이유 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.18050 — parsed view/native file/diff/submission artifact 불일치를 workspace contract로 관리하는 법 |
+| 발행완료 | 2026-08-20 | [논문 리뷰] StagedWorkspace — knowledge-work agent에 versioned workspace가 필요한 이유 | paper-review | 개발자 AI 워크플로 | | `content/posts/2026-08-20-stagedworkspace-versioned-workspace-agents.mdx` — 자동 발행 완료, arXiv 2608.18050, parsed view/native file/diff/submission artifact를 workspace-state contract로 묶는 agent harness 설계 |
 | 아이디어 | 미정 | [논문 리뷰] Chain-of-Experience — inference-time 경험으로 LLM을 계속 개선하기 | paper-review | AI 평가/운영 | | arXiv 2608.18027 — 실행 중 경험 로그, retrieval trigger, 실패-성공 trace 증류를 agent improvement loop로 정리 |
 | 아이디어 | 미정 | agent-skills-hub — skills·tools·MCP 서버를 점수화해 고르는 registry 패턴 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — quality scoring, freshness, compatibility, context routing을 agent harness 운영 패턴으로 소개 |
 

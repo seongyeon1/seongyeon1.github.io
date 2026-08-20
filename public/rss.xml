@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 18 Aug 2026 01:12:08 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 20 Aug 2026 01:12:13 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] StagedWorkspace — 지식 작업 에이전트에 versioned workspace가 필요한 이유</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-20-stagedworkspace-versioned-workspace-agents/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-20-stagedworkspace-versioned-workspace-agents/</guid>
+      <description>parsed view, native file, diff, 제출 artifact가 어긋나는 문제를 workspace-state contract로 보고 agent harness 설계를 정리한다.</description>
+      <pubDate>Thu, 20 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>knowledge-work-agent</category>
+      <category>workspace</category>
+      <category>provenance</category>
+      <category>versioning</category>
+    </item>
     <item>
       <title>[논문 리뷰] Handover of In-Context Learning State — 세션 경계를 넘는 agent state 전달</title>
       <link>https://seongyeon1.github.io/blog/2026-08-18-handover-in-context-learning-state/</link>
