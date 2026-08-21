@@ -7566,3 +7566,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, gateway, enterprise-ai, governance]
 - status: idea
+
+### 2026-08-22 — [논문 리뷰] MidTool: agentic tool-use를 mid-training 데이터 합성으로 키우기
+- type: paper
+- source: http://arxiv.org/abs/2608.20314v1
+- why-now: reasoning·coding 중심 mid-training은 빠르게 늘었지만, 일반 tool-use 능력을 어떻게 합성 데이터로 안정적으로 강화할지는 아직 실무 레시피가 부족하다.
+- angle: “tool-use는 프롬프트 패턴이 아니라 학습 데이터 flywheel 문제” — tool task 생성, trajectory 품질, verifier, generalization failure를 agent post-training 운영법으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, mid-training, agentic-data, post-training]
+- status: idea
+
+### 2026-08-22 — [논문 리뷰] Task-CoEvolve: harness optimization의 검증 비용 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2608.20169v1
+- why-now: 모델 weight를 바꾸지 않고 prompt/tool/control-flow harness를 반복 개선하는 흐름이 커지면서, 매 iteration 전체 validation을 돌리는 비용이 병목이 되고 있다.
+- angle: “agent harness 튜닝도 CI 비용 최적화가 필요하다” — adaptive validation task selection, regression risk, rollback gate를 개발자 워크플로로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, eval, optimization, ci]
+- status: idea
+
+### 2026-08-22 — [논문 리뷰] MemTrapBench: memory가 LLM reasoning을 망치는 cognitive trap 평가
+- type: paper
+- source: http://arxiv.org/abs/2608.20202v1
+- why-now: 장기 memory가 있는 assistant와 agent가 보편화되면서 “잘 검색했는가”보다 “검색된 memory가 현재 추론을 어떻게 오염시키는가”가 더 중요한 평가 포인트가 됐다.
+- angle: “memory regression test는 recall 점수만 보면 안 된다” — retrieved memory가 decision bias, conflict handling, task performance에 미치는 영향을 memory QA gate로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, benchmark, reasoning, evaluation]
+- status: idea
+
+### 2026-08-22 — [논문 리뷰] Optimal Skill Selection: bounded context에서 agent skill을 고르는 법
+- type: paper
+- source: http://arxiv.org/abs/2608.19993v1
+- why-now: Claude Code·Codex·MCP식 skill 문서 로딩이 늘면서, top-k semantic relevance로 context를 채우는 방식의 비용·성능 한계가 분명해지고 있다.
+- angle: “skill loading은 retrieval 문제가 아니라 budgeted optimization 문제” — skill utility, token cost, bicriteria guarantee, context router 설계를 agent harness 패턴으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, context-management, optimization, tool-use]
+- status: idea
+
+### 2026-08-22 — [논문 리뷰] Inducing Task Models from Computer-Use Traces: 화면 기록을 재사용 가능한 업무 모델로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2608.20319v1
+- why-now: computer-use agent가 실제 업무에 들어오면 screenshot/action log를 단순 replay가 아니라 감사 가능하고 재사용 가능한 task model로 바꿔야 한다.
+- angle: “GUI agent memory의 단위는 raw trace가 아니라 symbolic task model” — trace parsing, reusable workflow, audit artifact, org knowledge base 연결을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, task-model, trace, workflow]
+- status: idea
+
+### 2026-08-22 — [논문 리뷰] Learning When to Think: test-time reasoning budget을 모델이 직접 고르게 하기
+- type: paper
+- source: http://arxiv.org/abs/2608.20256v1
+- why-now: reasoning model 운영에서 고정 token budget은 쉬운 문제에 낭비하고 어려운 문제엔 부족한데, adaptive reasoning mode를 학습시키는 접근이 production cost control과 맞닿아 있다.
+- angle: “추론 최적화의 핵심은 더 많이 생각하기가 아니라 언제 생각할지 고르는 것” — NoThink/Think/DeepThink routing, latency-quality trade-off, fallback policy를 serving 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, test-time-compute, inference, cost-control]
+- status: idea
+
+### 2026-08-22 — OpenBot: computer-use agent를 실행 전 결정·실행 후 기록으로 통제하기
+- type: tech
+- source: https://github.com/CopilotKit/OpenBot
+- why-now: browser·file·tool을 직접 조작하는 AI coworker가 늘면서, action approval과 post-action audit trail을 runtime 기본 기능으로 둔 설계가 중요해졌다.
+- angle: “computer-use agent는 autonomy보다 decision log가 먼저다” — AG-UI agent 연동, action decision boundary, browser/files/tools sandbox, replay 가능한 audit log를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [computer-use-agent, ag-ui, audit-log, sandbox]
+- status: idea
+
+### 2026-08-22 — codebadger: Joern CPG를 MCP로 노출해 coding agent에 data-flow 지능 붙이기
+- type: tech
+- source: https://github.com/Lekssays/codebadger
+- why-now: coding agent가 문자열 검색과 LSP만으로 보안·data-flow 맥락을 추론하기엔 부족해서, Code Property Graph를 MCP tool로 붙이는 패턴이 실무적으로 유용하다.
+- angle: “coding agent context layer에 CPG를 넣으면 무엇이 달라지나” — containerized MCP server, Joern 기반 구조/흐름 질의, 보안 리뷰와 refactor workflow를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, code-property-graph, security]
+- status: idea
