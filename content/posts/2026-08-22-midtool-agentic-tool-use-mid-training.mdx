@@ -1,0 +1,150 @@
+---
+title: "[논문 리뷰] MidTool — tool-use는 post-training만으로 해결되지 않는다"
+date: "2026-08-22"
+category: "paper-review"
+tags: ["tool-use", "agent", "mid-training", "post-training", "eval"]
+summary: "MidTool을 통해 일반 도구 사용 능력을 mid-training 데이터 합성 문제로 보는 관점을 정리한다."
+---
+
+## 한 줄 요약
+
+<Paper
+  title="MidTool: Mid-training Data Synthesis for Agentic Tool Use"
+  authors="Jiang et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2608.20314"
+/>
+
+MidTool은 LLM의 일반적인 tool-use 능력을 프롬프트나 post-training 단계에만 맡기지 말고, mid-training 단계에서 별도 데이터 파이프라인으로 가르치자는 논문이다.
+
+내 해석은 이렇다. agentic tool-use는 “함수 호출 JSON을 잘 뱉기”가 아니다. 모델이 도구의 affordance를 알아보고, 문맥에서 인자를 grounding하고, 여러 tool call을 workflow로 엮고, 정보가 부족할 때 복구하는 능력이다. 이 정도면 instruction tuning 몇 만 샘플로 덧칠할 문제가 아니라 사전 학습 이후의 별도 능력 형성 단계가 필요하다는 주장이 꽤 설득력 있다.
+
+## 왜 지금 중요한가
+
+최근 agent 논의는 tool-use를 너무 runtime 문제로만 보는 경향이 있다.
+
+- MCP server를 몇 개 붙일 것인가
+- tool schema를 어떻게 쓸 것인가
+- guardrail을 어디에 둘 것인가
+- 실패하면 retry할 것인가, 사람에게 넘길 것인가
+
+전부 중요하다. 그런데 모델 자체가 “도구를 써야 하는 상황”과 “도구 없이 답해야 하는 상황”을 구분하지 못하면 runtime을 아무리 잘 짜도 한계가 있다. 반대로 모델이 tool-use prior를 어느 정도 갖고 있으면, harness는 더 단순하고 예측 가능해진다.
+
+MidTool은 이 지점을 찌른다. 논문 초록 기준으로 저자들은 math/science reasoning, software engineering agent 능력은 targeted mid-training으로 개선된 사례가 있지만, general tool use는 상대적으로 덜 탐구됐다고 본다. 그래서 웹, PDF, 코드 데이터와 실제 tool API, MCP skill, 문서 기반 workflow에서 합성한 supervision을 섞어 MidTool-Mix를 만든다.
+
+## 핵심 아이디어
+
+MidTool의 핵심은 tool-use를 네 가지 하위 능력으로 쪼개서 데이터로 만든다는 점이다.
+
+1. **도구 affordance 인식**  
+   지금 문제를 해결하는 데 어떤 도구가 유용한지 판단한다. 단순히 tool list에서 이름을 고르는 게 아니라, 도구의 목적과 한계를 읽는 능력에 가깝다.
+
+2. **문맥 기반 argument grounding**  
+   tool call의 인자를 대충 생성하지 않고, 사용자 요청·문서·이전 tool result에서 근거를 찾아 채운다. production agent에서는 여기서 실수가 가장 비싸다. 잘못된 ID, 잘못된 파일 경로, 과도한 권한 인자는 작은 hallucination이 아니라 side effect가 된다.
+
+3. **tool call workflow composition**  
+   단일 호출이 아니라 여러 호출을 순서와 의존성에 맞게 엮는다. 검색 → 선택 → 상세 조회 → 검증 → 요약 같은 흐름을 모델이 자연스럽게 만들 수 있어야 한다.
+
+4. **불완전한 정보에서 복구**  
+   인자가 부족하거나 tool response가 불완전할 때 바로 환각하지 않고, 추가 확인·대체 도구·abstain 같은 전략을 선택한다.
+
+이 네 가지는 runtime policy로 일부 보완할 수 있지만, 매번 외부 규칙으로 강제하면 agent가 둔해진다. MidTool의 관점은 “이 패턴을 모델 내부 능력으로 어느 정도 심어두자”에 가깝다.
+
+## 방법론: MidTool-Mix가 겨냥하는 데이터 형태
+
+arXiv 메타데이터와 초록 기준으로, MidTool은 open corpus construction pipeline을 제안한다. 데이터 소스는 크게 세 축이다.
+
+- 대규모 웹, PDF, 코드 데이터
+- real-world tool API에서 파생한 supervision
+- MCP skill과 document-grounded workflow
+
+여기서 흥미로운 건 MCP skill이 명시적으로 들어간다는 점이다. MCP는 단순 protocol 유행어가 아니라, 모델에게 “현대 agent tool surface는 이런 식으로 생겼다”를 보여주는 데이터 원천이 될 수 있다. 앞으로 agent 학습 데이터셋은 API 문서, OpenAPI spec, MCP tool description, 실제 trace, verifier result가 한 묶음으로 관리될 가능성이 크다.
+
+논문이 공개한 구성을 보면 MidTool-Mix는 총 **20.3B token / 1,122만 샘플** 규모다. Web은 4.4B source + 4.1B augmentation, PDF는 2.6B + 2.1B, Code는 3.8B + 1.5B, native agentic trajectory는 1.8B token으로 구성된다. 즉 “문서만 많이 모은 corpus”가 아니라, source corpus와 context-grounded augmentation, 실행 가능한 native trajectory를 섞은 학습 혼합물에 가깝다.
+
+품질 관리도 단순히 LLM에게 trajectory를 많이 만들게 하는 방식은 아니다. 논문은 source-specific preprocessing, quality scoring, trajectory deduplication, schema grounding, turn order, required arguments, tool-response consistency 검증을 거친다고 설명한다. 물론 합성 trajectory인 이상 deprecated API나 과도한 happy path 편향은 여전히 위험하다. 하지만 적어도 MidTool의 문제 설정은 “데이터를 더 넣자”가 아니라 “tool-use에 필요한 grounding·execution supervision을 어떤 형태로 만들고 검증할 것인가”에 있다.
+
+## 실험 결과를 어떻게 읽을 것인가
+
+논문 초록은 Qwen3-4B-Base와 Qwen3-8B-Base를 MidTool-Mix로 mid-train한 뒤, supervised fine-tuning과 reinforcement learning을 이어서 적용했다고 설명한다. 그리고 BFCL, tau2-Bench, MCP Universe에서 baseline 대비 일관된 downstream performance 개선을 보고한다.
+
+여기서 중요한 포인트는 “MidTool 하나로 tool-use가 끝났다”가 아니다. 오히려 반대다.
+
+- mid-training은 tool-use prior를 만든다.
+- SFT는 desired behavior를 더 직접적으로 맞춘다.
+- RL은 verifier나 reward가 있는 환경에서 정책을 더 조정한다.
+
+즉 tool-use 학습은 단일 단계가 아니라 pipeline이다. 실무 팀이 가져갈 메시지도 비슷하다. agent 품질을 높이고 싶다면 prompt만 고치거나 RL만 붙이는 식으로 접근하면 안 된다. 데이터 구성, tool schema, workflow trace, verifier, rollback gate가 같이 설계돼야 한다.
+
+## 실무 적용 포인트
+
+### 1. tool-use 로그를 학습 가능한 artifact로 남겨야 한다
+
+agent를 운영한다면 성공/실패 로그를 그냥 observability 화면에만 두면 아깝다. 다음 정보를 구조화해서 남겨야 한다.
+
+- user intent
+- 노출된 tool 목록과 schema version
+- 선택한 tool과 선택하지 않은 tool
+- tool arguments와 근거 source
+- tool result
+- 실패 유형: missing argument, stale result, permission error, timeout, wrong tool, unsafe action 등
+- 최종 verifier 결과
+
+이 정도가 있어야 나중에 SFT든 eval set이든 regression suite든 만들 수 있다.
+
+### 2. tool schema는 모델 입력이면서 학습 데이터다
+
+도구 설명을 대충 쓰면 runtime에서만 손해보는 게 아니다. 그 설명이 future training/eval data로 들어가면 장기적으로도 품질을 망친다. 좋은 schema는 적어도 아래를 포함해야 한다.
+
+- 도구가 해결하는 문제
+- 하지 말아야 할 사용 사례
+- 필수 인자의 source
+- side effect 여부
+- idempotency 여부
+- 권한·승인 조건
+- 실패 시 권장 복구 전략
+
+이건 문서 작업이 아니라 agent API 설계다.
+
+### 3. benchmark는 “정답률”보다 trajectory 품질을 봐야 한다
+
+BFCL 같은 function-calling benchmark는 기본기 확인에 좋지만, production agent는 여러 tool call을 거친다. 그래서 평가도 다음처럼 쪼개야 한다.
+
+- 올바른 도구를 골랐는가
+- 불필요한 도구를 호출하지 않았는가
+- 인자가 근거에 맞는가
+- 중간 실패를 복구했는가
+- unsafe side effect를 피했는가
+- 최종 답변이 tool evidence와 일치하는가
+
+MidTool이 MCP Universe 같은 환경을 함께 본다는 점은 이 방향과 맞다. agent 평가가 점점 “단일 function call”에서 “도구 생태계 안의 실행 궤적”으로 이동하고 있다.
+
+## 한계와 주의점
+
+이 논문을 읽을 때 과장하면 안 되는 부분도 있다.
+
+첫째, 합성 데이터는 항상 품질 병목이 있다. tool-use trajectory는 그럴듯하게 만들기 쉽지만, 실제로 좋은 workflow인지 검증하기 어렵다. 특히 복구 행동과 abstain 행동은 happy path 데이터보다 훨씬 만들기 까다롭다.
+
+둘째, benchmark 개선이 곧 실제 권한 있는 agent의 안전성을 뜻하지는 않는다. tool-use 능력이 좋아지면 좋은 행동도 늘지만, 잘못된 도구를 더 능숙하게 호출할 위험도 같이 커진다. mid-training으로 능력을 키웠다면 runtime guardrail과 audit도 같이 강화해야 한다.
+
+셋째, MCP skill을 학습 데이터로 쓰는 순간 supply-chain 문제가 들어온다. tool description 자체가 오염되거나 악성 prompt를 포함하면, 데이터 파이프라인이 agent 공격면이 된다. 앞으로는 “agent training data security”가 꽤 현실적인 주제가 될 것 같다.
+
+## 내 의견
+
+MidTool의 좋은 점은 tool-use를 제품 기능이 아니라 모델 능력과 데이터 문제로 끌어내린다는 데 있다. 지금 많은 agent stack은 tool을 많이 붙이고 orchestration을 복잡하게 만들면 성능이 올라갈 거라고 믿는다. 나는 그 접근이 오래 못 간다고 본다. 모델이 tool-use의 기본 문법을 충분히 학습하지 못한 상태에서 runtime만 키우면, 결국 guardrail과 retry 로직만 비대해진다.
+
+반대로 MidTool식 접근도 만능은 아니다. agent는 모델+데이터+runtime+권한 경계가 같이 움직이는 시스템이다. mid-training은 그중 모델 prior를 개선하는 강력한 축이지, 실행 안전성을 대체하지는 못한다.
+
+실무적으로는 이렇게 정리하고 싶다.
+
+> tool-use agent를 진지하게 운영하려면, tool log를 버리지 말고 다음 학습·평가·검증 데이터로 재사용할 수 있게 설계하자.
+
+그게 없으면 매번 prompt patch만 하다가 같은 실패를 반복하게 된다.
+
+## 참고 자료
+
+- [MidTool: Mid-training Data Synthesis for Agentic Tool Use — arXiv](https://arxiv.org/abs/2608.20314)
+- [MidTool PDF](https://arxiv.org/pdf/2608.20314v1)
+- [MidTool Data & Model Collection — Hugging Face](https://hf.co/collections/MidTool/midtool-release)
+- [Berkeley Function Calling Leaderboard](https://gorilla.cs.berkeley.edu/leaderboard.html)

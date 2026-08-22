@@ -7578,7 +7578,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [tool-use, mid-training, agentic-data, post-training]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-22-midtool-agentic-tool-use-mid-training.mdx
 
 ### 2026-08-22 — [논문 리뷰] Task-CoEvolve: harness optimization의 검증 비용 줄이기
 - type: paper
