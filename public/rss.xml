@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 22 Aug 2026 01:12:22 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 22 Aug 2026 15:07:34 GMT</lastBuildDate>
+    <item>
+      <title>Sebastian Raschka RSS 읽기 지도 — LLM 아키텍처와 reasoning 흐름을 따라가는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-23-sebastian-raschka-rss-reading-map/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-23-sebastian-raschka-rss-reading-map/</guid>
+      <description>Sebastian Raschka의 RSS 아카이브를 기술 주제별로 묶어, 어떤 글부터 읽고 어떤 블로그 글로 확장할지 정리한다.</description>
+      <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
+      <category>guide</category>
+      <category>LLM</category>
+      <category>architecture</category>
+      <category>reasoning</category>
+      <category>rss</category>
+      <category>research</category>
+    </item>
     <item>
       <title>[논문 리뷰] MidTool — tool-use는 post-training만으로 해결되지 않는다</title>
       <link>https://seongyeon1.github.io/blog/2026-08-22-midtool-agentic-tool-use-mid-training/</link>
