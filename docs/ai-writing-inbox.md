@@ -7671,3 +7671,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, mcp, code-property-graph, security]
 - status: idea
+
+### 2026-08-23 — [논문 리뷰] Task-Conditioned Least-Privilege: terminal·MCP agent의 과권한을 학습으로 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2608.18351v1
+- why-now: MCP와 terminal agent가 실제 mutation 권한을 갖는 흐름에서, allowlist만으로는 task에 불필요한 과권한 선택을 막기 어렵다는 문제가 커지고 있다.
+- angle: “agent permission은 도구 허용 여부가 아니라 task-conditioned least privilege routing 문제” — 권한 선택 데이터, 실행 전 gate, audit log, post-training policy를 개발자 agent 보안 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, mcp, least-privilege, tool-use]
+- status: idea
+
+### 2026-08-23 — [논문 리뷰] LEDGER: LLM agent 산출물을 claim-to-evidence trace graph로 감사하기
+- type: paper
+- source: http://arxiv.org/abs/2608.18398v1
+- why-now: 장기 technical workflow agent가 코드·파일·tool 결과를 빠르게 만들수록, 결과물이 맞는지 사람이 검토하는 병목이 더 커지고 있다.
+- angle: “agent observability는 로그 저장이 아니라 claim과 evidence를 연결하는 감사 그래프” — claim extraction, tool evidence linking, review UI, regression QA를 운영 관점으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-observability, audit, tool-use, evidence-graph]
+- status: idea
+
+### 2026-08-23 — [논문 리뷰] From Retrieved Context to Runtime Control: edge RAG에서 context compression을 제어 루프로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.19535v1
+- why-now: RAG를 edge/온디바이스 환경에 올리려면 grounding 품질뿐 아니라 prefill, KV cache, memory traffic, energy budget을 함께 제어해야 한다.
+- angle: “RAG compression은 prompt 줄이기가 아니라 runtime control plane” — retrieved context 압축, latency·energy trade-off, adaptive policy를 production serving 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, edge-ai, context-compression, inference]
+- status: idea
+
+### 2026-08-23 — [논문 리뷰] Break It Down, Pass It On: LLM agent skill transfer가 언제 독이 되는가
+- type: paper
+- source: http://arxiv.org/abs/2608.20274v1
+- why-now: agent가 완료한 작업에서 skill을 추출해 다음 작업에 재사용하는 패턴이 늘지만, 잘못 전이된 skill은 오히려 성능을 깎는 regression source가 된다.
+- angle: “skill library는 많이 쌓는 게 아니라 transfer boundary를 알아야 한다” — task decomposition, skill applicability, negative transfer, rollback 가능한 skill 운영 체크리스트로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, transfer-learning, regression-test, memory]
+- status: idea
+
+### 2026-08-23 — [논문 리뷰] AI4AI-Bench: recursive self-improvement를 algorithm design agent로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.20318v1
+- why-now: AI가 AI 시스템을 개선하는 RSI 논의가 추상적 담론을 넘어, objective/update rule 같은 학습 알고리즘 설계 task로 벤치마크화되고 있다.
+- angle: “self-improving agent를 말하려면 결과 점수보다 algorithm-design trace와 verifier를 봐야 한다” — benchmark task, recursive improvement loop, safety monitor를 연구 에이전트 평가로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [ai-research-agent, recursive-self-improvement, benchmark, eval]
+- status: idea
+
+### 2026-08-23 — aeon: GitHub Actions 위에서 unattended coding agent를 운영하는 패턴
+- type: tech
+- source: https://github.com/aeonfun/aeon
+- why-now: coding agent를 로컬 CLI가 아니라 GitHub Actions 기반의 unattended runner로 돌리려는 흐름이 커지면서 approval, rollback, self-healing skill 경계가 중요해졌다.
+- angle: “autonomous coding agent의 핵심은 모델보다 실행 substrate” — GitHub Actions runner, skill self-healing, approval-less workflow의 위험과 운영 게이트를 repo architecture로 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, github-actions, agent-framework, automation]
+- status: idea
+
+### 2026-08-23 — lobu: 조직용 agent control plane에서 shared context와 isolated execution 나누기
+- type: tech
+- source: https://github.com/lobu-ai/lobu
+- why-now: 팀 단위 agent 운영에서는 개인 CLI보다 회사 context, approval, isolation, MCP 도구 경계가 한 control plane 안에서 관리되어야 한다.
+- angle: “organizational agent는 채팅봇이 아니라 context·execution·approval 분리 시스템” — shared company context, isolated runner, approval workflow, MCP integration을 platform 설계 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-control-plane, mcp, enterprise-ai, execution-isolation]
+- status: idea
+
+### 2026-08-23 — wigolo: coding agent용 local-first web search/fetch/crawl MCP
+- type: tech
+- source: https://github.com/KnockOutEZ/wigolo
+- why-now: 코딩 에이전트가 최신 문서와 웹 근거를 가져올 때 SaaS 검색 API 의존 없이 local-first MCP tool로 fetch/crawl/research를 수행하려는 수요가 커지고 있다.
+- angle: “agent web access는 검색 품질뿐 아니라 cost, privacy, parseability 문제” — MCP tool surface, crawl boundary, structured output, retry-safe research workflow를 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, web-search, coding-agent, local-first]
+- status: idea

@@ -378,6 +378,10 @@
 | 아이디어 | 미정 | [논문 리뷰] MemTrapBench — memory가 LLM reasoning을 망치는 cognitive trap 평가 | paper-review | AI 평가/운영 | | arXiv 2608.20202 — retrieved memory가 reasoning bias와 task performance를 오염시키는지 memory regression gate로 점검 |
 | 아이디어 | 미정 | [논문 리뷰] Optimal Skill Selection — bounded context에서 agent skill을 고르는 법 | paper-review | Agent/MCP 실전 | | arXiv 2608.19993 — skill utility, token cost, bicriteria guarantee를 context router와 skill loading policy로 연결 |
 | 아이디어 | 미정 | codebadger — Joern CPG를 MCP로 노출해 coding agent에 data-flow 지능 붙이기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — Code Property Graph MCP, 구조/흐름 질의, 보안 리뷰·refactor workflow |
+| 아이디어 | 미정 | [논문 리뷰] Task-Conditioned Least-Privilege — terminal·MCP agent의 과권한 줄이기 | paper-review | Agent/MCP 실전 | | arXiv 2608.18351 — task-conditioned least privilege routing, permission gate, audit log를 agent 보안 운영 패턴으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] LEDGER — agent 산출물을 claim-to-evidence trace graph로 감사하기 | paper-review | AI 평가/운영 | | arXiv 2608.18398 — claim extraction, tool evidence linking, review UI를 agent observability와 QA gate로 해석 |
+| 아이디어 | 미정 | [논문 리뷰] From Retrieved Context to Runtime Control — edge RAG context compression | paper-review | Agentic RAG | | arXiv 2608.19535 — RAG 압축을 latency·KV cache·energy budget까지 다루는 runtime control plane으로 설명 |
+| 아이디어 | 미정 | aeon — GitHub Actions 위에서 unattended coding agent 운영하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — Actions runner, self-healing skills, approval-less automation의 운영 게이트와 rollback boundary |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
