@@ -382,6 +382,11 @@
 | 아이디어 | 미정 | [논문 리뷰] LEDGER — agent 산출물을 claim-to-evidence trace graph로 감사하기 | paper-review | AI 평가/운영 | | arXiv 2608.18398 — claim extraction, tool evidence linking, review UI를 agent observability와 QA gate로 해석 |
 | 아이디어 | 미정 | [논문 리뷰] From Retrieved Context to Runtime Control — edge RAG context compression | paper-review | Agentic RAG | | arXiv 2608.19535 — RAG 압축을 latency·KV cache·energy budget까지 다루는 runtime control plane으로 설명 |
 | 아이디어 | 미정 | aeon — GitHub Actions 위에서 unattended coding agent 운영하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — Actions runner, self-healing skills, approval-less automation의 운영 게이트와 rollback boundary |
+| 아이디어 | 미정 | [논문 리뷰] Inducing Task Models — computer-use trace를 task model로 바꾸기 | paper-review | Agent/MCP 실전 | | arXiv 2608.20319 — screenshot/mouse/keyboard trace를 auditable workflow schema로 유도해 computer-use agent의 replay·audit 기반 만들기 |
+| 아이디어 | 미정 | [논문 리뷰] Agent-Friendly Documentation — coding agent는 문서를 어떻게 읽고 고치는가 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.20195 — 557개 agentic coding session과 3만+ PR 분석 기반, README/AGENTS.md를 agent context interface로 설계하는 법 |
+| 아이디어 | 미정 | [논문 리뷰] Phantom Gains — self-improving LLM의 개선 착시를 측정하는 법 | paper-review | AI 평가/운영 | | arXiv 2608.20290 — frozen control과 measured null 없이 self-training gain/loss를 해석할 때 생기는 measurement artifact 점검 |
+| 아이디어 | 미정 | [논문 리뷰] LLM semantic cache eviction — LFU를 이기기 어려운 이유 | paper-review | AI 추론 최적화 | | arXiv 2608.20280 — FIFO/LRU/LFU/ARC/GDSF/SISO를 같은 protocol에서 비교하고 semantic cache 운영 기준 정리 |
+| 아이디어 | 미정 | blade-code: MCP와 multi-model을 갖춘 CLI coding agent 구조 읽기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — built-in tools, MCP integration, provider switching, 로컬 권한 모델을 CLI coding-agent 체크리스트로 분석 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

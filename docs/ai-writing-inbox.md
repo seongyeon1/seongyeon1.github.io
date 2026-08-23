@@ -7775,3 +7775,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, web-search, coding-agent, local-first]
 - status: idea
+
+### 2026-08-24 — [논문 리뷰] Inducing Task Models: computer-use trace를 감사 가능한 task model로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2608.20319v1
+- why-now: browser/desktop agent가 실제 업무 로그에서 배워야 하는 단계로 오면서, screenshot·mouse·keyboard event를 재사용 가능한 symbolic model로 바꾸는 문제가 중요해졌다.
+- angle: “computer-use agent의 메모리는 화면 녹화가 아니라 auditable task model이어야 한다” — low-level trace segmentation, reusable workflow schema, 조직 내 audit/replay 경계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, task-model, trace, workflow]
+- status: idea
+
+### 2026-08-24 — [논문 리뷰] Agent-Friendly Documentation: coding agent는 문서를 어떻게 읽고 고치는가
+- type: paper
+- source: http://arxiv.org/abs/2608.20195v1
+- why-now: 557개 agentic coding session과 3만 개 이상 agentic PR을 분석해, 인간용 문서가 coding agent workflow에서 어떤 병목이 되는지 실증 데이터가 나왔다.
+- angle: “README는 사람만 위한 온보딩 문서가 아니라 agent runtime의 context interface” — agent가 찾는 문서, 갱신하는 문서, AGENTS.md/skill 문서 설계 원칙으로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, documentation, agents-md, developer-workflow]
+- status: idea
+
+### 2026-08-24 — [논문 리뷰] Phantom Gains: self-improving LLM의 개선 착시를 측정하는 법
+- type: paper
+- source: http://arxiv.org/abs/2608.20290v1
+- why-now: self-training·self-improvement 결과를 개별 문제의 gain/loss로 해석하는 실험이 늘지만, frozen control 없는 비교는 측정 artifact를 개선으로 착각하기 쉽다.
+- angle: “agent self-improvement는 평균 점수보다 measured null과 transition audit가 먼저” — noisy estimate, control pipeline, regression/gain attribution을 평가 운영 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [self-improvement, eval, measurement, llm-training]
+- status: idea
+
+### 2026-08-24 — [논문 리뷰] LLM semantic cache eviction: LFU를 이기기 어려운 이유
+- type: paper
+- source: http://arxiv.org/abs/2608.20280v1
+- why-now: LLM serving 비용을 줄이기 위해 semantic cache가 많이 쓰이지만, eviction policy 비교가 제각각이라 실제 운영 선택 기준이 흐렸다.
+- angle: “semantic cache는 fancy eviction보다 workload protocol이 먼저” — FIFO/LRU/LFU/ARC/GDSF/SISO 비교, embedding encoder, cache capacity별 운영 의사결정으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-serving, semantic-cache, inference, optimization]
+- status: idea
+
+### 2026-08-24 — [논문 리뷰] ConceptGuard: context-sensitive unlearning benchmark로 안전한 forgetting 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.20338v1
+- why-now: LLM unlearning이 단순 사실 삭제를 넘어 harmful context에서는 잊고 benign context에서는 보존해야 하는 선택적 forgetting 문제로 이동하고 있다.
+- angle: “unlearning 평가는 forget/retain 정확도가 아니라 context-sensitive behavior gate” — harmful/benign concept 분리, recall 기반 metric 한계, release QA 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [unlearning, safety, eval, benchmark]
+- status: idea
+
+### 2026-08-24 — blade-code: MCP와 multi-model을 갖춘 CLI coding agent 구조 읽기
+- type: tech
+- source: https://github.com/echoVic/blade-code
+- why-now: terminal-native coding agent가 Claude Code·Codex·Qwen Code 이후 빠르게 늘면서, MCP support, provider abstraction, built-in tools를 갖춘 작은 CLI agent의 구조 비교가 유용해졌다.
+- angle: “좋은 CLI coding agent는 chat UI가 아니라 tool boundary와 patch workflow가 핵심” — built-in tools, MCP integration, provider switching, 로컬 권한 모델을 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, cli, mcp, developer-workflow]
+- status: idea
+
+### 2026-08-24 — pydantic-ai-backend: agent file storage와 sandbox backend를 타입 안전하게 분리하기
+- type: tech
+- source: https://github.com/vstorm-co/pydantic-ai-backend
+- why-now: agent가 파일을 읽고 쓰고 코드를 실행하는 순간, framework보다 storage abstraction, Docker sandbox, permission preset이 운영 안전성을 좌우한다.
+- angle: “agent backend는 tool 함수 모음이 아니라 storage·sandbox·permission boundary” — in-memory/local/container backend, multi-user isolation, 테스트 가능한 agent execution layer로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [pydantic-ai, sandbox, agent-framework, tool-use]
+- status: idea
+
+### 2026-08-24 — claude-prompts-mcp: prompt template을 MCP tool과 skill export로 운영하기
+- type: tech
+- source: https://github.com/minipuft/claude-prompts-mcp
+- why-now: reusable prompt와 multi-step workflow가 개인 노트 수준을 넘어 Claude Code, Cursor, OpenCode, Gemini CLI에서 공유되는 agent skill artifact가 되고 있다.
+- angle: “prompt library는 복붙 문서가 아니라 versioned workflow tool이어야 한다” — MCP server, workflow chain, quality gate, native skill export를 agent harness 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, prompt-engineering, agent-skills, workflow]
+- status: idea
