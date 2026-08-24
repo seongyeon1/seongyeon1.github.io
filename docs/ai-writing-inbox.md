@@ -7983,3 +7983,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, coding-agent, developer-tools, github-repo]
 - status: idea
+
+### 2026-08-25 — [논문 리뷰] AUSO: agent skill lifecycle을 action 단위로 최적화하기
+- type: paper
+- source: http://arxiv.org/abs/2608.21292v1
+- why-now: agent가 skill library를 단순 retrieval 대상으로 쓰는 단계를 넘어, skill을 언제 내재화하고 언제 외부 호출로 남길지 결정하는 운영 문제가 커지고 있다.
+- angle: “skill은 prompt 조각이 아니라 internalization→formation→utilization lifecycle을 갖는다” — action-level skill optimization, skill selection gate, skill regression budget을 agent harness 운영법으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, tool-use, agent-rl, eval]
+- status: idea
+
+### 2026-08-25 — [논문 리뷰] Utility Under Attack: agent memory poisoning이 실제 효용을 얼마나 깎는가
+- type: paper
+- source: http://arxiv.org/abs/2608.21230v1
+- why-now: persistent memory agent에서 false assertion이 한 번 저장되면 이후 세션에 반복 주입되는 문제가 content screening만으로 막기 어렵다는 점이 뚜렷해졌다.
+- angle: “memory 보안은 악성 prompt 탐지가 아니라 저장된 정보의 장기 효용 손실을 재는 문제” — LongMemEval poisoning, provenance ranking 한계, memory quarantine·repair workflow를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, security, poisoning, eval]
+- status: idea
+
+### 2026-08-25 — [논문 리뷰] AID-Guard: delegated agent effect를 상태 기반 authorization으로 묶기
+- type: paper
+- source: http://arxiv.org/abs/2608.21159v1
+- why-now: tool-using agent가 결제·예약·전송 같은 외부 effect를 만들 때, 승인 시점과 실제 commit 시점 사이의 상태 변화와 retry가 보안 구멍이 된다.
+- angle: “agent 권한은 one-shot approval이 아니라 authorization-to-commit state machine이어야 한다” — delivery, retry, response loss, duplicate effect 방지를 tool gateway 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-security, authorization, tool-use, mcp]
+- status: idea
+
+### 2026-08-25 — [논문 리뷰] EnSI-RAG: entity-structure index로 긴 문서 QA를 안정화하기
+- type: paper
+- source: http://arxiv.org/abs/2608.21252v1
+- why-now: 긴 문서 기반 QA에서 raw chunk embedding만으로는 entity 관계를 여러 chunk에 걸쳐 따라가기 어려워, RAG index 자체를 구조화하는 접근이 다시 중요해지고 있다.
+- angle: “RAG 성능은 generator보다 index schema에서 갈린다” — entity-structure indexing, 관계 기반 retrieval, long-document QA 평가를 production RAG 설계 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, retrieval, entity-index, long-context]
+- status: idea
+
+### 2026-08-25 — [논문 리뷰] Specification Portability: coding agent 사이에 spec을 옮겨도 동작할까
+- type: paper
+- source: http://arxiv.org/abs/2608.21208v1
+- why-now: 팀이 Claude Code, Codex, Copilot, 사내 agent를 섞어 쓰면서 “한 agent용 spec이 다른 agent에서도 재현 가능한가”가 migration·refactor 품질 이슈가 됐다.
+- angle: “agent lock-in을 줄이는 핵심은 prompt가 아니라 portable executable specification” — Oracle→PostgreSQL migration 실험, spec-first workflow, cross-agent compatibility gate를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, specification, migration, eval]
+- status: idea
+
+### 2026-08-25 — [논문 리뷰] Trustworthy RAG: misinformation·knowledge poisoning을 평가 agent로 잡기
+- type: paper
+- source: http://arxiv.org/abs/2608.21095v1
+- why-now: RAG 시스템은 semantic relevance가 높아도 retrieved document 자체가 오염되면 틀린 답을 자신 있게 생성하므로, retrieval 이후의 truth gate가 필요하다.
+- angle: “RAG에는 retriever score와 별개인 보안·진실성 평가 agent가 필요하다” — misinformation detection, knowledge poisoning benchmark, verifier agent를 RAG QA pipeline으로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, security, misinformation, eval-agent]
+- status: idea
+
+### 2026-08-25 — Network-AI: TypeScript multi-agent orchestrator에 shared state와 guardrail 붙이기
+- type: tech
+- source: https://github.com/Jovancoding/Network-AI
+- why-now: agent orchestration이 LangGraph류 대형 프레임워크와 ad-hoc script 사이에서, 작은 TypeScript 팀이 읽고 수정 가능한 runtime 패턴을 요구하고 있다.
+- angle: “multi-agent orchestrator의 기본기는 agent 수가 아니라 shared state·guardrail·adapter boundary” — traffic-light식 제어, provider adapter, state contract를 production agent 설계 기준으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, typescript, agent-framework, guardrails]
+- status: idea
+
+### 2026-08-25 — agent-tool: coding agent용 MCP toolbox에 debugger·SSH·process memory 묶기
+- type: tech
+- source: https://github.com/knewstimek/agent-tool
+- why-now: coding agent가 파일 수정만 하는 수준을 넘어 debugger, 원격 파일, 프로세스 상태를 다룰 때 권한·입출력 contract가 명확한 MCP toolbox가 필요하다.
+- angle: “coding agent의 shell access를 MCP tool surface로 쪼개면 무엇이 안전해지나” — encoding-aware file tool, DAP debugger, SSH/SFTP, process memory 기능을 agent-safe workflow로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, coding-agent, debugger, developer-tools]
+- status: idea

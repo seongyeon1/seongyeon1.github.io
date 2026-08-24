@@ -391,6 +391,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Remember, Verify, or Ask? — agent memory commit boundary 평가 | paper-review | AI 평가/운영 | | arXiv 2608.19564 — persistent memory update를 저장/검증/질문으로 나누는 clarification boundary와 memory hygiene gate |
 | 아이디어 | 미정 | [논문 리뷰] Credit Without Ground Truth — executed replay로 agent credit assignment 감사하기 | paper-review | AI 평가/운영 | | arXiv 2608.19760 — judge 점수 대신 실행 replay로 step-level reward signal을 감사하는 agent RL/eval 운영법 |
 | 아이디어 | 미정 | Tracely-ai: production agent failure를 CI regression test로 되돌리기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — production trace clustering, hermetic replay, PR-blocking regression gate를 agent observability 다음 단계로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] Utility Under Attack — agent memory poisoning이 실제 효용을 얼마나 깎는가 | paper-review | AI 평가/운영 | | arXiv 2608.21230 — false assertion poisoning, provenance ranking 한계, memory quarantine·repair workflow를 persistent memory agent 보안 관점으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] AID-Guard — delegated agent effect를 상태 기반 authorization으로 묶기 | paper-review | Agent/MCP 실전 | | arXiv 2608.21159 — 승인·전달·retry·commit 사이의 상태 전이를 tool gateway 권한 모델로 설계 |
+| 아이디어 | 미정 | [논문 리뷰] AUSO — agent skill lifecycle을 action 단위로 최적화하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.21292 — skill internalization/formation/utilization lifecycle, selection gate, regression budget |
+| 아이디어 | 미정 | [논문 리뷰] EnSI-RAG — entity-structure index로 긴 문서 QA를 안정화하기 | paper-review | Agentic RAG | | arXiv 2608.21252 — raw chunk 검색 대신 entity 관계 index, long-document QA, production RAG schema 설계 |
+| 아이디어 | 미정 | agent-tool — coding agent용 MCP toolbox에 debugger·SSH·process memory 묶기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — encoding-aware file tool, DAP debugger, SSH/SFTP, process memory를 agent-safe MCP surface로 분석 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
