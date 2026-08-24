@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 22 Aug 2026 15:16:40 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 24 Aug 2026 01:46:38 GMT</lastBuildDate>
     <item>
       <title>Claude 워터마킹과 AI 텍스트 탐지 — 생성된 글은 어디까지 추적 가능한가</title>
       <link>https://seongyeon1.github.io/blog/2026-08-23-claude-watermark-ai-text-detector/</link>
