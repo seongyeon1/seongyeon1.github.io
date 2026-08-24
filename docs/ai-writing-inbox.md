@@ -7879,3 +7879,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, prompt-engineering, agent-skills, workflow]
 - status: idea
+
+### 2026-08-24 — [논문 리뷰] ReCache: tool-augmented agent의 KV cache를 schema 조합 단위로 재사용하기
+- type: paper
+- source: http://arxiv.org/abs/2608.19662v1
+- why-now: tool·skill schema가 요청마다 다른 순서와 조합으로 반복되면서 prefix cache만으로는 agent serving 비용을 줄이기 어렵다는 병목이 뚜렷해졌다.
+- angle: “agent inference 최적화는 대화 prefix보다 tool schema state 재사용이 핵심” — schema permutation, KV cache reuse/compression, tool registry와 serving layer 경계를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-serving, kv-cache, tool-use, inference]
+- status: idea
+
+### 2026-08-24 — [논문 리뷰] Credit Without Ground Truth: executed replay로 agent credit assignment 감사하기
+- type: paper
+- source: http://arxiv.org/abs/2608.19760v1
+- why-now: long-horizon agent post-training에서 step-level reward와 LLM-judge 신호를 많이 쓰지만, 실제 실행 replay 기준으로 어떤 step이 원인이었는지 검증하는 연구가 필요해졌다.
+- angle: “agent 학습 신호는 judge 점수보다 실행 가능한 counterfactual replay가 먼저” — step credit signal, causal replay, reward model QA를 agent RL 운영법으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, credit-assignment, eval, replay]
+- status: idea
+
+### 2026-08-24 — [논문 리뷰] Remember, Verify, or Ask?: agent memory commit boundary 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.19564v1
+- why-now: persistent memory를 가진 개인화 agent가 늘면서, 정보를 바로 저장할지 검증할지 사용자에게 물을지 결정하는 memory hygiene 문제가 실무 리스크가 됐다.
+- angle: “agent memory의 핵심은 retrieval보다 commit policy” — clarification boundary, durable update risk, verify-or-ask gate를 개인 비서/팀 agent 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, personalization, eval, clarification]
+- status: idea
+
+### 2026-08-24 — [논문 리뷰] When Text and Numbers Disagree: LLM evidence arbitration을 운영 지표로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.20116v1
+- why-now: LLM agent가 문서 요약, 숫자 관측값, tool output이 충돌하는 상황에서 어떤 근거를 우선하는지 모르면 데이터 분석·운영 자동화에서 위험하다.
+- angle: “RAG grounding은 근거를 찾는 것뿐 아니라 상충 evidence를 중재하는 정책” — text/numeric/tool evidence conflict, arbitration metric, data-agent QA gate로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-eval, tool-use, evidence, data-agent]
+- status: idea
+
+### 2026-08-24 — [논문 리뷰] EchoCoT: hidden chain-of-thought 추출 위험과 reasoning trace 보안
+- type: paper
+- source: http://arxiv.org/abs/2608.20055v1
+- why-now: reasoning model이 hidden CoT를 공개하지 않는 방향으로 운영되지만, black-box 상호작용만으로 내부 reasoning asset이 누출될 수 있는지 보안 관점에서 봐야 한다.
+- angle: “reasoning trace는 디버깅 자료이면서 모델 IP와 safety surface” — hidden CoT extraction, trace redaction, agent audit log 공개 범위를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, security, chain-of-thought, model-safety]
+- status: idea
+
+### 2026-08-24 — Tracely-ai: production agent failure를 CI regression test로 되돌리기
+- type: tech
+- source: https://github.com/Jwuthri/Tracely-ai
+- why-now: agent 앱이 production trace를 남기는 단계에서 멈추지 않고, 실패 세션을 hermetic regression case로 얼려 PR gate에 넣는 흐름이 중요해지고 있다.
+- angle: “agent observability의 다음 단계는 dashboard가 아니라 failure-to-test loop” — trace clustering, replay fixture, CI blocking, regression budget을 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, observability, ci, github-repo]
+- status: idea
+
+### 2026-08-24 — Boucle-framework: structured memory와 safety hook을 갖춘 autonomous agent loop
+- type: tech
+- source: https://github.com/Bande-a-Bonnot/Boucle-framework
+- why-now: agent framework가 단순 tool wrapper에서 structured memory, loop management, safety hook을 기본 런타임 기능으로 포함하는 방향으로 수렴하고 있다.
+- angle: “autonomous agent framework의 최소 단위는 planner가 아니라 memory·loop·safety hook contract” — runtime 구조, hook boundary, self-improving agent 운영 리스크를 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 3
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, memory, safety-hooks, github-repo]
+- status: idea
+
+### 2026-08-24 — coding-tools-mcp: coding agent에 개발 도구 묶음을 MCP surface로 붙이기
+- type: tech
+- source: https://github.com/xyTom/coding-tools-mcp
+- why-now: 여러 coding agent가 같은 repo 도구를 호출할 때, 개별 CLI glue보다 MCP server 형태의 도구 묶음과 권한 경계가 재사용성이 높다.
+- angle: “coding agent tool layer는 ad-hoc shell 명령이 아니라 typed MCP toolbox” — tool catalog, 권한·입출력 contract, IDE/CI workflow 연결을 repo 소개로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, coding-agent, developer-tools, github-repo]
+- status: idea

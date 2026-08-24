@@ -387,6 +387,10 @@
 | 아이디어 | 미정 | [논문 리뷰] Phantom Gains — self-improving LLM의 개선 착시를 측정하는 법 | paper-review | AI 평가/운영 | | arXiv 2608.20290 — frozen control과 measured null 없이 self-training gain/loss를 해석할 때 생기는 measurement artifact 점검 |
 | 아이디어 | 미정 | [논문 리뷰] LLM semantic cache eviction — LFU를 이기기 어려운 이유 | paper-review | AI 추론 최적화 | | arXiv 2608.20280 — FIFO/LRU/LFU/ARC/GDSF/SISO를 같은 protocol에서 비교하고 semantic cache 운영 기준 정리 |
 | 아이디어 | 미정 | blade-code: MCP와 multi-model을 갖춘 CLI coding agent 구조 읽기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — built-in tools, MCP integration, provider switching, 로컬 권한 모델을 CLI coding-agent 체크리스트로 분석 |
+| 아이디어 | 미정 | [논문 리뷰] ReCache — tool-augmented agent의 KV cache를 schema 조합 단위로 재사용하기 | paper-review | AI 추론 최적화 | | arXiv 2608.19662 — tool/skill schema permutation을 고려한 KV cache reuse와 compression을 agent serving layer 관점으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Remember, Verify, or Ask? — agent memory commit boundary 평가 | paper-review | AI 평가/운영 | | arXiv 2608.19564 — persistent memory update를 저장/검증/질문으로 나누는 clarification boundary와 memory hygiene gate |
+| 아이디어 | 미정 | [논문 리뷰] Credit Without Ground Truth — executed replay로 agent credit assignment 감사하기 | paper-review | AI 평가/운영 | | arXiv 2608.19760 — judge 점수 대신 실행 replay로 step-level reward signal을 감사하는 agent RL/eval 운영법 |
+| 아이디어 | 미정 | Tracely-ai: production agent failure를 CI regression test로 되돌리기 | tutorial | AI 평가/운영 | | GitHub repo 기반 — production trace clustering, hermetic replay, PR-blocking regression gate를 agent observability 다음 단계로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
