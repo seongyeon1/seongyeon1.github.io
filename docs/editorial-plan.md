@@ -396,6 +396,11 @@
 | 아이디어 | 미정 | [논문 리뷰] AUSO — agent skill lifecycle을 action 단위로 최적화하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.21292 — skill internalization/formation/utilization lifecycle, selection gate, regression budget |
 | 아이디어 | 미정 | [논문 리뷰] EnSI-RAG — entity-structure index로 긴 문서 QA를 안정화하기 | paper-review | Agentic RAG | | arXiv 2608.21252 — raw chunk 검색 대신 entity 관계 index, long-document QA, production RAG schema 설계 |
 | 아이디어 | 미정 | agent-tool — coding agent용 MCP toolbox에 debugger·SSH·process memory 묶기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — encoding-aware file tool, DAP debugger, SSH/SFTP, process memory를 agent-safe MCP surface로 분석 |
+| 아이디어 | 미정 | [논문 리뷰] InjecMEM — LLM agent memory injection 공격면 분해하기 | paper-review | AI 평가/운영 | | arXiv 2608.23471 — memory ingestion gate, provenance, quarantine, repair workflow를 agent 보안 체크리스트로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] CacheRouter — tool discovery와 prompt cache를 동시에 지키는 routing 구조 | paper-review | Agent/MCP 실전 | | arXiv 2608.22708 — tool schema cache locality, long-tail tool discovery, main-model isolation을 agent serving layer로 설명 |
+| 아이디어 | 미정 | [논문 리뷰] MCP-Universe RL — MCP tool-use agent를 강화학습 환경으로 훈련하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.22167 — MCP server lifecycle, reward/evaluator, rollout logging을 agentic RL 운영법으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] GTA-RAG — multi-turn RAG를 graph trajectory와 RL로 개선하기 | paper-review | Agentic RAG | | arXiv 2608.22479 — graph trajectory state, evidence reward, multi-turn retrieval 튜닝 기준 |
+| 아이디어 | 미정 | Instar: Claude Code agent를 scheduling·session·memory로 지속 실행하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — scheduler, session store, memory, notification boundary를 persistent coding agent runtime으로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

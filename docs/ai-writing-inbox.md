@@ -8088,3 +8088,120 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, coding-agent, debugger, developer-tools]
 - status: idea
+
+### 2026-08-26 — [논문 리뷰] Prime Agent: self-improving RLM harness를 운영 가능한 루프로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.23552v1
+- why-now: reasoning language model을 단발성 benchmark가 아니라 harness, memory, skill update가 함께 진화하는 시스템으로 보는 논문이 계속 늘고 있다.
+- angle: “self-improving agent의 핵심은 모델 업데이트보다 harness update의 검증 가능성” — skill/memory patch, regression gate, rollback policy를 운영 아키텍처로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, self-improvement, harness, eval]
+- status: idea
+
+### 2026-08-26 — [논문 리뷰] InjecMEM: LLM agent memory injection 공격면 분해하기
+- type: paper
+- source: http://arxiv.org/abs/2608.23471v1
+- why-now: persistent memory agent가 실제 제품 기능으로 들어가면서, 한 번 저장된 악성 기억이 이후 세션과 tool call에 미치는 장기 위험을 별도로 봐야 한다.
+- angle: “prompt injection은 입력 순간이 아니라 memory write 이후부터 진짜 오래 간다” — memory ingestion gate, provenance, quarantine, repair workflow를 agent 보안 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, prompt-injection, security, eval]
+- status: idea
+
+### 2026-08-26 — [논문 리뷰] GTA-RAG: multi-turn RAG를 graph trajectory와 RL로 개선하기
+- type: paper
+- source: http://arxiv.org/abs/2608.22479v1
+- why-now: agentic RAG는 검색 한 번보다 multi-turn retrieval trajectory 품질이 성능을 좌우하고, 이를 RL 신호로 다루려는 흐름이 강해지고 있다.
+- angle: “RAG 최적화 단위는 chunk top-k가 아니라 graph 위를 이동한 검색 궤적” — trajectory state, reward 설계, evidence graph를 production RAG 튜닝으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rag, reinforcement-learning, graph, retrieval]
+- status: idea
+
+### 2026-08-26 — [논문 리뷰] CacheRouter: tool discovery와 prompt cache를 동시에 지키는 routing 구조
+- type: paper
+- source: http://arxiv.org/abs/2608.22708v1
+- why-now: tool 수가 많은 agent에서 매 요청마다 전체 tool schema를 넣으면 cache 효율과 context budget이 무너져, routing 계층 설계가 비용 최적화의 핵심이 되고 있다.
+- angle: “agent tool routing은 정확도뿐 아니라 cache locality까지 최적화해야 한다” — main-model isolation, long-tail tool discovery, schema cache 정책을 serving layer 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, routing, prompt-cache, agent-serving]
+- status: idea
+
+### 2026-08-26 — [논문 리뷰] MCP-Universe RL: MCP tool-use agent를 강화학습 환경으로 훈련하기
+- type: paper
+- source: http://arxiv.org/abs/2608.22167v1
+- why-now: MCP가 tool protocol로 자리 잡으면서, tool-use agent 학습과 평가를 동일한 server/task interface에서 돌리는 표준화 수요가 커졌다.
+- angle: “MCP는 integration protocol을 넘어 RL environment boundary가 될 수 있다” — server lifecycle, reward/evaluator, rollout logging, tool schema drift를 agentic RL 운영법으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, agent-rl, tool-use, eval]
+- status: idea
+
+### 2026-08-26 — [논문 리뷰] Risk-Aware Reranking: agent tool retrieval에 위험 점수를 넣기
+- type: paper
+- source: http://arxiv.org/abs/2608.22751v1
+- why-now: tool retrieval은 관련도 높은 도구를 찾는 문제처럼 보이지만, 실제 agent 운영에서는 권한·데이터 노출·side effect 위험까지 함께 고려해야 한다.
+- angle: “tool retriever는 검색기가 아니라 risk-aware policy gate여야 한다” — relevance/risk trade-off, reranking objective, least-privilege tool selection을 실무 보안 패턴으로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent-security, retrieval, reranking]
+- status: idea
+
+### 2026-08-26 — Instar: Claude Code agent를 scheduling·session·memory로 지속 실행하기
+- type: tech
+- source: https://github.com/JKHeadley/instar
+- why-now: coding agent가 터미널에서 한 번 실행되는 도구를 넘어, 예약 작업·장기 세션·외부 알림을 가진 persistent agent로 확장되고 있다.
+- angle: “persistent coding agent의 최소 runtime은 scheduler, session store, memory, notification boundary” — unattended task 운영, Telegram bridge, 실패 복구 UX를 repo 구조 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, claude-code, scheduling, memory]
+- status: idea
+
+### 2026-08-26 — ComfyUI-MCP: 생성형 미디어 workflow를 agent-native control plane으로 바꾸기
+- type: tech
+- source: https://github.com/artokun/comfyui-mcp
+- why-now: 이미지·비디오 생성 workflow도 사람이 노드를 손으로 잇는 UI에서 MCP server와 agent가 live graph를 수정하는 방향으로 넓어지고 있다.
+- angle: “MCP tool은 텍스트 API wrapper만이 아니라 creative graph editor가 될 수 있다” — workflow graph 조작, tool surface, local-first 권한 경계를 ComfyUI 사례로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, generative-ai, workflow, creative-agent]
+- status: idea
+
+### 2026-08-26 — agentic-chatops: n8n·LLM·Claude Code로 운영 자동화 agent 패턴 묶기
+- type: tech
+- source: https://github.com/papadopouloskyriakos/agentic-chatops
+- why-now: ChatOps 자동화가 단순 slash command에서 multi-agent planning, coding agent 실행, 운영 장비 제어를 조합하는 패턴으로 이동하고 있다.
+- angle: “agentic ChatOps의 핵심은 챗봇이 아니라 승인·관측·실행 계층 분리” — n8n orchestration, LLM planner, Claude Code executor, rollback/approval gate를 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [chatops, agent-workflow, claude-code, automation]
+- status: idea
