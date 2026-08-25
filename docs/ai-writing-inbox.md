@@ -8001,14 +8001,15 @@
 - type: paper
 - source: http://arxiv.org/abs/2608.21230v1
 - why-now: persistent memory agent에서 false assertion이 한 번 저장되면 이후 세션에 반복 주입되는 문제가 content screening만으로 막기 어렵다는 점이 뚜렷해졌다.
-- angle: “memory 보안은 악성 prompt 탐지가 아니라 저장된 정보의 장기 효용 손실을 재는 문제” — LongMemEval poisoning, provenance ranking 한계, memory quarantine·repair workflow를 정리한다.
+- angle: “memory 보안은 악성 prompt 탐지가 아니라 저장된 정보의 장기 효용 손실을 재는 문제” — LongMemEval poisoning, provenance ranking 한계, memory quarantine·repair workflow를 persistent memory agent 보안 관점으로 정리한다.
 - difficulty: medium
 - freshness: 5
 - practicality: 5
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent-memory, security, poisoning, eval]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-25-utility-under-attack-memory-poisoning.mdx
 
 ### 2026-08-25 — [논문 리뷰] AID-Guard: delegated agent effect를 상태 기반 authorization으로 묶기
 - type: paper

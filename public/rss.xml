@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 24 Aug 2026 01:46:38 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 25 Aug 2026 01:12:22 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Utility Under Attack — memory poisoning은 prompt injection보다 조용하다</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-25-utility-under-attack-memory-poisoning/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-25-utility-under-attack-memory-poisoning/</guid>
+      <description>Utility Under Attack을 통해 persistent memory agent의 false assertion poisoning과 provenance ranking의 한계를 정리한다.</description>
+      <pubDate>Tue, 25 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-memory</category>
+      <category>security</category>
+      <category>poisoning</category>
+      <category>eval</category>
+      <category>provenance</category>
+    </item>
     <item>
       <title>Claude 워터마킹과 AI 텍스트 탐지 — 생성된 글은 어디까지 추적 가능한가</title>
       <link>https://seongyeon1.github.io/blog/2026-08-23-claude-watermark-ai-text-detector/</link>
