@@ -401,6 +401,11 @@
 | 아이디어 | 미정 | [논문 리뷰] MCP-Universe RL — MCP tool-use agent를 강화학습 환경으로 훈련하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.22167 — MCP server lifecycle, reward/evaluator, rollout logging을 agentic RL 운영법으로 정리 |
 | 아이디어 | 미정 | [논문 리뷰] GTA-RAG — multi-turn RAG를 graph trajectory와 RL로 개선하기 | paper-review | Agentic RAG | | arXiv 2608.22479 — graph trajectory state, evidence reward, multi-turn retrieval 튜닝 기준 |
 | 아이디어 | 미정 | Instar: Claude Code agent를 scheduling·session·memory로 지속 실행하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — scheduler, session store, memory, notification boundary를 persistent coding agent runtime으로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] Recuris — long-horizon agent memory를 재귀적으로 진화시키기 | paper-review | 논문 리뷰 | | arXiv 2608.24876 — working/experiential/skill memory 분리, failure localization, validation-gated skill update를 agent harness 운영법으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SPO++ — asynchronous agentic RL에서 rollout을 기다리지 않는 policy optimization | paper-review | AI 평가/운영 | | arXiv 2608.24870 — single-stream value estimate, token-weighted advantage normalization, async rollout 학습 비용 절감 |
+| 아이디어 | 미정 | [논문 리뷰] BrowserForge — parallel browser sandbox로 web agent episode를 대량 합성하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.24848 — pixel 기반 web agent trajectory, 병렬 browser sandbox, episode quality gate와 replay verifier |
+| 아이디어 | 미정 | [논문 리뷰] Crase — scholarly DeepSearch를 bounded graph exploration으로 만들기 | paper-review | AI 평가/운영 | | arXiv 2608.24809 — seed paper, 1.5-hop citation graph, entailment-pruned edge, recency-aware random walk를 research agent harness로 해석 |
+| 아이디어 | 미정 | rulesync — 여러 coding agent 규칙 파일을 한 소스에서 동기화하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — canonical rule source, provider-specific export, AGENTS.md/Cursor/Codex 설정 drift 방지 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

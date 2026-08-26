@@ -8205,3 +8205,120 @@
 - suggested-category: tutorial
 - suggested-tags: [chatops, agent-workflow, claude-code, automation]
 - status: idea
+
+### 2026-08-27 — [논문 리뷰] Recuris: long-horizon agent memory를 재귀적으로 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2608.24876v1
+- why-now: 장기 실행 agent에서 실행 이력, working memory, skill memory가 뒤섞이며 self-improvement가 regression을 만드는 문제가 커지고 있다.
+- angle: “self-improving agent의 단위는 전체 prompt가 아니라 검증 가능한 memory component” — working/experiential/skill memory 분리, failure localization, validation-gated skill update를 agent harness 운영법으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, self-improvement, long-horizon-agent, eval]
+- status: idea
+
+### 2026-08-27 — [논문 리뷰] SPO++: asynchronous agentic RL에서 rollout을 기다리지 않는 policy optimization
+- type: paper
+- source: http://arxiv.org/abs/2608.24870v1
+- why-now: tool-use trajectory가 길고 비동기적인 agentic RL에서는 group-relative rollout 대기가 학습 비용의 병목이 된다.
+- angle: “agentic RL의 병목은 reward model보다 rollout synchronization일 수 있다” — single-stream value estimate, token-weighted advantage normalization, asynchronous update를 post-training 파이프라인 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, post-training, policy-optimization, tool-use]
+- status: idea
+
+### 2026-08-27 — [논문 리뷰] BrowserForge: parallel browser sandbox로 web agent episode를 대량 합성하기
+- type: paper
+- source: http://arxiv.org/abs/2608.24848v1
+- why-now: browser/GUI agent 학습은 실제 상호작용 trajectory가 부족하고, 고정 웹사이트 목록 기반 합성은 coverage가 좁다.
+- angle: “web agent 데이터셋은 prompt가 아니라 sandbox factory 문제” — 병렬 브라우저 격리, pixel-based interaction, episode quality gate, replay 가능한 verifier를 데이터 생성 인프라로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [web-agent, browser-automation, synthetic-data, sandbox]
+- status: idea
+
+### 2026-08-27 — [논문 리뷰] Crase: scholarly DeepSearch를 bounded graph exploration으로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.24809v1
+- why-now: deep research agent가 open-ended search loop로 비용과 hallucination을 키우면서, 검색 범위와 중단 조건을 구조적으로 고정하는 대안이 필요하다.
+- angle: “research agent는 더 많이 검색하기보다 왜 이 paper가 남았는지 설명해야 한다” — seed paper, 1.5-hop citation graph, entailment-pruned edge, recency-aware random walk를 evidence-grounded search harness로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [research-agent, deep-search, evidence-graph, eval]
+- status: idea
+
+### 2026-08-27 — [논문 리뷰] StarHarness: enterprise agent harness를 stratified search로 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2608.24804v1
+- why-now: 기업 환경 agent는 모델 교체보다 prompt, tool interface, MCP provider, subagent 구조 같은 harness patch가 성능과 안전성을 좌우한다.
+- angle: “agent harness 최적화도 train/dev/test 분리가 필요하다” — failure-behavior stratification, proposer-visible/hidden task split, held-out regression gate를 enterprise agent 운영 체계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, enterprise-agent, harness-optimization, regression-test]
+- status: idea
+
+### 2026-08-27 — [논문 리뷰] CAFE: self-improving search agent에는 함께 진화하는 feedback critic이 필요하다
+- type: paper
+- source: http://arxiv.org/abs/2608.24794v1
+- why-now: outcome reward만으로 search agent를 개선하면 중간 검색·판단 오류가 누적되고, agent가 좋아질수록 critic의 실패 분포도 바뀐다.
+- angle: “search agent의 feedback은 사후 점수가 아니라 trajectory 중간의 corrective intervention” — feedback request policy, critic co-evolution, error localization을 research/RAG agent 학습 루프로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [search-agent, feedback-learning, agentic-rag, eval]
+- status: idea
+
+### 2026-08-27 — hyperframes: HTML을 agent-friendly video rendering DSL로 쓰기
+- type: tech
+- source: https://github.com/heygen-com/hyperframes
+- why-now: 생성형 미디어 workflow가 “UI에서 편집”에서 “agent가 구조화된 artifact를 생성·수정·렌더링”하는 방향으로 이동하고 있다.
+- angle: “creative agent의 산출물은 prompt가 아니라 diff 가능한 rendering artifact여야 한다” — HTML 기반 video composition, render pipeline, agent가 수정 가능한 intermediate representation을 workflow architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [generative-ai, media-agent, html, workflow]
+- status: idea
+
+### 2026-08-27 — rulesync: 여러 coding agent 규칙 파일을 한 소스에서 동기화하기
+- type: tech
+- source: https://github.com/dyoshikawa/rulesync
+- why-now: Claude Code, Codex, Cursor, Gemini CLI처럼 agent별 규칙 파일이 늘면서 같은 팀 convention을 여러 harness에 복붙하는 유지보수 비용이 커지고 있다.
+- angle: “AGENTS.md 시대의 설정 drift를 어떻게 막을까” — canonical rule source, provider-specific export, repo policy versioning, CI lint를 coding-agent 운영 체크리스트로 정리한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agents-md, developer-tools, configuration]
+- status: idea
+
+### 2026-08-27 — gograph: Go static analysis를 MCP 서버로 노출해 coding agent context를 구조화하기
+- type: tech
+- source: https://github.com/ozgurcd/gograph
+- why-now: coding agent가 grep 기반 context 수집을 넘어 call graph, impact analysis, symbol search 같은 결정론적 코드 지능을 tool로 요구하고 있다.
+- angle: “코딩 에이전트에게 LSP 다음으로 필요한 것은 local-only structural graph” — Go call graph, impact analysis, MCP tool contract, token budget 절감을 repo architecture로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, static-analysis, go]
+- status: idea
