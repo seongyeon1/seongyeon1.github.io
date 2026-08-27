@@ -8217,7 +8217,8 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent-memory, self-improvement, long-horizon-agent, eval]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-27-recuris-recursive-memory-evolution-agent-harness.mdx
 
 ### 2026-08-27 — [논문 리뷰] SPO++: asynchronous agentic RL에서 rollout을 기다리지 않는 policy optimization
 - type: paper

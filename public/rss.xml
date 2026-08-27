@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 25 Aug 2026 01:12:22 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 27 Aug 2026 01:13:27 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Recuris — long-horizon agent memory를 재귀적으로 진화시키기</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-27-recuris-recursive-memory-evolution-agent-harness/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-27-recuris-recursive-memory-evolution-agent-harness/</guid>
+      <description>Recuris를 통해 장기 실행 agent에서 working memory, experiential memory, skill memory를 분리하고 검증 게이트로 진화시키는 패턴을 정리한다.</description>
+      <pubDate>Thu, 27 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-memory</category>
+      <category>self-improvement</category>
+      <category>long-horizon-agent</category>
+      <category>eval</category>
+      <category>harness</category>
+    </item>
     <item>
       <title>[논문 리뷰] Utility Under Attack — memory poisoning은 prompt injection보다 조용하다</title>
       <link>https://seongyeon1.github.io/blog/2026-08-25-utility-under-attack-memory-poisoning/</link>

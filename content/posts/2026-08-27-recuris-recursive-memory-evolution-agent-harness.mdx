@@ -1,0 +1,184 @@
+---
+title: "[논문 리뷰] Recuris — long-horizon agent memory를 재귀적으로 진화시키기"
+date: "2026-08-27"
+category: "paper-review"
+tags: ["agent-memory", "self-improvement", "long-horizon-agent", "eval", "harness"]
+summary: "Recuris를 통해 장기 실행 agent에서 working memory, experiential memory, skill memory를 분리하고 검증 게이트로 진화시키는 패턴을 정리한다."
+series: "논문 리뷰"
+seriesOrder: 19
+---
+
+## 한 줄 요약
+
+<Paper
+  title="Recursive Experiential-Working Memory Evolution for Long-Horizon Agent Harnesses"
+  authors="Zhaochen Yu et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2608.24876"
+/>
+
+Recuris는 long-horizon agent의 self-improvement를 “전체 프롬프트를 계속 고치는 일”이 아니라 **working memory, experiential memory, skill memory를 분리하고, 실패 근거를 특정 memory component에 귀속한 뒤, 검증을 통과한 update만 반영하는 루프**로 다룬다.
+
+내가 보기엔 이 논문의 핵심은 memory를 저장소가 아니라 runtime control surface로 본다는 점이다. 장기 실행 agent가 실패하는 이유는 보통 모델이 한 번 멍청해서가 아니다. 작업 상태가 흐려지고, 과거 경험이 현재 필요와 안 맞게 검색되고, skill invocation이 stale한 맥락에 묶이기 때문이다. Recuris는 그 문제를 memory architecture와 validation-gated update 문제로 재정의한다.
+
+## 왜 지금 중요한가
+
+장기 실행 agent를 운영해 보면 “기억을 많이 넣으면 좋아진다”는 말이 꽤 빨리 깨진다. 대화 로그, tool 결과, 실패 기록, 사용자 선호, 프로젝트 규칙을 전부 context에 밀어 넣으면 세 가지 문제가 생긴다.
+
+1. 현재 task state가 과거 history에 묻힌다.
+2. 비슷해 보이지만 지금 상황에는 틀린 경험이 skill 선택을 오염시킨다.
+3. 실패 후 prompt나 skill을 고쳐도 무엇이 실제로 개선됐는지 검증하기 어렵다.
+
+그래서 long-horizon agent에서 memory는 단순 RAG가 아니다. “무엇을 저장할까”보다 “어떤 memory가 현재 실행 결정을 움직였고, 실패했을 때 어디를 고쳐야 하는가”가 더 중요하다.
+
+Recuris가 흥미로운 이유도 여기에 있다. 논문은 recursive self-improvement(RSI)를 모델 weight 업데이트가 아니라 agent harness 내부의 memory update loop로 구현한다. 즉, model을 fine-tune하지 않아도 working memory와 skill memory를 고치면서 다음 episode의 행동을 바꾸는 방향이다. 실무 관점에서는 훨씬 현실적이다. 대부분 팀은 매주 모델을 재학습하지 못하지만, prompt, skill, memory schema, verifier는 계속 고칠 수 있다.
+
+## 기존 방식의 한계
+
+long-horizon agent memory 설계는 보통 다음 중 하나로 흐른다.
+
+- 전체 실행 로그를 요약해서 넣는다.
+- vector store에서 유사한 과거 episode를 검색한다.
+- 성공한 행동을 skill 문서로 저장한다.
+- 실패 후 사람이 prompt나 rule을 수동으로 패치한다.
+
+각각 쓸모는 있지만, 운영 루프로 보면 빈틈이 있다.
+
+첫째, 요약 memory는 상태와 교훈을 섞는다. “현재 어디까지 했는가”와 “지난번 이런 상황에서 조심할 점”은 다른 종류의 정보다. 둘을 같은 텍스트 blob으로 넣으면 agent가 현재 상태를 과거 일반화와 혼동하기 쉽다.
+
+둘째, 유사도 검색은 current need를 잘 모른다. embedding상 비슷한 과거 episode가 실제로는 현재 task의 next action에 도움이 안 될 수 있다. 특히 tool-use agent에서는 표면적으로 비슷한 로그보다 현재 tool precondition, user constraint, remaining objective가 더 중요하다.
+
+셋째, self-improvement가 검증 없이 누적되면 regression이 생긴다. agent가 실패 경험을 바탕으로 skill을 고쳤는데, 그 skill이 다른 task에서는 더 나쁜 행동을 만들 수 있다. 이건 “좋은 기억을 더 많이 저장하자”로 해결되지 않는다. update boundary와 rollback 기준이 필요하다.
+
+## Recuris의 핵심 구조
+
+논문이 제안하는 Recuris는 크게 세 층을 둔다.
+
+### 1. Working Memory: 현재 작업 상태를 잡는 층
+
+Working Memory는 전체 history를 압축한 잡다한 요약이 아니라, 현재 task progress를 추적하는 실행 상태에 가깝다. agent가 지금 무엇을 끝냈고, 무엇이 남았고, 어떤 constraint가 활성인지 유지한다.
+
+이 층이 중요한 이유는 skill selection의 기준점이 되기 때문이다. 과거 경험을 그냥 검색하는 것이 아니라, 현재 Working Memory가 “지금 필요한 능력”을 정의하고 그에 맞춰 Experiential Memory를 참조한다.
+
+실무식으로 바꾸면 Working Memory에는 최소한 이런 필드가 있어야 한다.
+
+```text
+task_goal: 최종 목표
+completed_steps: 이미 검증된 단계
+active_constraints: 현재 지켜야 할 제약
+open_questions: 아직 모르는 것
+tool_state: 마지막으로 확인된 외부 시스템 상태
+failure_signals: 방금 관찰된 실패/불확실성
+```
+
+중요한 건 이 memory가 계속 갱신되는 runtime object라는 점이다. 그냥 “대화 요약” 파일로 두면 안 된다.
+
+### 2. Experiential Memory: 과거 실행 근거를 꺼내는 층
+
+Experiential Memory는 과거 episode에서 얻은 경험을 담는다. 다만 Recuris의 포인트는 이 경험이 Working Memory와 결합된다는 것이다. 현재 상태가 필요한 skill을 좁히고, 그 skill invocation을 ground하는 방식이다.
+
+나는 이 부분을 “memory retrieval에 query를 잘 쓰자” 정도로 축소하면 안 된다고 본다. 핵심은 검색 대상이 문서가 아니라 **행동 근거**라는 것이다.
+
+예를 들어 coding agent가 CI 실패를 고친다고 하자. 단순 검색은 “비슷한 에러 메시지”를 찾는다. 더 나은 experiential retrieval은 다음을 찾아야 한다.
+
+- 이 에러에서 실제 root cause까지 간 탐색 순서
+- 잘못된 가설과 버린 이유
+- 어떤 test가 수정의 충분조건이었는지
+- 어떤 repo rule 때문에 특정 patch를 피했는지
+
+이 정도가 되어야 과거 경험이 현재 action policy에 영향을 준다.
+
+### 3. Skill Memory: 검증된 절차 지식을 저장하는 층
+
+Skill Memory는 반복 가능한 절차나 전략을 저장한다. Recuris에서는 execution evidence를 바탕으로 fixed Meta-Agent가 localized update를 만들고, validation gate를 통과한 변경만 Skill Memory에 반영한다고 설명한다.
+
+이 설계가 마음에 드는 이유는 update 범위를 좁히기 때문이다. long-horizon agent가 실패했다고 system prompt 전체를 갈아엎는 건 거의 최악의 운영 방식이다. 원인도 모르고 blast radius도 크다. 반대로 “이 실패는 retrieval skill의 precondition 누락 때문”처럼 특정 skill component에 귀속하고, 작은 patch를 만들고, regression test를 통과시킨 뒤 반영하면 운영 가능성이 생긴다.
+
+## 실험 결과에서 읽을 것
+
+논문은 Recuris가 4개 long-horizon benchmark와 10개 모델에서 평가됐고, 완료된 37개 model-benchmark pair 중 35개에서 task success를 개선했다고 보고한다. 또한 tau-bench에서 GPT-5.6 Sol에 +17.8 point, Claude Opus 5에 +15.6 point를 더해 Opus 5가 87.9%에 도달했다고 적고 있다. SkillFlow에서는 Qwen3.6-27B/35B에 대해 +16.6/+13.5 point 개선을 보고한다.
+
+가장 중요한 수치는 “긴 task일수록 advantage가 커진다”는 주장이다. abstract에 따르면 longest task에서는 +32.2 point까지 벌어지고, common long-horizon failure가 최대 80% 줄었다고 한다.
+
+이 숫자들을 볼 때는 평균 개선폭 자체보다 아래 운영 질문을 같이 봐야 한다.
+
+- 4개 benchmark가 어떤 task distribution을 갖는가
+- “completed model-benchmark pair”에서 제외된 pair는 왜 생겼는가
+- baseline memory 방식은 얼마나 강한가
+- validation gate가 held-out regression을 실제로 막는가
+- Meta-Agent update 비용은 task success 개선 대비 얼마나 큰가
+
+그래도 방향성은 명확하다. Recuris가 맞다면, long-horizon agent 성능 개선은 “더 큰 모델”만의 문제가 아니라 “실행 상태와 경험을 어떻게 구조화하고 업데이트하느냐”의 문제다.
+
+## 실무 적용 포인트
+
+### 1. memory type을 섞지 말자
+
+agent memory를 설계할 때 제일 흔한 실수는 모든 것을 하나의 `memory.md` 또는 vector store에 넣는 것이다. 최소한 세 가지는 분리하는 편이 낫다.
+
+- 상태 memory: 현재 task의 진행 상황
+- 경험 memory: 과거 episode에서 얻은 evidence와 교훈
+- skill memory: 다음 실행에 재사용할 절차 지식
+
+분리하지 않으면 update policy도 흐려진다. 상태 memory는 자주 갱신되고 빨리 만료되어야 한다. 경험 memory는 provenance와 episode link가 중요하다. skill memory는 검증 없이는 바뀌면 안 된다.
+
+### 2. 실패를 component에 귀속하자
+
+“agent가 실패했다”는 로그는 쓸모가 적다. 최소한 아래 중 어디서 깨졌는지 나눠야 한다.
+
+- task state를 잘못 추적했는가?
+- 관련 경험을 잘못 검색했는가?
+- skill을 잘못 골랐는가?
+- skill 절차 자체가 틀렸는가?
+- verifier가 실패를 놓쳤는가?
+
+Recuris식 루프를 실제로 흉내 내려면 failure report가 곧 update target이 되어야 한다. 그래야 Meta-Agent든 사람이든 작은 patch를 만들 수 있다.
+
+### 3. skill update에는 regression gate가 필요하다
+
+agent skill은 코드와 비슷하게 다뤄야 한다. 새 skill을 추가하거나 기존 skill을 바꾸면 좋아지는 task도 있지만 나빠지는 task도 생긴다. 따라서 최소한 다음 gate가 필요하다.
+
+```text
+proposed_skill_patch
+→ affected_task_selection
+→ replay/regression_eval
+→ accept_or_reject
+→ versioned_skill_store
+```
+
+검증 없이 “이번 실패에서 배운 점”을 바로 global instruction에 넣는 건 장기적으로 memory pollution을 만든다. 이건 개인 비서든 coding agent든 똑같다.
+
+### 4. recursive self-improvement는 bounded loop여야 한다
+
+Recuris는 recursive memory-evolution loop를 말하지만, 실무에서는 반드시 예산과 중단 조건이 있어야 한다. self-improvement가 무제한으로 돌면 개선보다 drift가 먼저 온다.
+
+내 기준의 최소 안전장치는 이렇다.
+
+- 한 episode에서 patch 가능한 skill 수 제한
+- skill patch 크기 제한
+- validation 실패 시 자동 rollback
+- 동일 실패 유형 반복 시 human review 승격
+- success metric뿐 아니라 cost, latency, tool error rate 기록
+
+self-improving agent에서 가장 위험한 건 “스스로 좋아지고 있다”는 착각이다. 개선 루프는 항상 frozen benchmark와 rollback 가능한 artifact 위에서만 믿을 수 있다.
+
+## 내 의견
+
+Recuris의 메시지는 꽤 실용적이다. 장기 실행 agent에서 memory는 UX 기능이 아니라 성능과 안전성을 동시에 좌우하는 control plane이다. 특히 Working Memory와 Experiential Memory를 결합해 skill selection을 current need에 맞춘다는 아이디어는 좋은 agent harness 설계의 기본값이 될 가능성이 있다.
+
+다만 이 논문을 읽을 때 조심할 점도 있다. abstract에 보고된 개선 폭은 크지만, memory update loop가 복잡해질수록 운영 비용도 늘어난다. Meta-Agent가 만든 skill patch를 검증하려면 benchmark, replay harness, evaluator, rollback store가 필요하다. 작은 팀이 바로 전체 Recuris를 구현하기보다는 아래 순서로 가져오는 게 현실적이다.
+
+1. current task state를 structured working memory로 분리한다.
+2. episode log를 skill patch 근거로 남긴다.
+3. skill/rule 파일을 versioned artifact로 관리한다.
+4. 자주 실패하는 task 10~20개만 regression suite로 만든다.
+5. 그 다음에 자동 skill update를 붙인다.
+
+즉, Recuris를 “자동으로 성장하는 agent”로 읽기보다 “agent memory update를 코드 변경처럼 다루는 방법”으로 읽는 편이 더 안전하다. 그게 훨씬 덜 화려하지만, 실제 운영에는 맞다.
+
+## 참고 자료
+
+- arXiv: [Recursive Experiential-Working Memory Evolution for Long-Horizon Agent Harnesses](https://arxiv.org/abs/2608.24876)
+- PDF: [arXiv 2608.24876v1](https://arxiv.org/pdf/2608.24876v1)
+- Code: [Gen-Verse/Recuris](https://github.com/Gen-Verse/Recuris)
