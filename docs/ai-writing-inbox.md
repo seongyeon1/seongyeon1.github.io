@@ -8323,3 +8323,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, mcp, static-analysis, go]
 - status: idea
+
+### 2026-08-28 — [논문 리뷰] ProgRouter: multi-agent workflow를 progress 신호로 라우팅하기
+- type: paper
+- source: http://arxiv.org/abs/2608.25992v1
+- why-now: multi-agent LLM workflow가 성능은 좋아도 비용과 latency가 커지는 문제가 반복되면서, 실행 중 progress를 보고 다음 agent/tool 호출을 조절하는 orchestration 정책이 중요해졌다.
+- angle: “agent router는 task 시작 전 분류기가 아니라 trajectory 중간의 progress controller여야 한다” — quality-cost trade-off, online routing, 조기 중단/위임 정책을 production harness 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, routing, orchestration, eval]
+- status: idea
+
+### 2026-08-28 — [논문 리뷰] Reassembling Distributed Risk: multi-turn agent safety를 trajectory 조건부로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.25711v1
+- why-now: tool-using agent 공격은 한 turn에 드러나지 않고 여러 안전해 보이는 action으로 분산될 수 있어, per-message moderation만으로는 실제 side effect 위험을 놓치기 쉽다.
+- angle: “agent safety는 메시지 분류가 아니라 실행 궤적 재조립 문제” — distributed attack, trajectory-conditioned action generation, runtime monitor와 tool gateway 정책으로 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, tool-use, trajectory, runtime-monitoring]
+- status: idea
+
+### 2026-08-28 — [논문 리뷰] TraceML: ML 개발 agent의 계획 실패를 human-agent trace로 분석하기
+- type: paper
+- source: http://arxiv.org/abs/2608.26086v1
+- why-now: LLM은 isolated coding 문제보다 데이터 파이프라인·모델·검증을 반복 수정하는 ML 개발 작업에서 훨씬 약하고, 이 실패를 trace 단위로 분석하는 연구가 늘고 있다.
+- angle: “ML agent 평가는 코드 정답률이 아니라 계획 수정·검증 루프의 품질을 봐야 한다” — data/model/validation planning trace, human intervention point, regression harness를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [ml-agent, planning, eval, developer-workflow]
+- status: idea
+
+### 2026-08-28 — [논문 리뷰] Multi-Granularity Context-Enhanced RAG: multimodal KG-RAG에서 문맥 단위를 섞는 법
+- type: paper
+- source: http://arxiv.org/abs/2608.25986v1
+- why-now: RAG가 텍스트 chunk top-k를 넘어 multimodal knowledge graph와 계층적 context를 다뤄야 하는 상황이 늘고 있다.
+- angle: “RAG 성능은 retriever 하나보다 어떤 granularity의 context를 조합하느냐에서 갈린다” — entity/relation/subgraph/context window 선택을 agentic RAG 운영 관점으로 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, multimodal, knowledge-graph, context-engineering]
+- status: idea
+
+### 2026-08-28 — [논문 리뷰] A Storage-Retrieval Gap in Parametric Knowledge Graph Memory
+- type: paper
+- source: http://arxiv.org/abs/2608.25489v1
+- why-now: GraphRAG가 매 요청마다 subgraph를 context에 넣는 비용과 데이터 노출 문제를 만들면서, 지식을 parameter/memory에 저장하는 방식과 runtime retrieval 사이의 간극을 따져볼 필요가 커졌다.
+- angle: “KG memory는 저장하면 끝이 아니라 retrieval-time token cost와 update 가능성의 trade-off” — parametric graph memory, stale knowledge, RAG serving 비용을 비교한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [graphrag, memory, parametric-knowledge, retrieval]
+- status: idea
+
+### 2026-08-28 — Solace Agent Mesh: event-driven multi-agent orchestration을 enterprise runtime으로 보기
+- type: tech
+- source: https://github.com/SolaceLabs/solace-agent-mesh
+- why-now: agent framework가 단일 프로세스 SDK를 넘어 real-world data source, event bus, enterprise integration과 결합되는 흐름이 강해지고 있다.
+- angle: “multi-agent는 채팅방이 아니라 event mesh 위의 distributed workflow” — event-driven coordination, agent lifecycle, external system integration, observability를 repo architecture로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, event-driven, orchestration, enterprise-ai]
+- status: idea
+
+### 2026-08-28 — agent-kernel: framework lock-in 없이 enterprise agent OS 만들기
+- type: tech
+- source: https://github.com/yaalalabs/agent-kernel
+- why-now: 기업 agent 도입은 특정 SDK보다 배포·거버넌스·compliance·observability를 공통 runtime으로 묶는 요구가 커지고 있다.
+- angle: “agent runtime의 코어는 model wrapper가 아니라 policy와 deployment substrate” — framework-agnostic orchestration, compliant execution, scaling boundary를 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, enterprise-ai, governance, deployment]
+- status: idea
+
+### 2026-08-28 — Brigade: coding agent 작업 추적·검증·메모리를 local file workflow로 묶기
+- type: tech
+- source: https://github.com/escoffier-labs/brigade
+- why-now: Claude Code/Codex류 coding agent를 팀 작업에 쓰려면 세션별 결과, 검증 상태, 도구 동기화, 작업 메모리가 흩어지지 않아야 한다.
+- angle: “coding agent control plane은 거대한 SaaS보다 repo-local work ledger에서 시작할 수 있다” — task tracking, verification, memory sync, no-daemon workflow를 실무 도입 패턴으로 소개한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, developer-workflow, memory, open-source]
+- status: idea

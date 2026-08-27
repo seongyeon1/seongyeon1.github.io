@@ -406,6 +406,11 @@
 | 아이디어 | 미정 | [논문 리뷰] BrowserForge — parallel browser sandbox로 web agent episode를 대량 합성하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.24848 — pixel 기반 web agent trajectory, 병렬 browser sandbox, episode quality gate와 replay verifier |
 | 아이디어 | 미정 | [논문 리뷰] Crase — scholarly DeepSearch를 bounded graph exploration으로 만들기 | paper-review | AI 평가/운영 | | arXiv 2608.24809 — seed paper, 1.5-hop citation graph, entailment-pruned edge, recency-aware random walk를 research agent harness로 해석 |
 | 아이디어 | 미정 | rulesync — 여러 coding agent 규칙 파일을 한 소스에서 동기화하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — canonical rule source, provider-specific export, AGENTS.md/Cursor/Codex 설정 drift 방지 |
+| 아이디어 | 미정 | [논문 리뷰] ProgRouter — multi-agent workflow를 progress 신호로 라우팅하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.25992 — online progress-guided orchestration, quality-cost trade-off, 조기 중단/위임 정책을 agent router 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] Reassembling Distributed Risk — multi-turn agent safety를 trajectory 조건부로 보기 | paper-review | Agent/MCP 실전 | | arXiv 2608.25711 — 분산된 agent action 위험을 trajectory 단위로 재조립해 runtime monitor/tool gateway 정책으로 연결 |
+| 아이디어 | 미정 | [논문 리뷰] TraceML — ML 개발 agent의 계획 실패를 human-agent trace로 분석하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.26086 — data/model/validation planning trace와 human intervention point를 ML agent 평가 harness로 정리 |
+| 아이디어 | 미정 | Multi-Granularity Context-Enhanced RAG — multimodal KG-RAG에서 문맥 단위를 섞는 법 | paper-review | Agentic RAG | | arXiv 2608.25986 — entity/relation/subgraph granularity 조합과 context selection을 agentic RAG 운영 관점으로 설명 |
+| 아이디어 | 미정 | Solace Agent Mesh — event-driven multi-agent orchestration을 enterprise runtime으로 보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — event mesh, distributed workflow, agent lifecycle, enterprise integration을 multi-agent architecture로 분석 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
