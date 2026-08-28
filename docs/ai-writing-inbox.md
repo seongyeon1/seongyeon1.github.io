@@ -8427,3 +8427,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, developer-workflow, memory, open-source]
 - status: idea
+
+### 2026-08-29 — [논문 리뷰] WikiSkill: agent 경험을 persistent knowledge로 컴파일하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27454v1
+- why-now: agent skill을 자동으로 만들고 개선하는 흐름이 늘고 있지만, 개별 trajectory와 optimization history에 흩어진 경험을 다음 skill update에 안정적으로 재사용하는 방법은 아직 약하다.
+- angle: “skill library는 파일 묶음이 아니라 진화하는 wiki여야 한다” — 경험 요약, persistent knowledge, skill evolution, regression gate를 self-improving agent harness 운영법으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, memory, self-improvement, harness]
+- status: idea
+
+### 2026-08-29 — [논문 리뷰] SWE-Prime: coding agent trajectory는 적을수록 좋아질 수 있다
+- type: paper
+- source: http://arxiv.org/abs/2608.27449v1
+- why-now: coding agent SFT가 성공 trajectory를 대량 수집하는 방향으로 가고 있지만, 성공한 실행 로그 안에도 redundant step과 risky step이 섞여 noisy supervision을 만들 수 있다.
+- angle: “성공 로그를 그대로 학습하지 말고 prime trajectory로 정제하자” — trajectory pruning, supervision quality, 실패/중복 step 제거, coding-agent 데이터셋 QA를 post-training 파이프라인 관점으로 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, trajectory, post-training, data-quality]
+- status: idea
+
+### 2026-08-29 — [논문 리뷰] MCR-Bench: code review agent를 multi-round interaction으로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27442v1
+- why-now: 실제 코드 리뷰는 한 번의 diff 판정이 아니라 reviewer-comment, 수정, 재검토가 이어지는 동적 협업인데, 기존 benchmark는 이 상호작용을 지나치게 단순화한다.
+- angle: “AI code reviewer 평가는 정답 라벨보다 대화형 수정 루프를 봐야 한다” — multi-round code review, reviewer state, patch quality, CI/verifier integration을 팀 워크플로로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [code-review, coding-agent, benchmark, developer-workflow]
+- status: idea
+
+### 2026-08-29 — [논문 리뷰] RedEvoAgent: red-team agent도 skill memory로 진화한다
+- type: paper
+- source: http://arxiv.org/abs/2608.27439v1
+- why-now: tool-using agent가 제품 환경에서 state mutation과 외부 side effect를 만들면서, jailbreak prompt 단발 테스트보다 trajectory 기반 red-teaming이 필요해졌다.
+- angle: “agent 보안 테스트는 공격 prompt 목록이 아니라 경험 기반 공격 skill evolution” — attack trajectory retrieval, retrieval bias, skill update, runtime sandbox 방어를 agent security harness로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, red-teaming, tool-use, skill-evolution]
+- status: idea
+
+### 2026-08-29 — [논문 리뷰] Persona-Execution Separation: agent persona와 실행 권한을 분리하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27427v1
+- why-now: 조직에서 LLM agent를 운영할 때 말투·지시문·브랜드 persona는 빠르게 바뀌어도, 실제 실행 상태와 감사 로그는 안정적인 trust domain에 남아야 한다.
+- angle: “agent의 인격은 유연하게, 실행은 faceless하게 감사 가능하게” — persona/execution trust boundary, contract bridge, audit log, governed execution runtime을 enterprise agent architecture로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-architecture, governance, audit, enterprise-ai]
+- status: idea
+
+### 2026-08-29 — taskuary: 업무 inbox를 coding agent 작업 큐로 바꾸는 local-first hub
+- type: tech
+- source: https://github.com/ldbumble/taskuary
+- why-now: 이메일·Slack·Teams·리포트에서 생긴 업무를 Claude Code/Codex/Gemini 같은 coding agent로 넘길 때 triage, 승인, 실행 결과 추적이 분산되기 쉽다.
+- angle: “사람의 업무 inbox와 coding agent 실행 큐 사이에 approval-aware task hub가 필요하다” — local timeline, AI triage, approval gate, agent handoff를 개인 자동화 architecture로 소개한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, task-management, local-first, automation]
+- status: idea
+
+### 2026-08-29 — peri: 14MB Rust 기반 ACP agent runtime과 Claude Code plugin 호환성
+- type: tech
+- source: https://github.com/KonghaYao/peri
+- why-now: agent runtime이 거대한 framework와 SaaS에 묶이는 대신, 작은 단일 바이너리로 workflow, artifact, web search, plugin 호환성을 제공하는 실험이 늘고 있다.
+- angle: “local agent runtime은 작고 교체 가능해야 한다” — ACP/Rust runtime, dynamic workflow, artifact boundary, Claude Code plugin 호환성을 lightweight harness 설계 기준으로 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, rust, claude-code, local-first]
+- status: idea
+
+### 2026-08-29 — ontology-atlas: 사람과 coding agent가 함께 읽는 markdown ontology graph
+- type: tech
+- source: https://github.com/wlsdks/ontology-atlas
+- why-now: coding agent가 repo 안의 용어·도메인 모델·아키텍처 결정을 계속 착각하면, 코드보다 먼저 공유 ontology와 context contract가 필요해진다.
+- angle: “AGENTS.md 다음은 agent-native ontology layer” — markdown graph, MCP-native editing, human-sovereign knowledge base, coding-agent context grounding을 repo 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, ontology, knowledge-graph, mcp]
+- status: idea

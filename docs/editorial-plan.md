@@ -411,6 +411,11 @@
 | 아이디어 | 미정 | [논문 리뷰] TraceML — ML 개발 agent의 계획 실패를 human-agent trace로 분석하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.26086 — data/model/validation planning trace와 human intervention point를 ML agent 평가 harness로 정리 |
 | 아이디어 | 미정 | Multi-Granularity Context-Enhanced RAG — multimodal KG-RAG에서 문맥 단위를 섞는 법 | paper-review | Agentic RAG | | arXiv 2608.25986 — entity/relation/subgraph granularity 조합과 context selection을 agentic RAG 운영 관점으로 설명 |
 | 아이디어 | 미정 | Solace Agent Mesh — event-driven multi-agent orchestration을 enterprise runtime으로 보기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — event mesh, distributed workflow, agent lifecycle, enterprise integration을 multi-agent architecture로 분석 |
+| 아이디어 | 미정 | [논문 리뷰] WikiSkill — agent 경험을 persistent knowledge로 컴파일하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.27454 — 경험 요약, persistent knowledge, skill evolution, regression gate를 self-improving agent harness 운영법으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SWE-Prime — coding agent trajectory는 적을수록 좋아질 수 있다 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.27449 — trajectory pruning, supervision quality, noisy successful trace 제거, coding-agent post-training 데이터셋 QA |
+| 아이디어 | 미정 | [논문 리뷰] MCR-Bench — code review agent를 multi-round interaction으로 평가하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.27442 — 단발 diff 판정이 아니라 reviewer-comment→수정→재검토 루프와 CI/verifier 통합 관점 |
+| 아이디어 | 미정 | [논문 리뷰] Persona-Execution Separation — agent persona와 실행 권한을 분리하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.27427 — persona/execution trust boundary, contract bridge, audit log, governed execution runtime 설계 |
+| 아이디어 | 미정 | taskuary — 업무 inbox를 coding agent 작업 큐로 바꾸는 local-first hub | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — local timeline, AI triage, approval gate, Claude Code/Codex/Gemini handoff를 개인 자동화 architecture로 소개 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
