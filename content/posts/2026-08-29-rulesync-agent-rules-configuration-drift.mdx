@@ -1,0 +1,157 @@
+---
+title: "rulesync — 여러 코딩 에이전트 규칙 파일을 한 소스에서 동기화하기"
+date: "2026-08-29"
+category: "tool"
+tags: ["coding-agent", "agents-md", "developer-tools", "configuration"]
+summary: "Claude Code, Codex, Cursor, Copilot 같은 코딩 에이전트 규칙 파일을 rulesync로 한 소스에서 관리하는 운영 패턴을 정리한다."
+---
+
+## 한 줄 요약
+
+코딩 에이전트를 하나만 쓰는 팀은 점점 줄어든다. Claude Code, Codex CLI, Cursor, GitHub Copilot, Gemini 계열 도구를 섞어 쓰기 시작하면 문제는 모델 성능보다 **규칙 파일 drift**에서 먼저 터진다.
+
+`rulesync`는 이 문제를 “각 도구 설정을 손으로 맞춘다”가 아니라 **`.rulesync/`를 source of truth로 두고, target별 규칙·명령·MCP·subagent·skill 설정을 생성한다**는 방식으로 푼다. 거창한 agent platform은 아니지만, 실무에서는 이런 얇은 동기화 계층이 꽤 중요하다.
+
+## 왜 지금 이 도구를 봐야 하나
+
+요즘 repo에는 AI 도구별 설정 파일이 계속 늘어난다.
+
+- Claude Code: `CLAUDE.md`, commands, agents, hooks, MCP 설정
+- Codex CLI: `AGENTS.md`, commands, MCP, skills류 설정
+- Cursor: rules, MCP, ignore 설정
+- GitHub Copilot: instructions, review/custom instruction, MCP 설정
+- 기타 CLI/IDE agent: 각자 비슷하지만 조금씩 다른 rule format
+
+한두 명이 개인 프로젝트에서 쓰면 복붙으로 버틸 수 있다. 팀 단위로 넘어가면 다르다. 보안 규칙은 Claude Code에만 있고 Cursor에는 빠져 있거나, 테스트 명령은 Codex용 문서에는 있는데 Copilot instruction에는 없거나, deprecated convention이 어떤 도구에는 계속 남는다.
+
+이건 문서 관리 문제가 아니다. agent가 실제로 repo를 수정한다면, 규칙 drift는 곧 실행 drift다. 같은 issue를 맡겨도 어떤 agent는 테스트를 돌리고, 어떤 agent는 금지된 파일을 건드리고, 어떤 agent는 PR 규칙을 모른다.
+
+## rulesync가 하는 일
+
+공식 README 기준으로 rulesync는 “unified AI rule files”에서 여러 AI 개발 도구용 configuration file을 생성하는 Node.js CLI다. 지원 범위는 단순 rule 파일에 그치지 않고 rules, commands, MCP, ignore files, subagents, skills, hooks, permissions, checks까지 넓다. 지원 여부는 도구마다 다르므로 전부 동일하게 생성된다고 보면 안 된다.
+
+기본 흐름은 단순하다.
+
+```bash
+npm install -g rulesync
+rulesync init
+rulesync fetch dyoshikawa/rulesync
+rulesync generate --targets "*" --features "*"
+```
+
+이미 도구별 설정이 있는 repo라면 import도 가능하다.
+
+```bash
+rulesync import --targets claudecode
+rulesync import --targets cursor
+rulesync import --targets copilot
+rulesync generate --targets "*" --features "*"
+```
+
+흥미로운 건 `convert` 모드다. `.rulesync/` 워크플로를 완전히 도입하지 않고도 Cursor rule을 Copilot/Claude Code 설정으로 변환하는 식의 one-shot 변환을 지원한다.
+
+```bash
+rulesync convert --from cursor --to copilot,claudecode
+```
+
+내 의견은 이렇다. 처음부터 모든 팀에 “규칙 관리 플랫폼”을 들이미는 건 과하다. 하지만 이미 agent 설정 파일이 3종 이상 생겼다면, 변환/생성 계층을 두지 않는 쪽이 더 위험하다.
+
+## 최소 도입 구조
+
+내가 팀 repo에 붙인다면 처음부터 모든 feature를 켜지 않는다. 가장 먼저 동기화할 것은 “agent가 절대 어기면 안 되는 것”이다.
+
+예를 들면 이런 순서가 낫다.
+
+1. 공통 규칙: 코딩 스타일, 테스트 정책, 금지 파일, PR 체크리스트
+2. 실행 명령: test, typecheck, lint, build, e2e의 표준 command
+3. 권한·보안 규칙: secret, production DB, destructive command, 외부 전송 제한
+4. MCP/tool 설정: repo에서 허용되는 tool surface
+5. subagent/skill: 팀이 재사용할 작업 패턴
+
+`rulesync.jsonc`는 target과 feature를 명시하는 형태로 시작하면 된다.
+
+```jsonc title="rulesync.jsonc"
+{
+  "$schema": "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json",
+  "targets": ["claudecode", "codexcli", "cursor", "copilot"],
+  "features": ["rules", "commands", "mcp"],
+  "outputRoots": ["."],
+  "delete": true
+}
+```
+
+도구별 지원 feature가 다르기 때문에 `--targets "*" --features "*"`는 데모로는 좋지만, 운영 기본값으로는 조금 거칠다. 나는 production repo에서는 target을 명시하고, CI에서 생성 diff를 검사하는 방식을 선호한다.
+
+## CI에서 drift를 잡는 패턴
+
+rulesync 같은 생성 도구는 로컬 편의 도구로 끝내면 반쪽이다. 핵심은 “생성된 파일을 사람이 직접 고쳐서 source of truth와 어긋나는 상황”을 CI에서 잡는 것이다.
+
+운영 패턴은 보통 이렇게 잡는다.
+
+```bash
+rulesync generate --targets claudecode,codexcli,cursor,copilot --features rules,commands,mcp
+
+git diff --exit-code
+```
+
+CI에서는 다음 조건을 강제한다.
+
+- `.rulesync/` 또는 `rulesync.jsonc`를 고쳤다면 생성 결과도 함께 커밋해야 한다.
+- 생성된 target 파일만 손으로 고친 PR은 실패시킨다.
+- 보안·권한 관련 rule 변경은 CODEOWNERS로 review owner를 붙인다.
+- 생성 결과가 너무 크면 feature를 쪼개서 도입한다.
+
+여기서 중요한 건 “AI에게 읽히는 문서도 build artifact처럼 다룬다”는 관점이다. `AGENTS.md`, `CLAUDE.md`, Cursor rules는 사람이 읽는 README가 아니라 agent runtime의 입력이다. 입력이 drift되면 실행도 drift된다.
+
+## 어떤 팀에 잘 맞나
+
+rulesync는 아래 상황에서 특히 실용적이다.
+
+- 팀원이 서로 다른 AI coding tool을 쓴다.
+- repo별 convention이 강하고, agent가 자주 어긴다.
+- MCP server나 custom command를 여러 tool에 반복 등록한다.
+- Claude Code/Codex/Cursor/Copilot 설정을 한 번 이상 복붙해본 적이 있다.
+- agent 도입 이후 “왜 이 도구는 이 규칙을 몰랐지?”라는 사고가 있었다.
+
+반대로 아래 상황이면 아직 필요 없을 수 있다.
+
+- 한 명이 한 도구만 쓴다.
+- agent에게 read-only 질문만 하고 repo 수정은 거의 맡기지 않는다.
+- 규칙 파일이 1개이고, CI/보안 정책도 단순하다.
+- generated config를 관리할 팀 discipline이 없다.
+
+도구 하나 더 넣는다고 운영이 자동으로 좋아지지는 않는다. source of truth를 정하고, generated file을 손으로 고치지 않는 규율이 있어야 효과가 난다.
+
+## 주의할 점
+
+첫째, feature parity를 기대하면 안 된다. 공식 supported tools 문서를 보면 도구별로 rules, ignore, MCP, commands, subagents, skills, hooks, permissions, checks 지원 범위가 다르다. 어떤 기능은 project/global/simulated mode 차이도 있다. “한 번 쓰면 모든 도구가 똑같이 동작한다”가 아니라 “공통 의도를 각 도구가 이해하는 범위로 내보낸다”에 가깝다.
+
+둘째, 공통 규칙을 너무 추상화하면 쓸모가 떨어진다. 모든 agent에 들어갈 문장은 짧고 실행 가능해야 한다. 예를 들어 “품질 좋은 코드를 작성하라”보다 “수정 후 `npm run typecheck`와 관련 테스트를 실행하고 실패 시 원인을 기록하라”가 낫다.
+
+셋째, 보안 규칙은 generated docs만 믿으면 안 된다. agent에게 “하지 마”라고 적는 것과 실제 tool gateway에서 막는 것은 다르다. destructive command, secret access, production mutation은 문서 규칙 + permission gate + audit log가 같이 있어야 한다.
+
+## 실무 체크리스트
+
+도입할 때는 이 정도만 확인해도 충분하다.
+
+- 공통 규칙 source가 어디인지 명확한가?
+- 생성 대상 tool과 feature를 명시했는가?
+- generated file 직접 수정 금지 원칙을 세웠는가?
+- CI에서 `rulesync generate` 후 diff를 검사하는가?
+- security-critical rule 변경에 review owner가 붙는가?
+- 각 target tool에서 실제로 읽히는 위치에 파일이 생성되는가?
+- MCP/tool 권한은 문서가 아니라 runtime gate로도 제한되는가?
+
+## 정리
+
+rulesync의 가치는 “AI 규칙 파일을 예쁘게 변환한다”가 아니다. 진짜 가치는 repo 안의 agent-facing configuration을 **versioned, reviewable, reproducible artifact**로 만드는 데 있다.
+
+코딩 에이전트 운영은 모델 비교보다 지루한 설정 관리에서 더 자주 망한다. 팀 규칙이 여러 도구에 흩어지는 순간, agent는 같은 repo를 서로 다른 세계로 본다. rulesync는 그 세계를 하나로 맞추는 얇은 레이어다. 얇지만, 이런 레이어가 없으면 나중에 디버깅이 꽤 귀찮아진다.
+
+## 참고 자료
+
+- [rulesync GitHub repository](https://github.com/dyoshikawa/rulesync)
+- [rulesync README](https://github.com/dyoshikawa/rulesync/blob/main/README.md)
+- [rulesync Quick Start](https://dyoshikawa.github.io/rulesync/getting-started/quick-start)
+- [rulesync Configuration Guide](https://dyoshikawa.github.io/rulesync/guide/configuration)
+- [rulesync Supported Tools and Features](https://dyoshikawa.github.io/rulesync/reference/supported-tools)

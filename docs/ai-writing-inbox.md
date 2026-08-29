@@ -8307,9 +8307,10 @@
 - freshness: 5
 - practicality: 5
 - confidence: 5
-- suggested-category: tutorial
+- suggested-category: tool
 - suggested-tags: [coding-agent, agents-md, developer-tools, configuration]
-- status: idea
+- status: published
+- draft: content/posts/2026-08-29-rulesync-agent-rules-configuration-drift.mdx
 
 ### 2026-08-27 — gograph: Go static analysis를 MCP 서버로 노출해 coding agent context를 구조화하기
 - type: tech

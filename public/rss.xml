@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 29 Aug 2026 00:37:46 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 01:12:16 GMT</lastBuildDate>
     <item>
       <title>데이터베이스는 상태가 사는 곳이다 — 트랜잭션, 잠금, 마이그레이션</title>
       <link>https://seongyeon1.github.io/blog/2026-08-29-backend-database-concurrency/</link>
@@ -34,6 +34,18 @@
       <category>http</category>
       <category>network</category>
       <category>worker-queue</category>
+    </item>
+    <item>
+      <title>rulesync — 여러 코딩 에이전트 규칙 파일을 한 소스에서 동기화하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-29-rulesync-agent-rules-configuration-drift/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-29-rulesync-agent-rules-configuration-drift/</guid>
+      <description>Claude Code, Codex, Cursor, Copilot 같은 코딩 에이전트 규칙 파일을 rulesync로 한 소스에서 관리하는 운영 패턴을 정리한다.</description>
+      <pubDate>Sat, 29 Aug 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>coding-agent</category>
+      <category>agents-md</category>
+      <category>developer-tools</category>
+      <category>configuration</category>
     </item>
     <item>
       <title>[논문 리뷰] Recuris — long-horizon agent memory를 재귀적으로 진화시키기</title>
