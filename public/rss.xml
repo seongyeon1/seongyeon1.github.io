@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 27 Aug 2026 01:13:27 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 00:24:20 GMT</lastBuildDate>
+    <item>
+      <title>백엔드 엔지니어를 위한 지식 지도 — 무엇부터 공부해야 하나</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-29-backend-knowledge-map/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-29-backend-knowledge-map/</guid>
+      <description>백엔드 지식을 네트워크, HTTP, OS와 프로세스, 데이터베이스, 워커와 큐, 분산 시스템이라는 여섯 영역으로 나누고 무엇부터 공부하면 좋은지 정리한다.</description>
+      <pubDate>Sat, 29 Aug 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>backend</category>
+      <category>database</category>
+      <category>distributed-systems</category>
+      <category>http</category>
+      <category>network</category>
+      <category>worker-queue</category>
+    </item>
     <item>
       <title>[논문 리뷰] Recuris — long-horizon agent memory를 재귀적으로 진화시키기</title>
       <link>https://seongyeon1.github.io/blog/2026-08-27-recuris-recursive-memory-evolution-agent-harness/</link>
