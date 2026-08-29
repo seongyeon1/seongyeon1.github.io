@@ -6,7 +6,7 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 29 Aug 2026 01:25:49 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 10:44:25 GMT</lastBuildDate>
     <item>
       <title>데이터베이스는 상태가 사는 곳이다 — 트랜잭션, 잠금, 마이그레이션</title>
       <link>https://seongyeon1.github.io/blog/2026-08-29-backend-database-concurrency/</link>
@@ -119,6 +119,20 @@
       <category>idempotency</category>
       <category>retry</category>
       <category>dlq</category>
+    </item>
+    <item>
+      <title>[AI Search] Incompressible Knowledge Probes: LLM의 파라미터 수를 지식 용량으로 추정할 수 있을까</title>
+      <link>https://seongyeon1.github.io/blog/2026-08-29-incompressible-knowledge-probes-llm-parameter-counts/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-08-29-incompressible-knowledge-probes-llm-parameter-counts/</guid>
+      <description>Incompressible Knowledge Probes 논문을 AI Search stack 관점에서 읽는다. 닫힌 LLM의 파라미터 수를 추론 비용이 아니라 희귀 factual knowledge recall로 추정하려는 시도와, 이 방법이 모델 선택·평가·검색 시스템 설계에 주는 의미를 정리한다.</description>
+      <pubDate>Sat, 29 Aug 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>AI Search</category>
+      <category>LLM Evaluation</category>
+      <category>IKP</category>
+      <category>factual knowledge</category>
+      <category>parameter count</category>
+      <category>benchmark</category>
     </item>
     <item>
       <title>rulesync — 여러 코딩 에이전트 규칙 파일을 한 소스에서 동기화하기</title>
