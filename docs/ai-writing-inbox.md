@@ -8532,3 +8532,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, ontology, knowledge-graph, mcp]
 - status: idea
+
+### 2026-08-30 — [논문 리뷰] CritICL: 작은 모델 실패 모드로 inference-time reasoning을 보강하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27455v1
+- why-now: inference-time scaling이 repeated generation과 external verifier에 기대는 동안 latency·비용이 커지고 있어, 작은 모델의 구조적 실패 패턴을 guidance로 쓰는 접근이 흥미롭다.
+- angle: “실패 샘플은 버릴 로그가 아니라 강한 모델을 안내하는 진단 신호” — weak-to-strong failure pattern, test-time reasoning, verifier-less improvement, 비용/품질 trade-off를 serving policy로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, inference-time-scaling, weak-to-strong, eval]
+- status: idea
+
+### 2026-08-30 — [논문 리뷰] TTPO: ground truth 없이 test-time policy optimization 하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27448v1
+- why-now: RLVR와 self-distillation이 reasoning 성능을 끌어올렸지만, 배포 중 test-time training에는 정답 라벨이 없다는 제약이 남아 있다.
+- angle: “majority vote pseudo-label을 맹신하지 않고 test-time policy를 어떻게 업데이트할까” — rollout agreement, pseudo-label fragility, token-level optimization, agent reasoning loop의 online adaptation으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [test-time-training, reasoning, policy-optimization, rlvr]
+- status: idea
+
+### 2026-08-30 — [논문 리뷰] Weak-Model Guidance: RLVR에서 reasoning diversity를 보존하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27420v1
+- why-now: verifiable reward 기반 RL은 pass@1을 높여도 policy entropy를 줄여 pass@k와 탐색 다양성을 망가뜨릴 수 있다.
+- angle: “약한 모델의 낯선 reasoning prefix가 강한 모델의 탐색 공간을 넓힐 수 있다” — entropy collapse, cross-model perturbation, reasoning trajectory diversity, agent post-training 데이터 설계를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rlvr, reasoning, exploration, post-training]
+- status: idea
+
+### 2026-08-30 — [논문 리뷰] TraceBench: time-series RCA agent를 통제된 simulation으로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27182v1
+- why-now: 운영 로그와 시계열 이상 탐지에 LLM agent를 붙이는 사례가 늘지만, 원인 변수와 교란 조건을 통제한 평가 환경은 부족하다.
+- angle: “oncall RCA agent 평가는 자연어 추론보다 관측 변수·시뮬레이션·root-cause attribution 하네스가 중요하다” — controlled task generation, parameter intervention, trajectory verifier를 운영 QA로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rca-agent, time-series, eval, observability]
+- status: idea
+
+### 2026-08-30 — [논문 리뷰] CAST: clinical language model을 concept 단위로 감사 가능하게 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.27397v1
+- why-now: 의료 LLM은 병원 note template 같은 artifact에 과적합하기 쉬워서, 정확도만 높은 모델보다 개념 단위 감사와 artifact suppression이 중요해지고 있다.
+- angle: “도메인 LLM QA는 결과 점수보다 어떤 latent concept이 판단을 움직였는지 봐야 한다” — sparse autoencoder, concept attribution, deployment shift, auditable fine-tuning을 안전한 도메인 모델 운영법으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 3
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [auditing, interpretability, clinical-llm, robustness]
+- status: idea
+
+### 2026-08-30 — pacifio/atlas: 여러 coding agent 변경을 source control처럼 추적하기
+- type: tech
+- source: https://github.com/pacifio/atlas
+- why-now: Claude Code, Codex, Gemini CLI를 병렬로 돌리면 “어떤 agent가 어떤 파일을 왜 바꿨는지”와 결과 비교/회수가 곧 운영 문제가 된다.
+- angle: “agent fleet에는 git만으로 부족한 작업 단위 source control이 필요하다” — multi-agent change tracking, queryable run history, diff comparison, merge decision workflow를 개발자 AI 워크플로로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, source-control, multi-agent, developer-workflow]
+- status: idea
+
+### 2026-08-30 — wigolo: coding agent용 local-first web research MCP 서버
+- type: tech
+- source: https://github.com/KnockOutEZ/wigolo
+- why-now: 코딩 에이전트가 웹 검색·fetch·crawl을 클라우드 API에 의존하면 비용, privacy, 재현성, rate limit 문제가 agent 실행 루프에 직접 들어온다.
+- angle: “agent web tool은 검색 API가 아니라 재현 가능한 local research substrate여야 한다” — MCP tool surface, crawl/fetch/search boundary, cache, citation hygiene를 코딩 에이전트 도구 설계로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, coding-agent, web-search, local-first]
+- status: idea
+
+### 2026-08-30 — GraphJin: GraphQL+MCP로 데이터 접근을 governed graph로 묶기
+- type: tech
+- source: https://github.com/dosco/graphjin
+- why-now: agent가 DB, 파일, API, 코드에 접근하기 시작하면 개별 tool 권한보다 통합 graph interface와 governance가 더 중요해진다.
+- angle: “agent data plane은 SQL wrapper가 아니라 권한·관찰성·schema가 있는 governed graph가 되어야 한다” — GraphQL, MCP, database access control, audit boundary를 enterprise agent infra 패턴으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, graph-interface, agent-infra, data-access]
+- status: idea

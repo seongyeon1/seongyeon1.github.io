@@ -416,6 +416,10 @@
 | 아이디어 | 미정 | [논문 리뷰] MCR-Bench — code review agent를 multi-round interaction으로 평가하기 | paper-review | 개발자 AI 워크플로 | | arXiv 2608.27442 — 단발 diff 판정이 아니라 reviewer-comment→수정→재검토 루프와 CI/verifier 통합 관점 |
 | 아이디어 | 미정 | [논문 리뷰] Persona-Execution Separation — agent persona와 실행 권한을 분리하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.27427 — persona/execution trust boundary, contract bridge, audit log, governed execution runtime 설계 |
 | 아이디어 | 미정 | taskuary — 업무 inbox를 coding agent 작업 큐로 바꾸는 local-first hub | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — local timeline, AI triage, approval gate, Claude Code/Codex/Gemini handoff를 개인 자동화 architecture로 소개 |
+| 아이디어 | 미정 | [논문 리뷰] CritICL — 작은 모델 실패 모드로 inference-time reasoning 보강하기 | paper-review | AI 평가/운영 | | arXiv 2608.27455 — weak-to-strong failure pattern, verifier-less test-time reasoning, serving 비용/품질 trade-off |
+| 아이디어 | 미정 | [논문 리뷰] TraceBench — time-series RCA agent를 통제된 simulation으로 평가하기 | paper-review | AI 평가/운영 | | arXiv 2608.27182 — controlled root-cause attribution task, parameter intervention, observability agent QA harness |
+| 아이디어 | 미정 | [논문 리뷰] Weak-Model Guidance — RLVR에서 reasoning diversity를 보존하기 | paper-review | 논문 리뷰 | | arXiv 2608.27420 — entropy collapse, weak-model prefix perturbation, pass@k와 post-training 탐색 다양성 |
+| 아이디어 | 미정 | wigolo — coding agent용 local-first web research MCP 서버 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — search/fetch/crawl MCP surface, local cache, privacy·rate-limit·citation hygiene를 agent web tool 설계로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
