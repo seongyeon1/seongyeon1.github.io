@@ -8636,3 +8636,107 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, graph-interface, agent-infra, data-access]
 - status: idea
+
+### 2026-08-31 — [논문 리뷰] User-Authored Permission Policies: 비전문가가 agent 권한을 직접 쓸 수 있을까
+- type: paper
+- source: http://arxiv.org/abs/2608.27443v1
+- why-now: 개인 agent가 이메일·파일·결제·개인정보에 걸쳐 행동하기 시작하면서, 개발자가 미리 짠 RBAC보다 사용자가 이해하고 재사용할 수 있는 권한 정책이 중요해지고 있다.
+- angle: “agent 권한 UX는 allow/deny 토글이 아니라 사용자가 작성하고 모델이 집행하는 policy contract” — user-authored policy, language-model mediation, overreach 방어, 감사 가능성을 personal agent governance 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, permissions, governance, personal-agent]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] Context Gets Root: LLM harness의 context 조립이 권한 상승 경로가 되는 순간
+- type: paper
+- source: http://arxiv.org/abs/2608.27299v1
+- why-now: instruction hierarchy가 모델 내부 방어로 자리 잡아도, 실제 agent runtime은 매 호출마다 context를 조립하므로 untrusted content가 privileged instruction처럼 승격될 수 있다.
+- angle: “prompt injection은 모델 문제가 아니라 harness context compiler 문제일 때가 많다” — context construction, privilege boundary, tool authority, pre-call sanitizer를 agent 보안 아키텍처로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, prompt-injection, harness, context-management]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] RATIO: scientific retrieval을 ideation operation 단위로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27394v1
+- why-now: AI scientist와 research agent가 논문 검색을 단순 top-k retrieval이 아니라 아이디어 생성·추상화·구체화 작업으로 사용하면서, retrieval 평가 단위도 바뀌어야 한다.
+- angle: “좋은 논문 검색은 정답 문서 찾기가 아니라 연구 아이디어 조작을 돕는 evidence operation” — typed ideation operations, scientific literature retrieval, evaluator 설계를 research agent QA로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, retrieval, benchmark, scientific-ai]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] Beyond F1: AI model security scanner 평가는 coverage와 recovery를 봐야 한다
+- type: paper
+- source: http://arxiv.org/abs/2608.27424v1
+- why-now: 모델 파일과 ML artifact를 스캔하는 보안 도구가 agent pipeline과 CI에 들어오고 있지만, 단순 F1 점수는 판단 불가·실패 복구·coverage gap을 가린다.
+- angle: “agent가 모델 artifact를 다루는 시대의 scanner gate는 F1보다 failure accounting이 중요하다” — ModelScan/ModelAudit류 평가, unusable judgment, recovery workflow, CI quarantine을 운영 보안 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [model-security, eval, ci, agent-safety]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] Retrieval Heads Meet Vision: VLM이 시각 정보를 찾는 내부 회로 읽기
+- type: paper
+- source: http://arxiv.org/abs/2608.27417v1
+- why-now: multimodal agent가 screenshot·document image·GUI state를 해석할수록, VLM이 어떤 visual evidence를 찾아 출력으로 라우팅하는지 설명 가능한 진단이 필요하다.
+- angle: “VLM agent 디버깅은 attention heatmap보다 retrieval-head 관점이 더 실용적일 수 있다” — visual retrieval heads, region grounding, evidence routing, multimodal agent QA를 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [vlm, interpretability, multimodal-agent, evidence]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] What Makes Good Agentic Data: agent 학습 데이터 품질을 ACE 렌즈로 보기
+- type: paper
+- source: http://arxiv.org/abs/2608.27260v1
+- why-now: agentic RL과 trajectory distillation이 빠르게 늘면서, “많은 interaction log”보다 environment·task·interaction·success signal 사이의 일관성이 더 중요한 병목이 됐다.
+- angle: “agentic data는 로그 더미가 아니라 환경-과제-행동-평가가 맞물린 contract” — ACE lens, synthetic trajectory QA, reward/evaluator alignment, 데이터 flywheel 설계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-data, rl, trajectory, eval]
+- status: idea
+
+### 2026-08-31 — mcp-mesh: MCP·A2A·REST를 K8s-native distributed agent runtime으로 묶기
+- type: tech
+- source: https://github.com/dhyansraj/mcp-mesh
+- why-now: agent framework가 단일 프로세스 SDK에서 여러 서비스·언어·프로토콜을 잇는 distributed runtime으로 확장되면서, deployment와 observability가 핵심 선택 기준이 되고 있다.
+- angle: “production agent framework는 tool call wrapper가 아니라 service mesh에 가까워진다” — MCP/A2A/REST bridging, dynamic dependency injection, auto-failover, Kubernetes 운영 경계를 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, a2a, agent-framework, kubernetes]
+- status: idea
+
+### 2026-08-31 — AgentHydra: 로컬 coding agent 세션을 queue와 격리 인스턴스로 관리하기
+- type: tech
+- source: https://github.com/LunarWerxs/AgentHydra
+- why-now: Claude Code, Codex, OpenCode 같은 로컬 coding agent를 동시에 돌릴 때 세션 격리, 큐잉, 실행 상태 추적, desktop instance 분리가 실무 병목으로 떠오르고 있다.
+- angle: “multi-agent coding은 모델 앙상블보다 session isolation과 queue control이 먼저다” — local dashboard, isolated agent instances, MCP-native workflow, 결과 비교·회수 패턴을 개발자 워크플로로 정리한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, local-first, session-management, mcp]
+- status: idea

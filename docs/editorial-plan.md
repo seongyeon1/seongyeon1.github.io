@@ -420,6 +420,10 @@
 | 아이디어 | 미정 | [논문 리뷰] TraceBench — time-series RCA agent를 통제된 simulation으로 평가하기 | paper-review | AI 평가/운영 | | arXiv 2608.27182 — controlled root-cause attribution task, parameter intervention, observability agent QA harness |
 | 아이디어 | 미정 | [논문 리뷰] Weak-Model Guidance — RLVR에서 reasoning diversity를 보존하기 | paper-review | 논문 리뷰 | | arXiv 2608.27420 — entropy collapse, weak-model prefix perturbation, pass@k와 post-training 탐색 다양성 |
 | 아이디어 | 미정 | wigolo — coding agent용 local-first web research MCP 서버 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — search/fetch/crawl MCP surface, local cache, privacy·rate-limit·citation hygiene를 agent web tool 설계로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] User-Authored Permission Policies — 비전문가가 agent 권한을 직접 쓸 수 있을까 | paper-review | Agent/MCP 실전 | | arXiv 2608.27443 — user-authored policy, language-model mediation, overreach 방어, personal agent governance |
+| 아이디어 | 미정 | [논문 리뷰] Context Gets Root — LLM harness의 context 조립이 권한 상승 경로가 되는 순간 | paper-review | Agent/MCP 실전 | | arXiv 2608.27299 — context construction, privilege boundary, tool authority, pre-call sanitizer 기반 agent 보안 아키텍처 |
+| 아이디어 | 미정 | [논문 리뷰] What Makes Good Agentic Data — agent 학습 데이터 품질을 ACE 렌즈로 보기 | paper-review | AI 평가/운영 | | arXiv 2608.27260 — environment·task·interaction·success signal contract, synthetic trajectory QA, reward/evaluator alignment |
+| 아이디어 | 미정 | mcp-mesh — MCP·A2A·REST를 K8s-native distributed agent runtime으로 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — dynamic dependency injection, auto-failover, Kubernetes 운영 경계를 production agent framework 선택 기준으로 정리 |
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.
