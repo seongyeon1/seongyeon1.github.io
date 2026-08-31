@@ -424,6 +424,11 @@
 | 아이디어 | 미정 | [논문 리뷰] Context Gets Root — LLM harness의 context 조립이 권한 상승 경로가 되는 순간 | paper-review | Agent/MCP 실전 | | arXiv 2608.27299 — context construction, privilege boundary, tool authority, pre-call sanitizer 기반 agent 보안 아키텍처 |
 | 아이디어 | 미정 | [논문 리뷰] What Makes Good Agentic Data — agent 학습 데이터 품질을 ACE 렌즈로 보기 | paper-review | AI 평가/운영 | | arXiv 2608.27260 — environment·task·interaction·success signal contract, synthetic trajectory QA, reward/evaluator alignment |
 | 아이디어 | 미정 | mcp-mesh — MCP·A2A·REST를 K8s-native distributed agent runtime으로 묶기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — dynamic dependency injection, auto-failover, Kubernetes 운영 경계를 production agent framework 선택 기준으로 정리 |
+| 아이디어 | 미정 | [논문 리뷰] SARA — tool output이 command로 변할 때 runtime authorization 분리하기 | paper-review | Agent/MCP 실전 | | arXiv 2608.27146 — action induction과 execution authority 분리, action provenance, tool gateway authorization gate 설계 |
+| 아이디어 | 미정 | [논문 리뷰] GraphMemix — multimodal agent memory를 query-aware evidence forest로 만들기 | paper-review | 논문 리뷰 | | arXiv 2608.26983 — schema/semantic relation 기반 evidence forest, utility-cost trade-off, multimodal memory retrieval 운영법 |
+| 아이디어 | 미정 | [논문 리뷰] DuMateBench — 실제 user session으로 autonomous agent benchmark 만들기 | paper-review | AI 평가/운영 | | arXiv 2608.26546 — workspace state와 pre-solution history를 보존한 production-fidelity agent benchmark 설계 |
+| 아이디어 | 미정 | AgentEval: .NET 생태계용 agent evaluation toolkit | tutorial | AI 평가/운영 | | GitHub repo 기반 — Microsoft Agent Framework/.NET 서비스에서 tool usage validation, RAG metric, stochastic eval, CI regression gate 운영 |
+
 
 
 > 2026-05-30~06-04 슬롯은 배포 환경 이해하기 시리즈를 5/12~5/17로 압축 발행하면서 비워짐. 다음 sprint에서 새 글로 채움.

@@ -8740,3 +8740,120 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, local-first, session-management, mcp]
 - status: idea
+
+### 2026-08-31 — [논문 리뷰] SARA: tool output이 command로 변할 때 runtime authorization 분리하기
+- type: paper
+- source: http://arxiv.org/abs/2608.27146v1
+- why-now: tool-augmented agent가 untrusted observation을 읽고 실제 side effect를 만드는 단계로 넘어가면서, tool output이 단순 데이터가 아니라 실행을 유도하는 command가 되는 문제가 커지고 있다.
+- angle: “agent 보안은 prompt injection 탐지만이 아니라 action induction과 execution authority를 분리하는 runtime 설계 문제” — action provenance, authorization gate, tool gateway 정책으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-security, tool-use, authorization, runtime]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] Contract-Centered Agentic Runtimes: enterprise agent 운영을 계약 객체로 쪼개기
+- type: paper
+- source: http://arxiv.org/abs/2608.27086v1
+- why-now: agent 도입이 PoC를 지나 enterprise 배포로 가면서 모델·skill·runtime·data ownership·보안·운영 책임을 누가 관리할지 정리하는 아키텍처가 필요해졌다.
+- angle: “agent platform은 SDK가 아니라 Skill/Harness/Scaffold/Data substrate 계약의 조합” — 책임 경계, 변경 승인, evidence, NFR 소유권을 운영 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-runtime, enterprise-ai, governance, architecture]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] GraphMemix: multimodal agent memory를 query-aware evidence forest로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.26983v1
+- why-now: 멀티모달 agent memory가 긴 요약이나 embedding similarity만으로는 중복·누락·비용 문제를 피하기 어려워지고 있다.
+- angle: “agent memory retrieval은 top-k 검색이 아니라 query별 evidence forest 구성 문제” — schema/semantic relation 확장, utility-cost trade-off, context budget을 memory 운영법으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, multimodal, retrieval, graph]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] AgentJudgeBench: tool-calling agent 평가에서 LLM judge를 어디까지 믿을까
+- type: paper
+- source: http://arxiv.org/abs/2608.26623v1
+- why-now: agent 평가가 LLM-as-a-judge에 크게 의존하지만, DAG 의존성이 있는 tool-calling workflow에서는 judge 신뢰도가 별도로 검증되어야 한다.
+- angle: “LLM judge는 답변 채점기와 실행 궤적 verifier가 다르다” — workflow DAG, ground-truth 유무, 난이도별 judge drift를 agent eval 운영 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, llm-as-judge, tool-calling, benchmark]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] DuMateBench: 실제 user session으로 autonomous agent benchmark 만들기
+- type: paper
+- source: http://arxiv.org/abs/2608.26546v1
+- why-now: production agent는 clean benchmark보다 훨씬 지저분한 workspace state, pre-solution history, persistent configuration 속에서 동작한다.
+- angle: “agent benchmark의 fidelity는 task 설명보다 session reconstruction에서 나온다” — anonymization, human verification, workspace state, multi-tool workflow QA를 실무 평가 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-benchmark, workflow, production-agent, eval]
+- status: idea
+
+### 2026-08-31 — [논문 리뷰] SKILL.state: long-horizon agent에서 append-only history를 버리기
+- type: paper
+- source: http://arxiv.org/abs/2608.26263v1
+- why-now: 장기 실행 agent가 observation/action/reasoning trace를 계속 대화 기록에 붙이는 방식은 latency와 context poisoning을 동시에 키운다.
+- angle: “agent runtime의 기본 단위는 chat history가 아니라 mutable execution state” — skill spec, structured state, observation boundary, reasoning discard 정책을 harness 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-runtime, long-horizon, state-management, skills]
+- status: idea
+
+### 2026-08-31 — sandbase-harness: sandbox·memory·credential·audit를 묶은 local-first agent runtime
+- type: tech
+- source: https://github.com/sandbaseai/sandbase-harness
+- why-now: 로컬/셀프호스트 agent를 운영할 때 sandbox session, credential boundary, memory, audit/replay가 각각 흩어지면 실무 적용이 어렵다.
+- angle: “agent runtime의 최소 production surface는 채팅 UI가 아니라 격리 실행·권한·기억·감사 로그” — MCP bridge와 local console 구조를 repo introduction으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-runtime, mcp, sandbox, local-first]
+- status: idea
+
+### 2026-08-31 — octomind: one-binary MCP-native coding agent runtime
+- type: tech
+- source: https://github.com/Muvon/octomind
+- why-now: coding agent 도구가 IDE 플러그인·터미널·CI·daemon으로 갈라지면서, 단일 binary로 실행 경계와 MCP 통합을 관리하는 패턴이 늘고 있다.
+- angle: “coding agent runtime은 어디서 실행되는가: terminal, CI, daemon을 같은 contract로 묶기” — provider abstraction, MCP tool boundary, session lifecycle을 개발자 워크플로 관점으로 본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, cli, runtime]
+- status: idea
+
+### 2026-08-31 — AgentEval: .NET 생태계용 agent evaluation toolkit
+- type: tech
+- source: https://github.com/AgentEvalHQ/AgentEval
+- why-now: agent evaluation 도구가 Python 중심으로 발전하는 동안, Microsoft Agent Framework와 .NET 서비스에 붙일 수 있는 eval harness 수요가 커지고 있다.
+- angle: “agent eval을 production backend 언어 안으로 가져오면 무엇이 달라지나” — tool usage validation, RAG quality metric, stochastic evaluation, CI regression gate를 .NET 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, dotnet, rag, microsoft-agent-framework]
+- status: idea
