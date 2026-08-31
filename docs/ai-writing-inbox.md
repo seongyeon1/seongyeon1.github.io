@@ -8857,3 +8857,120 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-eval, dotnet, rag, microsoft-agent-framework]
 - status: idea
+
+### 2026-09-01 — [논문 리뷰] ContextPilot: fine-grained RL로 agent context를 능동 관리하기
+- type: paper
+- source: http://arxiv.org/abs/2608.28476v1
+- why-now: long-horizon agent가 모든 interaction history를 보존하는 방식은 context window, 비용, noise를 동시에 키우므로 context 관리 자체를 학습 대상과 평가 대상으로 분리해야 한다.
+- angle: “agent의 context manager는 요약기가 아니라 retrieve/integrate/drop 결정을 내리는 policy” — fine-grained RL, context budget, long-horizon task regression gate를 운영 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, context-management, reinforcement-learning, long-horizon]
+- status: idea
+
+### 2026-09-01 — [논문 리뷰] Fidelity Is Not Enough: agentic datasheet extraction의 dispatch-level 계측
+- type: paper
+- source: http://arxiv.org/abs/2608.28439v1
+- why-now: structured output 제약이나 benchmark fidelity만 보면 모델이 실제로 자료를 열어보지 않고도 그럴듯한 답을 내는 실패를 놓칠 수 있다.
+- angle: “agent QA는 최종 JSON 품질보다 tool dispatch와 evidence path를 계측해야 한다” — datasheet extraction, tool-use instrumentation, silent tool disabling 탐지를 실무 QA gate로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent-eval, extraction, observability]
+- status: idea
+
+### 2026-09-01 — [논문 리뷰] CamoDocs: camouflage document로 RAG poisoning을 숨기는 공격
+- type: paper
+- source: http://arxiv.org/abs/2608.28389v1
+- why-now: RAG가 public/user-editable corpus를 더 많이 쓰면서 악성 문서가 정상 문서처럼 위장해 target answer를 유도하는 공격면이 커지고 있다.
+- angle: “RAG 보안은 악성 키워드 탐지가 아니라 camouflage evidence를 추적하는 문제” — corpus ingestion, retrieval audit, answer influence attribution, quarantine workflow를 설계한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag-security, poisoning, retrieval, attribution]
+- status: idea
+
+### 2026-09-01 — [논문 리뷰] PersonaForge: agentic system을 위한 현실적인 multi-turn user simulation
+- type: paper
+- source: http://arxiv.org/abs/2608.28378v1
+- why-now: 실제 agent 업무는 정보가 불완전하고 여러 turn에 걸쳐 의도와 제약이 드러나는데, 기존 데이터셋은 single-turn 완성형 요청에 치우쳐 있다.
+- angle: “agent benchmark의 user simulator는 질문 생성기가 아니라 불완전한 의도와 수정 피드백을 가진 상호작용 환경” — session realism, intent reveal, eval harness 설계를 다룬다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, user-simulation, multi-turn, benchmark]
+- status: idea
+
+### 2026-09-01 — [논문 리뷰] Logos: cross-process bus 위의 agent harness 설계
+- type: paper
+- source: http://arxiv.org/abs/2608.28553v1
+- why-now: agent system이 여러 process, tool, capability를 runtime에서 조립하는 방향으로 가면서 단일 SDK 내부 loop보다 capability bus와 composition contract가 중요해지고 있다.
+- angle: “agent harness를 monolith가 아니라 cross-process capability bus로 보면 무엇이 달라지나” — capability boundary, trace, composability, failure isolation을 런타임 아키텍처로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, runtime, orchestration, composability]
+- status: idea
+
+### 2026-09-01 — COVER: multi-agent coalition routing 효과를 식별 가능하게 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2608.28475v1
+- why-now: multi-agent system에서 팀 구성을 바꾸면 메시지, intermediate state, 최종 답이 모두 바뀌므로 단순 end-to-end accuracy gap만으로 routing 정책 효과를 판단하기 어렵다.
+- angle: “multi-agent router 평가는 모델 비교가 아니라 coalition effect를 식별하는 실험 설계” — public message contract, routing intervention, cost-quality frontier를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, routing, eval, orchestration]
+- status: idea
+
+### 2026-09-01 — ccboard: Claude Code 세션·비용·hooks·MCP를 한 화면에서 관찰하기
+- type: tech
+- source: https://github.com/FlorianBruniaux/ccboard
+- why-now: 로컬 coding agent를 여러 세션으로 운영하면 대화 내용보다 비용, hook 실행, MCP server 구성, session 상태를 지속적으로 관찰하는 control plane이 필요해진다.
+- angle: “coding agent observability는 로그 파일 tail이 아니라 session dashboard여야 한다” — Rust binary, TUI/Web dashboard, config/hook/MCP visibility를 개발자 워크플로로 소개한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, observability, claude-code, mcp]
+- status: idea
+
+### 2026-09-01 — Boucle-framework: structured memory와 safety hooks를 갖춘 autonomous agent framework
+- type: tech
+- source: https://github.com/Bande-a-Bonnot/Boucle-framework
+- why-now: agent framework가 단순 model wrapper에서 structured memory, loop control, safety hook, self-hosted runtime을 묶는 방향으로 분화하고 있다.
+- angle: “작은 agent framework에서 production surface를 읽는 법” — memory schema, loop manager, safety hooks, failure recovery를 framework 선택 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, memory, safety-hooks, open-source]
+- status: idea
+
+### 2026-09-01 — ontology-atlas: codebase intent와 영향 범위를 agent-readable atlas로 만들기
+- type: tech
+- source: https://github.com/wlsdks/ontology-atlas
+- why-now: coding agent가 대형 repo에서 “어디를 고칠지”뿐 아니라 “왜 이런 구조인지”와 변경 영향 범위를 알아야 안전한 수정·리뷰가 가능하다.
+- angle: “코드 인텔리전스는 symbol search를 넘어 architecture intent graph가 되어야 한다” — ontology map, change impact, agent-readable repository atlas를 개발자 워크플로로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, code-intelligence, repository-analysis, github-repo]
+- status: idea

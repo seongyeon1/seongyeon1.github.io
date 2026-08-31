@@ -428,6 +428,11 @@
 | 아이디어 | 미정 | [논문 리뷰] GraphMemix — multimodal agent memory를 query-aware evidence forest로 만들기 | paper-review | 논문 리뷰 | | arXiv 2608.26983 — schema/semantic relation 기반 evidence forest, utility-cost trade-off, multimodal memory retrieval 운영법 |
 | 아이디어 | 미정 | [논문 리뷰] DuMateBench — 실제 user session으로 autonomous agent benchmark 만들기 | paper-review | AI 평가/운영 | | arXiv 2608.26546 — workspace state와 pre-solution history를 보존한 production-fidelity agent benchmark 설계 |
 | 아이디어 | 미정 | AgentEval: .NET 생태계용 agent evaluation toolkit | tutorial | AI 평가/운영 | | GitHub repo 기반 — Microsoft Agent Framework/.NET 서비스에서 tool usage validation, RAG metric, stochastic eval, CI regression gate 운영 |
+| 아이디어 | 미정 | [논문 리뷰] ContextPilot — fine-grained RL로 agent context를 능동 관리하기 | paper-review | 논문 리뷰 | | arXiv 2608.28476 — retrieve/integrate/drop policy, context budget, long-horizon task regression gate |
+| 아이디어 | 미정 | [논문 리뷰] Fidelity Is Not Enough — agentic datasheet extraction의 dispatch-level 계측 | paper-review | AI 평가/운영 | | arXiv 2608.28439 — tool dispatch와 evidence path 계측, silent tool disabling 탐지 |
+| 아이디어 | 미정 | [논문 리뷰] CamoDocs — camouflage document로 RAG poisoning을 숨기는 공격 | paper-review | Agentic RAG | | arXiv 2608.28389 — corpus ingestion, retrieval audit, answer influence attribution, quarantine workflow |
+| 아이디어 | 미정 | [논문 리뷰] PersonaForge — agentic system을 위한 현실적인 multi-turn user simulation | paper-review | AI 평가/운영 | | arXiv 2608.28378 — 불완전 의도, 수정 피드백, session realism을 user simulator/eval harness로 설계 |
+| 아이디어 | 미정 | ccboard: Claude Code 세션·비용·hooks·MCP를 한 화면에서 관찰하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — TUI/Web dashboard, session cost, hooks, MCP server visibility를 coding-agent observability로 정리 |
 
 
 
