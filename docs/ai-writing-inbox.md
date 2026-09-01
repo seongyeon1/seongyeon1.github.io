@@ -8975,3 +8975,107 @@
 - suggested-category: tutorial
 - suggested-tags: [coding-agent, code-intelligence, repository-analysis, github-repo]
 - status: idea
+
+### 2026-09-02 — [논문 리뷰] Aspire: vague goal에서 self-evolving agent를 만드는 법
+- type: paper
+- source: http://arxiv.org/abs/2608.31111v1
+- why-now: agent가 “리서치를 더 잘하기”처럼 모호한 목표를 받았을 때 스스로 capability gap을 찾고 학습 과제를 구성하는 self-improvement 루프가 중요한 연구 축으로 올라왔다.
+- angle: “self-evolving agent는 목표 문장 하나가 아니라 목표 해석→gap 진단→학습 과제 생성→개선 검증을 가진 curriculum engine”이라는 관점으로 평가·메모리·실험 하네스를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent, self-improvement, curriculum, eval]
+- status: idea
+
+### 2026-09-02 — [논문 리뷰] S3Gym: self-testing과 self-judging으로 agent를 개선할 수 있나
+- type: paper
+- source: http://arxiv.org/abs/2608.31100v1
+- why-now: fixed benchmark 점수만 보는 방식에서 벗어나, agent가 환경 경험을 만들고 자기 행동을 테스트·판정해 개선하는 폐루프 평가/학습이 부상하고 있다.
+- angle: “agent 평가를 시험지가 아니라 실험실로 만들기” — self-test generation, self-judge calibration, improvement signal, regression guard를 agentic RL 운영법으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-rl, self-evaluation, benchmark, improvement]
+- status: idea
+
+### 2026-09-02 — [논문 리뷰] Adaptive Structuring: 비정형 데이터를 token-efficient agent substrate로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2608.31082v1
+- why-now: enterprise agent가 웹페이지·보고서·계약서·PDF 같은 비정형 자료를 길게 읽으며 토큰 비용을 태우는 문제가 실제 도입의 병목이 되고 있다.
+- angle: “RAG chunk를 더 많이 넣는 대신, agent가 쓸 수 있는 구조로 먼저 재작성하자” — adaptive structuring, evidence table, tool dispatch 비용, answer fidelity QA를 실무 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [data-agent, token-efficiency, rag, structured-extraction]
+- status: idea
+
+### 2026-09-02 — [논문 리뷰] Process Supervision vs Outcome Credit: long-horizon agent credit assignment 설계
+- type: paper
+- source: http://arxiv.org/abs/2608.31077v1
+- why-now: outcome-only RL은 긴 agent trajectory의 모든 결정에 같은 신호를 주는 한계가 있어, process supervision과 outcome credit을 어떻게 reconcile할지가 post-training 품질을 좌우한다.
+- angle: “agent 학습에서 실패한 한 turn을 어떻게 찾아 벌점/보상을 줄 것인가” — trajectory-level advantage, step-level supervision, verifier replay, credit leakage를 평가 하네스 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-training, process-supervision, reinforcement-learning, verifier]
+- status: idea
+
+### 2026-09-02 — [논문 리뷰] Automatic Rubric Induction: 연구 에이전트가 개선 전에 평가 기준부터 배우게 하기
+- type: paper
+- source: http://arxiv.org/abs/2608.31076v1
+- why-now: autonomous research agent는 과제가 열린 형태라 “성공 기준”이 명시되지 않는 경우가 많고, 평가 rubric을 자동 유도하는 능력이 improvement loop의 전제가 되고 있다.
+- angle: “research agent의 첫 번째 산출물은 답이 아니라 rubric이어야 한다” — 자동 rubric induction, 평가 기준 검증, open-ended task QA, human review boundary를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, eval, rubric, self-improvement]
+- status: idea
+
+### 2026-09-02 — DIASENTINEL: guideline-grounded multi-agent clinical screening의 감사 가능한 설계
+- type: paper
+- source: http://arxiv.org/abs/2608.31128v1
+- why-now: 의료·규제 도메인 agent는 hallucination보다 guideline grounding, citation, audit trail, on-premise deployment 요구가 더 강하게 걸린다.
+- angle: “high-stakes agent는 모델 능력보다 guideline evidence와 auditability가 제품 요구사항” — 역할 분리 multi-agent, citation verification, risk-screening workflow, privacy boundary를 설계 관점으로 본다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, healthcare-ai, grounding, audit]
+- status: idea
+
+### 2026-09-02 — Gram: MCP·Skills·agent gateway를 조직 단위로 보안·배포하는 스택
+- type: tech
+- source: https://github.com/speakeasy-api/gram
+- why-now: agent와 MCP server가 팀 내부에서 늘어날수록 연결, 보안, 관찰, 배포를 각 앱별로 처리하는 방식은 곧 운영 부채가 된다.
+- angle: “MCP 도입의 다음 병목은 server 작성이 아니라 조직 단위 gateway와 distribution” — API/MCP 연결, policy, observability, skill distribution boundary를 platform architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-gateway, security, observability]
+- status: idea
+
+### 2026-09-02 — NVIDIA NeMo Gym: environment 기반으로 모델과 agent를 평가·개선하기
+- type: tech
+- source: https://github.com/NVIDIA-NeMo/Gym
+- why-now: agentic RL과 eval이 정적 데이터셋에서 interactive environment로 이동하면서, rollout, reward, evaluator를 함께 다루는 도구가 중요해지고 있다.
+- angle: “agent eval은 dataset loader가 아니라 environment runtime이어야 한다” — environment abstraction, rollout log, reward/evaluator 연결, CI regression suite를 NeMo 생태계 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, environment, nvidia-nemo, reinforcement-learning]
+- status: idea
