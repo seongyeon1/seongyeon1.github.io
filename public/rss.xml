@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 29 Aug 2026 10:44:25 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 01 Sep 2026 01:12:53 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] SARA — tool output이 command가 될 때 권한을 분리하는 법</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-01-sara-runtime-authorization-tool-agents/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-01-sara-runtime-authorization-tool-agents/</guid>
+      <description>SARA 논문을 통해 tool-augmented agent에서 action induction과 runtime authorization을 분리하는 설계를 정리한다.</description>
+      <pubDate>Tue, 01 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-security</category>
+      <category>tool-use</category>
+      <category>authorization</category>
+      <category>runtime</category>
+      <category>prompt-injection</category>
+    </item>
     <item>
       <title>데이터베이스는 상태가 사는 곳이다 — 트랜잭션, 잠금, 마이그레이션</title>
       <link>https://seongyeon1.github.io/blog/2026-08-29-backend-database-concurrency/</link>

@@ -8752,7 +8752,8 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent-security, tool-use, authorization, runtime]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-01-sara-runtime-authorization-tool-agents.mdx
 
 ### 2026-08-31 — [논문 리뷰] Contract-Centered Agentic Runtimes: enterprise agent 운영을 계약 객체로 쪼개기
 - type: paper

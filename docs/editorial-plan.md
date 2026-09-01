@@ -433,6 +433,7 @@
 | 아이디어 | 미정 | [논문 리뷰] CamoDocs — camouflage document로 RAG poisoning을 숨기는 공격 | paper-review | Agentic RAG | | arXiv 2608.28389 — corpus ingestion, retrieval audit, answer influence attribution, quarantine workflow |
 | 아이디어 | 미정 | [논문 리뷰] PersonaForge — agentic system을 위한 현실적인 multi-turn user simulation | paper-review | AI 평가/운영 | | arXiv 2608.28378 — 불완전 의도, 수정 피드백, session realism을 user simulator/eval harness로 설계 |
 | 아이디어 | 미정 | ccboard: Claude Code 세션·비용·hooks·MCP를 한 화면에서 관찰하기 | tutorial | 개발자 AI 워크플로 | | GitHub repo 기반 — TUI/Web dashboard, session cost, hooks, MCP server visibility를 coding-agent observability로 정리 |
+| 발행완료 | 2026-09-01 | [논문 리뷰] SARA — tool output이 command가 될 때 권한을 분리하는 법 | paper-review | Agent/MCP 실전 | | `content/posts/2026-09-01-sara-runtime-authorization-tool-agents.mdx` — 자동 발행 완료, arXiv 2608.27146, action induction과 execution authority 분리, Action Probe, No-History-Promotion, side-effect tool authorization gate 설계 |
 
 
 
