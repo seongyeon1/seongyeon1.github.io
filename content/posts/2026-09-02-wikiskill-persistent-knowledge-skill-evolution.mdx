@@ -1,0 +1,242 @@
+---
+title: "[논문 리뷰] WikiSkill — agent 경험을 wiki로 축적해 skill을 진화시키기"
+date: "2026-09-02"
+category: "paper-review"
+tags: ["agent", "skill", "memory", "self-improvement", "wiki"]
+summary: "WikiSkill 논문을 통해 raw trace, persistent wiki, executable skill을 분리하고 검증 게이트로 agent skill을 진화시키는 구조를 정리한다."
+series: "논문 리뷰"
+seriesOrder: 20
+---
+
+## 한 줄 요약
+
+<Paper
+  title="WikiSkill: Compiling Agent Experience into Persistent Knowledge for Skill Evolution"
+  authors="Liyan Tang et al."
+  year="2026"
+  venue="arXiv"
+  arxiv="2608.27454"
+/>
+
+WikiSkill은 agent의 실행 경험을 바로 skill 문서로 덮어쓰지 않고, **raw trace, persistent wiki, executable skill** 세 층으로 나눠 축적한 뒤, wiki에 쌓인 패턴을 근거로 skill을 제안하고 validation gate를 통과한 변경만 반영하는 skill evolution 프레임워크다.
+
+내가 보기엔 이 논문의 핵심은 “agent가 배운다”를 훨씬 운영 가능한 형태로 바꾼다는 점이다. 모델 weight를 고치는 게 아니라, 실행 로그에서 반복되는 실패와 성공 패턴을 wiki에 누적하고, 그 누적 지식을 바탕으로 skill을 작게 고친다. 그러면 agent 개선이 감각적인 프롬프트 튜닝이 아니라, 근거가 남고 롤백 가능한 지식 관리 문제가 된다.
+
+## 왜 지금 중요한가
+
+최근 agent 시스템을 만들다 보면 대부분 비슷한 벽에 부딪힌다.
+
+- 한 번의 실행 로그에서는 배울 점이 보이지만, 다음 실행에는 잘 이어지지 않는다.
+- 실패를 보고 skill을 고쳐도 같은 실수를 다시 제안한다.
+- 성공한 workaround가 다른 모델이나 다른 task에서는 오히려 방해가 된다.
+- memory와 skill이 섞이면서 무엇이 실행 지침이고 무엇이 관찰 기록인지 흐려진다.
+
+그래서 agent self-improvement에서 중요한 질문은 “실행 경험을 저장할 것인가?”가 아니다. 이미 저장은 한다. 진짜 질문은 **경험을 어떤 중간 표현으로 정리하고, 어떤 지식만 실행 가능한 skill로 승격할 것인가**다.
+
+WikiSkill은 이 지점을 정면으로 다룬다. 논문은 기존 skill-evolution 방법들이 실행 trace를 분석해 skill을 업데이트하긴 하지만, 그 과정에서 얻은 insight가 optimization history 안에 흩어져 있고 다음 iteration에서 체계적으로 재사용되지 못한다고 본다. 그래서 skill 바로 위에 persistent wiki layer를 둔다.
+
+## 기존 skill evolution의 빈틈
+
+논문이 비교하는 Trace2Skill, EvoSkill, SkillOpt류의 방식은 큰 틀에서 비슷하다.
+
+1. agent를 training task에 실행한다.
+2. 성공과 실패 trace를 분석한다.
+3. skill 수정안을 만든다.
+4. validation score가 좋아지면 반영한다.
+
+이 루프 자체는 합리적이다. 문제는 “왜 그 수정안이 나왔는가”, “이전에 거절된 수정은 무엇인가”, “반복되는 실패 패턴은 무엇인가” 같은 지식이 별도 구조로 축적되지 않는다는 데 있다.
+
+사람이 운영하는 프로젝트로 비유하면, 매번 장애 리포트를 보고 코드를 고치지만, runbook과 postmortem wiki를 안 남기는 상황에 가깝다. 당장은 고칠 수 있지만, 시간이 지날수록 같은 실수를 반복하고, 왜 어떤 패치가 거절됐는지 잊고, 다음 사람이 같은 탐색을 다시 한다.
+
+WikiSkill은 이 중간 지식을 `wiki/`에 남긴다. 그리고 skill update는 그 wiki를 읽은 proposer가 만든다.
+
+## WikiSkill의 세 층 구조
+
+논문에서 제안하는 workspace는 세 층으로 나뉜다.
+
+### 1. Raw Layer: 원본 실행 trace
+
+`raw/`에는 training task에서 나온 agent trajectory가 저장된다. reasoning, tool call, tool output, final answer까지 포함한 원본 로그다. 이 층은 immutable하다. 즉, 사후 해석을 위해 남기는 증거 보관소에 가깝다.
+
+중요한 점은 raw trace를 그대로 skill로 만들지 않는다는 것이다. 실행 로그는 너무 길고 노이즈가 많다. 어떤 행동은 우연히 성공했을 수도 있고, 어떤 실패는 task 특이적일 수도 있다. 그래서 원본은 보존하되, 바로 실행 지침으로 승격하지 않는다.
+
+### 2. Wiki Layer: 누적되는 패턴과 진화 기록
+
+`wiki/`는 WikiSkill의 핵심이다. 여기에는 `patterns/` 아래 실패 모드와 성공 전략을 정리한 markdown page가 쌓이고, `logs.md`에는 iteration별 발견이 기록되며, `skill-impact.md`에는 skill proposal, diff, acceptance decision이 남는다.
+
+이 layer가 하는 일은 단순 요약이 아니다.
+
+- 반복되는 실패 패턴을 하나의 이름 붙은 pattern으로 만든다.
+- 이전에 거절된 skill proposal을 기억한다.
+- 어떤 skill update가 어떤 wiki pattern에서 왔는지 provenance를 남긴다.
+- 다음 proposer가 같은 실패를 다시 탐색하지 않게 한다.
+
+즉, wiki는 agent experience의 장기 기억이면서 동시에 skill update를 위한 evidence graph 역할을 한다.
+
+### 3. Skills Layer: 실행 가능한 절차 지식
+
+`skills/`에는 실제 inference agent가 읽는 active skill이 들어간다. 각 skill은 `SKILL.md`와 `PURPOSE.md`로 구성된다. `SKILL.md`는 실행 지침이고, `PURPOSE.md`는 이 skill이 어떤 wiki pattern에서 유래했는지 연결한다.
+
+이 분리가 실무적으로 중요하다. skill은 agent 행동을 직접 바꾸는 control surface다. 그래서 모든 경험을 skill에 넣으면 안 된다. wiki에서 충분히 반복되고, validation에서 개선이 확인된 절차만 skill로 올라와야 한다.
+
+## 진화 루프: wiki는 proposer에게, skill은 inference agent에게
+
+WikiSkill의 iteration은 크게 네 단계다.
+
+1. **Inference Agent**가 active skill만 읽고 training task를 수행한다.
+2. **Wiki Maintainer**가 raw trace와 기존 wiki를 함께 읽고 pattern과 log를 갱신한다.
+3. **Skill Proposer**가 wiki, skill-impact, 최신 trace를 읽고 skill 생성 또는 수정안을 만든다.
+4. **Gating and Rollback**이 validation split에서 성능을 확인하고, 좋아진 경우에만 skill 변경을 accept한다.
+
+여기서 의외로 중요한 설계가 하나 있다. training rollout 중 inference agent에게는 wiki access를 주지 않는다. active skill만 주입한다. 반대로 skill proposer는 wiki를 읽을 수 있다.
+
+처음 보면 agent에게도 wiki를 주면 더 잘 풀 것 같지만, 논문 ablation은 반대를 보여준다. inference agent가 wiki까지 읽으면 task-solving knowledge를 skill이 아니라 wiki에서 직접 가져올 수 있고, 그 결과 trace가 skill 개발에 덜 유용해진다는 해석이다. 말하자면, training trace가 “좋은 skill 덕분에 풀었는지” 아니면 “wiki 힌트를 몰래 보고 풀었는지” 섞여버린다.
+
+이건 agent harness 설계에서도 꽤 중요한 포인트다. **실행에 쓰는 knowledge surface와 개선에 쓰는 analysis surface를 분리해야 한다.** 둘을 섞으면 evaluation signal이 탁해진다.
+
+## 실험 설정
+
+논문은 다섯 가지 benchmark에서 WikiSkill을 평가한다.
+
+- **LiveMath**: single-step 수학 reasoning
+- **SealQA**: web search와 file reading을 쓰는 multi-step QA
+- **SpreadsheetBench**: bash를 이용한 spreadsheet 조작
+- **OfficeQA**: 긴 Treasury bulletin 문서를 대상으로 한 long-context document QA
+- **ALFWorld**: text-based embodied environment에서의 multi-step action task
+
+모델은 Gemini-3.5-Flash와 Qwen-3.5-4B, Qwen-3.5-9B, Qwen-3.6-27B, Gemma-4-31B를 사용한다. 비교 대상은 no-skill baseline과 Trace2Skill, EvoSkill, SkillOpt다. 모든 score는 full evolution process를 세 번 독립 실행한 뒤 평균 test performance로 보고한다.
+
+## 주요 결과에서 읽을 것
+
+### 1. WikiSkill은 평균 성능에서 기존 skill-evolution 방법을 앞선다
+
+Table 1에서 WikiSkill은 다섯 모델 모두에서 가장 높은 평균 성능을 기록한다. 각 모델별로 가장 강한 competing method 대비 평균 성능이 Qwen-3.5-4B에서 +3.3 point, Qwen-3.5-9B에서 +5.1 point, Qwen-3.6-27B에서 +10.0 point, Gemma-4-31B에서 +5.8 point, Gemini-3.5-Flash에서 +12.0 point 개선된다.
+
+구체적으로 Gemini-3.5-Flash는 LiveMath에서 no-skill 33.0%에서 WikiSkill 72.6%로, SpreadSheet에서 50.5%에서 76.6%로 오른다. Qwen-3.6-27B는 ALFWorld에서 52.8%에서 77.6%로 오른다.
+
+숫자 자체도 크지만, 더 중요한 건 개선이 특정 benchmark 하나에만 몰려 있지 않다는 점이다. skill이 잘 먹히는 task와 덜 먹히는 task는 있지만, wiki를 둔 구조가 전반적으로 더 안정적인 skill update를 만든다는 신호로 읽힌다.
+
+### 2. skill evolution은 model scaling과 경쟁하지 않고 보완한다
+
+Qwen 계열만 보면 WikiSkill의 평균 개선폭은 모델이 커질수록 커진다. Qwen-3.5-4B는 +12.3 point, Qwen-3.5-9B는 +17.5 point, Qwen-3.6-27B는 +23.9 point다.
+
+이 결과는 약간 직관과 다를 수 있다. 작은 모델이 skill 덕을 더 볼 것 같지만, 논문 결과는 더 큰 모델이 복잡한 절차 지식을 더 잘 실행해 더 큰 이득을 얻는 쪽에 가깝다. 특히 SpreadSheet에서 Qwen-3.6-27B는 WikiSkill로 +40.9 point를 얻는다.
+
+동시에 작은 모델도 skill을 달면 큰 no-skill 모델을 이길 수 있다. Qwen-3.5-9B with WikiSkill은 평균 47.4%로 Qwen-3.6-27B no-skill의 39.4%를 넘는다. 즉, 모델 크기와 절차 지식은 서로 대체재가 아니라 보완재다.
+
+### 3. 진화된 skill은 모델 간 transfer도 된다
+
+Table 2에서 흥미로운 점은 self-evolved skill이 항상 최고가 아니라는 것이다. 예를 들어 Qwen-3.6-27B가 만든 SpreadSheet skill은 Qwen-3.5-9B를 24.3% no-skill에서 50.5%로 올리고, self-evolved skill의 33.6%보다도 좋다. Gemma-4-31B의 LiveMath에서도 Qwen-3.6-27B skill은 73.7%로, no-skill 33.9%와 self-evolved 56.7%를 크게 넘는다.
+
+반대로 negative transfer도 있다. Qwen-3.5-4B가 만든 SpreadSheet skill은 Gemini-3.5-Flash 성능을 50.5%에서 18.1%로 떨어뜨린다. 논문은 작은 모델을 돕기 위한 low-level workaround와 fragmented diagnostic procedure가 강한 모델에게는 오히려 budget 낭비와 제약으로 작용할 수 있다고 분석한다.
+
+실무적으로 이 부분이 제일 중요하다. skill은 “좋은 지식”이 아니라 **특정 모델과 실행 환경에서 검증된 절차**다. 다른 모델로 옮길 수는 있지만, 무조건 옮기면 안 된다. skill portability에도 regression test가 필요하다.
+
+### 4. persistent wiki가 실제로 핵심이었다
+
+Ablation에서 가장 강한 메시지는 wiki access의 위치다. Gemini-3.5-Flash 기준으로 inference agent의 wiki access를 끄고 skill proposer에게 wiki access를 주는 기본 설정이 평균 63.7%로 가장 좋다. 같은 조건에서 proposer가 wiki를 못 쓰면 평균은 48.7%로 떨어진다. 즉, proposer의 persistent wiki access가 +15.0 point를 만든다.
+
+반대로 proposer가 wiki를 쓰는 상태에서 inference agent에게도 wiki access를 주면 평균은 63.7%에서 60.9%로 낮아진다. 특히 LiveMath는 72.6%에서 64.8%로 떨어진다.
+
+내 해석은 이렇다. wiki는 실행 중 참조문서라기보다 **skill compiler의 intermediate representation**에 가깝다. inference agent에게는 compile된 skill만 줘야 하고, wiki는 maintainer와 proposer가 skill을 개선하는 데 써야 한다.
+
+## case study: ALFWorld에서 반복 루프를 고치는 방식
+
+논문은 Qwen-3.6-27B의 ALFWorld 예시를 든다. Iteration 0에서 Wiki Maintainer는 `take-examine-move-loop.md` 같은 반복 행동 패턴을 발견한다. Skill Proposer는 `goal-directed-action`이라는 skill을 만들지만 validation에서 개선되지 않아 reject된다.
+
+중요한 건 이 rejection 자체가 `skill-impact.md`에 남는다는 점이다. 다음 iteration의 proposer는 “이런 방향은 이미 실패했다”를 알고, Iteration 1에서 `break-repetition-loop`라는 더 구체적인 skill을 만든다. 여기에는 “Never Return an Item to Its Origin Location” 같은 명시적 행동 규칙이 들어가고, 이 변경은 accept된다. 이후 multi-operation loop가 새로 관찰되자 Iteration 4에서 “Each Operation Type ONCE Per Item” 규칙으로 skill이 더 정교해진다.
+
+이 사례는 WikiSkill을 잘 보여준다. 한 번 실패한 proposal도 버려지는 게 아니라 다음 update의 근거가 된다. raw trace, pattern page, rejection log, skill purpose가 이어지면서 skill이 조금씩 compile된다.
+
+## 실무 적용 포인트
+
+### 1. memory와 skill을 같은 저장소에 넣지 말자
+
+agent 운영에서 흔한 실수는 `memory.md` 하나에 사용자 선호, 실패 로그, 해결 절차, 현재 상태를 다 넣는 것이다. WikiSkill 관점에서는 최소 세 종류를 분리해야 한다.
+
+```text
+raw_trace: 원본 실행 증거
+wiki_pattern: 반복되는 실패/성공 패턴과 근거
+skill: 다음 실행에 주입할 검증된 절차 지침
+```
+
+셋의 update policy가 다르다. raw trace는 immutable해야 하고, wiki는 누적되어야 하며, skill은 validation gate를 통과한 경우에만 바뀌어야 한다.
+
+### 2. skill update에는 provenance가 필요하다
+
+좋은 skill 문서는 “이렇게 하라”만 적지 않는다. 왜 이 규칙이 생겼는지, 어떤 실패를 막기 위한 것인지, 어떤 task에서 검증됐는지도 남겨야 한다. WikiSkill의 `PURPOSE.md`는 이 역할을 한다.
+
+실무적으로는 skill마다 아래 정도의 metadata를 두는 게 좋다.
+
+```text
+source_patterns: 어떤 wiki pattern에서 왔는가
+accepted_at: 어떤 validation run에서 통과했는가
+known_failures: 어떤 상황에서는 안 맞는가
+rollback_id: 문제가 생기면 어디로 되돌릴 수 있는가
+```
+
+이게 없으면 skill library는 금방 “그럴듯한 프롬프트 조각 모음”이 된다.
+
+### 3. inference surface와 improvement surface를 분리하자
+
+WikiSkill의 ablation은 꽤 실용적인 경고다. agent에게 너무 많은 내부 wiki를 보여주면 당장 성능은 좋아 보일 수 있지만, skill 개선을 위한 signal은 흐려질 수 있다.
+
+운영 시스템으로 옮기면 이렇게 나눌 수 있다.
+
+- Runtime agent: 검증된 skill과 현재 task context만 읽는다.
+- Maintainer: 실패 trace와 성공 trace를 읽고 pattern wiki를 갱신한다.
+- Proposer: wiki와 raw evidence를 읽고 작은 skill patch를 만든다.
+- Gate: regression suite로 accept 또는 rollback을 결정한다.
+
+이 구조가 있어야 “이번에 좋아진 이유”를 추적할 수 있다.
+
+### 4. skill transfer는 regression test 없이 믿지 말자
+
+논문은 skill transfer가 잘 되는 경우도, 크게 망가지는 경우도 보여준다. 특히 작은 모델용 workaround는 큰 모델의 자연스러운 문제 해결을 방해할 수 있다.
+
+따라서 여러 모델을 섞어 쓰는 agent platform이라면 skill을 전역으로 공유하기 전에 최소한 아래를 확인해야 한다.
+
+- skill이 model-specific workaround인지 general procedure인지
+- tool budget과 interaction budget을 얼마나 쓰는지
+- 더 강한 모델의 end-to-end script generation을 막지는 않는지
+- transfer target 모델에서 held-out task 성능이 떨어지지 않는지
+
+즉, skill registry는 package registry처럼 보여도 실제로는 model-runtime compatibility matrix가 필요하다.
+
+## 한계와 조심할 점
+
+논문도 몇 가지 한계를 명확히 적는다.
+
+첫째, 실험에서는 skill retrieval이나 triggering을 평가하지 않는다. active skill을 inference agent prompt에 직접 주입한다. 이는 skill quality를 분리해 보기 위한 합리적인 실험 설계지만, 실제 시스템에서는 skill이 많아질수록 “어떤 skill을 언제 불러올 것인가”가 큰 문제가 된다.
+
+둘째, validation gating이 즉시 점수를 올리는 proposal만 accept한다. 당장 성능은 같지만 이후 iteration의 기반이 되는 neutral proposal은 버려질 수 있다. 운영 관점에서는 conservative해서 안전하지만, 장기적인 exploration에는 손해일 수 있다.
+
+셋째, wiki는 계속 쌓이지만 자동 pruning 메커니즘은 없다. 오래 운영하면 pattern page, evolution log, proposal diff가 너무 많아지고, 오래된 지식이 proposer를 오염시킬 수 있다. persistent knowledge에는 반드시 retention과 pruning 정책이 필요하다.
+
+넷째, benchmark에는 multi-step tool interaction과 long-context QA가 포함되지만, 수백 action이나 몇 시간에 걸친 very long-horizon task는 다루지 않는다. 실제 업무 agent의 긴 실행에서는 online adaptation과 partial rollout 중 skill refinement가 더 어려운 문제가 된다.
+
+## 내 의견
+
+WikiSkill은 개인적으로 꽤 마음에 드는 논문이다. 이유는 화려한 “스스로 진화하는 agent” 이야기를 하면서도, 구현 단위는 굉장히 현실적이기 때문이다. raw log를 남기고, wiki로 정리하고, skill patch를 만들고, validation gate로 accept한다. 결국 좋은 agent 운영은 소프트웨어 엔지니어링과 비슷해진다.
+
+특히 중요한 메시지는 두 가지다.
+
+첫째, **경험은 바로 skill이 아니다.** 실패 로그를 보고 곧바로 system prompt에 규칙을 추가하면 단기적으로는 좋아 보여도 장기적으로는 prompt debt가 쌓인다. 경험은 먼저 pattern으로 정리되어야 하고, 반복성과 근거가 생긴 뒤 skill로 승격되어야 한다.
+
+둘째, **더 큰 모델일수록 좋은 skill을 더 잘 쓴다.** 작은 모델에게 skill은 보조바퀴가 될 수 있지만, 큰 모델에게 skill은 복잡한 workflow를 안정적으로 실행하게 만드는 operating manual이 된다. 그래서 agent platform에서 skill system은 작은 모델을 보완하는 기능을 넘어, frontier model의 능력을 안정적으로 제품화하는 층으로 봐야 한다.
+
+내가 실제로 가져온다면 전체 WikiSkill을 한 번에 구현하기보다는 아래 순서로 시작할 것 같다.
+
+1. agent 실행마다 raw trace를 append-only로 남긴다.
+2. 실패 유형을 wiki pattern으로 수동 또는 반자동 정리한다.
+3. skill마다 `PURPOSE.md`처럼 출처와 검증 근거를 붙인다.
+4. 자주 실패하는 task 20개 정도를 regression suite로 만든다.
+5. skill patch는 반드시 validation gate를 통과해야 merge되게 한다.
+6. skill이 늘어나면 retrieval과 pruning을 별도 문제로 다룬다.
+
+이 정도만 해도 “agent가 기억한다”는 말이 훨씬 덜 추상적이 된다. WikiSkill의 가치는 여기에 있다. 기억을 많이 넣는 방법이 아니라, 경험을 실행 가능한 지식으로 compile하는 방법을 제안한다.
+
+## 참고 자료
+
+- [arXiv:2608.27454 — WikiSkill: Compiling Agent Experience into Persistent Knowledge for Skill Evolution](https://arxiv.org/abs/2608.27454)
+- [PDF](https://arxiv.org/pdf/2608.27454)

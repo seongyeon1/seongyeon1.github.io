@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 01 Sep 2026 01:12:53 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 02 Sep 2026 10:14:11 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] WikiSkill — agent 경험을 wiki로 축적해 skill을 진화시키기</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-02-wikiskill-persistent-knowledge-skill-evolution/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-02-wikiskill-persistent-knowledge-skill-evolution/</guid>
+      <description>WikiSkill 논문을 통해 raw trace, persistent wiki, executable skill을 분리하고 검증 게이트로 agent skill을 진화시키는 구조를 정리한다.</description>
+      <pubDate>Wed, 02 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>skill</category>
+      <category>memory</category>
+      <category>self-improvement</category>
+      <category>wiki</category>
+    </item>
     <item>
       <title>[논문 리뷰] SARA — tool output이 command가 될 때 권한을 분리하는 법</title>
       <link>https://seongyeon1.github.io/blog/2026-09-01-sara-runtime-authorization-tool-agents/</link>
