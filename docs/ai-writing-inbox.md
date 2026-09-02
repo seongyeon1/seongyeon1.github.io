@@ -21,6 +21,97 @@
 
 ## Active Queue
 
+### 2026-09-03 — [논문 리뷰] Efficient SWE Agent Benchmarking: trajectory-aware eval로 코딩 에이전트 평가 비용 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.01603v1
+- why-now: SWE agent 평가는 repo 탐색, 코드 수정, 테스트 실행까지 포함해 비용이 크기 때문에 대표 subset만 뽑아도 trajectory 다양성과 실패 모드를 보존하는 평가 설계가 중요해지고 있다.
+- angle: “코딩 에이전트 벤치마크는 task 수가 아니라 실행 궤적 coverage가 핵심” — trajectory feature, subset selection, regression confidence를 CI용 agent eval harness로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [swe-agent, eval, benchmark, trajectory]
+- status: idea
+
+### 2026-09-03 — [논문 리뷰] Adaptive Critical Token-Aware Retrieval: repo-level code generation에서 중요한 토큰만 골라 넣기
+- type: paper
+- source: http://arxiv.org/abs/2609.01601v1
+- why-now: 실제 repo는 context window보다 크고, 코드 생성 에이전트가 모든 파일을 읽는 방식은 비용과 혼선을 키운다. critical token 중심 retrieval은 코드 RAG의 granularity를 다시 보게 만든다.
+- angle: “코드 RAG는 관련 파일 검색이 아니라 변경에 결정적인 token budget 배분 문제” — symbol/context selection, retrieval failure, LSP 기반 coding agent와 비교해 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [code-generation, code-rag, retrieval, context-engineering]
+- status: idea
+
+### 2026-09-03 — [논문 리뷰] CordisBench: dynamic agent harness의 component lifecycle reasoning 평가
+- type: paper
+- source: http://arxiv.org/abs/2609.01600v1
+- why-now: 에이전트가 자기 실행 환경의 plugin, dependency, cleanup 경로까지 바꾸는 harness가 늘면서, 로컬 변경이 runtime lifecycle 전체에 미치는 영향을 추론하는 능력이 필요해졌다.
+- angle: “agent harness를 코드처럼 바꾸게 하려면 lifecycle reasoning benchmark가 먼저 필요하다” — component dependency, teardown/retry, sandbox cleanup을 Hermes/BrainCrew류 런타임 설계와 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, eval, lifecycle, tool-use]
+- status: idea
+
+### 2026-09-03 — [논문 리뷰] Verbal Reinforcement Learning: 자연어 피드백을 agent 학습 신호로 쓰는 법
+- type: paper
+- source: http://arxiv.org/abs/2609.01597v1
+- why-now: thumbs-up/down이나 scalar reward만으로는 agent 행동의 인과·선호·운영 규칙을 설명하기 어렵고, 자연어 피드백을 구조화된 개선 신호로 쓰는 흐름이 커지고 있다.
+- angle: “RLHF 이후의 agent 개선 루프는 verbal feedback을 어떻게 저장·검증·재사용하느냐” — critique memory, preference extraction, reward shaping, eval loop를 실무 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reinforcement-learning, agent, feedback, alignment]
+- status: idea
+
+### 2026-09-03 — [논문 리뷰] The Structure of Quantization Damage in LLMs: 다음 bit를 어디에 써야 하나
+- type: paper
+- source: http://arxiv.org/abs/2609.01587v1
+- why-now: LLM serving에서 PTQ는 기본 최적화가 됐지만 layer별·component별 손상이 균일하지 않다면 per-model 튜닝보다 global bit allocation 정책이 중요해진다.
+- angle: “양자화는 몇 bit로 줄였나가 아니라 어떤 계산 경로를 덜 망가뜨렸나의 문제” — damage localization, mixed precision allocation, latency/accuracy QA를 inference 운영 체크리스트로 만든다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [quantization, inference, llm-serving, optimization]
+- status: idea
+
+### 2026-09-03 — mcp-ts-core: MCP 서버를 agent-native TypeScript framework로 만들기
+- type: tech
+- source: https://github.com/cyanheads/mcp-ts-core
+- why-now: MCP 서버가 단순 wrapper에서 인증, 저장소, telemetry, runtime portability까지 갖춘 agent-facing service로 확장되고 있다.
+- angle: “좋은 MCP 서버 프레임워크는 tool schema 생성기가 아니라 auth·state·observability가 있는 backend framework” — Bun/Node/Cloudflare 지원, declarative tool definition, OpenTelemetry를 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, typescript, agent-tools, observability]
+- status: idea
+
+### 2026-09-03 — remnic: user-aware agent를 위한 memory와 provenance layer
+- type: tech
+- source: https://github.com/joshuaswarren/remnic
+- why-now: 개인화 에이전트가 늘수록 메모리 저장 자체보다 scope, provenance, correction, retrieval quality, boundary enforcement가 운영 품질을 좌우한다.
+- angle: “agent memory는 벡터 DB가 아니라 provenance가 있는 사용자 모델” — scoped memory, correction workflow, MCP/HTTP access, eval telemetry를 개인 비서 에이전트 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, provenance, mcp, github-repo]
+- status: idea
+
 ### 2026-06-15 — EvoArena: 동적 환경에서 에이전트 메모리는 어떻게 진화해야 하나
 - type: paper
 - source: http://arxiv.org/abs/2606.13681v1
