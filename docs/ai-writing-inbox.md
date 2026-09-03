@@ -32,7 +32,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [swe-agent, eval, benchmark, trajectory]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-03-efficient-swe-agent-benchmarking-trajectory-aware-eval.mdx
 
 ### 2026-09-03 — [논문 리뷰] Adaptive Critical Token-Aware Retrieval: repo-level code generation에서 중요한 토큰만 골라 넣기
 - type: paper

@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 02 Sep 2026 10:14:11 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 03 Sep 2026 01:12:13 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Efficient SWE Agent Benchmarking — 코딩 에이전트 평가는 task 수보다 궤적 coverage다</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-03-efficient-swe-agent-benchmarking-trajectory-aware-eval/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-03-efficient-swe-agent-benchmarking-trajectory-aware-eval/</guid>
+      <description>PTA-IRT 논문을 통해 SWE agent 평가 비용을 줄이는 trajectory-aware benchmark selection을 실무 관점에서 정리한다.</description>
+      <pubDate>Thu, 03 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>swe-agent</category>
+      <category>eval</category>
+      <category>benchmark</category>
+      <category>trajectory</category>
+    </item>
     <item>
       <title>[논문 리뷰] WikiSkill — agent 경험을 wiki로 축적해 skill을 진화시키기</title>
       <link>https://seongyeon1.github.io/blog/2026-09-02-wikiskill-persistent-knowledge-skill-evolution/</link>

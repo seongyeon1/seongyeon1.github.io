@@ -51,7 +51,7 @@
 | 발행완료 | 2026-05-21 (목) | [논문 리뷰] Code as Agent Harness — 에이전트의 계획·실행·검증 루프 설계 | paper-review | 논문 리뷰 | | `2026-05-21-code-as-agent-harness-review.mdx` |
 | 발행완료 | 2026-06-22 | [논문 리뷰] HyperTool — 에이전트의 도구 호출 단위를 다시 설계하기 | paper-review | 논문 리뷰 | 9 | `2026-06-15-hypertool-agent-tool-call-granularity.mdx` — 자동 발행 완료 |
 | 발행완료 | 2026-06-23 | GitHub Agentic Workflows: 에이전트를 repo 안으로 넣으면 달라지는 것 | tutorial | 개발자 AI 워크플로 | 1 | `2026-06-15-github-agentic-workflows-repo-native-agents.mdx` — 자동 발행 완료 |
-| 아이디어 | 미정 | [논문 리뷰] Efficient SWE Agent Benchmarking — trajectory-aware eval로 코딩 에이전트 평가 비용 줄이기 | paper-review | AI 평가/운영 | | arXiv 2609.01603 — trajectory coverage, representative subset selection, CI용 SWE agent regression harness 설계 |
+| 발행완료 | 2026-09-03 | [논문 리뷰] Efficient SWE Agent Benchmarking — trajectory-aware eval로 코딩 에이전트 평가 비용 줄이기 | paper-review | AI 평가/운영 | | `content/posts/2026-09-03-efficient-swe-agent-benchmarking-trajectory-aware-eval.mdx` — 자동 발행 완료, arXiv 2609.01603 — trajectory coverage, representative subset selection, CI용 SWE agent regression harness 설계 |
 | 아이디어 | 미정 | [논문 리뷰] Adaptive Critical Token-Aware Retrieval — repo-level code generation의 context budget | paper-review | 개발자 AI 워크플로 | | arXiv 2609.01601 — critical token retrieval, code RAG granularity, LSP/symbol context selection 비교 |
 | 아이디어 | 미정 | [논문 리뷰] CordisBench — dynamic agent harness의 component lifecycle reasoning 평가 | paper-review | 논문 리뷰 | | arXiv 2609.01600 — plugin/dependency/cleanup lifecycle reasoning, agent harness 변경 검증 |
 | 아이디어 | 미정 | mcp-ts-core: MCP 서버를 agent-native TypeScript framework로 만들기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — auth, state, OpenTelemetry, Bun/Node/Cloudflare 지원을 갖춘 MCP backend framework 패턴 |
