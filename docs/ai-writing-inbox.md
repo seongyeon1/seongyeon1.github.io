@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-04 — [논문 리뷰] EarlyEval: agent evaluation을 끝까지 실행하지 않고 예측하기
+- type: paper
+- source: http://arxiv.org/abs/2609.02783v1
+- why-now: 에이전트 평가 비용이 frontier model과 긴 tool trajectory 때문에 계속 커지고 있어, 모든 episode를 끝까지 실행하지 않고도 실패/성공을 조기 예측하는 방법이 CI eval 비용 절감에 바로 연결된다.
+- angle: “agent eval 최적화는 task subset만 줄이는 게 아니라 trajectory 중단 시점을 고르는 문제” — early outcome predictor, confidence threshold, regression risk를 개발 루프용 평가 하네스로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, benchmark, cost-optimization, trajectory]
+- status: idea
+
+### 2026-09-04 — [논문 리뷰] SafeEvolve: agent 경험에서 harness policy와 모델 policy를 함께 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2609.02786v1
+- why-now: tool-using agent의 안전성은 모델 가드레일만으로도, 외부 harness patch만으로도 부족하다. 실제 실행 경험에서 unsafe trajectory를 발견하고 런타임 정책과 모델 행동을 함께 업데이트하는 루프가 중요해졌다.
+- angle: “agent safety는 모델 alignment와 harness alignment의 공동 최적화 문제” — trajectory audit, harness-policy co-evolution, external policy gate를 운영 아키텍처 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, safety-alignment, harness, tool-use]
+- status: idea
+
+### 2026-09-04 — [논문 리뷰] Discriminative World Models for Web Agents: 다음 화면을 생성하지 말고 action을 구분하기
+- type: paper
+- source: http://arxiv.org/abs/2609.02885v1
+- why-now: web agent가 test-time planning에서 후보 action의 결과 상태를 예측해 고르는 방식이 늘지만, HTML/AXTree를 그대로 생성하는 objective가 실제 action ranking과 어긋날 수 있다.
+- angle: “web agent world model은 브라우저 스냅샷 생성기가 아니라 action discriminator여야 한다” — next-state prediction vs discriminative ranking, PRM, browser automation eval을 비교한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [web-agent, world-model, planning, eval]
+- status: idea
+
+### 2026-09-04 — [논문 리뷰] MemoryWalker: context compression 환경에서 agent를 어떻게 학습해야 하나
+- type: paper
+- source: http://arxiv.org/abs/2609.00865v1
+- why-now: Claude Code류 생산 에이전트는 rollout 중 context를 압축/퇴거하지만, 학습 데이터는 압축 이전의 선형 대화처럼 다루는 경우가 많아 train-serving mismatch가 생긴다.
+- angle: “장기 실행 agent 학습 데이터는 sequence가 아니라 eviction으로 분기되는 context tree” — compression-aware training, time-travel leakage, memory replay 정책을 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, context-compression, training-data, long-running]
+- status: idea
+
+### 2026-09-04 — [논문 리뷰] Incremental Pooled LLM Evaluation: RAG retriever 선택 비용 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.02745v1
+- why-now: production RAG에서 retriever 후보가 계속 바뀌면 relevance judgment를 매번 새로 만들기 어렵다. pooled LLM judging을 incremental하게 확장하는 방식은 RAG regression suite 운영에 실용적이다.
+- angle: “RAG 평가는 한 번 만든 golden set이 아니라 후보 retriever가 들어올 때마다 자라는 judgment pool” — pool expansion, judge cost, ranking confidence를 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, retrieval, eval, llm-as-judge]
+- status: idea
+
+### 2026-09-04 — mcp-use: MCP 앱과 서버를 함께 다루는 fullstack agent framework
+- type: tech
+- source: https://github.com/mcp-use/mcp-use
+- why-now: MCP 생태계가 tool server 작성에서 ChatGPT/Claude용 MCP app, server lifecycle, auth, client integration까지 확장되면서 fullstack 관점의 framework가 필요해지고 있다.
+- angle: “MCP는 함수 호출 포맷이 아니라 app-server runtime boundary” — MCP app/server 구조, agent client 연결, tool lifecycle, 배포 패턴을 repo 중심으로 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-framework, tool-use, github-repo]
+- status: idea
+
+### 2026-09-04 — KiroCrew: 세션을 넘겨 지속되는 개발 에이전트 workspace 설계
+- type: tech
+- source: https://github.com/kirodotdev/KiroCrew
+- why-now: 개발 에이전트가 한 번의 chat session에서 끝나지 않고 workspace state, self-improvement, task continuity를 유지하는 방향으로 움직이고 있다.
+- angle: “coding agent의 생산성은 single prompt보다 persistent workspace에서 나온다” — project memory, continuing work queue, self-improving loop, repo-native 개발 흐름을 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, persistent-workspace, developer-workflow, github-repo]
+- status: idea
+
+### 2026-09-04 — Waku Agent: local-first agent harness를 코드로 소유하기
+- type: tech
+- source: https://github.com/ShenSeanChen/waku-agent
+- why-now: hosted agent tool이 늘수록 팀은 loop, memory, eval, tool boundary를 직접 읽고 수정할 수 있는 local-first harness를 원한다.
+- angle: “agent harness는 SaaS 기능보다 legible codebase일 때 운영 가능하다” — loop/memory/eval 구조, local execution, 확장 가능한 코드 아키텍처를 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-harness, local-first, eval, github-repo]
+- status: idea
+
 ### 2026-09-03 — [논문 리뷰] Efficient SWE Agent Benchmarking: trajectory-aware eval로 코딩 에이전트 평가 비용 줄이기
 - type: paper
 - source: http://arxiv.org/abs/2609.01603v1

@@ -52,6 +52,11 @@
 | 발행완료 | 2026-06-22 | [논문 리뷰] HyperTool — 에이전트의 도구 호출 단위를 다시 설계하기 | paper-review | 논문 리뷰 | 9 | `2026-06-15-hypertool-agent-tool-call-granularity.mdx` — 자동 발행 완료 |
 | 발행완료 | 2026-06-23 | GitHub Agentic Workflows: 에이전트를 repo 안으로 넣으면 달라지는 것 | tutorial | 개발자 AI 워크플로 | 1 | `2026-06-15-github-agentic-workflows-repo-native-agents.mdx` — 자동 발행 완료 |
 | 발행완료 | 2026-09-03 | [논문 리뷰] Efficient SWE Agent Benchmarking — trajectory-aware eval로 코딩 에이전트 평가 비용 줄이기 | paper-review | AI 평가/운영 | | `content/posts/2026-09-03-efficient-swe-agent-benchmarking-trajectory-aware-eval.mdx` — 자동 발행 완료, arXiv 2609.01603 — trajectory coverage, representative subset selection, CI용 SWE agent regression harness 설계 |
+| 아이디어 | 미정 | [논문 리뷰] EarlyEval — agent evaluation을 끝까지 실행하지 않고 예측하기 | paper-review | AI 평가/운영 | | arXiv 2609.02783 — early outcome prediction, trajectory 중단 시점, CI용 agent eval 비용 절감 |
+| 아이디어 | 미정 | [논문 리뷰] SafeEvolve — agent 경험에서 harness policy와 모델 policy를 함께 진화시키기 | paper-review | 논문 리뷰 | | arXiv 2609.02786 — trajectory audit, harness-policy co-evolution, tool-using agent safety alignment |
+| 아이디어 | 미정 | [논문 리뷰] Discriminative World Models for Web Agents — 다음 화면을 생성하지 말고 action을 구분하기 | paper-review | 논문 리뷰 | | arXiv 2609.02885 — web agent world model, next-state prediction vs action ranking, PRM/eval 설계 |
+| 아이디어 | 미정 | [논문 리뷰] MemoryWalker — context compression 환경에서 agent를 어떻게 학습해야 하나 | paper-review | 개발자 AI 워크플로 | | arXiv 2609.00865 — compression-aware training, context eviction tree, 장기 실행 coding agent memory replay |
+| 아이디어 | 미정 | mcp-use: MCP 앱과 서버를 함께 다루는 fullstack agent framework | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — MCP app/server 구조, agent client 연결, tool lifecycle, 배포 패턴 |
 | 아이디어 | 미정 | [논문 리뷰] Adaptive Critical Token-Aware Retrieval — repo-level code generation의 context budget | paper-review | 개발자 AI 워크플로 | | arXiv 2609.01601 — critical token retrieval, code RAG granularity, LSP/symbol context selection 비교 |
 | 아이디어 | 미정 | [논문 리뷰] CordisBench — dynamic agent harness의 component lifecycle reasoning 평가 | paper-review | 논문 리뷰 | | arXiv 2609.01600 — plugin/dependency/cleanup lifecycle reasoning, agent harness 변경 검증 |
 | 아이디어 | 미정 | mcp-ts-core: MCP 서버를 agent-native TypeScript framework로 만들기 | tutorial | Agent/MCP 실전 | | GitHub repo 기반 — auth, state, OpenTelemetry, Bun/Node/Cloudflare 지원을 갖춘 MCP backend framework 패턴 |
