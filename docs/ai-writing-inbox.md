@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-05 — [논문 리뷰] SENTINEL-RL: SOC agent의 graph reasoning을 외부 엔진에 맡기기
+- type: paper
+- source: http://arxiv.org/abs/2609.04159v1
+- why-now: 보안 운영 센터(SOC)에서 LLM agent가 multi-thousand-host authentication graph를 직접 context에 넣고 추론하기는 어렵다. 보안 분석 agent가 graph/topology 추론을 어떤 런타임 컴포넌트에 맡겨야 하는지가 실무 이슈로 올라왔다.
+- angle: “SOC agent는 모든 보안 그래프를 읽는 챗봇이 아니라 topology reasoner를 호출하는 analyst harness” — graph query offloading, tool boundary, evidence trace, alert triage latency를 agent 보안 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [security-agent, soc, graph-reasoning, tool-use]
+- status: idea
+
+### 2026-09-05 — [논문 리뷰] Hidden User Models: 개인화 agent 메모리가 무엇을 누설할 수 있나
+- type: paper
+- source: http://arxiv.org/abs/2609.03815v1
+- why-now: 개인화 LLM agent가 원문 memory를 압축·구조화한 user model로 바꾸는 흐름이 커지면서, 원문을 지워도 행동을 통해 민감한 사용자 속성이 추론될 수 있는지가 중요한 보안/프라이버시 쟁점이 됐다.
+- angle: “agent memory privacy는 저장 텍스트 보호가 아니라 행동 가능한 user model의 정보 누설 문제” — hidden preference inference, memory abstraction boundary, provenance와 삭제 정책을 개인 비서 agent 설계로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, privacy, personalization, user-model]
+- status: idea
+
+### 2026-09-05 — [논문 리뷰] KC-Bench: LLM agent가 충돌하는 지식을 어떻게 조정하나
+- type: paper
+- source: http://arxiv.org/abs/2609.03588v1
+- why-now: tool-using agent는 사용자 지시, parametric knowledge, 최신 tool observation이 서로 충돌할 때 무엇을 믿을지 결정해야 한다. 정적 QA가 아니라 multi-turn 환경의 지식 충돌 처리 평가가 필요하다.
+- angle: “agent의 grounding 문제는 검색 성공보다 conflict resolution policy” — 사용자 지시/모델 지식/환경 관찰 사이 우선순위, stale fact 처리, action 전 검증 게이트를 벤치마크 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, knowledge-conflict, grounding, benchmark]
+- status: idea
+
+### 2026-09-05 — [논문 리뷰] Speculative Macro Commit: tool-using agent의 serial latency 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.03236v1
+- why-now: tool agent는 모델 추론뿐 아니라 action-observation 왕복과 환경 전환 때문에 느려진다. 여러 tool step을 speculative macro로 묶되 실패 시 되돌릴 수 있는 실행 전략은 coding/browser agent latency 최적화에 직접 연결된다.
+- angle: “빠른 agent는 모델만 빠른 게 아니라 commit 단위를 잘 설계한다” — macro action, speculative execution, rollback boundary, verification checkpoint를 tool runtime 아키텍처로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent-runtime, latency, speculative-execution]
+- status: idea
+
+### 2026-09-05 — [논문 리뷰] MemoryLACE: 장기 agent memory의 lifecycle-aware consolidation
+- type: paper
+- source: http://arxiv.org/abs/2609.03201v1
+- why-now: long-term agent memory는 반복 증거, 과거 상태, 업데이트, 미해결 contradiction을 구분해야 하는데 단순 semantic retrieval은 이런 lifecycle 정보를 잃기 쉽다.
+- angle: “agent memory 검색은 관련 문장 찾기가 아니라 evidence lifecycle을 복원하는 일” — consolidation, stale/current evidence, contradiction tracking, retrieval policy를 장기 대화 agent 운영 체크리스트로 만든다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, evidence-retrieval, long-term-memory, lifecycle]
+- status: idea
+
+### 2026-09-05 — [논문 리뷰] Rent-a-RAG: third-party RAG를 embedding watermark로 감사하기
+- type: paper
+- source: http://arxiv.org/abs/2609.03749v1
+- why-now: 외부 RAG 사업자나 marketplace에 문서를 제공한 뒤 실제로 어떤 corpus가 재사용되는지 감시하기 어렵다. embedding-space watermark는 RAG 공급망 감사와 데이터 라이선스 검증에 실용적인 글감이다.
+- angle: “RAG 데이터 거버넌스는 로그 요청이 아니라 검색 공간에 남긴 감사 신호로 할 수 있을까” — embedding watermark, retrieval audit, false-positive/quality trade-off를 enterprise RAG 운영 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, watermarking, data-governance, audit]
+- status: idea
+
+### 2026-09-05 — Strands harness-sdk: production agent harness를 직접 통제하는 SDK
+- type: tech
+- source: https://github.com/strands-agents/harness-sdk
+- why-now: agent framework가 model wrapper를 넘어 실행 루프, tool 권한, observation, memory, 평가를 통제하는 harness SDK로 분화하고 있다. Python/TypeScript 양쪽에서 agent harness를 end-to-end로 잡는 repo는 비교 분석 가치가 있다.
+- angle: “agent framework 선택 기준을 SDK API가 아니라 harness 통제면으로 보자” — loop ownership, tool boundary, telemetry, evaluation hook, provider portability를 repo 구조 중심으로 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, harness, production-agent, github-repo]
+- status: idea
+
+### 2026-09-05 — engram: coding agent를 위한 SQLite+FTS5 기반 persistent memory
+- type: tech
+- source: https://github.com/Gentleman-Programming/engram
+- why-now: coding agent가 세션을 넘겨 같은 실수를 반복하지 않으려면 벡터 검색만이 아니라 로컬 DB, FTS, MCP/HTTP/CLI 인터페이스를 갖춘 persistent memory layer가 필요하다.
+- angle: “coding agent memory는 chat history가 아니라 repo-local operational database” — SQLite/FTS5, MCP server, CLI/API, decision log와 retrieval policy를 개발자 워크플로에 붙이는 방법으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, mcp, github-repo]
+- status: idea
+
 ### 2026-09-04 — [논문 리뷰] EarlyEval: agent evaluation을 끝까지 실행하지 않고 예측하기
 - type: paper
 - source: http://arxiv.org/abs/2609.02783v1
