@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 04 Sep 2026 08:56:41 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 05 Sep 2026 01:11:59 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] SENTINEL-RL — SOC 에이전트는 보안 그래프를 직접 읽지 말아야 한다</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-05-sentinel-rl-soc-agent-graph-reasoning-offload/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-05-sentinel-rl-soc-agent-graph-reasoning-offload/</guid>
+      <description>SENTINEL-RL을 통해 SOC 에이전트에서 topology reasoning을 외부 graph/RL 엔진으로 분리하는 설계를 정리한다.</description>
+      <pubDate>Sat, 05 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>security-agent</category>
+      <category>soc</category>
+      <category>graph-reasoning</category>
+      <category>tool-use</category>
+    </item>
     <item>
       <title>AI 시대 개발자가 알아야 할 아키텍처 언어 8가지</title>
       <link>https://seongyeon1.github.io/blog/2026-09-04-architecture-language-for-ai-era-developers/</link>

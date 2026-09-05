@@ -32,7 +32,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [security-agent, soc, graph-reasoning, tool-use]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-05-sentinel-rl-soc-agent-graph-reasoning-offload.mdx
 
 ### 2026-09-05 — [논문 리뷰] Hidden User Models: 개인화 agent 메모리가 무엇을 누설할 수 있나
 - type: paper
