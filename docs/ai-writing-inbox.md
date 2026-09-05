@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-06 — [논문 리뷰] SWE-Gate: 코딩 에이전트 평가는 테스트 통과만으로 충분한가
+- type: paper
+- source: http://arxiv.org/abs/2609.04167v1
+- why-now: repository-level SWE agent 벤치마크가 functional test 통과율 중심으로 굳어졌지만, 실제 리뷰에서는 유지보수성·보안·설계 일관성까지 본다. 코드 에이전트 결과를 production gate에 넣으려면 test pass 이후의 평가 축이 필요하다.
+- angle: “코딩 에이전트 QA는 테스트 실행이 아니라 리뷰 가능한 변경인지 판정하는 gate” — hidden failure, review-quality rubric, CI verifier와 human review boundary를 개발자 워크플로 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [swe-agent, agent-eval, code-review, benchmark]
+- status: idea
+
+### 2026-09-06 — [논문 리뷰] Terminal-Universe: agent trajectory를 실행 가능한 terminal environment로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2609.04148v1
+- why-now: coding/terminal agent post-training에는 현실적인 executable environment가 부족하다. 누적된 agent trajectory를 terminal task environment로 재구성하는 접근은 eval과 RL 데이터 flywheel에 직접 연결된다.
+- angle: “agent 로그는 transcript가 아니라 재실행 가능한 환경 seed가 되어야 한다” — trajectory-to-environment 변환, verifier, sandbox 재현성, curriculum 생성을 terminal agent 학습 파이프라인으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [terminal-agent, coding-agent, environment, post-training]
+- status: idea
+
+### 2026-09-06 — [논문 리뷰] Clean Engineering, Unstable Measurement: LLM judge endpoint는 얼마나 안정적인가
+- type: paper
+- source: http://arxiv.org/abs/2609.04198v1
+- why-now: LLM-as-judge가 데이터 필터링, leaderboard, agent regression gate에 들어가면서 같은 model name endpoint가 같은 측정 도구라는 가정이 운영 리스크가 됐다.
+- angle: “agent eval의 가장 약한 고리는 rubric이 아니라 측정 장비인 judge endpoint” — shared endpoint variance, preregistered reliability failure, judge pinning과 drift monitor를 평가 운영 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-as-judge, eval, reliability, measurement]
+- status: idea
+
+### 2026-09-06 — [논문 리뷰] Legibility is Not Interpretability: CoT를 설명으로 믿어도 될까
+- type: paper
+- source: http://arxiv.org/abs/2609.04194v1
+- why-now: reasoning trace를 judge하거나 디버깅 자료로 쓰는 workflow가 늘었지만, 사람이 읽기 쉬운 chain-of-thought가 실제 중요 feature와 맞는지는 별도 문제다.
+- angle: “CoT는 관찰 가능한 로그이지 내부 원인 그래프가 아니다” — judged importance와 actual importance 차이, reasoning trace 기반 eval의 한계, agent 디버깅에서 필요한 counterfactual check를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, interpretability, chain-of-thought, eval]
+- status: idea
+
+### 2026-09-06 — [논문 리뷰] Unlocking Lossless Speedups in LLMs via Discrete Diffusion
+- type: paper
+- source: http://arxiv.org/abs/2609.04010v1
+- why-now: autoregressive decoding의 sequential bottleneck은 tool agent와 대화형 serving에서 latency ceiling을 만든다. lossless speedup을 주장하는 discrete diffusion 방식은 speculative decoding 이후의 inference 설계 공간을 넓힌다.
+- angle: “LLM serving 가속은 draft model만이 아니라 생성 과정 자체를 재배치하는 문제” — discrete diffusion, lossless 조건, latency/quality gate, agent runtime에서의 적용 가능성을 inference 운영 관점으로 본다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, decoding, discrete-diffusion, latency]
+- status: idea
+
+### 2026-09-06 — golf-mcp: production MCP server framework를 고를 때 봐야 할 것
+- type: tech
+- source: https://github.com/golf-mcp/golf
+- why-now: MCP 서버가 데모용 tool wrapper에서 auth, observability, debugger, telemetry, runtime 배포를 갖춘 production infrastructure로 이동하고 있다.
+- angle: “MCP framework 선택 기준은 tool schema가 아니라 운영면이다” — 인증, tracing, 배포, debugging, multi-tenant boundary를 agent tool platform 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-framework, observability, production]
+- status: idea
+
+### 2026-09-06 — nanobot: self-hosted personal agent framework의 구성 요소 뜯어보기
+- type: tech
+- source: https://github.com/HKUDS/nanobot
+- why-now: personal agent framework가 WebUI, tools, memory, MCP, automation, multi-agent workflow를 한 번에 묶는 방향으로 빠르게 커지고 있다.
+- angle: “개인용 agent stack은 채팅 앱이 아니라 memory/tool/workflow runtime이다” — self-hosting, tool 권한, memory 계층, workflow automation, local 운영 리스크를 repo 구조 중심으로 살핀다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, mcp, memory, self-hosted]
+- status: idea
+
+### 2026-09-06 — raindrop-ai/workshop: coding agent에게 eval 작성 권한을 주는 방식
+- type: tech
+- source: https://github.com/raindrop-ai/workshop
+- why-now: 코딩 에이전트 품질을 높이려면 “코드 작성”뿐 아니라 task별 eval을 만들고 돌리는 능력이 workflow 안에 들어가야 한다.
+- angle: “좋은 coding agent harness는 patch generator가 아니라 eval co-author를 만든다” — agent-written eval, sandbox 실행, regression dataset, PR review loop를 repo introduction으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, eval, developer-workflow, github-repo]
+- status: idea
+
 ### 2026-09-05 — [논문 리뷰] SENTINEL-RL: SOC agent의 graph reasoning을 외부 엔진에 맡기기
 - type: paper
 - source: http://arxiv.org/abs/2609.04159v1
