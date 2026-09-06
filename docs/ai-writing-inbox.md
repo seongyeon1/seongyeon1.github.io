@@ -9484,3 +9484,120 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-eval, environment, nvidia-nemo, reinforcement-learning]
 - status: idea
+
+### 2026-09-07 — [논문 리뷰] Emergent Cheating and Whistleblowing in Autonomous Research Swarms
+- type: paper
+- source: http://arxiv.org/abs/2609.04170v1
+- why-now: multi-agent research system이 tool과 공유 인프라 위에서 서로의 산출물을 이어받는 구조가 되면서, 성능만큼이나 cheating, sabotage, whistleblowing 같은 집단 행동 실패 모드를 평가해야 한다.
+- angle: “research swarm은 협업 속도보다 incentive와 audit trail이 먼저다” — shared infrastructure vulnerability, agent-to-agent communication, whistleblowing mechanism, 연구 자동화 governance를 실무 agent harness 관점으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, research-agent, safety, audit]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] Natural Language Interaction Protocol: 이기종 agent를 자연어 contract로 연결하기
+- type: paper
+- source: http://arxiv.org/abs/2609.04135v1
+- why-now: 조직마다 서로 다른 agent framework, model, tool interface, execution environment를 쓰기 시작하면서 agent 간 interoperability 문제가 실제 운영 병목으로 올라왔다.
+- angle: “agent protocol은 JSON schema만이 아니라 intent·capability·failure를 설명하는 상호작용 contract” — natural-language protocol, heterogeneous framework boundary, tool handoff, auditability를 agent platform 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-protocol, interoperability, tool-use, orchestration]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] Legibility is Not Interpretability: CoT judge가 본 중요도는 믿을 수 있나
+- type: paper
+- source: http://arxiv.org/abs/2609.04194v1
+- why-now: chain-of-thought trace를 평가·디버깅·step-level reward에 그대로 쓰는 관행이 늘었지만, 사람이 읽기 쉬운 trace와 실제 decision importance가 다를 수 있다는 문제가 커지고 있다.
+- angle: “읽히는 reasoning과 작동한 reasoning을 분리해서 봐야 한다” — LLM judge 기반 CoT 진단, faithfulness, process supervision, agent trajectory debugging의 한계를 평가 운영 관점으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, interpretability, llm-judge, process-supervision]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] DRACO: dynamic rubric으로 long-horizon agent credit assignment 하기
+- type: paper
+- source: http://arxiv.org/abs/2609.04094v1
+- why-now: verifiable reward가 없는 long-horizon agent 업무에서 outcome-only 평가는 어느 단계가 실패했는지 알려주지 못하고, 고정 rubric은 열린 과제의 다양성을 따라가지 못한다.
+- angle: “agent 학습의 보상 함수는 정답지가 아니라 동적으로 갱신되는 rubric이어야 한다” — dynamic rubric, fine-grained credit assignment, outcome-blind setting, regression signal 설계를 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-training, credit-assignment, rubric, reinforcement-learning]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] Hardware-Aware FP4 FlashAttention-4: Blackwell에서 attention 병목 다시 보기
+- type: paper
+- source: http://arxiv.org/abs/2609.04105v1
+- why-now: FP4 tensor core가 attention을 자동으로 빠르게 만드는 것은 아니며, softmax 변환과 on-chip dependency가 줄어든 matmul 이후의 병목으로 남는다는 점이 serving 최적화에서 중요해졌다.
+- angle: “저비트 attention 최적화는 matmul만 보는 순간 틀린다” — FP4 FlashAttention, Direct-P, causal/noncausal path, tensor core와 softmax 병목을 inference 엔지니어링 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [inference, flashattention, fp4, gpu-optimization]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] Auxiliary Views: LLM pre-training에서 지식은 어떻게 더 잘 들어가나
+- type: paper
+- source: http://arxiv.org/abs/2609.04180v1
+- why-now: 데이터 양을 늘리는 것만으로는 pre-training knowledge acquisition의 메커니즘을 설명하기 어렵고, knowledge reformulation과 auxiliary view가 학습 효율에 미치는 영향이 dataset 설계 이슈로 부상했다.
+- angle: “좋은 pre-training data는 중복이 아니라 관점의 다양성을 제공한다” — auxiliary view, controlled experiment, knowledge acquisition, data mixture 설계를 모델 학습 데이터 관점으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [pretraining, data, knowledge-acquisition, llm]
+- status: idea
+
+### 2026-09-07 — open-multi-agent: human approval과 verifiable record를 기본값으로 둔 TypeScript multi-agent framework
+- type: tech
+- source: https://github.com/open-multi-agent/open-multi-agent
+- why-now: multi-agent framework가 늘어나면서 consequential action 승인, 실행 기록, self-hosted 운영 같은 production surface를 기본으로 제공하는지가 선택 기준이 되고 있다.
+- angle: “multi-agent framework의 핵심은 agent 수가 아니라 승인 경계와 재현 가능한 기록” — TypeScript runtime, approval gate, run record, local/self-hosted workflow를 framework checklist로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, typescript, approval-gate, observability]
+- status: idea
+
+### 2026-09-07 — Waku Agent: loop·memory·eval을 코드로 소유하는 local-first agent harness
+- type: tech
+- source: https://github.com/ShenSeanChen/waku-agent
+- why-now: hosted agent platform의 추상화가 편해지는 만큼, loop, memory, eval, tool boundary를 직접 코드로 통제하려는 local-first agent harness 수요도 커지고 있다.
+- angle: “agent harness를 SaaS 설정이 아니라 readable codebase로 유지하기” — loop ownership, memory structure, eval hook, local-first 운영과 성장 가능한 코드 구조를 실무 워크플로로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-harness, local-first, memory, eval]
+- status: idea
+
+### 2026-09-07 — StackQL: cloud·SaaS·MCP resource를 SQL로 다루는 agent control plane
+- type: tech
+- source: https://github.com/stackql/stackql
+- why-now: agent가 cloud, SaaS, API, MCP resource를 수정하기 시작하면 자연어 tool 호출보다 queryable inventory, policy, dry-run 가능한 control plane이 필요해진다.
+- angle: “agent에게 infra 권한을 주기 전에 SQL 가능한 resource plane을 만들자” — provider abstraction, MCP resource query, provisioning/operation workflow, audit-friendly automation을 agent infra 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, infra-agent, sql, control-plane]
+- status: idea
