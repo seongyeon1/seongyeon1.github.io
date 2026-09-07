@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-07 — [논문 리뷰] RuleMem: conversational agent의 장기 기억을 규칙으로 관리하기
+- type: paper
+- source: http://arxiv.org/abs/2609.03915v1
+- why-now: 장기 대화 agent가 단순 episodic memory를 계속 누적하면 검색 비용과 충돌 처리가 어려워진다. 사용자 선호·제약·반복 행동을 active rule memory로 관리하는 접근은 personal agent memory 운영에 바로 연결된다.
+- angle: “agent memory는 로그 저장소가 아니라 갱신 가능한 규칙 레이어” — rule extraction, conflict/update policy, retrieval trigger, memory regression test를 개인화 agent 설계 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, conversational-agent, personalization, memory-policy]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] When Users Don't Ask: context-driven memory retrieval을 어떻게 평가할까
+- type: paper
+- source: http://arxiv.org/abs/2609.03467v1
+- why-now: 실제 assistant는 사용자가 “기억해줘/찾아줘”라고 말하지 않아도 대화 맥락에 맞춰 기억을 꺼내야 한다. 명시적 query 중심 memory benchmark만으로는 proactive retrieval 품질을 평가하기 어렵다.
+- angle: “좋은 agent memory는 호출 명령이 아니라 상황 신호에 반응한다” — implicit need detection, retrieval timing, irrelevant memory suppression, privacy guard를 memory eval checklist로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, memory-retrieval, benchmark, personalization]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] Batched Pandora's Box: LLM inference에서 adaptive batching을 다시 보기
+- type: paper
+- source: http://arxiv.org/abs/2609.04059v1
+- why-now: agent runtime은 짧은 tool-call 사이에 다양한 길이의 LLM 요청을 계속 만들기 때문에, 단순 max-batch 처리보다 latency/cost/quality를 동시에 보는 inference scheduling이 중요해지고 있다.
+- angle: “LLM serving 최적화는 GPU 포화가 아니라 다음 요청을 기다릴 가치의 계산” — batched decision problem, uncertainty-aware scheduling, tail latency, agent workload 적용 포인트를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, batching, scheduling, latency]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] Two-Stage RL for Code LLMs: 테스트 생성 agent를 sound하게 학습시키기
+- type: paper
+- source: http://arxiv.org/abs/2609.03955v1
+- why-now: 코딩 agent의 품질은 patch 생성뿐 아니라 adversarial/sound test generation에 좌우된다. 테스트 생성 모델을 RL로 학습할 때 soundness와 공격성을 분리해 다루는 방식은 CI verifier 설계와 맞닿아 있다.
+- angle: “coding agent에게 좋은 테스트를 만들게 하려면 reward를 두 단계로 나눠야 한다” — soundness gate, adversarial objective, generated test validation, PR regression workflow를 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [code-llm, test-generation, reinforcement-learning, agent-eval]
+- status: idea
+
+### 2026-09-07 — [논문 리뷰] GPS-Bench: governance policy analysis를 자동화 agent benchmark로 보기
+- type: paper
+- source: http://arxiv.org/abs/2609.03553v1
+- why-now: enterprise agent가 정책 문서·규정·내부 지침을 해석해 action을 추천하는 사례가 늘면서, policy analysis의 정확도·근거·일관성을 평가하는 benchmark가 필요해졌다.
+- angle: “정책 분석 agent는 답변보다 근거 경로와 exception handling이 중요하다” — governance policy task, citation/evidence trace, conflict resolution, audit 가능한 verifier를 enterprise agent 관점으로 해석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [policy-agent, benchmark, governance, enterprise-ai]
+- status: idea
+
+### 2026-09-07 — future-agi: eval·observability·simulation을 묶은 agent quality platform
+- type: tech
+- source: https://github.com/future-agi/future-agi
+- why-now: agent 운영은 prompt 단위 A/B 테스트를 넘어 trace, eval dataset, simulation, guardrail, gateway를 한 루프에서 관리하는 방향으로 이동하고 있다.
+- angle: “agent 품질 관리는 dashboard가 아니라 개선 루프의 데이터 배관” — tracing, eval dataset, simulation replay, self-hosted deployment, CI regression 연결을 platform architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, observability, simulation, quality-platform]
+- status: idea
+
+### 2026-09-07 — trace-mcp: 코드 리뷰 agent를 위한 framework-aware MCP code intelligence
+- type: tech
+- source: https://github.com/nikolai-vysotskyi/trace-mcp
+- why-now: 코딩 agent가 PR 전체를 토큰으로 밀어 넣는 방식은 비용과 정확도 모두에서 한계가 있다. framework-aware local code intelligence MCP는 필요한 symbol/context만 제공하는 control point가 될 수 있다.
+- angle: “coding agent의 context layer는 grep이 아니라 framework-aware MCP여야 한다” — symbol graph, PR review context selection, local-only privacy, token budget 절감을 repo introduction으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, code-intelligence, coding-agent, token-efficiency]
+- status: idea
+
+### 2026-09-07 — fastmcp: TypeScript MCP server framework의 production 체크리스트
+- type: tech
+- source: https://github.com/punkpeye/fastmcp
+- why-now: MCP server를 빠르게 만드는 도구는 많지만, TypeScript 팀에서 auth, schema, transport, deployment, testability를 어떻게 갖출지 비교 기준이 필요하다.
+- angle: “MCP server framework는 decorator 문법보다 운영면으로 고르자” — tool/resource schema, transport abstraction, auth boundary, 테스트와 배포 구조를 TS backend 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, typescript, agent-framework, server-framework]
+- status: idea
+
 ### 2026-09-06 — [논문 리뷰] SWE-Gate: 코딩 에이전트 평가는 테스트 통과만으로 충분한가
 - type: paper
 - source: http://arxiv.org/abs/2609.04167v1
