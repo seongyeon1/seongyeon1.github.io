@@ -21,6 +21,123 @@
 
 ## Active Queue
 
+### 2026-09-11 — [논문 리뷰] Show-Harness: VLM agent를 robot control harness로 연결하기
+- type: paper
+- source: http://arxiv.org/abs/2609.10522v1
+- why-now: VLM을 로봇 제어에 바로 붙일 때 action space와 observation을 전부 자연어로 밀어 넣으면 latency와 안전 경계가 흐려진다. compact semantic interface로 intent를 action에 연결하는 embodied harness 설계는 agent runtime 글감으로 좋다.
+- angle: “로봇 agent의 핵심은 더 큰 VLM이 아니라 action을 안전하게 줄이는 harness” — semantic action interface, observation abstraction, verifier/safety gate, simulation-to-real 운영 포인트를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [vlm-agent, robotics, agent-harness, embodied-ai]
+- status: idea
+
+### 2026-09-11 — [논문 리뷰] IBIB: model name이 아니라 serving route 단위로 enterprise AI를 측정하기
+- type: paper
+- source: http://arxiv.org/abs/2609.10494v1
+- why-now: 기업에서 쓰는 AI 시스템은 같은 모델명이어도 route, precision, output contract, harness에 따라 성능이 달라진다. benchmark가 checkpoint 이름만 측정하는 관행은 agent 운영 평가에서 바로 문제를 만든다.
+- angle: “eval 대상은 모델 ID가 아니라 실제 serving contract” — route fingerprint, harness/version pinning, output contract, enterprise regression report를 평가 운영 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-eval, enterprise-ai, serving, measurement]
+- status: idea
+
+### 2026-09-11 — [논문 리뷰] JarvisGUI: cross-device GUI agent의 동적 task composition
+- type: paper
+- source: http://arxiv.org/abs/2609.10451v1
+- why-now: 실제 GUI 작업은 PC·모바일·웹앱을 넘나들며 중간 상태를 공유한다. 단일 화면 benchmark로는 cross-device transfer, shared state, dynamic composition 실패를 잡기 어렵다.
+- angle: “computer-use agent 평가는 한 화면 클릭이 아니라 device 간 state handoff를 봐야 한다” — task decomposition, shared state, recovery boundary, GUI agent benchmark 설계를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [gui-agent, computer-use, benchmark, task-composition]
+- status: idea
+
+### 2026-09-11 — [논문 리뷰] ConvMem: long-context reasoning을 위한 convolutional memory
+- type: paper
+- source: http://arxiv.org/abs/2609.10441v1
+- why-now: 긴 문서를 segment별로 읽고 fixed-size state를 갱신하는 MemAgent류 접근은 long-context reasoning 비용을 줄이지만, 순차 요약만으로는 지역/전역 신호가 섞이기 쉽다. convolutional memory는 압축 메모리 구조의 새 설계 공간을 보여준다.
+- angle: “long context는 창을 키우는 문제가 아니라 상태 업데이트 연산자를 고르는 문제” — segment memory, convolutional aggregation, retrieval-free reasoning, agent memory 압축과 비교한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-context, agent-memory, reasoning, context-compression]
+- status: idea
+
+### 2026-09-11 — [논문 리뷰] Fortunate Recall: ontology-driven memory lifecycle로 persistent coherence 유지하기
+- type: paper
+- source: http://arxiv.org/abs/2609.10413v1
+- why-now: 개인화 agent memory는 모든 사실을 같은 TTL과 중요도로 저장하면 곧 검색 품질과 일관성이 무너진다. fact type별 persistence, replacement, decay policy를 정하는 lifecycle 관리가 운영 이슈가 됐다.
+- angle: “agent memory에는 저장보다 수명 정책이 먼저다” — ontology별 memory class, replacement/decay rate, coherence metric, privacy-aware cleanup을 personal agent 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, lifecycle, personalization, ontology]
+- status: idea
+
+### 2026-09-11 — [논문 리뷰] IdeaAMBIG: 연구 아이디어 명세의 구현 가능성을 벤치마크하기
+- type: paper
+- source: http://arxiv.org/abs/2609.10539v1
+- why-now: research agent가 그럴듯한 아이디어를 내도 방법이 구현 가능한 수준으로 명세되지 않으면 실제 실험으로 이어지지 않는다. idea-to-code pipeline에서는 novelty보다 codification readiness를 따로 평가해야 한다.
+- angle: “연구 에이전트의 병목은 아이디어 생성이 아니라 구현 가능한 specification” — ambiguity taxonomy, implementation-critical gap, experiment planning verifier를 연구 자동화 workflow로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, benchmark, specification, experiment-planning]
+- status: idea
+
+### 2026-09-11 — hud-python: RL environment와 eval을 한 번 정의해 agent 학습까지 연결하기
+- type: tech
+- source: https://github.com/hud-evals/hud-python
+- why-now: agent eval과 RL post-training이 분리되어 있으면 같은 task를 평가용/학습용으로 두 번 구현하게 된다. environment abstraction과 evaluator를 묶는 repo는 agent improvement loop 설계에 실용적이다.
+- angle: “agent eval harness는 점수표가 아니라 학습 가능한 environment contract” — task definition, rollout log, reward/metric separation, train/eval 재사용 패턴을 repo 중심으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, reinforcement-learning, environment, github-repo]
+- status: idea
+
+### 2026-09-11 — sunpeak: MCP testing과 full-stack MCP app framework를 함께 보기
+- type: tech
+- source: https://github.com/Alignbase/sunpeak
+- why-now: MCP가 Claude/ChatGPT connector와 server framework 양쪽으로 확장되면서, 단순 서버 작성보다 테스트·호환성·앱 통합을 포함한 full-stack 검증이 필요해졌다.
+- angle: “MCP 도구는 만들었는지가 아니라 여러 client에서 같은 contract로 동작하는지가 중요하다” — server-agnostic testing, connector/app boundary, schema regression, CI 통합 포인트를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, testing, agent-framework, github-repo]
+- status: idea
+
+### 2026-09-11 — my-pi: MCP·LSP·local eval telemetry를 갖춘 composable coding agent
+- type: tech
+- source: https://github.com/spences10/my-pi
+- why-now: coding agent는 모델 wrapper만으로 부족하고 MCP tools, LSP code intelligence, prompt presets, local eval telemetry가 함께 있어야 repo-level 작업을 반복 개선할 수 있다.
+- angle: “개인용 coding agent stack의 최소 구성은 chat UI가 아니라 MCP+LSP+eval loop” — composable agent chain, local telemetry, prompt preset, developer workflow 통합을 repo introduction으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, mcp, lsp, github-repo]
+- status: idea
+
 ### 2026-09-07 — [논문 리뷰] RuleMem: conversational agent의 장기 기억을 규칙으로 관리하기
 - type: paper
 - source: http://arxiv.org/abs/2609.03915v1
