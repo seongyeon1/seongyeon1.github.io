@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-12 — [논문 리뷰] MAPLE: memory-augmented planning을 evolution loop로 개선하기
+- type: paper
+- source: http://arxiv.org/abs/2609.11636
+- why-now: 장기 실행 agent는 plan을 한 번 세우고 끝내는 게 아니라 실패 trajectory와 새 관찰을 반영해 memory와 plan search를 함께 갱신해야 한다. memory-augmented planning과 evolution loop를 묶은 접근은 production agent의 self-improvement runtime을 설명하기 좋다.
+- angle: “agent planning은 prompt-time reasoning이 아니라 memory와 search operator를 같이 진화시키는 loop” — 계획 후보 생성, 경험 memory, evolution/refinement, verifier gate를 agent harness 설계로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-planning, agent-memory, self-improvement, eval]
+- status: idea
+
+### 2026-09-12 — [논문 리뷰] KVShareArena: context와 checkpoint를 넘나드는 KV-cache reuse 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.10266
+- why-now: agent workload는 비슷한 system prompt, tool schema, shared documents를 반복해서 읽는다. KV-cache 재사용을 단일 세션 최적화가 아니라 context·model checkpoint 간 공유 가능한 serving primitive로 보는 평가는 inference 비용 최적화에 바로 연결된다.
+- angle: “LLM serving 최적화의 다음 병목은 attention kernel보다 cache identity와 reuse contract” — prefix/state fingerprint, checkpoint compatibility, latency/accuracy trade-off, agent runtime 캐시 정책을 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, kv-cache, serving, agent-runtime]
+- status: idea
+
+### 2026-09-12 — [논문 리뷰] AgentAudit: AI agent 신뢰성을 full-lifecycle로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.09875
+- why-now: agent 평가는 task success만 보면 배포 전 설계, 실행 중 권한, 사후 감사, drift monitoring을 놓친다. full-lifecycle trust framework는 agent를 제품에 넣는 팀의 QA 체크리스트로 쓰기 좋다.
+- angle: “agent eval은 leaderboard 점수가 아니라 설계-실행-감사 lifecycle contract” — capability/risk taxonomy, tool trace, audit log, regression gate를 운영 프레임워크로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, trust, audit, governance]
+- status: idea
+
+### 2026-09-12 — [논문 리뷰] Closing the Consistency Gap: self-evolving agent가 궤도를 유지하는 법
+- type: paper
+- source: http://arxiv.org/abs/2609.08832
+- why-now: self-improving agent가 memory, skills, policy를 계속 바꾸면 성능 개선만큼 regression과 목표 drift가 커진다. consistency gap을 별도 평가·수정 대상으로 보는 관점은 장기 실행 agent 운영에 중요하다.
+- angle: “self-evolving agent에는 성능 점수보다 course-keeping metric이 필요하다” — 목표/정책 일관성, drift detector, rollback, evolution budget을 runtime safety 패턴으로 설명한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [self-evolving-agent, consistency, drift, safety]
+- status: idea
+
+### 2026-09-12 — [논문 리뷰] Safe Task Planning with Long-Term Graph Memory: embodied agent의 안전 계획
+- type: paper
+- source: http://arxiv.org/abs/2609.08444
+- why-now: embodied agent가 물리 환경에서 장기 작업을 수행하려면 과거 상태와 위험 제약을 단순 요약 memory가 아니라 graph memory로 보존해야 한다. safety-aware planning은 robotics뿐 아니라 browser/desktop agent에도 적용할 수 있다.
+- angle: “장기 memory는 recall 기능이 아니라 safety constraint store” — graph memory, precondition/risk edge, plan validation, failure recovery를 agent runtime 관점으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [embodied-agent, graph-memory, safe-planning, robotics]
+- status: idea
+
+### 2026-09-12 — [논문 리뷰] What Eviction Destroys: agent memory forgetting을 counterfactual로 감사하기
+- type: paper
+- source: http://arxiv.org/abs/2609.08279
+- why-now: context compression과 memory eviction은 비용을 줄이지만 어떤 행동 능력을 잃었는지 사후에 설명하기 어렵다. restore-counterfactual audit은 memory policy를 감으로 튜닝하지 않게 만드는 평가 방식이다.
+- angle: “memory eviction 평가는 토큰 절약량이 아니라 잃어버린 행동 능력의 counterfactual” — restore test, forgetting taxonomy, eviction policy regression을 personal/coding agent 메모리 설계로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, context-compression, eval, forgetting]
+- status: idea
+
+### 2026-09-12 — IBM AssetOpsBench: 산업 현장 agent를 building·orchestration·evaluation까지 한 번에 보기
+- type: tech
+- source: https://github.com/IBM/AssetOpsBench
+- why-now: 범용 웹/코딩 agent benchmark만으로는 산업 자산 운영처럼 domain constraint와 절차가 강한 업무를 평가하기 어렵다. AssetOpsBench는 domain-specific agent를 만들고 오케스트레이션하고 평가하는 end-to-end harness 사례로 볼 만하다.
+- angle: “enterprise agent benchmark는 일반 task set이 아니라 도메인 운영 절차의 executable twin” — asset operation task, domain tool boundary, orchestrator, evaluator를 산업 AI agent 운영 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [enterprise-agent, benchmark, orchestration, github-repo]
+- status: idea
+
+### 2026-09-12 — Solace Agent Mesh: event-driven multi-agent 시스템의 control plane 설계
+- type: tech
+- source: https://github.com/SolaceLabs/solace-agent-mesh
+- why-now: multi-agent workflow가 request/response graph를 넘어 event, queue, pub-sub 기반으로 운영되면 backpressure, routing, observability가 핵심이 된다. event-driven agent mesh는 production orchestration의 다른 설계 축을 보여준다.
+- angle: “multi-agent orchestration은 DAG 실행기만이 아니라 event fabric 문제” — event bus, agent capability routing, async workflow, telemetry/backpressure를 backend architecture 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, event-driven, orchestration, github-repo]
+- status: idea
+
 ### 2026-09-11 — [논문 리뷰] Show-Harness: VLM agent를 robot control harness로 연결하기
 - type: paper
 - source: http://arxiv.org/abs/2609.10522v1
