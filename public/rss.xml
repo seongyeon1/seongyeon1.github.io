@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 05 Sep 2026 01:11:59 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 12 Sep 2026 01:12:56 GMT</lastBuildDate>
+    <item>
+      <title>Solace Agent Mesh: event-driven multi-agent 시스템의 control plane 설계</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-12-solace-agent-mesh-event-driven-multi-agent-control-plane/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-12-solace-agent-mesh-event-driven-multi-agent-control-plane/</guid>
+      <description>Solace Agent Mesh를 통해 multi-agent orchestration을 DAG 실행기가 아니라 event fabric과 control plane 문제로 바라본다.</description>
+      <pubDate>Sat, 12 Sep 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>multi-agent</category>
+      <category>event-driven</category>
+      <category>orchestration</category>
+      <category>github-repo</category>
+    </item>
     <item>
       <title>[논문 리뷰] SENTINEL-RL — SOC 에이전트는 보안 그래프를 직접 읽지 말아야 한다</title>
       <link>https://seongyeon1.github.io/blog/2026-09-05-sentinel-rl-soc-agent-graph-reasoning-offload/</link>

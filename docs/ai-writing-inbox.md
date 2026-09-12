@@ -121,9 +121,10 @@
 - freshness: 5
 - practicality: 5
 - confidence: 4
-- suggested-category: tutorial
+- suggested-category: tool
 - suggested-tags: [multi-agent, event-driven, orchestration, github-repo]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-12-solace-agent-mesh-event-driven-multi-agent-control-plane.mdx
 
 ### 2026-09-11 — [논문 리뷰] Show-Harness: VLM agent를 robot control harness로 연결하기
 - type: paper
