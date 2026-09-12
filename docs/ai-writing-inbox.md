@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-13 — [논문 리뷰] Memory as Plans: long-horizon agent memory를 계획 기록으로 쓰기
+- type: paper
+- source: https://huggingface.co/papers/2609.11561
+- why-now: 장기 실행 robotic/embodied agent는 현재 관찰만으로는 해결되지 않는 비마르코프 작업이 많다. 과거 multimodal episode를 실행 시점 context로 계속 밀어 넣기보다 planning-time evidence와 completed segment record로 분리하는 접근은 agent memory 설계에 바로 연결된다.
+- angle: “memory는 요약 텍스트가 아니라 다음 plan을 조건화하는 world-action record” — memory-grounded planning, plan-conditioned execution, long-term episodic context, executor latency trade-off를 embodied/browser agent runtime 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, planning, embodied-agent, multimodal]
+- status: idea
+
+### 2026-09-13 — [논문 리뷰] Negative Self-Distillation: flawed reasoning에서 멀어지게 학습하기
+- type: paper
+- source: https://huggingface.co/papers/2609.11699
+- why-now: self-improvement/post-training에서 모델이 자기 reasoning trace를 그대로 모방하면 불확실성 표현과 탐색적 self-correction이 사라질 수 있다. flawed trace를 피하는 방향의 distillation은 reasoning 모델과 agent verifier 학습 모두에 중요한 신호다.
+- angle: “좋은 reasoning trace를 베끼는 것보다 나쁜 reasoning pattern을 명시적으로 멀리하는 학습” — OPSD 실패 모드, uncertainty suppression, negative objective, agent reflection/retry policy와 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, self-distillation, post-training, eval]
+- status: idea
+
+### 2026-09-13 — [논문 리뷰] Beyond Solver Verdicts: autoformalization reward를 verdict 너머로 만들기
+- type: paper
+- source: https://huggingface.co/papers/2609.11085
+- why-now: 형식 검증/수학 agent에서 solver가 통과했다고 원문 의미와 등가인 formalization이라는 보장은 없다. verdict-preserving unfaithfulness는 “테스트 통과”와 “의미 보존”의 차이를 보여주는 좋은 사례다.
+- angle: “verifier가 OK를 줘도 specification을 틀리게 번역할 수 있다” — reference-equivalence, generative verification, reward model, formal reasoning agent의 QA gate 설계를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [formal-methods, reward-model, verifier, reasoning]
+- status: idea
+
+### 2026-09-13 — [논문 리뷰] ActReview: rebuttal을 supervision으로 쓰는 actionable peer review agent
+- type: paper
+- source: https://huggingface.co/papers/2609.09076
+- why-now: 연구/논문 작성 agent는 약점 지적에서 끝나지 않고 실제 수정 계획까지 만들어야 한다. OpenReview의 review-rebuttal thread를 revision action supervision으로 쓰는 방식은 research assistant agent 글감으로 좋다.
+- angle: “비평 agent의 품질은 지적의 날카로움이 아니라 수정 가능한 action plan” — diagnostic claim, revision suggestion, rebuttal-guided data, rubric reward를 연구 workflow 자동화로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, peer-review, reward-model, openreview]
+- status: idea
+
+### 2026-09-13 — [논문 리뷰] Think Before You Link: rare entity RAG에서 reasoning과 retrieval을 같이 쓰기
+- type: paper
+- source: https://huggingface.co/papers/2609.10745
+- why-now: RAG/멀티모달 entity linking은 인기 지표 기준 rare entity뿐 아니라 지식 그래프 연결성이 낮은 entity에서 크게 무너진다. agentic search와 reasoning을 반복해 evidence를 모으는 방식은 retrieval 품질 평가에 유용하다.
+- angle: “rare entity 문제는 검색 누락이 아니라 근거를 단계적으로 모으는 reasoning-retrieval loop 문제” — KG structural rarity, iterative Wikipedia search, evidence grounding, multilingual/multimodal RAG 평가로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, entity-linking, retrieval, multimodal]
+- status: idea
+
+### 2026-09-13 — trpc-agent-go: Go backend 팀을 위한 production agent framework
+- type: tech
+- source: https://github.com/trpc-group/trpc-agent-go
+- why-now: agent framework가 Python/TypeScript 중심으로 많아졌지만, 기존 backend 조직은 Go 서비스 안에서 graph workflow, MCP, A2A, observability를 통합해야 한다. Go-native production agent framework는 언어 생태계별 설계 차이를 보기 좋다.
+- angle: “agent runtime을 backend service로 운영한다면 Go에서 무엇을 first-class로 둬야 하나” — graph workflow, tool/memory, A2A/AG-UI/MCP, evaluation/observability를 production checklist로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, go, mcp, observability]
+- status: idea
+
+### 2026-09-13 — Kiln: eval·RAG·agent optimization을 한 작업대에서 묶기
+- type: tech
+- source: https://github.com/Kiln-AI/Kiln
+- why-now: AI app 품질 관리는 prompt 몇 개를 비교하는 단계를 넘어 dataset, eval, synthetic data, RAG, agent, fine-tuning, MCP를 같은 루프로 관리하는 방향으로 가고 있다. Kiln은 이 흐름을 repo 중심으로 살피기 좋은 후보이다.
+- angle: “AI 시스템 개선 루프는 모델 호출 코드가 아니라 eval/data/agent 작업대에서 돈다” — dataset management, eval harness, synthetic data, MCP integration, optimization workflow를 실무 도입 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, rag, synthetic-data, github-repo]
+- status: idea
+
+### 2026-09-13 — Athena-Public: local-first agentic PKM의 memory governance 설계
+- type: tech
+- source: https://github.com/winstonkoh87/Athena-Public
+- why-now: 개인 지식 관리와 agent memory가 합쳐질수록 “내 데이터는 로컬에 두고 reasoning과 action만 LLM에 맡기는” 설계가 중요해진다. persistent memory와 governed agents를 결합한 PKM repo는 personal agent architecture 글감으로 좋다.
+- angle: “개인용 agent는 채팅 앱이 아니라 state ownership과 memory governance가 있는 PKM runtime” — local-first storage, structured reasoning, persistent memory, policy boundary를 repo introduction으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, pkm, agent-memory, github-repo]
+- status: idea
+
 ### 2026-09-12 — [논문 리뷰] MAPLE: memory-augmented planning을 evolution loop로 개선하기
 - type: paper
 - source: http://arxiv.org/abs/2609.11636
