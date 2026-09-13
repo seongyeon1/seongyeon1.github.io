@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-14 — [논문 리뷰] EvoSafeHarness: agent safety harness를 model·domain별로 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2609.05903
+- why-now: tool-using agent가 실제 side effect를 만들수록 model-level refusal만으로는 부족하고, 배포 모델과 업무 도메인에 맞춘 enforcement layer가 필요하다. EvoSafeHarness는 고정 정책 대신 domain/model-specific safety harness를 최적화하는 방향을 보여준다.
+- angle: “agent safety는 prompt policy가 아니라 진화 가능한 runtime harness 문제” — indirect prompt injection, harmful request, over-blocking/under-blocking trade-off, domain-specific action relation을 운영 gate 설계로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, safety-harness, tool-use, eval]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] MetroLLM-Bench: LLM을 transit kiosk policy layer로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.10016
+- why-now: agent 평가는 추상 QA보다 routing, fare, accessibility, disruption, adversarial input처럼 구조화 도구와 terminal state가 필요한 domain task로 이동하고 있다. 955-case transit kiosk benchmark는 tool-call policy layer 평가 사례로 좋다.
+- angle: “agent benchmark는 정답 텍스트가 아니라 machine-renderable terminal state를 채점해야 한다” — deterministic scorer, semantic judge tier, structured tool call, kiosk action contract를 enterprise agent eval 관점으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, tool-use, benchmark, enterprise-ai]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] HyQuant: LLM attention에서 중요한 state만 고정밀로 남기기
+- type: paper
+- source: http://arxiv.org/abs/2608.27875
+- why-now: low-bit quantization이 LLM serving 기본기가 됐지만 attention 모듈은 outlier와 local/window state 때문에 품질 손상이 크다. HyQuant의 hybrid precision 설계는 agent serving latency와 품질을 같이 볼 때 유용하다.
+- angle: “attention quantization은 전부 낮은 bit로 미는 문제가 아니라 중요한 token/state를 식별하는 문제” — vertical-line token, local-window state, hybrid precision, latency/accuracy QA를 inference 운영 체크리스트로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, quantization, attention, serving]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] NCP-ArchPreview: next-token을 넘어 concept-level objective로 학습하기
+- type: paper
+- source: http://arxiv.org/abs/2609.10715
+- why-now: next-token prediction만으로 장기 planning과 abstraction을 모두 배우는지에 대한 의문이 커지는 가운데, hidden state에서 product-quantized concept vocabulary를 만들고 future concept를 예측하는 architecture preview가 나왔다.
+- angle: “LLM architecture의 다음 질문은 token prediction 위에 어떤 latent objective를 얹을 것인가” — concept vocabulary, Concept Module, token-level generation feedback, reasoning/agent planning에 줄 수 있는 신호를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-architecture, latent-space, pretraining, reasoning]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] Recursive Code World Models: 복잡한 3D world를 재귀 scene program으로 만들기
+- type: paper
+- source: http://arxiv.org/abs/2609.11499
+- why-now: world model을 executable code로 표현하는 흐름은 visual generation을 넘어 simulation, robotics, embodied agent environment construction으로 연결된다. recursive solver와 scene program 조합은 agent environment generation 글감으로 좋다.
+- angle: “world model은 이미지 생성기가 아니라 재귀적으로 수정 가능한 executable scene program일 수 있다” — global-local-global recursion, construction solver, compositional code, simulation/eval environment 생성 관점으로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [world-model, embodied-ai, simulation, code-generation]
+- status: idea
+
+### 2026-09-14 — coder_eval: coding agent용 Playwright처럼 쓰는 eval harness
+- type: tech
+- source: https://github.com/UiPath/coder_eval
+- why-now: Claude Code, Codex, Gemini, OpenCode 같은 coding agent를 팀 자체 task에서 비교하려면 benchmark leaderboard가 아니라 재현 가능한 sandbox suite와 CI gate가 필요하다. coder_eval은 skills/MCP/CLI가 agent에게 실제로 작동하는지 검증하는 repo다.
+- angle: “coding agent eval은 모델 비교가 아니라 우리 repo의 task와 tool contract가 깨지지 않는지 보는 Playwright” — YAML suite, activation check, A/B experiment, CI regression gate를 개발자 워크플로로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-eval, ci, github-repo]
+- status: idea
+
+### 2026-09-14 — coddy-agent: static Go binary 하나로 묶은 general-purpose agent runtime
+- type: tech
+- source: https://github.com/coddy-project/coddy-agent
+- why-now: agent runtime이 chat UI를 넘어 TUI, ACP server, OpenAI-compatible API, Telegram gateway, cron, swarm relay, MCP, memory, compaction까지 묶는 방향으로 커지고 있다. Go 단일 바이너리 설계는 배포/운영 관점에서 비교할 만하다.
+- angle: “agent framework를 library가 아니라 deployable runtime으로 보면 필요한 구성 요소가 달라진다” — skills/rules/subagents/hooks, MCP, background tasks, long-term memory, distroless 배포를 운영 checklist로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, go, mcp, agent-runtime]
+- status: idea
+
+### 2026-09-14 — osaurus: macOS native local-first agent harness의 설계 포인트
+- type: tech
+- source: https://github.com/osaurus-ai/osaurus
+- why-now: hosted agent가 늘수록 개인/팀은 모델 provider를 바꿔도 local memory, autonomous execution, identity, offline mode를 소유하는 harness를 원한다. Swift 기반 macOS native agent는 local-first agent UX와 보안 경계를 보기 좋다.
+- angle: “personal agent는 웹앱보다 OS-native harness일 때 권한·메모리·실행 경계가 선명해진다” — persistent memory, autonomous execution, cryptographic identity, offline/local operation을 개인용 agent architecture로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, macos, agent-memory, github-repo]
+- status: idea
+
 ### 2026-09-13 — [논문 리뷰] Memory as Plans: long-horizon agent memory를 계획 기록으로 쓰기
 - type: paper
 - source: https://huggingface.co/papers/2609.11561
