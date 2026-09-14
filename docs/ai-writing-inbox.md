@@ -10252,3 +10252,107 @@
 - suggested-category: project
 - suggested-tags: [github-repo, multimodal-agent, rendering, workflow]
 - status: idea
+
+### 2026-09-15 — [논문 리뷰] SAS: attention sparsification을 context ranking 최적화 문제로 보기
+- type: paper
+- source: https://arxiv.org/abs/2609.13141
+- why-now: long-context serving 비용이 계속 커지는 상황에서, post-training으로 attention selector를 학습해 quadratic attention 비용을 줄이는 접근이 inference 최적화의 실무 후보가 되고 있다.
+- angle: “sparse attention은 Top-K 휴리스틱이 아니라 ranking loss와 end-to-end selector 학습 문제”라는 관점으로 selector, gradient blocking, dense attention distillation 한계, latency/quality QA를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [inference, sparse-attention, long-context, optimization]
+- status: idea
+
+### 2026-09-15 — [논문 리뷰] Embodied-BenchForge: embodied benchmark를 agentic workflow로 자동 생성하기
+- type: paper
+- source: https://arxiv.org/abs/2609.13082
+- why-now: embodied/GUI agent 평가셋을 수작업으로 만들기 어렵고, 중간 산출물 검증 없이 자동 생성하면 결함이 downstream benchmark 전체로 전파되는 문제가 커지고 있다.
+- angle: “benchmark construction도 agent task다” — user request에서 task artifact를 만들고 단계별 verifier로 결함 전파를 막는 closed-loop benchmark factory를 eval 운영 관점으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [embodied-agent, benchmark, eval, agentic-workflow]
+- status: idea
+
+### 2026-09-15 — [논문 리뷰] MP-Bench: voice agent를 다자 대화 참여자로 평가하기
+- type: paper
+- source: https://arxiv.org/abs/2609.13076
+- why-now: 음성 agent가 1:1 챗봇을 넘어 회의·콜센터·가정 환경의 multi-party conversation에 들어가면서 turn-taking, interruption, speaker attribution 평가가 필요해졌다.
+- angle: “voice agent eval은 ASR 정확도보다 언제 끼어들고 누구에게 답하는지가 핵심” — multiparty dialogue state, overlap handling, latency, end-to-end vs cascaded architecture 평가 기준을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [voice-agent, benchmark, multiparty-dialogue, evaluation]
+- status: idea
+
+### 2026-09-15 — [논문 리뷰] Autonomous Research for Open-Ended Problems: telecom ticket retrieval로 보는 연구 agent 한계
+- type: paper
+- source: https://arxiv.org/abs/2609.13073
+- why-now: autonomous ML/research agent가 좁은 벤치마크를 넘어 실제 산업 문제를 다루려면 search space 정의, 실험 루프, domain feedback을 어떻게 닫을지가 중요하다.
+- angle: “research agent는 논문 아이디어 생성기가 아니라 문제공간을 줄이고 실패 로그를 재사용하는 실험 운영체제”라는 관점으로 open-ended telecom retrieval case를 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, ai-for-science, retrieval, experiment-loop]
+- status: idea
+
+### 2026-09-15 — [논문 리뷰] Tasks over Application Manuals: 장문 매뉴얼 기반 procedural reasoning 평가하기
+- type: paper
+- source: https://arxiv.org/abs/2609.13005
+- why-now: 업무 agent는 짧은 QA보다 수백 페이지 매뉴얼의 조건·예외·절차를 따라야 하는 경우가 많아, long-horizon procedural reasoning의 실패 모드가 실무 병목이다.
+- angle: “enterprise agent RAG의 진짜 시험지는 매뉴얼 검색이 아니라 절차 실행” — application manual task, dependency reasoning, context segmentation, verifier 설계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [procedural-reasoning, long-context, enterprise-agent, rag]
+- status: idea
+
+### 2026-09-15 — Lobu: 조직 agent를 위한 event-sourced shared context layer
+- type: tech
+- source: https://github.com/lobu-ai/lobu
+- why-now: 여러 agent와 coding assistant가 같은 조직 맥락을 공유하려면 transcript 기반 memory보다 permission-aware event history와 entity graph가 필요하다.
+- angle: “agent memory를 개인별 vector store가 아니라 조직의 event-sourced world model로 만들기” — event log, entity identity, MCP specialist handoff, 권한 경계를 agent control plane 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, context-layer, event-sourcing, mcp]
+- status: idea
+
+### 2026-09-15 — Agent-Safe Pipeline: proposal과 authorization을 분리하는 execution authority architecture
+- type: tech
+- source: https://github.com/decionis/agent-safe-pipeline
+- why-now: agent가 실제 mutation을 만들기 시작하면 “모델이 제안했다”와 “권한 있는 시스템이 승인했다”를 분리하고, 단회성 intent-bound grant와 감사 기록을 남기는 구조가 필요하다.
+- angle: “agent safety는 prompt guardrail이 아니라 독립 authorization boundary” — captured intent, policy verdict, human approval, execution grant, decision dossier를 실행 아키텍처로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-safety, authorization, audit, execution-boundary]
+- status: idea
+
+### 2026-09-15 — LangWatch: LLM·agent 테스트와 trace를 production governance로 묶기
+- type: tech
+- source: https://github.com/langwatch/langwatch
+- why-now: agent가 prototype에서 production으로 넘어가며 prompt eval, RAG test, trace, routing, governance를 별도 도구가 아니라 같은 운영 루프에서 봐야 한다.
+- angle: “agent eval은 실험실 점수가 아니라 운영 중인 모든 LLM call의 trace와 regression contract” — open-source observability, test suite, governance workflow, CI 연결을 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, observability, governance, llmops]
+- status: idea
