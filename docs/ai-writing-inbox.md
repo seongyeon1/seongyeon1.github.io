@@ -10135,3 +10135,120 @@
 - suggested-category: tutorial
 - suggested-tags: [mcp, infra-agent, sql, control-plane]
 - status: idea
+
+### 2026-09-14 — [논문 리뷰] T1: terminal agent RL로 long-horizon coding task를 학습시키기
+- type: paper
+- source: https://arxiv.org/abs/2609.11042
+- why-now: coding·scientific discovery agent가 terminal에서 긴 작업을 수행하는 방향으로 이동하면서, 모델·환경·보상 설계를 함께 다루는 terminal RL recipe가 중요해졌다.
+- angle: “terminal agent는 chat benchmark가 아니라 shell environment에서 rollback·검증·보상 신호를 받는 RL system”이라는 관점으로 task environment, verifier, rollout cost, CI regression 연결을 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [terminal-agent, reinforcement-learning, coding-agent, long-horizon]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] NeoHorse-1: routing harness로 recursive self-improvement를 구체화하기
+- type: paper
+- source: https://arxiv.org/abs/2609.08183
+- why-now: recursive self-improvement가 추상 구호에서 agentic post-training pipeline과 routing harness 설계 문제로 내려오고 있다.
+- angle: “self-improvement의 핵심은 더 큰 모델이 아니라 evidence→route→학습 데이터→평가 루프” — capability evidence 수집, routing harness, agent-native post-training, regression guard를 개발 워크플로로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [self-improvement, agent-training, routing, post-training]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] AgentGrad: multi-agent prompt를 intervention-guided로 최적화하기
+- type: paper
+- source: https://arxiv.org/abs/2609.08572
+- why-now: multi-agent system은 agent 수보다 각 역할 prompt와 상호작용 protocol의 품질에 민감하고, 수동 prompt tuning은 확장성이 낮다.
+- angle: “multi-agent prompt optimization은 전체 대화 로그를 고치는 일이 아니라 실패 intervention point를 찾아 gradient처럼 반영하는 운영 루프”로 보고, prompt patch, ablation, eval harness를 설명한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, prompt-optimization, eval, agentgrad]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] PARSER: long-context agent가 문서를 병렬로 읽고 깊게 추론하는 법
+- type: paper
+- source: https://arxiv.org/abs/2609.06702
+- why-now: 긴 문서·코드베이스·리서치 corpus를 순차 memory로 읽는 agent는 evidence order와 memory bottleneck에 취약하다.
+- angle: “long-context는 창 크기 문제가 아니라 traversal 전략 문제” — parallel reading, depth reasoning, evidence aggregation, RAG/context manager 설계 기준으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-context, memory-agent, rag, document-reasoning]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] SWE-Bench Pro Verified: software engineering agent benchmark를 다시 검증하기
+- type: paper
+- source: https://arxiv.org/abs/2609.08149
+- why-now: SWE-Bench류 benchmark가 coding agent 평가 표준이 됐지만, 테스트 신뢰도와 issue validity가 흔들리면 leader board와 내부 regression 모두 오염된다.
+- angle: “agent benchmark는 task 수보다 verifier 신뢰도가 먼저” — task verification, flaky test 제거, hidden failure, 팀 내부 coding-agent eval dataset QA 절차로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [swe-bench, coding-agent, benchmark, eval-quality]
+- status: idea
+
+### 2026-09-14 — [논문 리뷰] Procedural Graphs: LLM agent 실행 구조를 self-evolving graph로 만들기
+- type: paper
+- source: https://arxiv.org/abs/2609.09153
+- why-now: 긴 tool-use agent가 누적 history 위에서 매번 자유 생성으로 행동하면 재현성, 검증성, 부분 실패 복구가 약해진다.
+- angle: “agent plan은 문자열이 아니라 수정·검증·재사용 가능한 execution graph가 되어야 한다” — procedural graph, graph edit policy, tool precondition, replay 가능한 workflow memory를 다룬다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-architecture, workflow-graph, tool-use, planning]
+- status: idea
+
+### 2026-09-14 — Wirken: autonomous agent를 위한 identity·credential·audit gateway
+- type: tech
+- source: https://github.com/gebruder/wirken
+- why-now: agent가 Slack, email, cloud, SaaS를 넘나들며 실제 mutation을 만들수록 per-channel identity, credential vault, tamper-evident audit log가 프레임워크 외부 control plane으로 필요해진다.
+- angle: “agent 보안의 중심은 guardrail prompt가 아니라 channel isolation과 credential boundary” — enterprise gateway, session audit, 권한 분리, approval workflow를 agent platform architecture로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-gateway, security, credentials, audit]
+- status: idea
+
+### 2026-09-14 — remnic: user-aware agent를 위한 scoped memory와 provenance layer
+- type: tech
+- source: https://github.com/joshuaswarren/remnic
+- why-now: 개인화 agent가 늘면서 장기 기억은 “저장/검색”만으로 부족하고 scope, provenance, correction, boundary, eval까지 포함한 memory subsystem이 필요해졌다.
+- angle: “agent memory를 vector DB가 아니라 사용자 모델의 변경 이력과 품질 계약으로 다루기” — scoped memory, provenance, retrieval quality, correction loop, MCP/HTTP access를 실무 설계로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, provenance, personalization, mcp]
+- status: idea
+
+### 2026-09-14 — Hyperframes: agent가 HTML을 쓰고 비디오를 렌더링하는 UI-to-media workflow
+- type: tech
+- source: https://github.com/heygen-com/hyperframes
+- why-now: “agent가 산출물을 만든다”가 텍스트·코드에서 디자인/영상 자동화로 확장되면서, 브라우저 렌더링 가능한 HTML을 중간 표현으로 쓰는 패턴이 주목된다.
+- angle: “멀티모달 생성 workflow에서 HTML은 사람이 읽고 agent가 수정할 수 있는 scene graph” — component 구조, render pipeline, review/patch loop, content automation agent 적용법을 repo 소개로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: project
+- suggested-tags: [github-repo, multimodal-agent, rendering, workflow]
+- status: idea
