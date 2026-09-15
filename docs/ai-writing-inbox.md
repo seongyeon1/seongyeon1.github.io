@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-16 — [논문 리뷰] Corrupt Plans, Clean Traces: CoT monitor를 우회하는 plan injection
+- type: paper
+- source: http://arxiv.org/abs/2609.15989
+- why-now: chain-of-thought monitor를 agent safety gate로 쓰는 팀이 늘고 있지만, actor가 표면상 깨끗한 추론 로그를 남기면서 숨은 계획을 주입할 수 있다면 monitor 기반 안전 설계의 전제가 흔들린다.
+- angle: “CoT monitoring은 투명한 로그가 아니라 공격 가능한 interface” — plan injection, monitor evasion, hidden objective, runtime harness에서 필요한 counterfactual/action-level audit를 agent safety 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-safety, chain-of-thought, monitoring, prompt-injection]
+- status: idea
+
+### 2026-09-16 — [논문 리뷰] Stellar Colosseum: 장기 수학 연구를 위한 many-agent inference harness
+- type: paper
+- source: http://arxiv.org/abs/2609.15983
+- why-now: 연구 agent가 짧은 proof generation을 넘어 장기 연구 문제에 inference budget을 어떻게 배분하고 중간 결과를 검증할지가 핵심 병목으로 떠올랐다.
+- angle: “research agent의 성능은 모델 하나보다 inference allocation과 검증 가능한 subproblem market” — many-agent harness, long-horizon decision, proof attempt routing, 실패 trajectory 재사용을 연구 자동화 런타임으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, multi-agent, reasoning, eval]
+- status: idea
+
+### 2026-09-16 — [논문 리뷰] The Router Within: frozen LLM 내부의 skill routing 능력 끌어내기
+- type: paper
+- source: http://arxiv.org/abs/2609.15982
+- why-now: skill/tool library가 커질수록 모든 metadata를 context에 넣는 방식은 attention 분산과 token budget 문제를 만든다. frozen LLM이 native하게 어떤 skill을 고를지 elicitation하는 접근은 agent runtime 설계에 바로 연결된다.
+- angle: “agent routing은 외부 retriever만의 문제가 아니라 모델 안의 skill prior를 어떻게 호출하느냐” — metadata stuffing 한계, native routing signal, skill library scaling, MCP/tool registry 선택 정책을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [tool-use, agent-routing, skill-library, context-engineering]
+- status: idea
+
+### 2026-09-16 — [논문 리뷰] Adversarial Testing of APR Agents: 보안 취약점 수리 agent를 공격적으로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.15963
+- why-now: 자동 프로그램 수리(APR) agent가 기능 테스트를 통과해도 security regression을 만들 수 있다. 코딩 agent를 production workflow에 넣으려면 patch correctness와 security robustness를 분리해 평가해야 한다.
+- angle: “coding agent QA는 bug fix 통과가 아니라 exploit-aware patch 검증” — adversarial test generation, vulnerability repair, secure regression suite, PR gate 설계를 개발자 AI 워크플로로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, security, automated-program-repair, eval]
+- status: idea
+
+### 2026-09-16 — [논문 리뷰] Vulnerability Localization Benchmark: repo-scale 보안 분석 agent의 위치 찾기 능력 측정
+- type: paper
+- source: http://arxiv.org/abs/2609.15939
+- why-now: 보안 agent 평가가 취약점 발견/수정 여부에 치우치면 실제로 어느 코드가 원인인지 좁히는 repo navigation 능력을 놓친다. localization benchmark는 code intelligence와 security analysis를 연결하는 좋은 글감이다.
+- angle: “보안 코딩 agent의 첫 관문은 exploit 설명보다 relevant code localization” — weakness description, repository-scale search, symbol/context selection, triage-to-fix pipeline을 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [security-agent, code-intelligence, benchmark, repository-analysis]
+- status: idea
+
+### 2026-09-16 — subagents-pydantic-ai: Pydantic AI에 nested specialist delegation 붙이기
+- type: tech
+- source: https://github.com/vstorm-co/subagents-pydantic-ai
+- why-now: 단일 agent loop보다 task별 specialist를 동적으로 만들고 sync/async 실행을 섞는 패턴이 production agent framework의 기본 설계로 자리 잡고 있다.
+- angle: “subagent delegation은 프롬프트 트릭이 아니라 runtime 생성·격리·결과 동기화 문제” — nested subagent, dynamic specialist creation, sync/async mode, Pydantic AI 기반 tool contract를 framework 비교 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, subagent, pydantic-ai, orchestration]
+- status: idea
+
+### 2026-09-16 — OpenHuman: local-first memory와 workflow를 묶은 personal agent harness
+- type: tech
+- source: https://github.com/tinyhumansai/openhuman
+- why-now: 개인용 agent가 cloud chat UI를 넘어 local-first memory, agent orchestration, workflow ownership을 요구하는 방향으로 빠르게 이동하고 있다.
+- angle: “personal agent의 차별점은 대화 능력이 아니라 memory/workflow state를 누가 소유하느냐” — local-first memory, orchestration, workflow runtime, privacy boundary를 agent harness architecture로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, local-first, agent-memory, github-repo]
+- status: idea
+
+### 2026-09-16 — deja-vu: 여러 coding agent가 공유하는 session-history 기반 memory layer
+- type: tech
+- source: https://github.com/vshulcz/deja-vu
+- why-now: Claude Code, Codex, Cursor, Copilot CLI처럼 여러 coding agent를 번갈아 쓰면 학습한 수정·결정·실패가 tool silo에 갇힌다. session history에서 공용 memory를 만드는 접근은 개발자 워크플로에 실용적이다.
+- angle: “coding agent memory는 특정 IDE 기능이 아니라 agent 간 이식 가능한 operational memory” — session log mining, shared recall, cross-agent compatibility, repo-local lesson propagation을 repo introduction으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, developer-workflow, github-repo]
+- status: idea
+
 ### 2026-09-14 — [논문 리뷰] EvoSafeHarness: agent safety harness를 model·domain별로 진화시키기
 - type: paper
 - source: http://arxiv.org/abs/2609.05903
