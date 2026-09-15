@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 12 Sep 2026 01:12:56 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 15 Sep 2026 01:12:10 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] EvoSafeHarness — agent safety harness를 배포 환경별로 진화시키기</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-15-evosafeharness-model-domain-agent-safety-harness/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-15-evosafeharness-model-domain-agent-safety-harness/</guid>
+      <description>EvoSafeHarness 논문을 통해 agent 보안을 고정 guardrail이 아니라 모델·도메인별 runtime harness 최적화 문제로 본다.</description>
+      <pubDate>Tue, 15 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-security</category>
+      <category>safety-harness</category>
+      <category>tool-use</category>
+      <category>eval</category>
+    </item>
     <item>
       <title>Solace Agent Mesh: event-driven multi-agent 시스템의 control plane 설계</title>
       <link>https://seongyeon1.github.io/blog/2026-09-12-solace-agent-mesh-event-driven-multi-agent-control-plane/</link>

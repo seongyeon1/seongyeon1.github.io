@@ -32,7 +32,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent-security, safety-harness, tool-use, eval]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-15-evosafeharness-model-domain-agent-safety-harness.mdx
 
 ### 2026-09-14 — [논문 리뷰] MetroLLM-Bench: LLM을 transit kiosk policy layer로 평가하기
 - type: paper
