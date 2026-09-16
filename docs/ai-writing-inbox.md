@@ -10461,3 +10461,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-eval, observability, governance, llmops]
 - status: idea
+
+### 2026-09-17 — [논문 리뷰] Agentic Societies Need a Social Harness: trust boundary를 넘는 agent coordination
+- type: paper
+- source: https://arxiv.org/abs/2609.17527
+- why-now: agent가 개인 비서 하나를 넘어 서로 다른 principal·권한·목표를 가진 agent society로 확장되면서, 단일 agent guardrail이 아니라 사회적 protocol과 harness가 필요해지고 있다.
+- angle: “multi-agent safety는 agent 내부 정렬보다 agent 간 계약·감사·상호 검증 문제”라는 관점으로 trust boundary, honest-but-misaligned agent, coordination failure, social harness 설계를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, agent-safety, social-harness, governance]
+- status: idea
+
+### 2026-09-17 — [논문 리뷰] ScienceBuddy: recursive self-improvement를 연구 agent workspace로 만들기
+- type: paper
+- source: https://arxiv.org/abs/2609.17523
+- why-now: autonomous research agent가 batch 실험 자동화에서 연구자의 일상 workspace로 들어오려면, agent가 스스로 도구·전략·지식을 개선하는 loop를 안전하게 운영해야 한다.
+- angle: “research agent는 논문 생성기가 아니라 연구 workflow 안에서 개선되는 recursive assistant” — recursive-in-recursive self-improvement, human-in-the-loop workspace, 실험 trace, 실패 회고 루프를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, self-improvement, ai-for-science, workflow]
+- status: idea
+
+### 2026-09-17 — [논문 리뷰] JustFit: 24GB 노트북에서 200K-token LLM serving하기
+- type: paper
+- source: https://arxiv.org/abs/2609.17475
+- why-now: 로컬 coding/reasoning agent 수요가 늘면서 긴 context와 실행 state를 consumer GPU/Apple Silicon 메모리 안에 어떻게 맞출지가 실무 병목으로 떠올랐다.
+- angle: “long-context local inference는 모델 크기보다 state management 문제” — KVExec, compressed KV execution, phase swapping, laptop serving latency/quality trade-off를 개발자 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [local-inference, kv-cache, long-context, mlx]
+- status: idea
+
+### 2026-09-17 — [논문 리뷰] Decomposition Buys Integrity, Not Yield: multi-agent 분해의 진짜 효과
+- type: paper
+- source: https://arxiv.org/abs/2609.17464
+- why-now: multi-agent orchestration을 “분해하면 성능이 오른다”는 직감으로 도입하는 팀이 많지만, 분해가 discovery yield와 정보 전달 fidelity에 미치는 효과는 별도 검증이 필요하다.
+- angle: “agent tree는 생산량보다 integrity를 산다” — leaf discovery가 root decision까지 전달되는 정보 병목, aggregation loss, delegation depth, review harness 설계를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, delegation, evaluation, information-flow]
+- status: idea
+
+### 2026-09-17 — [논문 리뷰] Chain-of-Self-Questioning: LLM이 언제 답변을 보류해야 하나
+- type: paper
+- source: https://arxiv.org/abs/2609.17516
+- why-now: RAG·agent 시스템에서 hallucination을 줄이려면 “답을 잘하기”뿐 아니라 근거가 부족할 때 abstain하는 selective risk control이 운영 지표가 되어야 한다.
+- angle: “agent QA의 안전장치는 confidence score가 아니라 근거 질문을 통한 commitment gate” — self-questioning, abstention policy, risk/coverage trade-off, RAG 답변 품질 gate를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, hallucination, abstention, selective-risk]
+- status: idea
+
+### 2026-09-17 — Caura: multi-agent fleet을 위한 governed shared memory
+- type: tech
+- source: https://github.com/caura-ai/caura
+- why-now: 여러 agent가 같은 조직 지식과 사용자 맥락을 공유하려면 단순 vector memory를 넘어 tenant, trust tier, policy, audit trail이 붙은 governed memory layer가 필요하다.
+- angle: “agent memory의 다음 단계는 shared memory + governance” — MCP-native access, trust tier, keystone policy, audit trail, knowledge graph를 production agent memory 설계로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, mcp, governance, multi-agent]
+- status: idea
+
+### 2026-09-17 — Claw-Eval: human-verified task로 agent harness 평가하기
+- type: tech
+- source: https://github.com/claw-eval/claw-eval
+- why-now: agent benchmark가 많아질수록 synthetic task와 약한 verifier가 실제 성능을 왜곡하므로, 사람이 검증한 task와 runnable artifact 기반 평가 harness가 중요해진다.
+- angle: “agent eval은 모델 leaderboard가 아니라 task artifact와 verifier provenance 관리” — human-verified tasks, 실행 재현성, agent별 harness 차이, 내부 regression suite 구축법을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, benchmark, harness, regression]
+- status: idea
+
+### 2026-09-17 — YantrikDB: temporal decay와 contradiction detection을 갖춘 agent memory engine
+- type: tech
+- source: https://github.com/yantrikos/yantrikdb
+- why-now: persistent agent memory가 길어질수록 오래된 사실, 상충 기억, 자동 consolidation을 다루는 database-level primitive가 필요해진다.
+- angle: “agent memory DB는 ANN 검색기보다 lifecycle engine에 가깝다” — temporal decay, contradiction detection, knowledge graph, HNSW recall, Rust/Python embedding workflow를 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, vector-search, knowledge-graph, lifecycle]
+- status: idea
