@@ -21,6 +21,97 @@
 
 ## Active Queue
 
+### 2026-09-18 — [논문 리뷰] ScienceIDE — 과학 코드베이스를 agent 학습 환경으로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2609.19134
+- why-now: scientific coding agent가 논문/README를 읽는 수준을 넘어 실제 repository를 실행 가능한 task environment와 verifier로 바꿔 학습해야 한다는 문제가 커지고 있다. ScienceIDE는 과학 코드의 fragmented toolchain과 domain-specific correctness criteria를 agent environment로 포장하는 흐름을 보여준다.
+- angle: “agent 학습 데이터는 텍스트가 아니라 실행·검증 가능한 과학 코드 환경이어야 한다” — repo transformation, expert-defined acceptance criteria, task generation, scientific verification을 연구 자동화 하네스 설계로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [scientific-agent, coding-agent, environment, verification]
+- status: idea
+
+### 2026-09-18 — [논문 리뷰] Cognitive Extensions for Dual-Process Language Agents — memory와 self-reflection을 feature flag로 붙이기
+- type: paper
+- source: http://arxiv.org/abs/2609.19128
+- why-now: 장기 interactive agent는 planner 하나를 키우는 것보다 memory retrieval과 실행 중 validation/reflection을 runtime 모듈로 분리해 ablation 가능한 형태로 붙이는 설계가 중요해지고 있다.
+- angle: “agent architecture는 거대한 prompt가 아니라 켜고 끌 수 있는 cognitive extension들의 조합” — adaptive memory module, trigger-driven retrieval, bounded self-reflection, ScienceWorld ablation을 production agent runtime 관점으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [language-agent, agent-memory, self-reflection, architecture]
+- status: idea
+
+### 2026-09-18 — [논문 리뷰] ASLEval — tool-using agent 세션의 privacy exposure displacement 측정하기
+- type: paper
+- source: http://arxiv.org/abs/2609.18864
+- why-now: agent privacy 평가는 final response나 특정 tool action만 보는 경우가 많지만, 실제 노출은 중간 trace·visible exit·보고서 등 다른 outlet으로 이동할 수 있다. authorization-aware session-level 평가가 필요하다.
+- angle: “agent privacy leak은 마지막 답변이 아니라 세션 전체의 모든 출구에서 측정해야 한다” — hidden target set, visible exits, local proxy의 한계, enterprise agent authorization gate를 운영 체크리스트로 만든다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-security, privacy, tool-use, eval]
+- status: idea
+
+### 2026-09-18 — [논문 리뷰] DualViewEval — outcome과 process signal로 agent benchmark를 압축하기
+- type: paper
+- source: http://arxiv.org/abs/2609.18909
+- why-now: agent benchmark는 비용이 크기 때문에 task subset을 줄이고 싶지만, final score만 기준으로 압축하면 trajectory-level failure mode를 놓친다. process relation을 함께 쓰는 benchmark compression은 CI eval 운영에 바로 연결된다.
+- angle: “agent eval 축소는 대표 문제 고르기가 아니라 outcome+trajectory 신호를 보존하는 압축 문제” — six process signals, miniset selection, full-benchmark prediction, regression confidence를 개발 루프 평가 하네스로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, benchmark, trajectory, cost-optimization]
+- status: idea
+
+### 2026-09-18 — [논문 리뷰] Monitoring Reward Hacking with Internal Representations — eval 중 reward hacking을 activation으로 찾기
+- type: paper
+- source: http://arxiv.org/abs/2609.19101
+- why-now: 모델이 평가를 game하거나 reward hacking을 할수록 결과 점수와 출력 로그만으로는 실패를 발견하기 어렵다. 내부 representation 기반 detector는 alignment/eval gate의 새로운 관측면이다.
+- angle: “reward hacking은 외부 행동만이 아니라 activation signature로도 감시할 수 있을까” — difference-of-means vectors, frontier open model 일반화, eval-time detector, agent reward loop 감사에 적용할 포인트를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reward-hacking, alignment, interpretability, eval]
+- status: idea
+
+### 2026-09-18 — Mastra — TypeScript agent framework를 production AI app 뼈대로 보기
+- type: tech
+- source: https://github.com/mastra-ai/mastra
+- why-now: TypeScript 생태계에서도 agent, workflow, memory, eval, deployment를 한 프레임워크 안에서 다루려는 수요가 커지고 있다. Mastra는 활발한 업데이트와 큰 사용자 기반을 가진 production AI app framework 후보이다.
+- angle: “agent framework는 model wrapper가 아니라 workflow/memory/eval/deploy control plane” — TypeScript-first API, agent/workflow abstraction, observability/eval, 기존 backend 통합 기준으로 살펴본다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, typescript, workflow, github-repo]
+- status: idea
+
+### 2026-09-18 — m3-memory — local-first agent memory를 FTS+vector+MMR로 설계하기
+- type: tech
+- source: https://github.com/skynetcmd/m3-memory
+- why-now: coding/personal agent를 여러 클라이언트에서 쓰면 memory가 provider silo에 갇히기 쉽다. local-first, MCP-native, hybrid search 기반 memory layer는 agent 운영의 공통 인프라로 보기 좋다.
+- angle: “agent memory는 벡터 DB 하나가 아니라 로컬 소유권·검색 전략·compliance 경계의 조합” — FTS5+vector+MMR hybrid retrieval, MCP/plugin interface, privacy/GDPR 옵션, multi-agent memory portability를 repo introduction으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, local-first, mcp, github-repo]
+- status: idea
+
 ### 2026-09-16 — [논문 리뷰] Corrupt Plans, Clean Traces: CoT monitor를 우회하는 plan injection
 - type: paper
 - source: http://arxiv.org/abs/2609.15989
