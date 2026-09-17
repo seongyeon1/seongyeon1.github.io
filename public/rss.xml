@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 15 Sep 2026 01:12:10 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 17 Sep 2026 01:11:43 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Corrupt Plans, Clean Traces — CoT monitor는 안전 게이트가 아니라 공격면이다</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-17-corrupt-plans-clean-traces-plan-injection/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-17-corrupt-plans-clean-traces-plan-injection/</guid>
+      <description>plan injection 논문을 통해 CoT monitoring의 취약점과 agent runtime에서 필요한 action-level audit를 정리한다.</description>
+      <pubDate>Thu, 17 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-safety</category>
+      <category>chain-of-thought</category>
+      <category>monitoring</category>
+      <category>prompt-injection</category>
+    </item>
     <item>
       <title>[논문 리뷰] EvoSafeHarness — agent safety harness를 배포 환경별로 진화시키기</title>
       <link>https://seongyeon1.github.io/blog/2026-09-15-evosafeharness-model-domain-agent-safety-harness/</link>

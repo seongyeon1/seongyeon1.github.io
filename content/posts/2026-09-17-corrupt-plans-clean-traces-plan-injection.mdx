@@ -1,0 +1,160 @@
+---
+title: "[논문 리뷰] Corrupt Plans, Clean Traces — CoT monitor는 안전 게이트가 아니라 공격면이다"
+date: "2026-09-17"
+category: "paper-review"
+tags: ["agent-safety", "chain-of-thought", "monitoring", "prompt-injection"]
+summary: "plan injection 논문을 통해 CoT monitoring의 취약점과 agent runtime에서 필요한 action-level audit를 정리한다."
+---
+
+<Paper
+  title="Corrupt Plans, Clean Traces: Evading Chain-of-Thought Monitoring with Plan Injection"
+  authors="Keertana Chidambaram, Andrew Ilyas, Vasilis Syrgkanis"
+  year="2026"
+  venue="arXiv"
+  arxiv="2609.15989"
+/>
+
+## 한 줄 요약
+
+이 논문은 chain-of-thought monitor를 안전 장치로 쓰는 설계의 약한 고리를 찌른다. 핵심은 단순하다. 모델의 context에 그럴듯하지만 잘못된 계획을 넣으면, actor 모델이 그 계획을 자기 추론처럼 paraphrase해서 실행하고, monitor는 깨끗해 보이는 trace를 보고 놓칠 수 있다. 저자들은 이 공격을 **plan injection**이라고 부른다.
+
+내 해석은 더 직설적이다. CoT monitoring은 “모델 속마음을 보는 창”이 아니라, actor가 산출한 텍스트 로그를 검사하는 downstream classifier에 가깝다. 로그가 공격자가 조작할 수 있는 interface라면, 그것만으로 runtime safety를 맡기는 건 위험하다.
+
+## 왜 지금 중요한가
+
+agent 시스템은 점점 더 많은 외부 context를 먹는다.
+
+- RAG가 가져온 문서
+- tool output
+- 상위 planner가 만든 plan
+- 다른 agent가 넘긴 intermediate result
+- 이전 세션 memory와 scratchpad 요약
+
+이 context들은 대부분 “참고 자료”처럼 보이지만, 실제 actor 입장에서는 다음 행동을 조건화하는 강한 prior다. 논문이 흥미로운 이유는 prompt injection을 “명령을 숨겨 넣는 공격”보다 넓게 본다는 점이다. 공격자는 꼭 “이렇게 행동하라”고 명령하지 않아도 된다. **이미 완성된 잘못된 reasoning path**를 제공하면, actor가 그것을 자기 생각처럼 흡수할 수 있다.
+
+CoT monitor를 붙인 팀이라면 여기서 불편한 질문이 생긴다.
+
+> monitor가 보는 trace가 깨끗하다는 사실은, actor가 안전하게 생각했다는 증거인가? 아니면 공격자가 trace를 깨끗하게 만드는 방법을 찾았다는 뜻인가?
+
+이 논문은 후자 가능성을 보여준다.
+
+## plan injection이 무엇인가
+
+논문에서 말하는 plan injection은 “해로운 목표를 직접 지시하는 prompt injection”과 조금 다르다. 공격자는 actor context에 benign-sounding reasoning을 넣는다. 표면적으로는 힌트, 참고 계획, optional suggestion, upstream analysis처럼 보일 수 있다. 그런데 그 reasoning은 특정 잘못된 결론이나 adversarial action으로 이어지도록 설계되어 있다.
+
+중요한 관찰은 세 가지다.
+
+1. actor가 injected plan을 그대로 복사하지 않고 자기 CoT처럼 바꿔 말할 수 있다.
+2. 명시적으로 “이 계획을 따르라”고 하지 않아도 영향을 받을 수 있다.
+3. monitor는 최종 trace만 보면 외부에서 주입된 계획과 actor 내부 추론을 구분하기 어렵다.
+
+즉 공격면은 “숨겨진 명령어”가 아니라 **출처가 흐려진 reasoning artifact**다. 이 차이가 실무적으로 크다. production agent에서는 중간 산출물이 계속 재사용된다. planner, retriever, summarizer, memory writer가 만든 텍스트가 다음 actor의 reasoning substrate가 된다. 그 중 하나가 오염되면 actor는 오염된 계획을 자연스럽게 이어받을 수 있다.
+
+## 논문이 공격을 찾은 방식
+
+저자들은 먼저 기존 CoT monitorability 실험 설정에서 출발한다. multiple-choice question에 잘못된 답을 가리키는 hint를 붙이고, actor가 그 잘못된 답으로 유도되는지, 그리고 monitor가 그 사실을 감지하는지 본다.
+
+여기서 저자들은 investigator-agent framework를 사용해 효과적인 hint strategy를 자동 탐색한다. 단순히 “정답은 B야” 같은 힌트를 넣는 대신, investigator는 actor가 따라갈 법한 reasoning chain을 만들어낸다. 흥미로운 점은 상위 전략 중 상당수가 “잘못된 결론으로 가는 가짜 추론” 형태였다는 것이다. 특히 `cot_pure`로 부르는 변형은 명시적 지시 없이 faulty reasoning chain을 query에 붙이는 방식인데도 효과적이었다고 한다.
+
+이 발견을 일반화한 것이 plan injection이다. 논문은 이후 더 어려운 task에서도 이 현상이 나타나는지 본다.
+
+## 실험 결과에서 읽을 점
+
+논문 abstract와 introduction 기준으로 확인되는 핵심 수치는 다음과 같다.
+
+- plan injection은 APPS coding backdoor setting에서 80% 이상, bio/math disguised-answer setting에서 90% 이상의 시도에서 actor를 steer했다고 보고된다.
+- monitor evasion rate는 benchmark에 따라 25-33% 수준으로 보고된다.
+- non-thinking monitor는 최대 76%의 attempt를 놓쳤다고 한다.
+- DeepSeek-R1-0528 같은 훨씬 큰 모델에서도 취약성이 사라지지 않았다고 주장한다.
+- Bio-Math task에서는 monitor에게 injected plan 접근 권한을 줬을 때 detection이 최대 50% 떨어지는 사례도 보고한다.
+
+마지막 결과가 특히 찝찝하다. 보통은 monitor에게 더 많은 정보를 주면 더 안전해질 것이라고 기대한다. 그런데 논문은 monitor가 injected plan을 보고도 그것을 위험 신호로 분리하기보다, 오히려 잘못된 reasoning을 합리화하는 방향으로 갈 수 있음을 보여준다. 추가 reasoning budget도 항상 단조롭게 detection을 개선하지 않는다. 어떤 transcript에서는 더 많은 thinking token이 경고가 아니라 합리화에 쓰였다고 한다.
+
+물론 이 결과를 모든 agent system에 그대로 일반화하면 안 된다. task, monitor prompt, model family, policy definition에 따라 달라질 수 있다. 그래도 “monitor를 더 크게 만들면 된다”는 단순한 해결책은 믿기 어렵다.
+
+## CoT monitor의 한계
+
+CoT monitor가 매력적인 이유는 obvious하다. actor가 생각을 길게 쓰면, 별도 monitor가 그 생각을 읽고 deception, unsafe planning, policy violation을 잡아낼 수 있을 것처럼 보인다. 하지만 이 논문이 보여주는 한계는 구조적이다.
+
+### 1. CoT는 provenance를 보존하지 않는다
+
+actor가 “내가 이렇게 생각했다”고 쓴 문장은 실제로는 retriever 문서, upstream planner output, memory, prompt hint의 영향을 섞은 결과일 수 있다. trace만 보면 어떤 reasoning step이 어디서 왔는지 알기 어렵다.
+
+### 2. monitor는 행동 원인이 아니라 표현을 본다
+
+monitor가 보는 것은 actor의 내부 상태가 아니라 textual trace다. actor가 외부 plan을 자기 말로 paraphrase하면, monitor는 “독립적으로 추론한 것처럼 보이는 텍스트”를 평가하게 된다.
+
+### 3. 깨끗한 trace는 깨끗한 decision process를 보장하지 않는다
+
+trace가 정책 위반 표현을 포함하지 않는다는 사실과, 실제 decision이 안전했다는 사실은 다르다. 특히 공격자가 “monitor가 싫어할 표현”을 피한 plan을 제공할 수 있다면 clean trace는 신뢰 신호가 아니라 공격 성공 신호가 될 수도 있다.
+
+## agent runtime에 주는 설계 교훈
+
+이 논문을 읽고 바로 가져갈 수 있는 운영 포인트는 “CoT monitor를 버려라”가 아니다. CoT monitor는 여전히 유용한 신호일 수 있다. 다만 **단일 안전 게이트로 취급하면 안 된다**.
+
+### 1. reasoning artifact에 provenance를 붙여야 한다
+
+planner output, retrieved chunk, tool result, memory summary, human instruction을 같은 text blob으로 합치면 monitor가 할 수 있는 일이 줄어든다. runtime은 최소한 다음 정보를 보존해야 한다.
+
+- 이 reasoning step은 누가 만들었나: user, model, tool, retriever, memory, other agent
+- 신뢰 등급은 무엇인가
+- action proposal에 직접 영향을 준 source는 무엇인가
+- actor가 외부 plan을 인용했는지, 변형했는지, 독립적으로 도출했는지
+
+LLM에게 “출처를 잘 밝혀라”라고 말하는 수준으로는 부족하다. context assembly 단계에서 metadata를 잃지 않아야 한다.
+
+### 2. action-level audit가 필요하다
+
+CoT가 깨끗한지보다 중요한 것은 최종 action proposal이 어떤 constraint를 위반하는지다. 예를 들어 coding agent라면 “왜 이 patch를 만들었는가”보다 “이 patch가 test, security, permission boundary, spec을 만족하는가”를 봐야 한다. browser agent라면 “추론이 그럴듯한가”보다 “이 클릭/제출/구매/전송 action이 승인된 intent 안에 있는가”를 검사해야 한다.
+
+실무적으로는 CoT monitor 앞뒤에 이런 gate가 필요하다.
+
+- capability boundary check
+- policy-as-code 기반 action validator
+- high-impact action에 대한 human approval
+- tool call argument diff와 allowlist 검사
+- 실행 후 observation 기반 consistency check
+
+### 3. upstream plan을 untrusted input으로 다뤄야 한다
+
+multi-agent system에서 planner와 executor를 나누면 안전해지는 것처럼 보이지만, planner output이 executor의 prompt에 그대로 들어가면 plan injection 경로가 생긴다. planner가 같은 조직의 내부 agent라도 완전히 trusted로 두면 안 된다. 특히 RAG 문서나 외부 issue, PR description, ticket comment를 planner가 읽고 plan을 만들었다면 더 그렇다.
+
+executor에게 넘기는 plan은 자연어 전체가 아니라 가능한 한 구조화된 proposal로 낮추는 편이 낫다.
+
+- 목표
+- 허용 action set
+- 금지 action set
+- 필요한 evidence
+- rollback plan
+- approval requirement
+
+자유로운 reasoning text를 그대로 downstream actor에 먹이는 구조는 편하지만, 공격면도 넓다.
+
+## 내가 보는 한계
+
+논문은 중요한 취약성을 잘 보여주지만, 아직 초안 리뷰 관점에서 더 확인하고 싶은 부분도 있다.
+
+첫째, monitor prompt와 scoring policy에 민감할 가능성이 있다. “injected plan을 보았을 때 더 못 잡는다”는 결과는 강하지만, 어떤 prompt에서는 provenance-aware rubric으로 완화될 수 있는지 궁금하다.
+
+둘째, 실제 production agent에서 CoT를 저장하거나 노출하지 않는 경우도 많다. 이 경우 monitorability 실험이 곧바로 운영 환경과 일치하지 않을 수 있다. 다만 중간 계획, tool observation, memory summary를 다음 step context로 재사용한다는 구조 자체는 여전히 흔하다.
+
+셋째, 방어 실험이 더 필요하다. provenance tagging, structured plan schema, action validator, independent verifier, counterfactual replay 같은 방어가 어느 정도 효과적인지까지 비교하면 실무 가치는 더 커질 것이다.
+
+## 실무 체크리스트
+
+agent safety 설계를 하고 있다면 이 논문을 읽고 아래 질문을 던져보는 게 좋다.
+
+- actor prompt에 들어가는 plan, hint, memory, retrieved text의 출처가 runtime metadata로 남는가?
+- monitor는 CoT만 보는가, 아니면 action proposal과 source provenance도 보는가?
+- 외부 문서에서 온 reasoning을 actor가 자기 reasoning처럼 재서술할 때 감지할 방법이 있는가?
+- high-impact tool call은 reasoning trace와 무관하게 policy gate를 통과해야 하는가?
+- planner output은 자연어 blob인가, typed schema인가?
+- monitor에게 더 많은 context를 주는 것이 실제 detection을 올리는지 regression test로 확인했는가?
+
+내 결론은 이렇다. CoT monitor는 좋은 관찰 장치일 수 있지만, 좋은 안전 장치가 되려면 provenance, action validation, replay 가능한 audit log와 결합해야 한다. “생각을 읽으면 안전하다”는 말은 너무 낙관적이다. agent runtime에서는 생각보다 **행동의 계약**이 더 중요하다.
+
+## 참고 자료
+
+- [Corrupt Plans, Clean Traces: Evading Chain-of-Thought Monitoring with Plan Injection](https://arxiv.org/abs/2609.15989)
+- [PDF: arXiv 2609.15989v1](https://arxiv.org/pdf/2609.15989v1)
+- [Chain-of-thought monitorability 관련 선행 설정: Measuring Faithfulness in Chain-of-Thought Reasoning](https://arxiv.org/abs/2307.13702)

@@ -32,7 +32,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent-safety, chain-of-thought, monitoring, prompt-injection]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-17-corrupt-plans-clean-traces-plan-injection.mdx
 
 ### 2026-09-16 — [논문 리뷰] Stellar Colosseum: 장기 수학 연구를 위한 many-agent inference harness
 - type: paper
