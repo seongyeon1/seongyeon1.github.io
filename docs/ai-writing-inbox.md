@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-19 — [논문 리뷰] Obstacle-Aware Harness — robot coding agent의 안전 constraint를 실행 하네스로 강제하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20822
+- why-now: 코딩 agent가 로봇 controller를 직접 작성하는 패턴이 확산되지만, “장애물을 건드리지 말라”는 자연어 제약만으로는 목표 달성 편향을 막기 어렵다. safety-critical tool-use agent에는 prompt가 아니라 실행 전후 검증 가능한 harness가 필요하다.
+- angle: “로봇 agent safety는 더 강한 instruction이 아니라 obstacle-aware execution harness 문제” — collision constraint, controller synthesis, trace에는 안전 추론이 있지만 행동은 실패하는 간극, verifier/rollback boundary를 embodied agent 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [robotics, coding-agent, safety-harness, embodied-ai]
+- status: idea
+
+### 2026-09-19 — [논문 리뷰] Workspace Models — VLM query를 train-time으로 밀어낸 lightweight robotic memory
+- type: paper
+- source: http://arxiv.org/abs/2609.20820
+- why-now: 로봇/embodied agent가 긴 작업 이력을 deployment 중 VLM 호출로 계속 압축하면 latency와 비용이 커진다. train-time saliency supervision으로 runtime memory token을 학습하는 접근은 agent memory의 비용 구조를 바꾼다.
+- angle: “agent memory는 런타임 검색만이 아니라 학습된 workspace state일 수 있다” — VLM saliency label, workspace token, long-horizon manipulation memory, deployment-time query cost 절감을 embodied/browser agent memory 설계와 비교한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, robotics, vlm, long-horizon]
+- status: idea
+
+### 2026-09-19 — [논문 리뷰] OverclaimBench — coding agent가 “끝냈다”고 과장하는 순간 측정하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20812
+- why-now: 장시간 자율 coding agent의 최종 보고만 믿으면 실제 context에 남은 결함·미확인 항목을 사용자가 놓치기 쉽다. task success와 별개로 final response가 trace와 모순되는 overclaim을 측정하는 평가가 필요하다.
+- angle: “coding agent 신뢰성은 성공률뿐 아니라 완료 보고의 정직성” — planted defect, transcript coverage, final-response contradiction, PR summary gate와 human handoff checklist를 개발자 워크플로로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, agent-eval, reliability, reporting]
+- status: idea
+
+### 2026-09-19 — [논문 리뷰] Harness Design for Coding Agents — planning·action space·context management ablation
+- type: paper
+- source: http://arxiv.org/abs/2609.20804
+- why-now: SWE-Bench류 결과는 모델과 harness가 섞인 점수라 실제로 어떤 구성 요소가 성능을 만드는지 보기 어렵다. planning, action space, context window/management를 분리한 ablation은 coding agent runtime 선택 기준에 바로 연결된다.
+- angle: “coding agent 성능은 모델 ID가 아니라 harness component budget의 함수” — fixed loop, planning ablation, action granularity, context-management strategy를 팀 내부 coding agent 평가 매트릭스로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, harness, context-engineering, swe-bench]
+- status: idea
+
+### 2026-09-19 — [논문 리뷰] Embedding Models Measure in Peculiar Ways — measurement semantics로 RAG similarity를 의심하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20821
+- why-now: RAG와 memory retrieval은 embedding similarity를 의미 거리처럼 쓰지만, 물리 단위·수량 표현에서 embedding이 표면 문자열 유사도에 끌리면 숫자/측정 기반 지식 검색이 흔들린다.
+- angle: “embedding similarity는 의미 거리라는 착각을 어디까지 믿어도 되나” — mass/distance/time/volume measurement, string-similarity bias, recalibration 한계, RAG retriever regression test를 실무 체크리스트로 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, embeddings, retrieval, evaluation]
+- status: idea
+
+### 2026-09-19 — Claw-Eval — human-verified task로 LLM agent harness를 평가하기
+- type: tech
+- source: https://github.com/claw-eval/claw-eval
+- why-now: agent leaderboard가 늘수록 task 자체가 검증되었는지, harness가 어떤 관찰·행동 경계를 제공하는지가 점수보다 중요해진다. Claw-Eval은 human-verified task를 내세운 agent eval harness로 비교해볼 만하다.
+- angle: “agent eval repo를 고를 때는 모델 점수보다 task verification과 harness contract를 먼저 보자” — human-verified tasks, agent execution boundary, reproducibility, 내부 regression suite로 가져올 수 있는 부분을 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, harness, benchmark, github-repo]
+- status: idea
+
+### 2026-09-19 — prism-coder — coding agent 세션 메모리를 local-first로 공유하기
+- type: tech
+- source: https://github.com/dcostenco/prism-coder
+- why-now: Claude Code, Cursor, Codex를 번갈아 쓰는 개발 워크플로에서는 session memory가 tool silo에 갇히고 drift가 생긴다. local-first persistent memory와 drift detection을 갖춘 repo는 coding agent 운영 글감으로 좋다.
+- angle: “coding agent memory는 대화 기록 백업이 아니라 associative recall과 drift detection을 갖춘 로컬 subsystem” — on-device inference, MCP server, SQLite/vector search, cross-agent session continuity를 개발자 AI 워크플로로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, local-first, mcp]
+- status: idea
+
+### 2026-09-19 — tracedecay — Tree-sitter 기반 semantic code memory를 MCP로 제공하기
+- type: tech
+- source: https://github.com/ScriptedAlchemy/tracedecay
+- why-now: 코딩 agent가 repo 전체를 토큰으로 읽는 방식은 비용과 정확도 모두 불안정하다. local semantic code intelligence와 project memory를 MCP로 노출하는 구조는 context layer 설계 사례로 유용하다.
+- angle: “coding agent context는 파일 덤프가 아니라 semantic code graph와 workflow memory의 조합” — Tree-sitter parsing, semantic search, knowledge graph, MCP integration을 repo-level code intelligence 관점으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, code-intelligence, mcp, github-repo]
+- status: idea
+
 ### 2026-09-18 — [논문 리뷰] ScienceIDE — 과학 코드베이스를 agent 학습 환경으로 바꾸기
 - type: paper
 - source: http://arxiv.org/abs/2609.19134
