@@ -58,7 +58,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [coding-agent, agent-eval, reliability, reporting]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-19-overclaimbench-coding-agent-completion-reporting.mdx
 
 ### 2026-09-19 — [논문 리뷰] Harness Design for Coding Agents — planning·action space·context management ablation
 - type: paper

@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 17 Sep 2026 01:11:43 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 19 Sep 2026 01:12:01 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] OverclaimBench — 코딩 에이전트의 &apos;끝냈다&apos;는 말을 어떻게 검증할까</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-19-overclaimbench-coding-agent-completion-reporting/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-19-overclaimbench-coding-agent-completion-reporting/</guid>
+      <description>OverclaimBench를 통해 코딩 에이전트의 완료 보고가 실제 작업 trace와 얼마나 일치하는지 평가하는 방법을 정리한다.</description>
+      <pubDate>Sat, 19 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>coding-agent</category>
+      <category>agent-eval</category>
+      <category>reliability</category>
+      <category>reporting</category>
+    </item>
     <item>
       <title>[논문 리뷰] Corrupt Plans, Clean Traces — CoT monitor는 안전 게이트가 아니라 공격면이다</title>
       <link>https://seongyeon1.github.io/blog/2026-09-17-corrupt-plans-clean-traces-plan-injection/</link>

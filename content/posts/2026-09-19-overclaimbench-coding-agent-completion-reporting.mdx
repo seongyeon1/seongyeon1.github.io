@@ -1,0 +1,196 @@
+---
+title: "[논문 리뷰] OverclaimBench — 코딩 에이전트의 '끝냈다'는 말을 어떻게 검증할까"
+date: "2026-09-19"
+category: "paper-review"
+tags: ["coding-agent", "agent-eval", "reliability", "reporting"]
+summary: "OverclaimBench를 통해 코딩 에이전트의 완료 보고가 실제 작업 trace와 얼마나 일치하는지 평가하는 방법을 정리한다."
+series: "논문 리뷰"
+seriesOrder: 21
+---
+
+<Paper
+  title="Quantifying Overclaiming Propensity in Frontier LLM Agents"
+  authors="Nolan Smyth, Yorguin-Jose Mantilla-Ramos, Pascal Jr Tikeng Notsawo, Saskia Helbling, Alberto Tosato, Mohamed Amine Merzouk, Nouha Dziri, Gauthier Gidel, Tommaso Tosato"
+  year="2026"
+  venue="arXiv"
+  arxiv="2609.20812"
+/>
+
+## 한 줄 요약
+
+OverclaimBench는 코딩 에이전트가 실제로 하지 않은 일을 최종 응답에서 했다고 말하거나, 중요한 미완료 상태를 숨기는지를 측정하는 평가다. 논문의 핵심 정의는 깔끔하다. 에이전트의 final response가 자기 context 안의 정보와 모순되면 overclaim이다. 의도를 추정하지 않고, task 성공 여부와도 분리한다.
+
+내가 보기엔 이 논문의 가치는 “코딩 에이전트가 얼마나 문제를 잘 푸는가”보다 더 운영적인 질문을 던진다는 데 있다.
+
+> 사용자는 보통 agent의 전체 transcript가 아니라 마지막 보고만 본다. 그 마지막 보고를 믿어도 되는가?
+
+장시간 코딩 agent를 실제 workflow에 넣을수록 이 질문이 더 중요해진다. 실패 자체보다 위험한 것은 실패했는데도 “검토 완료”, “전부 확인”, “문제 없음”처럼 말하는 경우다.
+
+## 왜 지금 중요한가
+
+코딩 에이전트는 점점 긴 작업을 맡는다.
+
+- 여러 파일 리뷰
+- 대규모 리팩터링
+- 테스트 작성과 실행
+- 취약점 triage
+- PR 요약
+- migration 작업
+
+문제는 사람이 모든 intermediate step을 읽지 않는다는 점이다. 대부분은 마지막 summary, PR comment, Slack 보고만 보고 다음 결정을 한다. 이때 agent가 coverage를 과장하면 downstream 의사결정이 바로 오염된다.
+
+예를 들어 agent가 “모든 파일을 검토했고 치명적 이슈는 없습니다”라고 보고했는데 실제로는 절반도 읽지 않았다면, 이것은 단순한 UX 문제가 아니다. reviewer allocation, release approval, security sign-off가 잘못될 수 있다.
+
+그래서 overclaim은 hallucination의 하위 유형으로만 보면 부족하다. 이것은 **agent handoff contract** 문제다. agent가 무엇을 했고, 무엇을 못 했고, 어떤 근거로 결론을 냈는지를 final response에서 정직하게 드러내야 한다.
+
+## OverclaimBench의 평가 설정
+
+논문은 OverclaimBench를 다섯 개의 file-review scenario로 구성했다고 설명한다. 에이전트에게 여러 파일을 검토하게 하고, 실제 transcript에서 어떤 파일을 읽었는지 coverage를 측정한다. 또한 미리 심어둔 planted defect를 통해 중요한 결함을 놓쳤는지도 본다.
+
+평가 대상은 두 그룹이다.
+
+1. proprietary frontier model을 각자의 production command-line interface에서 실행
+2. open-weight model을 하나의 fixed harness에서 실행
+
+이 구분은 중요하다. 코딩 agent의 성능은 모델만의 함수가 아니다. CLI, 파일 접근 방식, delegation 정책, context management, tool output 포맷이 함께 결과를 만든다. production CLI에서 평가했다는 점은 실제 사용자가 겪는 실패 모드에 더 가깝다. 반대로 open-weight model을 fixed harness에 넣은 설정은 모델 간 비교를 조금 더 통제한다.
+
+## overclaim을 어떻게 정의했나
+
+논문은 overclaim을 “agent의 final response가 context 안의 정보와 모순되는 경우”로 둔다. 좋은 정의라고 생각한다. 이유는 세 가지다.
+
+첫째, 의도를 묻지 않는다. agent가 일부러 속였는지, 기억을 잘못했는지, prompt 압력 때문에 optimistic하게 썼는지는 평가의 핵심이 아니다. 사용자 입장에서는 결과가 misleading하면 충분히 문제다.
+
+둘째, task success와 분리된다. 어떤 agent는 운 좋게 결함을 찾았지만 coverage를 거짓으로 말할 수 있다. 반대로 모든 파일을 읽었지만 결함을 못 찾을 수도 있다. 둘은 다른 failure mode다.
+
+셋째, trace 기반으로 검증 가능하다. “성실했다” 같은 주관적 판정 대신, transcript에서 파일 읽기 여부와 final claim을 대조할 수 있다.
+
+이 정의를 coding agent 운영에 가져오면 다음 같은 claim을 자동 검증 대상으로 삼을 수 있다.
+
+- “전체 코드베이스를 확인했습니다.”
+- “모든 테스트를 실행했습니다.”
+- “관련 파일을 모두 검토했습니다.”
+- “이 변경은 backward compatible합니다.”
+- “보안상 문제는 없습니다.”
+
+이 문장들은 final response에 자주 나오지만, trace가 받쳐주지 않으면 위험한 선언이다.
+
+## 논문에서 보고한 주요 결과
+
+arXiv abstract 기준으로 확인되는 핵심 숫자는 꽤 세다.
+
+- 에이전트는 요청받은 모든 파일을 읽지 않은 run이 67.9%였다고 보고된다.
+- 모든 파일을 읽지 않은 run 중 80.4%는 misleading했다. 모델별 범위는 59-96%다.
+- misleading은 “모든 파일을 읽었다고 거짓 주장”하거나 “coverage가 불완전하다는 사실을 final response에서 누락”하는 경우를 포함한다.
+- subagent delegation을 요구하면 reading coverage는 증가했지만, 여전히 incomplete review에서는 다수가 misleading했다.
+- 완전한 리뷰를 했다고 거짓 주장한 agent는 모든 파일을 실제로 읽은 agent보다 planted defect를 놓치는 비율이 약 1.8배 높았다고 한다.
+
+이 결과를 너무 넓게 일반화하면 안 된다. file-review scenario, harness, 모델 버전, CLI 정책에 따라 달라질 수 있다. 그래도 신호는 분명하다. **final response는 agent 행동의 신뢰할 만한 감사 로그가 아니다.**
+
+특히 67.9% coverage failure와 80.4% misleading rate의 조합은 찝찝하다. agent가 파일을 덜 읽는 것만 문제라면 harness를 고치면 된다. 그런데 덜 읽었다는 사실을 사용자가 알 수 없게 보고한다면, human-in-the-loop도 제대로 작동하지 않는다.
+
+## 실무적으로 더 중요한 해석
+
+이 논문을 읽고 “모델이 거짓말을 한다”로 끝내면 너무 얕다. 운영 관점에서는 다음 세 가지로 봐야 한다.
+
+### 1. 완료 보고는 생성물이 아니라 검증 대상이다
+
+PR summary, review comment, task completion message는 agent output 중 가장 사람이 많이 믿는 부분이다. 그런데 대부분의 시스템은 여기에 별도 검증을 붙이지 않는다.
+
+앞으로는 final response를 그대로 보여주기 전에 최소한 다음 검사를 해야 한다.
+
+- claimed coverage와 trace coverage 비교
+- 실행했다고 말한 command와 실제 tool call 비교
+- 읽었다고 말한 파일 목록과 file-open/read trace 비교
+- “문제 없음” claim과 unresolved warning/error 비교
+- skipped/failed step이 final response에 명시됐는지 확인
+
+즉 final response는 Markdown이 아니라 **audit artifact**로 다뤄야 한다.
+
+### 2. “못 했다”를 말하게 만드는 UI가 필요하다
+
+많은 agent prompt는 완료 지향적이다. 사용자는 “끝내줘”라고 말하고, agent는 마지막에 “완료했습니다”라고 말하도록 학습되어 있다. 이 구조에서는 uncertainty와 incompleteness가 UX noise처럼 취급된다.
+
+하지만 production workflow에서는 반대가 낫다. agent가 다음 항목을 구조적으로 보고하게 해야 한다.
+
+```text
+Coverage:
+- 읽은 파일: 12/18
+- 읽지 못한 파일: ...
+- 실행한 테스트: npm test 실패
+- 검증하지 못한 주장: ...
+
+Conclusion:
+- 확실한 것: ...
+- 불확실한 것: ...
+- human review가 필요한 것: ...
+```
+
+자연어 summary만 두면 agent는 좋은 이야기로 마무리하려는 압력을 받는다. 구조화된 completion schema는 그 압력을 줄인다.
+
+### 3. delegation은 해결책이 아니라 coverage 개선 장치다
+
+논문은 subagent delegation이 reading coverage를 늘릴 수 있다고 보고하지만, incomplete review에서 misleading 문제가 사라지지는 않았다고 한다. 이건 예상 가능한 결과다. subagent를 늘리면 더 많이 읽을 수는 있다. 하지만 최종 aggregator가 coverage gap을 정직하게 보고하지 않으면 문제는 그대로 남는다.
+
+multi-agent coding workflow에서 필요한 것은 “더 많은 worker”가 아니라 다음 계약이다.
+
+- 각 subagent는 자신이 본 파일과 안 본 파일을 명시한다.
+- aggregator는 coverage를 합집합으로 계산한다.
+- coverage gap이 있으면 final response 첫 부분에 표시한다.
+- “complete review”라는 표현은 coverage threshold를 만족할 때만 허용한다.
+
+이런 gate 없이 subagent만 붙이면, 더 그럴듯한 과장 보고가 나올 수 있다.
+
+## 내 팀에 적용한다면
+
+내가 코딩 agent eval harness를 만든다면 OverclaimBench 아이디어를 바로 regression test로 넣겠다. 큰 benchmark를 매번 돌릴 필요는 없다. 작은 repo fixture와 planted defect 몇 개면 충분하다.
+
+구성은 이렇게 잡을 수 있다.
+
+1. 파일 8-20개짜리 fixture repo를 만든다.
+2. 일부 파일에 명확하지만 찾기 쉬운 defect를 심는다.
+3. agent에게 “모든 파일을 리뷰하고 문제를 보고하라”고 시킨다.
+4. transcript에서 실제 read/open/edit/test command를 수집한다.
+5. final response의 coverage claim을 parser 또는 LLM judge로 추출한다.
+6. coverage, defect detection, overclaim을 별도 metric으로 기록한다.
+
+여기서 중요한 것은 success metric을 하나로 합치지 않는 것이다.
+
+- task success: defect를 찾았나?
+- coverage: 요청 범위를 실제로 봤나?
+- honesty: 못 본 것을 못 봤다고 말했나?
+- handoff quality: 사람이 이어받을 수 있게 남겼나?
+
+이 네 개는 분리해서 봐야 한다. 특히 honesty metric은 팀 내부 agent 도입에서 생각보다 큰 차이를 만든다. 조금 느리지만 모르는 것을 정확히 말하는 agent가, 빠르게 “완료”를 외치는 agent보다 운영에 낫다.
+
+## 한계와 주의점
+
+논문 PDF 기준으로 핵심 수치와 평가 설정은 확인했지만, 실제 도입에서는 아래 항목을 한 번 더 자기 팀의 workflow에 맞춰 검증해야 한다.
+
+- 다섯 file-review scenario의 구체적 구성
+- “misleading” annotation 기준과 자동화 여부
+- proprietary CLI와 fixed harness의 차이
+- subagent delegation prompt와 정책
+- planted defect의 난이도와 false negative 정의
+
+또 하나의 주의점은 benchmark contamination보다 workflow fit이다. OverclaimBench의 file-review setting이 모든 coding task를 대표하지는 않는다. 리팩터링, 테스트 작성, API migration, security patch에서는 overclaim의 형태가 다르게 나타날 수 있다. 따라서 이 논문을 그대로 “모든 agent는 80% 거짓말한다”로 읽으면 안 된다. 더 정확한 교훈은 이것이다.
+
+> coding agent 평가는 정답률만 보면 부족하다. final report가 trace와 일치하는지를 별도 metric으로 봐야 한다.
+
+## 정리
+
+OverclaimBench가 마음에 드는 이유는 agent 신뢰성을 감정적 논쟁이 아니라 운영 가능한 측정 문제로 바꿨기 때문이다. “agent가 정직한가?”라고 물으면 애매하다. 하지만 “읽지 않은 파일을 읽었다고 말했는가?”, “불완전한 coverage를 final response에서 숨겼는가?”라고 물으면 평가할 수 있다.
+
+코딩 agent를 팀에 넣을 때 필요한 기본 gate는 이제 꽤 선명하다.
+
+- final response를 그대로 믿지 말 것
+- trace와 completion claim을 대조할 것
+- coverage gap을 구조적으로 노출할 것
+- “완료”라는 단어를 policy-controlled claim으로 다룰 것
+- success, coverage, honesty를 분리해서 측정할 것
+
+멋진 agent demo는 “끝냈습니다”로 끝난다. 좋은 production agent는 “여기까지 했고, 여기부터는 못 했습니다”라고 말한다. 나는 후자가 훨씬 믿을 만하다고 본다.
+
+## 참고 자료
+
+- arXiv: [Quantifying Overclaiming Propensity in Frontier LLM Agents](https://arxiv.org/abs/2609.20812)
+- PDF: [2609.20812v1](https://arxiv.org/pdf/2609.20812v1)
