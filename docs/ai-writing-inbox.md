@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-20 — [논문 리뷰] Chronicle — LLM agent 실패를 cut-point replay로 회귀 테스트하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20625
+- why-now: LLM agent 실패는 모델 비결정성, 변하는 tool state, 긴 trajectory가 섞여 재현하기 어렵다. agent를 production workflow에 넣으려면 “실패한 전체 세션 재실행”보다 더 작은 cut-point에서 상태를 고정하고 replay하는 회귀 테스트가 필요하다.
+- angle: “agent regression은 end-to-end rerun이 아니라 상태 snapshot과 cut-point replay 문제” — tool observation freezing, trajectory slicing, nondeterministic inference boundary, CI 재현성을 개발팀 agent QA 패턴으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, regression-testing, llmops, reproducibility]
+- status: idea
+
+### 2026-09-20 — [논문 리뷰] RAFT — troubleshooting agent를 위한 stateful RAG 프레임워크
+- type: paper
+- source: http://arxiv.org/abs/2609.20754
+- why-now: 기업 고객지원/운영 agent는 과거 case를 단순 문서 chunk로 검색하는 RAG만으로는 현재 진단 상태, 시도한 조치, 다음 확인 질문을 안정적으로 이어가기 어렵다. stateful retrieval은 troubleshooting agent의 실무 병목과 바로 맞닿아 있다.
+- angle: “troubleshooting RAG는 유사 문서 검색이 아니라 case state 전이 관리” — historical case retrieval, diagnostic state, actionable guidance, support workflow handoff를 enterprise agent 설계 관점으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, troubleshooting-agent, stateful-retrieval, customer-support]
+- status: idea
+
+### 2026-09-20 — [논문 리뷰] SoL-Pi — auto-research agent harness를 재귀적으로 효율화하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20519
+- why-now: 코딩/연구 agent가 장시간 unattended loop로 확장되면서 성능뿐 아니라 token efficiency, exploration budget, feedback loop 설계가 비용 병목이 되고 있다. auto-research loop 자체를 recursive하게 개선하는 접근은 agent 운영 레시피로 볼 만하다.
+- angle: “research agent의 확장은 더 큰 모델보다 harness가 스스로 낭비를 줄이는 구조” — recursive improvement loop, token budget, experiment feedback, harness-level optimization을 연구 자동화 운영 관점으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, coding-agent, harness, token-efficiency]
+- status: idea
+
+### 2026-09-20 — [논문 리뷰] StageGuard — long-horizon robot agent의 단계 전환을 distillation으로 학습하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20791
+- why-now: long-horizon robot/embodied agent는 skill 자체보다 “언제 현재 skill을 끝내고 다음 단계로 넘어갈지”를 잘못 판단해 실패하는 경우가 많다. stage transition을 별도 학습 대상으로 분리하면 agent planner와 controller 사이의 안전 경계를 설명하기 좋다.
+- angle: “embodied agent의 실패는 행동 생성보다 stage boundary 판단에서 온다” — hierarchical planning, transition classifier, agentic distillation, recovery checkpoint를 browser/robot agent workflow 설계와 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [embodied-ai, robot-agent, hierarchical-planning, distillation]
+- status: idea
+
+### 2026-09-20 — [논문 리뷰] Observation Supervision — agent RL에서 환경 관찰도 예측 대상으로 삼기
+- type: paper
+- source: http://arxiv.org/abs/2609.20715
+- why-now: agent trajectory 학습은 보통 agent action token에만 loss를 걸고 environment observation은 context로만 둔다. 관찰을 masking하지 않고 예측하게 만드는 방식은 tool-use RL과 world-model 성격의 agent post-training 설계에 직접 연결된다.
+- angle: “agent는 action만 모방하면 안 되고 환경 반응을 예측해야 탐색이 바뀐다” — observation supervision, exploration behavior, tool feedback modeling, rollout 데이터 설계를 agent RL 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, trajectory-learning, tool-use, exploration]
+- status: idea
+
+### 2026-09-20 — Containarium — SSH-native isolation과 eBPF policy를 갖춘 agent runtime
+- type: tech
+- source: https://github.com/FootprintAI/Containarium
+- why-now: production agent가 shell, network, GPU, file system을 만질수록 sandbox는 “Docker 하나 띄우기”를 넘어 egress policy, audit, Kubernetes/LXC backend, MCP-native CLI까지 포함한 runtime 문제가 된다.
+- angle: “agent sandbox는 실행 격리보다 policy가 붙은 운영 runtime” — SSH-native control plane, eBPF egress policy, GPU passthrough, MCP integration, Kubernetes/LXC backend를 tool-use agent 보안 경계로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-runtime, sandbox, mcp, security]
+- status: idea
+
+### 2026-09-20 — Omnigent — Claude Code·Codex·Cursor를 바꿔 끼우는 meta-harness
+- type: tech
+- source: https://github.com/omnigent-ai/omnigent
+- why-now: 팀이 여러 coding agent를 동시에 쓰기 시작하면 harness별 prompt, policy, approval, eval, memory를 각각 관리하는 비용이 커진다. agent를 갈아 끼우는 meta-harness는 벤더 종속을 줄이고 내부 policy를 재사용하는 관점에서 볼 만하다.
+- angle: “coding agent 선택은 IDE 취향이 아니라 공통 harness 위의 provider routing 문제” — Claude Code/Codex/Cursor orchestration, policy enforcement, harness swapping, eval surface를 개발자 AI 워크플로로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, meta-harness, orchestration, developer-workflow]
+- status: idea
+
+### 2026-09-20 — Qwen Code — terminal-native coding agent를 오픈소스로 뜯어보기
+- type: tech
+- source: https://github.com/QwenLM/qwen-code
+- why-now: terminal coding agent가 Claude Code/Codex CLI 중심에서 오픈소스 구현으로 확장되면서, loop 구조·tool boundary·context 관리·모델 호환성을 직접 비교할 수 있는 코드베이스가 중요해졌다.
+- angle: “terminal coding agent의 기본 골격은 무엇인가” — TUI/CLI loop, file edit tool, shell execution, context packing, 오픈소스 agent runtime을 팀 내부 harness 설계 체크리스트로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, terminal-agent, qwen, open-source]
+- status: idea
+
 ### 2026-09-19 — [논문 리뷰] Obstacle-Aware Harness — robot coding agent의 안전 constraint를 실행 하네스로 강제하기
 - type: paper
 - source: http://arxiv.org/abs/2609.20822
