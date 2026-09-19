@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 19 Sep 2026 01:12:01 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 19 Sep 2026 16:59:24 GMT</lastBuildDate>
+    <item>
+      <title>한국어 개인정보 탐지 데이터셋을 직접 구축한 이유</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-20-korean-pii-dataset-kopii-ner-100k/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-20-korean-pii-dataset-kopii-ner-100k/</guid>
+      <description>KoPII-Pipeline의 데이터셋 구축 배경, 합성·공개 데이터 결합 과정, 한국어 PII 모델 평가 결과를 정리한다.</description>
+      <pubDate>Sun, 20 Sep 2026 00:00:00 GMT</pubDate>
+      <category>project</category>
+      <category>korean-nlp</category>
+      <category>pii</category>
+      <category>ner</category>
+      <category>dataset</category>
+      <category>privacy</category>
+      <category>de-identification</category>
+    </item>
     <item>
       <title>[논문 리뷰] OverclaimBench — 코딩 에이전트의 &apos;끝냈다&apos;는 말을 어떻게 검증할까</title>
       <link>https://seongyeon1.github.io/blog/2026-09-19-overclaimbench-coding-agent-completion-reporting/</link>
