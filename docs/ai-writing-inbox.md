@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-21 — [논문 리뷰] Obstacle-Aware Harness — coding robot agent의 안전 제약을 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20822
+- why-now: coding agent가 robot controller를 직접 작성하는 패턴이 실제 조작 task로 확장되면서, “목표 달성”과 “건드리면 안 되는 장애물 회피”를 동시에 만족하는지 별도 평가해야 한다. 논문은 agent가 장애물을 trace에서 언급하고 prompt로 금지되어 있어도 planning 단계에서 안전 제약을 우선순위로 승격하지 못해 충돌하는 실패를 보여준다.
+- angle: “agent safety는 instruction 문구가 아니라 harness가 제약을 실행 가능한 우선순위로 만드는 문제” — route/contact phase 분해, obstacle-aware verifier, 안전 제약 regression, robot/browser agent에 공통인 action boundary 설계를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [robot-agent, coding-agent, safety-eval, harness]
+- status: idea
+
+### 2026-09-21 — [논문 리뷰] RetireOPD — agentic RL에서 self-teacher를 언제 은퇴시킬까
+- type: paper
+- source: http://arxiv.org/abs/2609.20784
+- why-now: multi-turn agent RL은 trajectory 전체 reward가 sparse해서 self on-policy distillation으로 token-level supervision을 보강하지만, privileged self-teacher가 항상 믿을 만한 것은 아니다. agent post-training에서 teacher signal의 수명과 퇴출 기준을 설계해야 할 시점이다.
+- angle: “agent RL의 distillation은 좋은 teacher를 고르는 문제보다 나쁜 teacher를 제때 은퇴시키는 문제” — privileged skill, dense supervision, teacher reliability, rollout reward와 distillation loss의 conflict를 학습 운영 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, distillation, post-training, evaluation]
+- status: idea
+
+### 2026-09-21 — [논문 리뷰] State-Conditioned Evidence — coding agent에게 “이미 읽은 것”을 빼고 충분한 근거 찾기
+- type: paper
+- source: http://arxiv.org/abs/2609.20050
+- why-now: coding agent가 issue 중간까지 진행하면 일반 retriever가 높게 점수 주는 passage는 이미 context에 들어간 경우가 많다. 다음 결정을 위해 필요한 것은 단일 passage relevance가 아니라 현재 agent state를 보완하는 최소 충분 evidence set이다.
+- angle: “coding agent retrieval은 top-k relevance가 아니라 state complement 문제” — captured agent state, minimal sufficient evidence, 중복 context 제거, PR triage와 next-action verifier를 repo-scale RAG 설계로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, retrieval, rag, context-management]
+- status: idea
+
+### 2026-09-21 — [논문 리뷰] JustMem — 장기 대화 메모리에서 just-enough retrieval 하기
+- type: paper
+- source: http://arxiv.org/abs/2609.19877
+- why-now: 장기 개인화 agent는 여러 세션에 흩어진 기억을 필요할 만큼만 꺼내야 한다. 무작정 context를 늘리면 비용과 privacy exposure가 커지고, compression만 믿으면 답변에 필요한 세부 정보가 사라진다.
+- angle: “agent memory의 품질은 많이 기억하는 것이 아니라 query별 접근 방식을 고르는 것” — memory access mode, sufficiency/compactness, multi-session evidence, 개인 assistant의 retrieval budget과 privacy gate를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, long-term-memory, retrieval, personalization]
+- status: idea
+
+### 2026-09-21 — [논문 리뷰] PrefixBench-H100 — prefix reuse가 LLM serving TTFT를 얼마나 줄이나
+- type: paper
+- source: http://arxiv.org/abs/2609.19657
+- why-now: system prompt, RAG template, multi-turn agent history처럼 반복 prefix가 많은 serving workload에서 vLLM/TensorRT-LLM의 KV-cache prefix reuse가 실제 latency를 얼마나 줄이는지 계측이 필요하다. agent runtime 비용 최적화와 바로 연결된다.
+- angle: “agent serving 최적화는 model FLOPs보다 prefix/state reuse contract를 설계하는 일” — TTFT, KV-cache reuse, prompt templating, cache hit 조건, H100 serving 관찰 지표를 운영 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-serving, kv-cache, inference, agent-runtime]
+- status: idea
+
+### 2026-09-21 — AgentCompass — LLM/VLM agent capability를 체계적으로 평가하는 인프라
+- type: tech
+- source: https://github.com/open-compass/AgentCompass
+- why-now: agent benchmark가 분야별로 흩어지면서 단일 leaderboard보다 capability taxonomy, task adapter, execution log, 재현 가능한 harness를 한데 묶는 평가 인프라가 필요해졌다. AgentCompass는 OpenCompass 계열의 extensible agent evaluation infrastructure로 볼 만하다.
+- angle: “agent eval 플랫폼은 점수표가 아니라 capability map과 실행 로그 schema” — LLM/VLM agent task 분류, evaluator plugin, 결과 비교, 사내 agent regression suite로 가져올 수 있는 구조를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, benchmark, opencompass, multimodal-agent]
+- status: idea
+
+### 2026-09-21 — ASSERT — 요구사항 기반으로 agent behavior test를 생성하는 eval harness
+- type: tech
+- source: https://github.com/responsibleai/ASSERT
+- why-now: production LLM application은 “벤치마크 점수”보다 요구사항별 행동 테스트와 regression artifact가 더 중요하다. ASSERT는 behavior-specific test case 생성, arbitrary target 실행, OTel-traced agent 결과 검사를 local-first artifact로 남기는 방향이 실무형이다.
+- angle: “agent QA는 prompt 평가가 아니라 requirement-to-test pipeline” — 요구사항 분해, 테스트 케이스 생성, OTel trace 연동, CI gate와 failure dossier를 LLM app 운영 방식으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, llmops, testing, observability]
+- status: idea
+
+### 2026-09-21 — Wax — Apple Silicon에서 한 파일로 쓰는 multimodal agent memory layer
+- type: tech
+- source: https://github.com/christopherkarani/Wax
+- why-now: Claude Code, Codex, local assistant처럼 여러 agent가 개인 맥에서 돌아갈수록 서버 없이 빠르게 공유되는 local memory substrate가 매력적이다. Wax는 텍스트·사진·비디오를 single-file memory로 묶고 Apple Silicon에서 sub-millisecond RAG를 지향한다.
+- angle: “personal agent memory는 SaaS DB보다 local-first file substrate가 맞을 때가 있다” — single-file storage, multimodal indexing, local privacy, agent 간 memory portability, 백업/충돌/삭제 정책을 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, local-first, multimodal-rag, apple-silicon]
+- status: idea
+
 ### 2026-09-20 — [논문 리뷰] Chronicle — LLM agent 실패를 cut-point replay로 회귀 테스트하기
 - type: paper
 - source: http://arxiv.org/abs/2609.20625
