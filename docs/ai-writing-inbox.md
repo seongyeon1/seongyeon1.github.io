@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-21 — [논문 리뷰] Workspace Models — 로봇 agent memory를 saliency-supervised state로 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.20820
+- why-now: embodied/coding agent가 실제 로봇 조작으로 확장되면서 전체 trajectory를 context에 밀어 넣는 방식은 spurious correlation과 비용을 키운다. 이 논문은 long-term robotic memory를 task-relevant saliency supervision으로 경량화하는 방향을 제시해, agent memory를 “많이 저장”이 아니라 “정책에 필요한 상태만 유지”하는 문제로 보게 한다.
+- angle: “agent memory는 vector DB 이전에 state abstraction 문제” — salient workspace state, history compression, manipulation policy conditioning, 개인 assistant·browser agent memory에도 적용할 수 있는 relevance gate를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [embodied-agent, agent-memory, state-abstraction, robotics]
+- status: idea
+
+### 2026-09-21 — [논문 리뷰] SAFARI — 안전 중요 워크플로에서 LLM agent 위험 분석 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20584
+- why-now: LLM이 자동차·산업 안전 같은 regulated workflow의 hazard analysis 보조자로 쓰이기 시작했지만, 일반 QA benchmark로는 functional-safety reasoning과 traceability를 측정하기 어렵다. SAFARI는 LLM-assisted HARA를 산업 benchmark로 다루며 agent가 규정·위험·완화책을 어떻게 연결하는지 볼 수 있게 한다.
+- angle: “safety-critical agent eval은 정답률보다 hazard trace와 auditability” — domain ontology, risk assessment rubric, evidence trace, human reviewer handoff를 production agent QA 관점으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, safety-critical, benchmark, audit]
+- status: idea
+
+### 2026-09-21 — [논문 리뷰] Prediction-Powered Smoothing — agent 평가를 적은 라벨로 안정화하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20758
+- why-now: 배포된 agent 평가는 task/domain/user segment별 성능 편차를 봐야 하지만 모든 slice를 라벨링하기에는 비용이 크다. 이 논문은 prediction-powered inference 계열로 disaggregated AI evaluation을 smoothing/validation해, 작은 수동 라벨 세트와 예측 모델을 결합하는 평가 운영 패턴을 제안한다.
+- angle: “agent eval의 병목은 benchmark 실행보다 slice별 신뢰구간” — PPI, disaggregated metric, label budget, drift validation, CI/reporting에 넣을 수 있는 statistical eval layer를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, statistics, llmops, monitoring]
+- status: idea
+
+### 2026-09-21 — [논문 리뷰] Score Centering — LLM RL의 training-inference mismatch 완화하기
+- type: paper
+- source: http://arxiv.org/abs/2609.20807
+- why-now: agent post-training과 tool-use RL에서는 training engine과 inference engine의 작은 차이가 reward optimization을 흔드는 문제가 반복된다. score centering은 off-policy RL 안정화를 위한 간단한 보정으로, agentic RL 운영에서 reward scale과 engine mismatch를 어떻게 관리할지에 대한 실무적 힌트를 준다.
+- angle: “agent RL 안정화는 알고리즘보다 score contract를 맞추는 문제일 수 있다” — TIM, off-policy update, reward normalization, rollout/eval engine pinning, agent post-training 실험 체크리스트로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, post-training, reinforcement-learning, evaluation]
+- status: idea
+
+### 2026-09-21 — [논문 리뷰] Think Thrice Before Reranking — RAG reranker의 reasoning variance 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.20131
+- why-now: LLM 기반 reranking은 RAG 성능을 끌어올리지만 단일 reasoning trajectory에 의존하면 ranking이 흔들리고 latency도 커진다. 이 논문은 multi-perspective evidence와 reasoning integration으로 reranking 판단을 안정화하는 방향을 다뤄 agent RAG의 evidence selection 품질과 연결된다.
+- angle: “RAG reranking은 LLM에게 한 번 물어보는 judge가 아니라 evidence aggregation pipeline” — multi-perspective reasoning, ranking stability, token/latency budget, citation-aware RAG verifier 설계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, reranking, evidence, evaluation]
+- status: idea
+
+### 2026-09-21 — Deuz-SDK — durable execution과 long-term memory를 묶은 TypeScript agent framework
+- type: tech
+- source: https://github.com/Deuz-AI/Deuz-SDK
+- why-now: production agent framework 선택 기준이 단순 tool call 지원에서 durable execution, memory, RAG, MCP, human approval, plugin 경계까지 확장되고 있다. Deuz-SDK는 zero-dependency TypeScript SDK라는 포지션으로 agent app의 제어면을 한 repo에서 볼 수 있다.
+- angle: “agent framework는 모델 wrapper가 아니라 실행·메모리·승인 control plane” — durable workflow, hybrid RAG, MCP tool calling, HITL approval, backend 팀이 도입 전 확인할 architecture checklist를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, typescript, mcp, durable-execution]
+- status: idea
+
+### 2026-09-21 — future-agi — eval·observability·simulation을 한 루프로 묶는 agent improvement platform
+- type: tech
+- source: https://github.com/future-agi/future-agi
+- why-now: agent 운영은 tracing만으로 끝나지 않고 dataset, eval, simulation, gateway, guardrail이 같은 개선 루프에 있어야 한다. future-agi는 open-source end-to-end platform을 표방해 Langfuse류 observability와 eval harness 사이의 경계를 비교하기 좋다.
+- angle: “agent observability의 다음 단계는 trace를 eval dataset과 simulation으로 되돌리는 loop” — trace ingestion, eval dataset, synthetic simulation, gateway/guardrail, CI·production feedback 연결 방식을 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, observability, simulation, llmops]
+- status: idea
+
+### 2026-09-21 — OpenLore — LLM 없는 hot path로 coding agent memory와 guardrail 만들기
+- type: tech
+- source: https://github.com/clay-good/OpenLore
+- why-now: coding agent의 memory/guardrail을 매 step LLM judge에 맡기면 비용·지연·비결정성이 커진다. OpenLore는 deterministic local-first memory와 guardrails를 표방해, agent runtime에서 LLM을 쓰지 않는 제어 경로를 설계하는 사례로 볼 만하다.
+- angle: “agent guardrail은 똑똑한 judge보다 deterministic hot path가 필요한 순간이 있다” — local-first memory, rule-based guardrail, coding-agent context reuse, failure mode와 LLM-in-the-loop 경계 설정을 repo 소개로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, memory, guardrails, local-first]
+- status: idea
+
 ### 2026-09-21 — [논문 리뷰] Obstacle-Aware Harness — coding robot agent의 안전 제약을 평가하기
 - type: paper
 - source: http://arxiv.org/abs/2609.20822
