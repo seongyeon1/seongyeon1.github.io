@@ -1,0 +1,196 @@
+---
+title: "System 1 의사결정 모델 — Jev와 Laya가 보여주는 생성 없는 판단의 방향"
+date: "2026-09-21"
+category: "concept"
+tags: ["system-one", "decision-model", "classification", "calibration", "agent-runtime", "laya", "jev"]
+summary: "Jev의 비공개 API 분석과 오픈소스 대안 Laya를 통해, 모든 AI 판단을 텍스트 생성으로 처리하지 않아도 되는 이유와 운영 설계 포인트를 정리한다."
+---
+
+LLM 애플리케이션을 만들다 보면 이상한 관성이 생긴다. 입력이 들어오면 일단 모델에게 긴 프롬프트를 주고, 모델은 JSON 비슷한 문장을 생성하고, 우리는 다시 그 문자열을 파싱해서 `department`, `risk`, `priority`, `should_escalate` 같은 값을 꺼낸다.
+
+그런데 실제 운영에서 필요한 판단은 대부분 문장이 아니다.
+
+- 이 고객 문의는 결제팀으로 보내야 하는가?
+- 이 이메일은 피싱인가?
+- 이 티켓은 긴급 대응 대상인가?
+- 이 요청은 도구 실행이 필요한가?
+- 이 입력은 프롬프트 인젝션 위험이 있는가?
+
+이런 문제는 길고 그럴듯한 답변보다, 제한된 선택지에 대한 확률과 점수가 더 유용하다. 최근 GeekNews에 올라온 두 글은 이 방향을 잘 보여준다. 하나는 TypeSafe AI의 비공개 모델 **Jev**를 API 실험으로 역추적한 분석이고, 다른 하나는 Jev의 오픈소스 대안으로 나온 **Laya**다.
+
+핵심은 단순하다. 모든 판단을 자동회귀 텍스트 생성으로 만들 필요는 없다. 어떤 판단은 입력을 한 번 읽고, 여러 질문에 대해 숫자로 바로 답하는 편이 더 빠르고, 더 저렴하고, 운영 정책과 연결하기 쉽다.
+
+## System 1 모델이 하려는 일
+
+Jev와 Laya가 공통으로 겨냥하는 영역은 흔히 말하는 **System 1** 판단이다. 깊은 추론이나 긴 계획이 아니라, 반복적이고 구조화된 빠른 판단이다.
+
+예를 들면 이런 형태다.
+
+```ts title="decision-schema.ts"
+type TicketDecision = {
+  department: {
+    choice: "billing" | "technical" | "sales" | "legal"
+    probabilities: Record<string, number>
+  }
+  urgency: {
+    score: 0 | 1 | 2 | 3
+    probabilities: Record<string, number>
+  }
+  shouldEscalate: {
+    probability: number
+  }
+}
+```
+
+기존 생성형 LLM 방식에서는 모델에게 이 구조를 설명하고, JSON으로 답하라고 하고, 결과를 검증한다. 반면 System 1 의사결정 모델은 애초에 텍스트를 생성하지 않고, 정해진 선택지와 점수에 대한 확률을 출력한다.
+
+이 차이는 작아 보이지만 운영에서는 꽤 크다.
+
+- 출력 JSON이 깨질 일이 줄어든다.
+- 토큰 생성 지연을 기다릴 필요가 없다.
+- 모델의 답을 바로 정책 함수와 연결할 수 있다.
+- 같은 입력에 대해 여러 질문을 병렬로 평가할 수 있다.
+- 비용을 생성 토큰 수가 아니라 판단 단위로 생각할 수 있다.
+
+물론 숫자로 나온다고 해서 곧바로 신뢰할 수 있는 확률이 되는 것은 아니다. 중요한 것은 **확률을 출력하는 인터페이스**와 **그 확률이 실제 결과와 맞도록 보정되어 있는가**를 구분하는 일이다.
+
+## Jev: 문장 대신 확률 분포를 반환하는 비공개 API
+
+TypeSafe AI의 Jev는 공통 `state`, 여러 `questions`, 허용된 답을 받아 텍스트 생성 없이 확률 분포를 반환하는 모델로 소개됐다. GeekNews에 정리된 분석은 Jev에 약 1만 번의 API 호출을 보내면서 응답 시간, 토큰 과금, 질문 간 정보 전달, 선택지 변화에 따른 확률 변화를 관찰한 내용이다.
+
+분석에서 가장 흥미로운 부분은 세 가지다.
+
+첫째, Jev의 `output_tokens`는 실제 디코딩 횟수라기보다 과금용 집계에 가까워 보인다. 선택지가 늘어나 응답 JSON이 길어져도 지연 시간이 선형으로 증가하지 않았고, 출력 토큰 수와 처리 시간이 강하게 연결되지 않았다.
+
+둘째, 공통 입력을 한 번 처리하고 여러 질문을 격리된 분기로 평가하는 구조가 유력하다. 같은 고객 티켓을 놓고 `department`, `urgency`, `should_escalate`를 각각 따로 LLM 호출로 묻는 대신, 공통 상태 표현을 공유한 뒤 질문별 판단을 병렬로 수행하는 방식이다.
+
+셋째, 선택지의 순서나 무관한 선택지 추가가 기존 답의 확률을 바꿀 수 있다. 즉, `billing`과 `technical`만 있을 때의 확률과, 거기에 `other`를 추가했을 때의 확률이 완전히 독립적이지 않다. 운영 정책에서 `probability > 0.8` 같은 임계값으로 자동 실행을 걸어 둔다면 이 점은 중요하다. 같은 입력이라도 스키마 설계가 바뀌면 행동이 달라질 수 있기 때문이다.
+
+<Callout type="warning">
+Jev의 `confidence`는 별도의 정답률 예측기가 아니라 답의 분포에서 계산한 지표로 보인다. 숫자가 있다고 해서 곧바로 업무별 신뢰성이 보장되는 것은 아니다. 실제 운영에서는 업무 데이터로 calibration을 다시 확인해야 한다.
+</Callout>
+
+Jev 분석의 결론은 꽤 실용적이다. 의사결정 서비스의 역할은 근거를 읽고 허용된 결과를 비교하며 불확실성을 드러내는 것이다. 이 작업을 꼭 자연어 문장으로 우회할 필요는 없다.
+
+## Laya: Jev 아이디어를 오픈소스로 구현하려는 시도
+
+Laya는 Jev와 비슷한 문제의식을 오픈소스 쪽에서 풀려는 모델군이다. GitHub 코드, Hugging Face 체크포인트, PyPI 패키지, 데모를 공개했고 Apache 2.0 라이선스를 내세운다.
+
+Laya가 제공하는 기본 판단 타입은 세 가지다.
+
+| 타입 | 의미 | 예시 |
+| --- | --- | --- |
+| `choice` | 여러 선택지 중 하나를 고르고 확률 분포 반환 | 부서 분류, 카테고리 라우팅 |
+| `score` | 순서가 있는 점수 척도에서 기대값과 분포 반환 | 긴급도 0~3, 위험도 등급 |
+| `noul` | 불리언 질문에 대해 `P(true)` 반환 | 피싱 여부, escalation 필요 여부 |
+
+Laya의 차별점은 공개 실행 가능성이다. GeekNews 요약 기준으로 영어용, 다국어용, 업무 특화 모델이 공개되어 있고, 자체 GPU 측정에서 단일 질문은 32.8ms, 질문 10개 배치에서는 질문당 7.2ms 수준의 지연을 제시한다. 업무 판단 벤치마크에 맞춰 미세조정한 typed-decisions 모델은 정확도 76.6%를 기록했다고 한다.
+
+다만 이 수치들은 개발진이 제공한 측정과 비교표가 포함되어 있으므로, 그대로 일반화하기보다는 "이런 설계가 어느 정도 지연 시간과 비용 구조를 노릴 수 있다" 정도로 보는 편이 안전하다.
+
+## 왜 에이전트 런타임에서 중요할까
+
+에이전트 시스템에서 가장 비싼 부분은 꼭 긴 답변 생성만이 아니다. 실제로는 작은 판단이 매우 많이 반복된다.
+
+- 이 tool call을 실행해도 되는가?
+- 이 사용자의 요청은 읽기 전용인가, 외부 side effect가 있는가?
+- 이 메시지는 사람에게 escalation해야 하는가?
+- 이 결과는 재시도해야 하는 실패인가?
+- 이 문서는 민감정보를 포함하는가?
+- 이 작업은 어떤 워커에게 라우팅해야 하는가?
+
+이런 판단을 매번 큰 LLM에게 자연어로 묻고 JSON을 생성하게 하면, 지연 시간과 비용이 누적된다. 더 큰 문제는 운영 정책과 모델 출력을 연결하기 어렵다는 점이다. "위험해 보입니다"라는 문장보다 `risk = 0.83`이 정책 함수에는 훨씬 직접적이다.
+
+예를 들어 긴급 대응의 비용을 1, 긴급 사례를 놓치는 비용을 9라고 두면 단순화한 임계값은 다음처럼 표현할 수 있다.
+
+```ts title="policy.ts"
+function shouldEscalate(probability: number) {
+  const falsePositiveCost = 1
+  const falseNegativeCost = 9
+  const threshold = falsePositiveCost / (falsePositiveCost + falseNegativeCost)
+
+  return probability > threshold
+}
+```
+
+이런 방식은 모델이 실제로 보정된 확률을 낼 때만 의미가 있다. 하지만 적어도 인터페이스가 숫자로 되어 있으면, 운영자는 정책을 명시적으로 설계하고 로그로 검증할 수 있다. 반대로 자연어 confidence 문장을 파싱하는 방식은 정책도 흐리고 책임 경계도 흐려진다.
+
+## 주의할 점: 확률 출력은 만능이 아니다
+
+System 1 의사결정 모델이 매력적이라고 해서 모든 판단을 여기에 맡기면 안 된다. 특히 다음 네 가지는 조심해야 한다.
+
+### 1. 스키마가 바뀌면 확률도 바뀔 수 있다
+
+Jev 분석에서 보듯 선택지 추가와 순서 변경이 기존 선택지의 확률을 바꿀 수 있다. 따라서 운영 중 스키마를 바꿀 때는 단순 코드 변경이 아니라 모델 행동 변경으로 봐야 한다.
+
+실무에서는 스키마 버전을 남기고, 주요 임계값에 대해 전후 비교를 해야 한다.
+
+```ts title="decision-log.ts"
+type DecisionLog = {
+  schemaVersion: string
+  modelVersion: string
+  inputHash: string
+  questionId: string
+  options: string[]
+  probabilities: Record<string, number>
+  actionTaken: string
+}
+```
+
+### 2. confidence와 calibration은 다르다
+
+`confidence = 0.9`라는 값이 있다고 해서 실제 정답률이 90%라는 뜻은 아니다. calibration은 같은 0.9 예측을 받은 사례 집합에서 실제로 약 90%가 맞는지를 보는 문제다.
+
+업무 데이터가 바뀌면 calibration도 바뀐다. 고객 문의, 보안 경보, 내부 문서 분류처럼 분포가 다른 작업에서는 각 작업별로 검증해야 한다.
+
+### 3. 언어와 도메인 라우팅이 먼저일 수 있다
+
+Laya 글에서 흥미로운 부분은 언어 라우팅이다. 영어용 체크포인트가 비라틴 문자에서 낮은 정확도를 보이면서도 높은 confidence를 낼 수 있다는 점이 강조된다. 이 경우 confidence 임계값만으로는 실패를 걸러낼 수 없다.
+
+즉, 모델에게 묻기 전에 "이 입력을 어떤 모델이 읽어야 하는가"를 먼저 결정해야 한다. 다국어 서비스라면 이 단계가 calibration보다 앞에 올 수 있다.
+
+### 4. 복잡한 추론은 여전히 다른 계층이 필요하다
+
+System 1 모델은 빠른 판단에는 좋지만, 긴 계획, 다단계 추론, 새로운 도구 사용법 합성, 모호한 요구사항 협상에는 적합하지 않다. 에이전트 런타임에서는 빠른 판단 모델과 생성형 LLM을 계층화하는 편이 자연스럽다.
+
+## 내가 실무에 적용한다면
+
+당장 모든 LLM 호출을 Jev나 Laya 같은 구조로 바꾸기보다는, 반복적이고 구조화된 판단부터 분리하는 것이 좋다.
+
+1. **LLM이 자주 JSON만 생성하는 지점 찾기**  
+   라우팅, 위험도 분류, 우선순위, 가드레일, 재시도 판단처럼 답변 문장이 필요 없는 곳을 찾는다.
+
+2. **선택지와 정책을 먼저 고정하기**  
+   모델 프롬프트보다 먼저 `choice`, `score`, `boolean` 스키마와 action threshold를 정의한다.
+
+3. **로그를 확률 중심으로 남기기**  
+   최종 선택만 저장하지 말고 전체 확률 분포, 선택지 순서, 스키마 버전, 모델 버전을 함께 남긴다.
+
+4. **업무 데이터로 calibration 확인하기**  
+   accuracy만 보지 말고 ECE, Brier score, threshold별 precision/recall을 본다.
+
+5. **생성형 LLM은 예외 처리와 설명에 사용하기**  
+   빠른 판단 모델이 애매한 구간에 들어오면 그때 더 큰 LLM이나 사람 검토로 넘긴다.
+
+개인적으로는 이 방향이 에이전트 시스템에서 꽤 중요해질 것 같다. 지금은 많은 시스템이 "작은 판단"까지 전부 큰 LLM에게 맡기고 있다. 하지만 에이전트가 많아질수록, runtime 내부에는 빠르고 보정된 decision layer가 필요해진다.
+
+## 정리
+
+Jev와 Laya가 보여주는 흐름은 "LLM 다음 세대"라기보다, LLM 시스템을 더 잘게 나누는 방향에 가깝다.
+
+- 생성형 LLM은 설명, 계획, 합성에 강하다.
+- System 1 의사결정 모델은 반복적이고 제한된 판단에 강하다.
+- 운영 시스템에서는 둘을 섞어야 한다.
+- 확률 출력은 유용하지만, calibration과 스키마 안정성 검증 없이는 위험하다.
+
+결국 질문은 "이 판단을 꼭 문장으로 생성해야 하는가"다. 답이 아니라면, 우리는 더 작고 빠른 의사결정 모델을 별도 계층으로 두는 쪽을 진지하게 고민해야 한다.
+
+## 참고 자료
+
+- [GeekNews: Jev의 아키텍처를 파헤치다](https://news.hada.io/topic?id=33930)
+- [GeekNews: Laya - 직접 실행하고 학습할 수 있는 Jev의 오픈소스 대안](https://news.hada.io/topic?id=33944)
+- [TypeSafe AI: Introducing System One Models and Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev)
+- [TypeSafe AI API Docs](https://docs.typesafe.ai/api)
+- [Laya GitHub Repository](https://github.com/NandhaKishorM/laya)
+- [Laya Hugging Face Collection](https://huggingface.co/convaiinnovations/laya)
+- [Laya PyPI Package](https://pypi.org/project/laya/)
