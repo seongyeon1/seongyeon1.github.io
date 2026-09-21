@@ -11074,3 +11074,107 @@
 - suggested-category: tutorial
 - suggested-tags: [agent-memory, vector-search, knowledge-graph, lifecycle]
 - status: idea
+
+### 2026-09-22 — [논문 리뷰] Designer-RSI: user traffic에서 graphic design agent의 procedural memory 진화시키기
+- type: paper
+- source: https://arxiv.org/abs/2609.22086
+- why-now: agentic graphic design처럼 장기·다단계 산출물을 만드는 작업은 정답 oracle이 약해서, 실제 사용자 traffic을 procedural memory로 축적하고 지속 개선하는 방식이 중요해지고 있다.
+- angle: “design agent의 학습 루프는 prompt 튜닝이 아니라 edit trace에서 절차적 기억을 진화시키는 운영 문제” — artifact state, preference signal, memory update, regression eval을 콘텐츠 생성 agent 관점으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, design-agent, procedural-memory, eval]
+- status: idea
+
+### 2026-09-22 — [논문 리뷰] APort Vault: tool-using agent의 결제 승인 공격을 benchmark로 만들기
+- type: paper
+- source: https://arxiv.org/abs/2609.22076
+- why-now: agent가 결제·구매·예약 같은 실제 monetary action을 수행하기 시작하면서, prompt injection보다 authorization policy와 approval boundary를 정량 평가하는 benchmark가 필요해졌다.
+- angle: “payment agent safety는 모델 안전성이 아니라 권한·정책·감사 로그의 end-to-end contract” — Open Agent Passport, 공격 replay, policy violation taxonomy, 결제 agent guardrail 설계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-safety, authorization, benchmark, tool-use]
+- status: idea
+
+### 2026-09-22 — [논문 리뷰] CodeMidas: 코드 자체에서 agentic coding RL environment 확장하기
+- type: paper
+- source: https://arxiv.org/abs/2609.22068
+- why-now: coding agent를 RL로 개선하려면 다양한 task와 신뢰 가능한 verifier가 필요한데, issue·test artifact가 부족한 repo에서도 task를 추출하는 환경 생성 방법이 병목이다.
+- angle: “coding agent 데이터 flywheel은 benchmark 수집이 아니라 repo를 executable RL environment로 변환하는 문제” — code-derived task, verifier synthesis, rollout cost, 내부 코드베이스 적용 한계를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, reinforcement-learning, verifier, benchmark]
+- status: idea
+
+### 2026-09-22 — [논문 리뷰] Memory Decision Controller: LLM agent가 검색된 기억을 언제 믿어야 하나
+- type: paper
+- source: https://arxiv.org/abs/2609.22043
+- why-now: long-term memory agent가 늘면서 “잘 검색하기”보다 stale·contradictory memory를 언제 버리고 언제 쓸지 결정하는 trust controller가 실제 품질을 좌우한다.
+- angle: “agent memory의 핵심은 retrieval ranker가 아니라 confidence·consistency·context 신호를 분리한 decision boundary” — three-signal complementarity, conflict handling, memory QA regression을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, retrieval, trust, rag]
+- status: idea
+
+### 2026-09-22 — [논문 리뷰] AutoViewMem: 장기 대화 메모리를 self-configuring view로 구성하기
+- type: paper
+- source: https://arxiv.org/abs/2609.21940
+- why-now: 개인화 agent는 대화가 길어질수록 고정 schema나 단일 granularity memory만으로는 일관성·검색 비용·privacy trade-off를 맞추기 어렵다.
+- angle: “memory schema를 사람이 고정하는 대신 agent가 orthogonal view를 구성하게 만들기” — view generation, memory granularity, personalization consistency, 운영상 삭제/검증 정책을 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-term-memory, personalization, conversational-agent, memory-schema]
+- status: idea
+
+### 2026-09-22 — Skybridge: MCP Apps와 ChatGPT Apps를 잇는 type-safe full-stack framework
+- type: tech
+- source: https://github.com/alpic-ai/skybridge
+- why-now: MCP와 ChatGPT Apps 생태계가 동시에 커지면서, agent-facing tool 서버와 user-facing React UI를 같은 타입 계약으로 묶는 full-stack 패턴이 중요해지고 있다.
+- angle: “agent app framework의 다음 추상화는 tool schema + UI component + auth/runtime을 한 계약으로 다루는 것” — TypeScript contract, React-powered UI, MCP/App bridge, 배포 경계를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-framework, typescript, chatgpt-apps]
+- status: idea
+
+### 2026-09-22 — NAGI Bench: 같은 prompt를 여러 agent harness에서 one-shot 비교하기
+- type: tech
+- source: https://github.com/nagi-studio/nagi-bench
+- why-now: 같은 모델이라도 harness, tool boundary, context packaging이 달라지면 결과가 크게 달라져서, 모델+하네스 조합을 runnable artifact로 비교하는 평가 방식이 필요하다.
+- angle: “agent eval의 단위는 모델명이 아니라 model+harness+artifact” — 동일 prompt, side-by-side runnable outputs, failure taxonomy, 사내 harness 선택 실험으로 연결한다.
+- difficulty: low
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, harness, benchmark, reproducibility]
+- status: idea
+
+### 2026-09-22 — Kody: 여러 MCP host를 넘나드는 portable agent home과 memory
+- type: tech
+- source: https://github.com/kentcdodds/kody
+- why-now: Claude, ChatGPT, Cursor, Codex처럼 여러 agent host를 동시에 쓰는 개발자가 늘면서 memory·keys·automation을 특정 host에 가두지 않는 portable home layer가 필요해졌다.
+- angle: “개인 agent 운영의 control plane은 chat app 안이 아니라 portable MCP home” — Cloudflare Workers 기반 memory/key/automation, host portability, 보안 경계와 developer workflow를 repo 소개로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: project
+- suggested-tags: [mcp, agent-memory, developer-workflow, portable-agent]
+- status: idea
