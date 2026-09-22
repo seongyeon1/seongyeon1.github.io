@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-23 — [논문 리뷰] Harness-Zero — agent harness를 모델 내부 능력으로 distill하기
+- type: paper
+- source: http://arxiv.org/abs/2609.24974
+- why-now: agent 성능 향상이 prompt·tooling·memory·control flow 같은 외부 harness에 크게 묶이면서, 좋은 harness를 특정 배포 환경 없이도 일반화하는 문제가 중요해졌다. Harness-Zero는 “agent-as-harness” distillation으로 domain/model별 harness routing 의존을 줄이는 방향을 제시한다.
+- angle: “agent harness 최적화의 다음 단계는 좋은 loop를 모델이 내재화하게 만드는 것” — harness distillation, deployment-time harness dependency, tool-use policy transfer, coding/browser agent runtime 단순화 가능성을 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, tool-use, distillation, agent-runtime]
+- status: idea
+
+### 2026-09-23 — [논문 리뷰] RRSI — self-improving agent harness를 regularization으로 안정화하기
+- type: paper
+- source: http://arxiv.org/abs/2609.24972
+- why-now: agent harness를 자동으로 고치고 선택하는 recursive self-improvement가 늘고 있지만, prompt/control-flow/memory를 계속 바꾸면 regression과 overfitting이 쉽게 생긴다. RRSI는 harness improvement loop에 regularization을 넣어 안정적인 개선을 추구한다.
+- angle: “agent self-improvement는 edit search보다 regression을 막는 안전장치가 핵심” — component-wise harness edit, memory/context management 변경, validation split, rollback 기준을 production agent 운영 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [self-improving-agent, agent-harness, eval, regression]
+- status: idea
+
+### 2026-09-23 — [논문 리뷰] DolphinBench — agent memory의 Pareto frontier를 측정하기
+- type: paper
+- source: http://arxiv.org/abs/2609.24971
+- why-now: 기존 memory benchmark는 사용자가 질문으로 retrieval 필요성을 명시하는 QA 형식에 치우쳐, 실제 agent가 장기 맥락에서 언제 무엇을 기억해야 하는지 평가하기 어렵다. DolphinBench는 long-term memory와 context recall의 accuracy/cost trade-off를 Pareto frontier로 보려는 시도다.
+- angle: “agent memory 평가는 정답률 하나가 아니라 recall·cost·privacy의 frontier” — implicit recall, memory budget, context packing, personal/coding agent memory subsystem 선택 기준으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-memory, benchmark, long-term-memory, evaluation]
+- status: idea
+
+### 2026-09-23 — [논문 리뷰] OSWorld-Pro — computer-use agent를 process-level로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.24890
+- why-now: Computer-use agent 평가는 최종 산출물만 채점하면 수백 step 중 어디서 왜 실패했는지 보이지 않는다. OSWorld-Pro는 end-state functional verifier를 넘어 process-level signal로 GUI/desktop agent 실패를 해석하려는 최신 평가 흐름이다.
+- angle: “GUI agent eval은 최종 파일보다 trajectory diagnosis가 중요하다” — step-level evidence, process verifier, recovery opportunity, browser/desktop automation CI에 넣을 평가 schema를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, gui-agent, agent-eval, trajectory]
+- status: idea
+
+### 2026-09-23 — [논문 리뷰] Re:CAP — production RAG의 retrieval coverage를 감사하기
+- type: paper
+- source: http://arxiv.org/abs/2609.24122
+- why-now: production RAG는 corpus가 계속 바뀌고 relevance label이 부족해 retrieval 품질이 generation metric 뒤로 밀린다. Re:CAP은 대규모 동적 corpus에서 retrieval coverage를 감사하는 문제를 전면에 두며 RAG 운영의 빠진 계층을 보강한다.
+- angle: “RAG observability는 답변 평가 전에 retrieval coverage 감사를 해야 한다” — coverage audit, non-stationary corpus, re-indexing drift, agentic RAG evidence gate와 monitoring metric으로 연결한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, retrieval-eval, observability, llmops]
+- status: idea
+
+### 2026-09-23 — [논문 리뷰] ARM — routed-memory attention으로 KV cache를 sparse하게 제어하기
+- type: paper
+- source: http://arxiv.org/abs/2609.24417
+- why-now: long-context LLM inference에서 KV cache pruning은 비용을 줄이지만 핵심 정보를 버리면 reasoning과 agent state 유지가 깨진다. ARM은 routed-memory attention으로 학습 가능한 sparse control을 도입해 cache 관리와 정보 보존을 함께 다룬다.
+- angle: “agent serving의 memory 문제는 token eviction이 아니라 routed state control” — KV cache, learnable routing, sparse attention, long-context agent runtime의 latency/quality trade-off를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, kv-cache, sparse-attention, long-context]
+- status: idea
+
+### 2026-09-23 — Waku Agent — local-first agent harness를 코드로 소유하기
+- type: tech
+- source: https://github.com/ShenSeanChen/waku-agent
+- why-now: hosted agent와 IDE별 coding assistant가 늘수록 loop, memory, eval, tool policy를 사용자가 소유하고 이해할 수 있는 local-first harness 수요가 커진다. Waku Agent는 “legible as it grows”를 내세우는 Python 기반 local-first agent harness 사례다.
+- angle: “agent harness는 SaaS 기능보다 팀이 읽고 고칠 수 있는 코드 자산이어야 한다” — loop 구조, local memory, eval hook, policy 확장 지점을 개발자 워크플로 도입 기준으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, local-first, coding-agent, github-repo]
+- status: idea
+
+### 2026-09-23 — judgeval — continuous-improvement stack으로 agent eval 운영하기
+- type: tech
+- source: https://github.com/JudgmentLabs/judgeval
+- why-now: production agent 품질 관리는 일회성 benchmark가 아니라 environment data, eval, monitoring, 개선 loop를 지속적으로 돌리는 문제로 바뀌고 있다. judgeval은 agent improvement와 monitoring을 연결하는 eval stack 사례로 비교 가치가 있다.
+- angle: “agent eval은 점수표가 아니라 production trace를 개선 데이터로 되돌리는 루프” — eval dataset, monitoring signal, failure clustering, CI/production feedback 연결 방식을 실무형으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, llmops, monitoring, github-repo]
+- status: idea
+
 ### 2026-09-21 — [논문 리뷰] Workspace Models — 로봇 agent memory를 saliency-supervised state로 줄이기
 - type: paper
 - source: http://arxiv.org/abs/2609.20820
