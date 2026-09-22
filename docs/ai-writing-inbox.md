@@ -58,7 +58,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent-eval, statistics, llmops, monitoring]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-22-prediction-powered-smoothing-agent-eval-label-budget.mdx
 
 ### 2026-09-21 — [논문 리뷰] Score Centering — LLM RL의 training-inference mismatch 완화하기
 - type: paper

@@ -1,0 +1,230 @@
+---
+title: "[논문 리뷰] Prediction-Powered Smoothing — agent 평가를 적은 라벨로 안정화하기"
+date: "2026-09-22"
+category: "paper-review"
+tags: ["agent-eval", "statistics", "llmops", "monitoring"]
+summary: "slice별 agent 평가를 작은 라벨 예산으로 추정할 때 PPI와 smoothing을 어떻게 결합할지 정리한다."
+---
+
+<Paper
+  title="Prediction-Powered Smoothing and Validation for Disaggregated AI Evaluation"
+  authors="Sho Kawano, Zehang Richard Li, Paul A. Parker"
+  year="2026"
+  venue="arXiv"
+  arxiv="2609.20758"
+/>
+
+## 한 줄 요약
+
+agent 평가에서 평균 점수 하나는 거의 쓸모가 없다. 실제 운영에서는 task type, 고객 segment, conversation type, product line별로 성능이 갈린다. 문제는 모든 slice에 충분한 human label을 붙일 돈이 없다는 점이다.
+
+이 논문은 그 상황을 **disaggregated AI evaluation** 문제로 놓고, 작은 라벨 표본과 전체 population에 대해 cheap하게 얻을 수 있는 예측값을 결합한다. 핵심 제안은 두 가지다.
+
+- **Prediction-Powered Smoothing, PP-S**: domain별 GREG/PPI류 직접 추정값을 Bayesian Fay-Herriot 모델로 smoothing한다.
+- **Prediction-Powered Taxonomy Smoothing, PP-TS**: benchmark taxonomy나 업무 분류처럼 nested category 구조가 있으면 가까운 domain끼리 더 강하게 정보를 빌린다.
+
+내 해석은 단순하다. agent eval의 병목은 “benchmark를 몇 개 더 돌릴까”가 아니라 **slice별 신뢰구간을 어떻게 운영 가능한 수준으로 줄일까**다.
+
+## 왜 지금 중요한가
+
+LLM agent를 production에 넣으면 평가 단위가 금방 쪼개진다.
+
+- 전체 성공률: 82%
+- billing workflow: 91%
+- refund workflow: 63%
+- enterprise customer의 Korean support: 55%
+- tool timeout이 섞인 long conversation: 측정 불안정
+
+운영자가 진짜 알고 싶은 것은 마지막 세 줄이다. 하지만 slice를 잘게 나눌수록 라벨 수는 줄고, 추정값은 흔들린다. 특히 human grading이 필요한 open-ended agent traffic에서는 모든 대화를 사람이 평가할 수 없다.
+
+기존 PPI 계열은 “전체 unit에 대한 model prediction은 있고, 일부 unit에만 label이 있을 때” 유용하다. 그런데 domain이 많아지면 각 domain의 label만 쓰는 직접 추정량은 여전히 불안정하다. 이 논문은 그 지점을 small area estimation 문제로 가져간다. 꽤 좋은 방향이다. AI eval 쪽이 survey statistics에서 배울 게 많다는 신호이기도 하다.
+
+## 문제 설정: 평균 하나가 아니라 domain mean 여러 개
+
+논문은 평가 집합을 finite population으로 본다. 각 unit은 benchmark task일 수도 있고, 이미 발생한 agent conversation일 수도 있다. domain은 task type, benchmark category, conversation type, model-user segment 같은 reporting dimension이다.
+
+목표는 각 domain의 평균 outcome을 추정하는 것이다.
+
+- verifiable task: 정답이 있어 programmatic grading 가능
+- open-ended task: human grader나 user rating이 필요
+- auxiliary information: 전체 unit에 대해 cheap하게 얻을 수 있는 예측값이나 metadata
+
+여기서 중요한 전제는 **probability sample**이다. 어떤 unit이 label될 확률을 알고 있어야 design-based uncertainty를 말할 수 있다. 운영 로그에서 “문제가 있어 보이는 대화만 리뷰”한 데이터는 그대로 쓰면 bias가 생긴다. 논문은 PRISM 예시로 rejected response가 더 자주 label되는 non-probability sample에서는 sampling budget을 늘려도 bias와 coverage 문제가 남는다고 보여준다.
+
+실무적으로는 이 말이 꽤 세다. “라벨을 많이 모았다”보다 “어떤 sampling design으로 모았는가”가 먼저다.
+
+## 기존 PPI만으로 부족한 이유
+
+PPI는 전체 population에 대해 prediction을 만들고, label이 있는 sample에서 prediction error를 보정한다. survey sampling 관점에서는 difference estimator와 연결된다. PPI++/GREG는 prediction을 얼마나 믿을지 slope를 조정한다.
+
+문제는 domain별 추정이다. label budget이 여러 domain으로 흩어지면 어떤 domain에는 label이 매우 적다. PPI나 GREG가 unit-level auxiliary를 잘 써도, 각 domain의 label만 쓰는 direct estimator라는 한계가 남는다.
+
+논문이 지적하는 실무적 실패 모드는 이렇다.
+
+- weak auxiliary를 PPI에 강하게 넣으면 HT(sample mean류)보다 나빠질 수 있다.
+- GREG는 slope tuning으로 weak auxiliary의 피해를 줄일 수 있다.
+- 하지만 direct estimator는 sparse domain에서 interval이 넓다.
+- domain taxonomy나 domain-level covariate를 쓰지 않으면 “비슷한 slice끼리 정보 공유”가 안 된다.
+
+그래서 smoothing이 들어간다.
+
+## 핵심 아이디어: GREG 위에 Fay-Herriot smoothing 얹기
+
+PP-S는 domain별 GREG 추정값과 그 sampling variance를 입력으로 받는다. 그다음 domain-level model을 fit해서 불확실한 domain estimate를 전체 구조 쪽으로 shrink한다.
+
+직관은 이렇다.
+
+- label이 많은 domain: direct estimate를 많이 믿는다.
+- label이 적거나 variance가 큰 domain: 비슷한 domain-level pattern 쪽으로 당긴다.
+- unit-level auxiliary가 좋으면 GREG variance 자체가 줄어든다.
+- domain-level auxiliary가 좋으면 shrink되는 방향이 좋아진다.
+
+PP-TS는 여기에 taxonomy를 추가한다. 예를 들어 Open LLM Leaderboard에서 task type이 domain이고, 그 위에 BBH/GPQA/IFEval/MATH/MuSR 같은 benchmark category가 있다면 domain들이 완전히 독립적으로 shrink되는 대신 계층 구조를 따라 정보를 공유한다.
+
+이건 agent 운영에도 자연스럽다.
+
+```text
+전체 traffic
+└── support
+    ├── billing
+    ├── refund
+    └── account-recovery
+└── coding-assistant
+    ├── bug-fix
+    ├── refactor
+    └── test-generation
+```
+
+refund label이 적다면 billing과 완전히 같은 것으로 뭉개면 안 되지만, support 계열이라는 상위 구조는 활용할 수 있다. PP-TS가 노리는 지점이 딱 여기다.
+
+## validation이 진짜 중요하다
+
+smoothing은 공짜가 아니다. variance를 줄이는 대신 bias를 넣을 수 있다. 그래서 논문은 어떤 estimator를 고를지 validation하는 절차도 같이 제안한다.
+
+여기서 제안하는 것은 **design-based cross-validation, DB-CV**의 refinement다. direct estimator와 model-based smoother를 같은 기준에서 비교하고, 한 sample 안에서 estimator 선택과 error reporting을 더 안정적으로 하려는 목적이다.
+
+이 대목이 마음에 든다. 많은 eval pipeline은 estimator를 고정해 놓고 점수만 계산한다. 하지만 agent 운영에서는 estimator 자체도 운영 artifact다.
+
+- sample mean으로 충분한가?
+- PPI/GREG를 쓸 만한 auxiliary가 있는가?
+- smoothing이 sparse slice에서 도움이 되는가?
+- taxonomy smoothing이 과한 bias를 넣지는 않는가?
+
+이 질문을 매번 감으로 결정하면 evaluation dashboard가 그럴듯한 숫자 장식이 된다.
+
+## 실험 결과에서 볼 숫자
+
+논문은 두 setting을 사용한다.
+
+1. **Open LLM Leaderboard 기반 verifiable benchmark**
+   - population: 9,324 questions from five benchmarks
+   - domains: 34 task types
+   - outcome: microsoft/phi-4의 binary grade
+   - label budget: 10%, domain당 평균 약 27 labels
+   - auxiliary: historical model answers, historical difficulty
+
+2. **PRISM agent traffic 기반 open-ended setting**
+   - population: 68,371 rated LLM responses from 1,500 participants
+   - domains: 21 LLMs × 3 conversation types = 63 domains
+   - outcome: user satisfaction 1~100
+   - label budget: 10%, domain당 평균 약 108 labels
+   - auxiliary: LLM judge score, content covariates
+
+Open LLM Leaderboard 실험에서 PP-TS는 세 auxiliary 설정 모두에서 RMSE와 interval score가 가장 좋았다. 특히 historical difficulty가 강한 auxiliary일 때 RMSE는 HT 0.082, GREG 0.074, PP-S 0.061, PP-TS 0.059로 내려간다. coverage는 대부분 nominal 0.95에 가까운 0.93~0.95 범위였다고 보고한다.
+
+PRISM traffic 예시에서는 content covariate가 꽤 중요했다. 한 10% sample에서 DB-CV score 기준으로는 PP-S(judge + content)가 선택됐고, oracle RMSE도 1.527로 후보 중 가장 낮았다. smoothing은 특히 sparse domain에서 interval width를 크게 줄였고, 논문은 가장 sparse한 quarter에서 HT 대비 interval width가 대략 절반 수준까지 좁아진다고 설명한다.
+
+validation 비교도 흥미롭다. 같은 10% budget에서 DB-CV는 선택된 estimator의 oracle RMSE 대비 reported RMSE가 1.07배였다. naive CV는 4.00배, 50/50 split은 2.59배, 80/20 split은 3.54배로 과하게 보수적이었다. 즉 한 sample을 잘 쓰는 쪽이, 무작정 train/validation으로 쪼개는 것보다 낫다는 주장이다.
+
+## production agent eval에 적용한다면
+
+이 논문을 그대로 코드로 옮기기 전에, 먼저 eval 운영 구조를 바꿔야 한다.
+
+### 1. sampling design부터 박아야 한다
+
+agent traffic에서 label queue를 만들 때 “CS 팀이 눈에 띄는 실패만 태깅”하면 monitoring estimate로 쓰기 어렵다. 최소한 domain별 random sample, 혹은 확률이 기록되는 stratified sampling이 필요하다.
+
+추천 패턴은 이렇다.
+
+- 매일/매주 domain taxonomy를 고정한다.
+- domain별 최소 label 수와 proportional allocation을 섞는다.
+- label selection probability를 로그에 남긴다.
+- incident review나 complaint sample은 별도 forensic dataset으로 분리한다.
+
+incident dataset은 중요하지만 population mean estimate용 dataset과 섞으면 안 된다.
+
+### 2. auxiliary prediction을 싸게 많이 만든다
+
+PPI/PP-S의 가치는 전체 unit에 auxiliary가 있을 때 나온다. agent eval에서는 아래가 후보가 된다.
+
+- LLM judge score
+- rule-based verifier signal
+- tool error/timeout 여부
+- conversation length, retry count, handoff 여부
+- retrieval hit/miss, citation coverage
+- user segment, task taxonomy, product surface
+
+LLM judge 하나만 믿기보다 content/tool metadata를 같이 넣는 편이 낫다. PRISM 예시에서도 judge + content covariate 조합이 강했다.
+
+### 3. dashboard에는 point estimate보다 interval을 먼저 보여줘야 한다
+
+slice별 estimate가 흔들리는데 point estimate만 보여주면 팀은 noise에 반응한다. “refund workflow success 63%”보다 중요한 것은 그 값의 interval과 지난 배포 대비 변화의 uncertainty다.
+
+내가 만든다면 dashboard는 이렇게 둔다.
+
+- domain estimate
+- 95% interval
+- label count
+- effective sample size 또는 sampling variance
+- estimator type: HT/GREG/PP-S/PP-TS
+- auxiliary set version
+- taxonomy version
+- validation score
+
+평가 숫자도 versioned artifact로 취급해야 한다.
+
+### 4. zero-label domain은 조심해야 한다
+
+논문도 결론에서 unseen domain, 즉 observed outcome이 없는 domain estimation을 extension으로 언급한다. smoothing model은 domain-level covariate가 있으면 zero-label domain에도 값을 낼 수 있다. 하지만 이건 “추정”이라기보다 “model-based imputation”에 가깝다.
+
+production에서는 zero-label domain을 confidence 있게 표시하면 위험하다. 차라리 별도 badge를 붙이는 게 낫다.
+
+```text
+estimated from labels: yes/no
+borrowed-only estimate: yes/no
+minimum label threshold met: yes/no
+```
+
+## 한계와 주의점
+
+이 논문은 eval 운영에 매우 유용하지만, 몇 가지 전제가 강하다.
+
+첫째, probability sampling이 필요하다. 실제 agent traffic에서는 reviewer queue, user complaint, safety filter가 섞이면서 non-probability sample이 되기 쉽다. 이 문제를 해결하지 않으면 smoothing 이전에 bias가 박힌다.
+
+둘째, auxiliary quality가 중요하다. weak auxiliary는 PPI를 망칠 수 있고, GREG가 완화해도 만능은 아니다. LLM judge score를 auxiliary로 쓸 때는 judge drift, prompt version, model version을 같이 기록해야 한다.
+
+셋째, taxonomy는 사람이 만든 inductive bias다. 업무 분류가 엉망이면 PP-TS가 가까워야 할 domain과 멀어야 할 domain을 잘못 묶는다.
+
+넷째, paper의 실험은 outcome이 전체 population에 대해 관측된 dataset에서 oracle 비교가 가능했다. production에서는 oracle이 없으므로 validation score와 운영 sanity check를 믿어야 한다. 이 때문에 더더욱 eval pipeline 자체의 재현성이 중요하다.
+
+## 내 의견
+
+이 논문은 화려한 agent benchmark 논문은 아니다. 하지만 production eval에는 이런 논문이 더 필요하다. 모델이 똑똑해지는 속도보다 evaluation dashboard가 숫자를 과신하게 만드는 속도가 더 빠르기 때문이다.
+
+특히 마음에 드는 점은 “AI eval을 statistical estimation 문제로 본다”는 태도다. LLM judge를 붙이고 평균을 내는 것은 쉽다. 어려운 것은 그 평균이 어떤 population을 대표하는지, slice별 interval이 얼마나 넓은지, estimator 선택이 sample noise에 얼마나 민감한지 설명하는 것이다.
+
+agent 팀이 이 논문에서 바로 가져갈 액션은 세 가지다.
+
+1. eval dataset을 domain taxonomy와 probability sampling 기준으로 재설계한다.
+2. LLM judge score를 최종 verdict가 아니라 auxiliary prediction으로 격하시킨다.
+3. slice별 metric에는 point estimate와 함께 interval, validation score, estimator version을 붙인다.
+
+요약하면 PP-S/PP-TS는 “라벨을 덜 붙여도 마법처럼 정확해지는 방법”이 아니다. **적은 라벨을 정직하게 쓰기 위한 통계 계층**이다. 이 차이를 이해해야 실무에서 쓸 수 있다.
+
+## 참고 자료
+
+- [Prediction-Powered Smoothing and Validation for Disaggregated AI Evaluation — arXiv:2609.20758](https://arxiv.org/abs/2609.20758)
+- [논문 PDF](https://arxiv.org/pdf/2609.20758v1)
+- [재현 코드: shokawano/disagg-ai-eval](https://github.com/shokawano/disagg-ai-eval)
+- [Prediction-powered inference, Science 2023](https://www.science.org/doi/10.1126/science.adi6000)
+- [PRISM Alignment Dataset](https://huggingface.co/datasets/HannahRoseKirk/prism-alignment)

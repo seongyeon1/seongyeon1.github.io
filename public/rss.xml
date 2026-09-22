@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 21 Sep 2026 02:52:50 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 22 Sep 2026 01:12:02 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Prediction-Powered Smoothing — agent 평가를 적은 라벨로 안정화하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-22-prediction-powered-smoothing-agent-eval-label-budget/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-22-prediction-powered-smoothing-agent-eval-label-budget/</guid>
+      <description>slice별 agent 평가를 작은 라벨 예산으로 추정할 때 PPI와 smoothing을 어떻게 결합할지 정리한다.</description>
+      <pubDate>Tue, 22 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-eval</category>
+      <category>statistics</category>
+      <category>llmops</category>
+      <category>monitoring</category>
+    </item>
     <item>
       <title>System 1 의사결정 모델 — Jev와 Laya가 보여주는 생성 없는 판단의 방향</title>
       <link>https://seongyeon1.github.io/blog/2026-09-21-system-one-decision-models-jev-laya/</link>
