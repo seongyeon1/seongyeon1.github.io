@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-24 — [논문 리뷰] Agensh — 중앙 orchestrator 없이 1,024-agent 조직 지능 확장하기
+- type: paper
+- source: http://arxiv.org/abs/2609.26781
+- why-now: multi-agent harness가 실제 업무 단위로 커질수록 중앙 orchestrator가 task allocation, worker coordination, progress merge의 병목이 된다. Agensh는 중앙 조정자 없이 worker가 context를 모으고 sub-task를 claim하며 결과를 검증·병합하는 self-organized loop를 제안해 agent 조직 설계의 확장 한계를 직접 다룬다.
+- angle: “multi-agent scaling의 병목은 모델 수가 아니라 coordination topology” — shared workspace, asynchronous claiming, verification/merge protocol, 조직형 coding/research agent에서 central orchestrator를 언제 버릴 수 있는지 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, agent-harness, orchestration, scalability]
+- status: idea
+
+### 2026-09-24 — [논문 리뷰] CliffCompaction — long-horizon coding agent의 context compaction 비용 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.26779
+- why-now: coding agent가 Terminal-Bench나 KernelBench 같은 장기 작업을 풀 때 수백만 token의 session context를 반복 compact해야 하며, 이 비용이 test-time scaling의 실질 병목이 된다. CliffCompaction은 bounded context에서 성능을 유지하거나 높이면서 rollout 비용을 크게 줄이는 autocompaction 접근을 제시한다.
+- angle: “coding agent의 장기 실행 성능은 context window보다 compaction policy가 좌우한다” — cliff-like cost/performance trade-off, session summarization boundary, parallel test-time scaling, repo 작업용 memory compaction 운영 기준으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, context-compaction, test-time-scaling, agent-memory]
+- status: idea
+
+### 2026-09-24 — [논문 리뷰] SWE-Serve — production inference serving 작업으로 coding agent 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.26777
+- why-now: 기존 SWE benchmark는 일반 repo issue 해결에 치우치고, inference benchmark는 kernel 단위 최적화에 머무르는 경우가 많다. SWE-Serve는 모델 지원, runtime execution, public API 변경이 얽힌 production inference engineering task로 agent를 평가해 serving 팀의 실제 업무와 더 가깝다.
+- angle: “coding agent eval은 앱 버그 수정뿐 아니라 serving stack 변경 능력을 봐야 한다” — repository-scale inference feature, runtime/API coordination, verifier 설계, LLM serving 엔지니어링 자동화 가능성을 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, llm-serving, benchmark, inference]
+- status: idea
+
+### 2026-09-24 — [논문 리뷰] A2M — MCP 생태계의 semantic tool hijacking 공격
+- type: paper
+- source: http://arxiv.org/abs/2609.26761
+- why-now: MCP agent는 third-party server의 tool metadata와 tool output을 semantic matching으로 선택하기 때문에, 공격자가 description과 반환값을 최적화해 malicious tool invocation을 유도할 수 있다. A2M은 Attraction-to-Manipulation 프레임으로 MCP supply-chain 위험을 정량화한다.
+- angle: “MCP 보안의 약한 고리는 tool schema가 아니라 semantic selection surface” — metadata poisoning, trace-optimized malicious return, tool registry trust, approval/audit gate를 agent security checklist로 만든다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [mcp, agent-security, tool-use, prompt-injection]
+- status: idea
+
+### 2026-09-24 — [논문 리뷰] Growing Harness — context를 키우지 말고 agent harness를 코드로 키우기
+- type: paper
+- source: http://arxiv.org/abs/2609.26760
+- why-now: 반복 업무를 수행하는 agent가 매번 같은 control decision을 context 안에서 재구성하면 token budget과 신뢰성이 같이 흔들린다. Growing Harness는 실패 trace를 bounded code surface로 localize하고 harness 자체를 재사용 가능한 executable specialist로 개선하는 방향을 제안한다.
+- angle: “agent self-improvement는 prompt memory 확장이 아니라 control code 진화일 수 있다” — strategy-free scaffold, failure-guided repair, reusable specialist agent, 팀 내부 agent harness 운영과 regression gate로 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, self-improvement, coding-agent, orchestration]
+- status: idea
+
+### 2026-09-24 — Hyperframes — agent가 HTML로 비디오를 렌더링하는 워크플로
+- type: tech
+- source: https://github.com/heygen-com/hyperframes
+- why-now: multimodal agent가 텍스트/코드 생성에서 presentation과 video artifact 생성까지 확장되면서, 영상 편집 UI 대신 deterministic HTML/CSS/JS artifact를 렌더링하는 방식이 실용적 대안이 되고 있다. Hyperframes는 “Write HTML. Render video”를 표방해 agent-friendly media generation stack으로 볼 만하다.
+- angle: “agent에게 비디오 편집기를 주기보다 웹 artifact를 렌더링하게 하자” — HTML 기반 timeline/composition, reproducible render, reviewable artifact, 교육/데모 콘텐츠 자동화 파이프라인으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multimodal-agent, video-generation, html-rendering, github-repo]
+- status: idea
+
+### 2026-09-24 — Nanobot — self-hosted personal agent framework의 최소 골격 보기
+- type: tech
+- source: https://github.com/HKUDS/nanobot
+- why-now: personal agent framework가 WebUI, tools, memory, MCP, multi-agent workflow, automation을 한 번에 묶는 방향으로 빠르게 표준화되고 있다. Nanobot은 Python 기반 self-hosted personal agent framework로, 개인/팀이 local-first와 hosted 기능 사이에서 어떤 runtime surface를 가져야 하는지 비교하기 좋다.
+- angle: “personal agent framework는 채팅창이 아니라 memory·tool·workflow runtime의 묶음” — WebUI, memory, MCP tool integration, multi-agent workflow, self-hosting 경계를 도입 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [personal-agent, agent-framework, mcp, github-repo]
+- status: idea
+
+### 2026-09-24 — Engram — coding agent memory를 agent-agnostic Go binary로 분리하기
+- type: tech
+- source: https://github.com/Gentleman-Programming/engram
+- why-now: Claude Code, Codex, Cursor처럼 여러 coding agent를 섞어 쓰면 memory가 각 도구 silo에 갇히기 쉽다. Engram은 SQLite+FTS5, MCP server, HTTP API, CLI/TUI를 갖춘 persistent memory system으로 agent-agnostic memory substrate 설계 사례가 된다.
+- angle: “coding agent memory는 IDE 기능이 아니라 독립 실행되는 local subsystem이어야 한다” — SQLite/FTS 기반 검색, MCP/HTTP interface, CLI/TUI 운영, cross-agent portability와 삭제/정정 정책을 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, local-first, github-repo]
+- status: idea
+
 ### 2026-09-23 — [논문 리뷰] Harness-Zero — agent harness를 모델 내부 능력으로 distill하기
 - type: paper
 - source: http://arxiv.org/abs/2609.24974
