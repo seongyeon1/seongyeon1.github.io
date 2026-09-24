@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 22 Sep 2026 01:12:02 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 24 Sep 2026 01:12:03 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] CliffCompaction — coding agent의 context compaction 비용 줄이기</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-24-cliffcompaction-cost-efficient-context-compaction-coding-agents/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-24-cliffcompaction-cost-efficient-context-compaction-coding-agents/</guid>
+      <description>long-horizon coding agent에서 요약 대신 삭제·절단 기반 compaction으로 비용과 drift를 줄이는 접근을 정리한다.</description>
+      <pubDate>Thu, 24 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>coding-agent</category>
+      <category>context-compaction</category>
+      <category>test-time-scaling</category>
+      <category>agent-memory</category>
+    </item>
     <item>
       <title>[논문 리뷰] Prediction-Powered Smoothing — agent 평가를 적은 라벨로 안정화하기</title>
       <link>https://seongyeon1.github.io/blog/2026-09-22-prediction-powered-smoothing-agent-eval-label-budget/</link>

@@ -45,7 +45,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [coding-agent, context-compaction, test-time-scaling, agent-memory]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-24-cliffcompaction-cost-efficient-context-compaction-coding-agents.mdx
 
 ### 2026-09-24 — [논문 리뷰] SWE-Serve — production inference serving 작업으로 coding agent 평가하기
 - type: paper
