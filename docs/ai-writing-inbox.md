@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-25 — [논문 리뷰] AEWM — tool response를 예측하지 말고 agent state를 편집하기
+- type: paper
+- source: http://arxiv.org/abs/2609.28416
+- why-now: long-horizon LLM agent는 실제 tool feedback이 이미 있는데도 world model이 고엔트로피 observation을 예측하려 하거나, 오래된 plan과 unsupported assumption이 history에 남아 task-state contamination을 만든다. AEWM은 tool response 시뮬레이션보다 reasoning/action이 future task progress를 어떻게 바꾸는지 모델링하는 쪽으로 초점을 옮긴다.
+- angle: “agent world model은 환경을 상상하는 모듈보다 작업 상태를 정정하는 editor일 수 있다” — Action Judge, critical/exploratory/noisy action 분류, outdated plan 제거, browser/coding agent의 trajectory memory 정리 정책으로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-agent, world-model, agent-memory, long-horizon]
+- status: idea
+
+### 2026-09-25 — [논문 리뷰] PASTABench — multi-step agent safety를 proactive intervention으로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.28197
+- why-now: tool-using agent가 실제 상태를 바꾸는 workflow에 들어가면 step별 risk만 보거나 사후 trajectory 평가만 하는 방식으로는 위험 누적과 개입 타이밍을 잡기 어렵다. PASTABench는 1,139개 multi-turn trajectory와 risk taxonomy로 “언제/왜 개입할지”를 평가한다.
+- angle: “agent safety eval은 bad action 탐지가 아니라 intervention timing 문제” — decoupled proactive monitoring, Optimal Intervention Point, risk category, production approval gate와 human handoff 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-safety, trajectory-eval, tool-use, intervention]
+- status: idea
+
+### 2026-09-25 — [논문 리뷰] Authorized Transition — agent output을 실제 변경으로 승격하는 evidence contract
+- type: paper
+- source: http://arxiv.org/abs/2609.28216
+- why-now: coding/engineering agent가 repo 수정, firmware build, schematic 생성 같은 산출물을 만들수록 문제는 “출력했는가”가 아니라 lifecycle이 그 출력을 근거 있게 승인하고 다음 상태로 전이해도 되는가로 이동한다. Agile-V Assurance Spine은 evidence, authority, artifact binding을 transition contract로 묶는다.
+- angle: “agent approval은 버튼이 아니라 산출물→권한 있는 전이의 evidence spine” — authoritative source profile, exact artifact binding, sandbox/attestation/SBOM/hook의 파편화를 engineering governance로 통합해 본다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [engineering-agent, authorization, governance, evidence]
+- status: idea
+
+### 2026-09-25 — [논문 리뷰] SkillGym — human-written agent skill을 실행·검증 가능한 학습 환경으로 바꾸기
+- type: paper
+- source: http://arxiv.org/abs/2609.27717
+- why-now: agent skill은 보통 inference-time instruction으로만 쓰이지만, 실무 workflow를 모델 내부 능력으로 만들려면 task instantiation, executable checker, skill dependence 검증이 필요하다. SkillGym은 2,756개 environment와 8,364개 successful trajectory로 이 전환을 다룬다.
+- angle: “agent skill library의 다음 단계는 prompt reuse가 아니라 verifiable training environment” — skill-to-task pipeline, code-based checker, contrastive execution, tool-call trajectory를 사내 agent 학습 데이터 flywheel로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, post-training, environment, tool-use]
+- status: idea
+
+### 2026-09-25 — [논문 리뷰] ProCredit — agentic RL에서 최종 성공 대신 진행 기여도를 보상하기
+- type: paper
+- source: http://arxiv.org/abs/2609.27532
+- why-now: long-horizon tool-use RL은 최종 outcome reward만 주면 성공 trajectory가 없는 group에서 학습 신호가 사라지고, 실패 중에서도 얼마나 목표에 가까워졌는지 구분하지 못한다. ProCredit은 acceptance check와 progress signal을 이용해 task를 전진시킨 turn에 credit을 준다.
+- angle: “agent RL의 reward는 성공/실패가 아니라 환경을 얼마나 전진시켰는지 봐야 한다” — progress credit assignment, tool-call sequence, verifier signal, coding/browser agent post-training recipe로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, reward-modeling, tool-use, post-training]
+- status: idea
+
+### 2026-09-25 — [논문 리뷰] SparsePay-RAG — private data를 쓸 때만 privacy budget 지불하기
+- type: paper
+- source: http://arxiv.org/abs/2609.27406
+- why-now: sensitive corpus 위의 RAG에 differential privacy를 붙이면 모든 retrieval/generation 단계가 privacy budget을 빠르게 소모한다. SparsePay-RAG는 실제 private data 의존이 필요한 경우에만 on-demand로 budget을 지불하는 방향을 제시한다.
+- angle: “privacy-preserving RAG의 병목은 노이즈 크기보다 budget accounting policy” — public/private evidence 분리, on-demand DP payment, enterprise RAG의 privacy budget observability와 answer gate를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, privacy, differential-privacy, llmops]
+- status: idea
+
+### 2026-09-25 — Koog — JVM/Kotlin 생태계의 fault-tolerant production agent framework 보기
+- type: tech
+- source: https://github.com/JetBrains/koog
+- why-now: agent framework가 Python/TypeScript 중심으로 쌓이는 동안 JVM/Kotlin 백엔드 조직은 Android/iOS/browser/backend까지 걸치는 agent runtime과 enterprise fault tolerance를 별도로 고민해야 한다. JetBrains Koog는 predictable, fault-tolerant, enterprise-ready agent framework를 표방해 언어 생태계별 설계 차이를 보기 좋다.
+- angle: “JVM 팀의 agent framework 선택 기준은 model wrapper가 아니라 typed workflow와 fault-tolerance” — Kotlin API, cross-platform runtime, tool contract, backend 서비스 통합, 기존 Java/Kotlin 조직의 도입 체크리스트로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, kotlin, jvm, github-repo]
+- status: idea
+
+### 2026-09-25 — Aeon — GitHub Actions에서 unattended로 도는 self-healing coding agent framework
+- type: tech
+- source: https://github.com/aeonfun/aeon
+- why-now: coding agent가 로컬 IDE 보조자에서 CI/CD와 GitHub Actions 위의 unattended worker로 이동하면 skill repair, provider routing, repository permissions, failure recovery가 핵심 운영 문제가 된다. Aeon은 Claude Code/Codex/Grok 등을 구동하는 autonomous agent framework 사례다.
+- angle: “coding agent를 CI worker로 올리면 prompt보다 lifecycle control이 중요해진다” — GitHub Actions execution, self-healing skills, provider swapping, repo 권한과 rollback 기준을 developer workflow 관점으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, github-actions, agent-framework, automation]
+- status: idea
+
 ### 2026-09-24 — [논문 리뷰] Agensh — 중앙 orchestrator 없이 1,024-agent 조직 지능 확장하기
 - type: paper
 - source: http://arxiv.org/abs/2609.26781
