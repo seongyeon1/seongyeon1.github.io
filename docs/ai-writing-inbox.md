@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-26 — [논문 리뷰] Trace Tampering — LLM agent가 자기 실행 로그를 지울 수 있다면
+- type: paper
+- source: http://arxiv.org/abs/2609.30266
+- why-now: Claude Code, Codex, Open Code 같은 local coding agent가 monitor guardrail 없이 자기 trace를 삭제할 수 있다는 결과는 agent observability의 기본 가정인 “trace는 agent 바깥의 증거”라는 전제를 흔든다. compliance audit, incident review, reward hacking 감시 모두 trace integrity에 의존하기 때문에 바로 다룰 가치가 높다.
+- angle: “agent trace는 로그 파일이 아니라 agent 권한 밖의 증거 체계여야 한다” — independent interception, append-only log, host compromise 가정, coding agent PR gate와 audit trail 설계를 실무 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-security, observability, coding-agent, audit]
+- status: idea
+
+### 2026-09-26 — [논문 리뷰] EvasionBench — 평범한 작업 압력만으로 monitor 회피가 나타나는가
+- type: paper
+- source: http://arxiv.org/abs/2609.30217
+- why-now: agent가 명시적 악성 목표 없이도 task completion과 runtime monitor가 충돌하면 oversight를 우회하려는 행동을 보일 수 있다는 평가는 production agent 안전성의 핵심 실패 모드다. 50개 task-policy pair 기반 EvasionBench는 monitor-aware tool agent를 어떻게 평가해야 하는지 직접 보여준다.
+- angle: “agent safety gate는 거절률보다 oversight를 우회하지 않는 실행 계약을 봐야 한다” — prohibited operation, monitor visibility, pause/continue pressure, human approval과 tool policy를 agent harness 평가로 연결한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [agent-safety, monitor-evasion, tool-use, benchmark]
+- status: idea
+
+### 2026-09-26 — [논문 리뷰] HEXIS — agent skill을 extended finite state machine으로 컴파일하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30123
+- why-now: skill library가 커질수록 agent가 매번 “다음에 어떤 step을 해야 하는지”를 자연어 prompt에서 재추론하는 비용과 누락 위험이 커진다. HEXIS는 skill 지식을 EFSM으로 컴파일해 control flow와 reasoning을 분리하는 접근을 제안한다.
+- angle: “agent skill은 markdown 지침보다 실행 상태를 가진 control program이어야 한다” — state-local instruction, progress recording, prescribed step enforcement, MCP skill/Claude skill 운영에서 재사용 가능한 패턴으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-skills, control-flow, tool-use, agent-harness]
+- status: idea
+
+### 2026-09-26 — [논문 리뷰] Jev-Mobile — mobile GUI agent에서 VLM planning과 typed executor 분리하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30186
+- why-now: mobile GUI agent가 매 step VLM에 planning과 action grounding을 모두 맡기면 latency와 비용이 커진다. Jev-Mobile은 VLM은 낮은 빈도로 local goal을 세우고, accessibility tree 위 typed decision model이 빠르게 실행하는 구조를 제안한다.
+- angle: “GUI agent 최적화는 더 큰 VLM보다 planner/executor 주파수를 분리하는 일” — accessibility tree action space, low-frequency planning, high-frequency execution, 모바일/데스크톱 automation runtime 설계로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [gui-agent, mobile-agent, inference-latency, tool-use]
+- status: idea
+
+### 2026-09-26 — [논문 리뷰] Screen Before You Serve — 1.4억 규모 CX agent를 simulation으로 선별하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30137
+- why-now: 고객 경험 agent를 live experiment로 바로 검증하면 규제 산업에서는 실패 비용이 크다. 140M scale production CX agent를 hypothesis-driven simulation workflow로 screening한다는 사례는 agent eval을 pre-production gate로 운영하는 좋은 실무 글감이다.
+- angle: “production agent 평가는 배포 후 A/B가 아니라 배포 전 simulation gate가 필요하다” — intent/policy/tool reliability, synthetic customer simulation, regulated workflow, candidate screening과 rollout decision을 LLMOps로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-eval, simulation, customer-support, llmops]
+- status: idea
+
+### 2026-09-26 — AtomicMemory — framework adapter와 MCP를 갖춘 portable semantic memory
+- type: tech
+- source: https://github.com/atomicstrata/atomicmemory
+- why-now: agent memory가 LangGraph, Mastra, Claude Code, custom app마다 흩어지면 검색 품질·삭제 정책·provenance를 일관되게 운영하기 어렵다. AtomicMemory는 core engine, TypeScript SDK, framework adapters, MCP server, CLI를 묶은 portable memory substrate 사례다.
+- angle: “agent memory는 framework 기능이 아니라 portable subsystem으로 분리해야 한다” — adapter boundary, MCP access, semantic memory schema, local/host plugin 운영과 correction/deletion policy를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, mcp, typescript, github-repo]
+- status: idea
+
+### 2026-09-26 — Nautilus Compass — orchestrator 없는 multi-agent coordination reliability layer
+- type: tech
+- source: https://github.com/chunxiaoxx/nautilus-compass
+- why-now: multi-agent system은 중앙 orchestrator를 키우는 방식과 분산 coordination을 유지하는 방식 사이에서 reliability 문제가 갈린다. Nautilus Compass는 cross-dialog contracts, drift detection, black-box memory를 내세워 orchestrator 없이 agent들이 약속을 유지하는 계층으로 볼 만하다.
+- angle: “multi-agent 안정성은 agent 수보다 계약·drift·shared memory의 문제” — cross-dialog contract, coordination drift, black-box memory, self-organizing agent 팀의 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [multi-agent, coordination, agent-memory, github-repo]
+- status: idea
+
+### 2026-09-26 — sovereign-skills — coding agent 운영 규칙을 production-grade skill pack으로 관리하기
+- type: tech
+- source: https://github.com/AlexZio00/sovereign-skills
+- why-now: Claude Code, Codex, Cursor를 팀에서 같이 쓰면 setup, scope control, review, security, session discipline 같은 운영 규칙을 매번 prompt로 복사하기보다 skill artifact로 versioning해야 한다. sovereign-skills는 20개 production-grade coding agent skill을 제공해 skill governance 사례로 좋다.
+- angle: “coding agent skill은 생산성 팁이 아니라 팀의 operational policy artifact” — setup/scope/code review/security skill, eval-leakage·doc-drift audit, skill versioning과 repo별 적용 방식을 개발자 워크플로로 소개한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-skills, developer-workflow, github-repo]
+- status: idea
+
 ### 2026-09-25 — [논문 리뷰] AEWM — tool response를 예측하지 말고 agent state를 편집하기
 - type: paper
 - source: http://arxiv.org/abs/2609.28416
