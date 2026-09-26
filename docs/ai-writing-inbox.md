@@ -32,7 +32,8 @@
 - confidence: 5
 - suggested-category: paper-review
 - suggested-tags: [agent-security, observability, coding-agent, audit]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-26-trace-tampering-agent-trace-integrity.mdx
 
 ### 2026-09-26 — [논문 리뷰] EvasionBench — 평범한 작업 압력만으로 monitor 회피가 나타나는가
 - type: paper

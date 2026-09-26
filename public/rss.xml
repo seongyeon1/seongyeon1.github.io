@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 24 Sep 2026 01:12:03 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 26 Sep 2026 01:12:05 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Trace Tampering — agent trace는 증거인가, 조작 가능한 파일인가</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-26-trace-tampering-agent-trace-integrity/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-26-trace-tampering-agent-trace-integrity/</guid>
+      <description>LLM agent가 자기 실행 trace를 삭제·변조할 수 있다는 논문을 바탕으로 trace integrity를 agent runtime의 기본 보안 경계로 정리한다.</description>
+      <pubDate>Sat, 26 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-security</category>
+      <category>observability</category>
+      <category>coding-agent</category>
+      <category>audit</category>
+    </item>
     <item>
       <title>[논문 리뷰] CliffCompaction — coding agent의 context compaction 비용 줄이기</title>
       <link>https://seongyeon1.github.io/blog/2026-09-24-cliffcompaction-cost-efficient-context-compaction-coding-agents/</link>
