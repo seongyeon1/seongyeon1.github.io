@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-27 — [논문 리뷰] RAPID — 데모 한 번에서 robot program을 생성·검증·수정하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30249
+- why-now: coding agent의 loop가 로봇 시스템으로 들어가면 단순 code generation보다 task specification, action grounding, verifier, execution feedback을 한 번에 묶는 agentic programming 문제가 된다. RAPID는 단일 visual demonstration에서 robot program을 만들고 검증·수정하는 구조라 embodied agent 운영 글감으로 좋다.
+- angle: “robot agent는 policy 하나보다 program synthesis와 verifier loop의 결합” — demonstration-to-spec, executable robot program, feedback-driven refinement, 안전한 manipulation workflow에서 coding agent harness를 어떻게 설계할지 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [robot-agent, coding-agent, program-synthesis, verification]
+- status: idea
+
+### 2026-09-27 — [논문 리뷰] ExplorationBench — verifiable alien world에서 AI의 탐색 능력 측정하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30199
+- why-now: scientific discovery agent를 평가하려면 이미 알려진 문제 풀이가 아니라 가설을 세우고 실험을 설계하며 새 규칙을 찾아내는 exploration 능력을 분리해야 한다. ExplorationBench는 검증 가능한 alien world로 “탐색해서 발견했는가”를 측정하려는 최신 benchmark다.
+- angle: “research agent 평가는 정답 회상이 아니라 가설-실험 루프를 봐야 한다” — verifiable world, hypothesis discovery, experiment design trace, pretraining leakage와 exploration signal 분리를 연구 자동화 eval 관점으로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, exploration, benchmark, scientific-discovery]
+- status: idea
+
+### 2026-09-27 — [논문 리뷰] KernelOPT — dispatch-aware agentic search로 GPU kernel 최적화하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30059
+- why-now: LLM-assisted kernel optimizer가 standalone kernel을 넘어 실제 compiled model의 dispatch context까지 봐야 하는 시점이다. KernelOPT는 PyTorch Inductor류 pipeline에서 kernel 선택·수정·검증을 agentic search로 다뤄 inference 엔지니어링 자동화와 직접 연결된다.
+- angle: “GPU kernel agent는 코드 조각보다 dispatch context를 최적화해야 한다” — compiled model graph, candidate kernel search, benchmark/verifier loop, serving 팀이 agent에게 맡길 수 있는 최적화 경계를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, gpu-kernel, coding-agent, optimization]
+- status: idea
+
+### 2026-09-27 — [논문 리뷰] PrivDrift — 대화 주제가 바뀐 뒤에도 사용자 secret이 새는가
+- type: paper
+- source: http://arxiv.org/abs/2609.30094
+- why-now: persistent assistant와 tool-augmented session에서는 사용자가 한 번 말한 민감 정보가 대화 주제가 바뀐 뒤에도 행동적으로 회수될 수 있다. PrivDrift는 topic drift 이후 secret recoverability를 측정해 개인 agent memory/privacy policy에 바로 필요한 평가 축을 제공한다.
+- angle: “agent privacy는 저장 여부가 아니라 topic drift 뒤 recoverability를 관리하는 문제” — active conversation secret, drifted prompt, memory boundary, redaction/forgetting gate, personal assistant QA 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-privacy, memory, evaluation, personal-agent]
+- status: idea
+
+### 2026-09-27 — [논문 리뷰] Era by Eon — hidden knowledge로 enterprise agent benchmark 난이도 올리기
+- type: paper
+- source: http://arxiv.org/abs/2609.30055
+- why-now: enterprise agent benchmark에서 code execution이 허용되면 명시된 규칙과 데이터만으로 상위 모델이 쉽게 포화될 수 있다. Era by Eon은 문서에 직접 쓰이지 않은 hidden fact 의존 질문을 추가해 agent의 evidence search와 추론 한계를 다시 드러낸다.
+- angle: “enterprise agent eval은 문서 검색 문제가 아니라 hidden state를 좁히는 정보수집 문제” — generated company data, hidden fact templates, code-running agent, internal knowledge QA benchmark 설계를 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [enterprise-agent, benchmark, hidden-knowledge, eval]
+- status: idea
+
+### 2026-09-27 — Hypha — production LLM agent를 harness-oriented system으로 설계하기
+- type: tech
+- source: https://github.com/CodeSoul-co/Hypha
+- why-now: agent framework가 모델 wrapper 경쟁을 지나 harness, runtime boundary, state management, eval hook을 어떻게 구조화하는지가 중요해지고 있다. Hypha는 production-grade LLM agent application을 harness-oriented system으로 표방해 프레임워크 설계 비교에 넣을 만하다.
+- angle: “production agent framework의 핵심은 agent 객체가 아니라 harness contract” — runtime composition, tool boundary, state/eval extension point, 기존 LangGraph/Mastra류와 비교할 도입 체크리스트를 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, harness, llmops, github-repo]
+- status: idea
+
+### 2026-09-27 — cap-evolve — skills/tools/MCP/prompt를 eval 기준으로 진화시키기
+- type: tech
+- source: https://github.com/skillberry-ai/cap-evolve
+- why-now: agent 개선이 prompt 수동 튜닝에서 skill, tool schema, MCP 구성, system prompt를 eval loop로 함께 최적화하는 방향으로 이동하고 있다. cap-evolve는 “own evals”에 맞춰 agent capability를 진화시키는 repo라 운영 패턴을 소개하기 좋다.
+- angle: “agent optimization은 프롬프트 한 줄이 아니라 capability artifact 전체의 search 문제” — skill/tool/prompt mutation, eval-driven selection, regression guard, 사내 agent 품질 개선 loop로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, mcp, skill-optimization, github-repo]
+- status: idea
+
+### 2026-09-27 — Citadel — Claude Code와 Codex를 위한 operating layer 보기
+- type: tech
+- source: https://github.com/SethGammon/Citadel
+- why-now: coding agent를 개인·팀 워크플로에 깊게 넣으면 persistent project memory, intent routing, safety hooks, cost telemetry, parallel agent fleet 같은 운영 계층이 필요해진다. Citadel은 Claude Code와 OpenAI Codex를 대상으로 한 operating layer 사례다.
+- angle: “coding agent 운영은 CLI 선택이 아니라 memory·routing·safety·cost control plane 설계” — project memory, intent routing, hooks, telemetry, parallel agents를 개발자 AI 워크플로 체크리스트로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, developer-workflow, agent-memory, github-repo]
+- status: idea
+
 ### 2026-09-26 — [논문 리뷰] Trace Tampering — LLM agent가 자기 실행 로그를 지울 수 있다면
 - type: paper
 - source: http://arxiv.org/abs/2609.30266
