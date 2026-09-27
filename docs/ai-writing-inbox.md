@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-28 — [논문 리뷰] AD-WM — counterfactual MPC를 위해 action을 구분하는 world model
+- type: paper
+- source: http://arxiv.org/abs/2609.30264
+- why-now: robot/embodied agent에서 world model은 다음 상태를 “그럴듯하게” 예측하는 것보다 같은 상태에서 후보 action들의 차이를 충분히 구분해야 MPC가 안전하게 선택할 수 있다. AD-WM은 factual prediction loss만으로는 부족한 action-discriminative world model 문제를 전면에 둔다.
+- angle: “agent world model은 예측기가 아니라 action 비교를 위한 판별기여야 한다” — factual transition error와 counterfactual action ranking의 차이, MPC loop, robot/browser agent에서 verifier가 봐야 할 state-action sensitivity를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [world-model, robot-agent, mpc, embodied-ai]
+- status: idea
+
+### 2026-09-28 — [논문 리뷰] Coding Agents for Generalized TAMP — task-and-motion planning을 코드 agent로 풀기
+- type: paper
+- source: http://arxiv.org/abs/2609.30233
+- why-now: coding agent가 로봇 제어 코드 생성까지 확장되면 discrete task planning과 geometric/motion constraint가 엮인 TAMP 문제를 어떻게 일반화해 풀지 중요해진다. 이 논문은 object-centric state와 반복 구조를 활용해 generalized TAMP를 coding agent 관점으로 다룬다.
+- angle: “robot coding agent의 난점은 Python 작성보다 symbolic plan과 motion feasibility의 결합” — generalized TAMP, code-as-plan, geometric constraint verifier, embodied agent harness가 가져야 할 rollback/evaluation boundary를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [robot-agent, coding-agent, task-and-motion-planning, verification]
+- status: idea
+
+### 2026-09-28 — [논문 리뷰] SAGE — long-horizon reasoning bias를 topological guidance로 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.30192
+- why-now: sparse reward 환경에서 LLM reasoning/agent가 locally plausible한 경로에 끌리거나 전역 구조를 놓치는 문제는 장기 task planning의 반복 실패 모드다. SAGE는 reasoning space의 topology를 guidance로 사용해 exploration과 decision bias를 완화하려는 최신 접근이다.
+- angle: “long-horizon reasoning은 chain 길이보다 reasoning space의 지형을 어떻게 탐색하느냐의 문제” — topological guidance, sparse reward, exploration bias, research/coding agent planner에 붙일 수 있는 search prior로 해석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, long-horizon, agent-planning, search]
+- status: idea
+
+### 2026-09-28 — [논문 리뷰] JevOut — 자연스러운 context가 decision model을 뒤집는 순간
+- type: paper
+- source: http://arxiv.org/abs/2609.30243
+- why-now: routing, tool selection, approval trigger에 쓰이는 작은 decision model은 실제 서비스에서 고립된 input이 아니라 주변 맥락과 배경 설명을 함께 받는다. JevOut은 자연스러운 context가 finite-choice decision model의 판단을 뒤집을 수 있음을 보여줘 agent control plane 안전성에 직접 연결된다.
+- angle: “agent router는 task 문장만 보지 않고 context contamination까지 견뎌야 한다” — finite-choice decision model, tool routing flip, context injection, production agent의 router eval과 context boundary 설계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-routing, tool-use, evaluation, context-engineering]
+- status: idea
+
+### 2026-09-28 — [논문 리뷰] PoEM — 기존 policy로 RL 결과를 미리 예측하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30226
+- why-now: LLM/agent post-training에서 reward마다 RL을 새로 돌리는 비용과 불안정성이 커지고 있다. PoEM은 existing policies를 활용해 RL outcome을 예측하려는 방향이라 agentic RL 실험을 시작하기 전 “이 reward가 실제로 개선될까”를 가늠하는 운영 레이어로 볼 수 있다.
+- angle: “agent RL 운영의 병목은 rollout 실행 전 성공 가능성을 예측하는 것” — existing policy signal, reward-specific fine-tuning risk, experiment triage, post-training budget allocation 체크리스트로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, post-training, reward-modeling, experiment-design]
+- status: idea
+
+### 2026-09-28 — Smithers — TypeScript config로 durable agentic workflow를 정의하기
+- type: tech
+- source: https://github.com/smithersai/smithers
+- why-now: agent framework가 “agent 객체”보다 workflow 정의, durable execution, retry/failure recovery, config-driven orchestration으로 이동하고 있다. Smithers는 simple TypeScript configuration으로 agentic workflow를 정의하고 빠르고 안정적으로 실행하는 repo라 production workflow framework 비교에 넣을 만하다.
+- angle: “agent workflow는 프롬프트 체인이 아니라 durable config artifact” — TypeScript config contract, workflow execution, retry/reliability boundary, LangGraph/Mastra류와 비교한 팀 도입 체크리스트를 만든다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, workflow, typescript, durable-execution]
+- status: idea
+
+### 2026-09-28 — MemWhale — CLI 실행과 실패 복구를 기억하는 local MCP memory
+- type: tech
+- source: https://github.com/wuisabel-gif/MemWhale
+- why-now: coding agent가 같은 명령 실패와 수정법을 반복하지 않으려면 대화 요약보다 실제 command/output/error/fix를 구조적으로 저장하는 memory가 필요하다. MemWhale은 SQLite에 개발자·agent 실행 흔적을 저장하고 MCP로 제공하는 local memory 사례다.
+- angle: “coding agent memory는 좋은 답변보다 실패한 명령과 고친 방법을 기억해야 한다” — command trace schema, SQLite local store, MCP retrieval, privacy/retention policy와 repo별 operational memory 설계를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, mcp, local-first]
+- status: idea
+
+### 2026-09-28 — nagi-bench — 같은 prompt를 여러 agent harness에서 one-shot 비교하기
+- type: tech
+- source: https://github.com/nagi-studio/nagi-bench
+- why-now: agent 평가에서 모델만 바꿔 비교하면 harness, tool boundary, runtime artifact 차이를 놓치기 쉽다. nagi-bench는 동일 prompt를 여러 agent(model+harness)로 실행하고 runnable artifact를 나란히 비교하는 one-shot eval repo라 lightweight regression 비교용으로 좋다.
+- angle: “agent eval의 최소 단위는 모델 응답이 아니라 model+harness가 만든 runnable artifact” — side-by-side artifact, prompt portability, harness variance, 개인/팀 coding agent 선택 실험 절차로 정리한다.
+- difficulty: low
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-eval, benchmark, coding-agent, github-repo]
+- status: idea
+
 ### 2026-09-27 — [논문 리뷰] RAPID — 데모 한 번에서 robot program을 생성·검증·수정하기
 - type: paper
 - source: http://arxiv.org/abs/2609.30249
