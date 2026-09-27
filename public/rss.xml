@@ -6,12 +6,12 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 27 Sep 2026 14:56:04 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 27 Sep 2026 15:01:10 GMT</lastBuildDate>
     <item>
       <title>Jev는 정말 그냥 분류기일까? — 일반화가 바꾸는 자동화 모델의 의미</title>
       <link>https://seongyeon1.github.io/blog/2026-09-27-jev-generalization-classifier-raschka/</link>
       <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-27-jev-generalization-classifier-raschka/</guid>
-      <description>Sebastian Raschka의 Jev 코멘트를 바탕으로, Jev를 단순 classifier로 치부하면 놓치게 되는 일반화, 데이터, calibration, 자동화 아키텍처의 의미를 정리한다.</description>
+      <description>Sebastian Raschka의 Jev 코멘트와 Hugging Face Decision Index를 바탕으로, Jev를 단순 classifier로 치부하면 놓치게 되는 일반화, 데이터, calibration, 자동화 아키텍처의 의미를 정리한다.</description>
       <pubDate>Sun, 27 Sep 2026 00:00:00 GMT</pubDate>
       <category>concept</category>
       <category>jev</category>

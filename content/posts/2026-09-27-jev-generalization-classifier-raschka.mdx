@@ -3,7 +3,7 @@ title: "Jev는 정말 그냥 분류기일까? — 일반화가 바꾸는 자동�
 date: "2026-09-27"
 category: "concept"
 tags: ["jev", "system-one", "classification", "generalization", "calibration", "agent-runtime"]
-summary: "Sebastian Raschka의 Jev 코멘트를 바탕으로, Jev를 단순 classifier로 치부하면 놓치게 되는 일반화, 데이터, calibration, 자동화 아키텍처의 의미를 정리한다."
+summary: "Sebastian Raschka의 Jev 코멘트와 Hugging Face Decision Index를 바탕으로, Jev를 단순 classifier로 치부하면 놓치게 되는 일반화, 데이터, calibration, 자동화 아키텍처의 의미를 정리한다."
 ---
 
 최근 TypeSafe AI가 공개한 **Jev**는 꽤 흥미로운 논쟁을 만들고 있다. 한쪽에서는 Jev를 새로운 종류의 모델, 즉 **System One Model**이라고 소개한다. 반면 다른 쪽에서는 이렇게 말한다.
@@ -195,6 +195,26 @@ Jev도 비슷할 수 있다.
 
 기술적으로는 encoder classifier + calibration RL처럼 보일 수 있다. 하지만 다양한 decision task를 포괄하는 데이터셋과 API 설계가 잘 되어 있다면, 실제 제품적 의미는 훨씬 커질 수 있다.
 
+## Decision Index가 보여주는 것
+
+이 논의를 더 흥미롭게 만드는 자료가 하나 더 있다. Hugging Face Space에 공개된 [Jev Decision Index](https://huggingface.co/spaces/multimodalart/jev-decision-index)는 TypeSafe Jev의 "Decision Model"을 재현하려는 공개 모델들을 같은 벤치마크 묶음에서 비교한다.
+
+2026년 9월 27일 기준 Decision Index 0.2.1은 다음 조건을 내세운다.
+
+- TypeSafe의 Jev `jev-1.13.0`을 reference로 둔다.
+- 공개 재현 모델 67개를 비교한다.
+- 43개 benchmark에 걸쳐 모델당 약 12만 개 decision request를 던진다.
+- open reproduction은 1개의 NVIDIA RTX PRO 6000에서 실행한다.
+- 점수는 chance-corrected 방식으로 계산해, 0은 무작위 추측, 100은 완전 정답에 가깝게 해석한다.
+
+상위권 결과도 흥미롭다. Decision Index 표에서는 Jev가 57.9점으로 reference 위치에 있고, Surogate Rune 26B-A4B v3가 57.4점, Decider chat · Gemma-4-31B가 57.3점, AutoJev-27B가 56.4점으로 거의 근접한 점수를 보인다. 즉 Jev의 아이디어가 단일 비공개 API에만 머무르지 않고, 여러 팀이 공개 모델로 재현하려고 경쟁하는 영역이 됐다는 뜻이다.
+
+다만 이 지표를 볼 때는 주의할 점이 있다. Decision Index는 "Jev를 실제 업무에서 완전히 대체할 수 있다"는 증명이라기보다, **typed decision model이라는 문제 설정이 하나의 벤치마크 생태계로 분화되고 있다**는 신호에 가깝다.
+
+특히 중요한 점은 이 벤치마크가 단순 정확도 하나만 보는 것이 아니라는 점이다. 문서에는 각 benchmark의 primary metric을 유지하고, answer하지 못한 request는 틀린 것으로 처리하며, cherry-picking보다 breadth와 honesty를 보상한다고 설명한다. 이 방향은 Jev류 모델을 평가할 때 꽤 중요하다. 자동화용 decision model은 잘 맞힌 샘플만 보여주는 데모보다, 어디까지 답할 수 있고 어디서 실패하는지를 드러내야 하기 때문이다.
+
+Decision Index는 Raschka의 주장을 보강하는 자료로 읽을 수 있다. Jev가 "그냥 classifier"라면, 질문은 단순히 "분류 정확도가 몇 퍼센트인가"에서 끝난다. 하지만 여러 공개 재현 모델이 같은 decision interface, 같은 benchmark suite, 같은 calibration/coverage 문제를 놓고 경쟁하기 시작했다면 이야기가 달라진다. 이제 논점은 classifier냐 아니냐가 아니라, **어떤 모델과 학습 레시피가 범용 decision layer를 가장 잘 만들 수 있느냐**가 된다.
+
 ## 왜 calibration이 중요한가?
 
 Jev 논의에서 중요한 키워드 중 하나는 **calibration**이다.
@@ -338,4 +358,5 @@ Jev는 우리에게 묻고 있다.
 
 - Sebastian Raschka, [It's Easy to Dismiss Jev as Just a Classifier](https://sebastianraschka.com/blog/2026/jev-classification-generalization.html)
 - TypeSafe AI, [Introducing System One Models & Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev)
+- multimodalart, [Jev Decision Index](https://huggingface.co/spaces/multimodalart/jev-decision-index)
 - `Beyond Binary Rewards: Training LMs to Reason About Their Uncertainty`
