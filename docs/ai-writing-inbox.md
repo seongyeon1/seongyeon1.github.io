@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-29 — [논문 리뷰] Learning to Stop — confidence supervision으로 reasoning token 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.31619
+- why-now: reasoning model과 agent가 긴 chain-of-thought를 계속 생성하면 latency와 inference cost가 곧바로 운영 병목이 된다. 이 논문은 length penalty나 explicit early-stop 학습 없이, 중간 reasoning state의 confidence를 self-supervised target으로 학습시키는 것만으로 더 짧고 효율적인 reasoning이 나타난다고 주장한다.
+- angle: “agent serving의 stop policy는 토큰 예산 규칙이 아니라 confidence-calibrated reasoning state 문제” — confidence target, early-stop 없는 효율화, answer commitment gate, RAG/agent verifier와 결합한 latency-quality control loop로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [reasoning, inference-efficiency, confidence, agent-serving]
+- status: idea
+
+### 2026-09-29 — [논문 리뷰] Compact Documentation for Coding Agents — 문서 압축이 agent 성능에 정말 도움 되는가
+- type: paper
+- source: http://arxiv.org/abs/2609.31587
+- why-now: coding agent 운영에서 README, API 문서, repo map을 얼마나 압축해 context에 넣을지가 반복적인 실무 문제다. 이 논문은 roundtrip benchmark와 optimizer를 통해 자연어 문서가 coding agent의 issue resolution에 주는 도움과 transfer 한계를 직접 평가한다.
+- angle: “coding agent 문서는 짧은 요약보다 테스트를 재생성할 만큼 완전해야 한다” — documentation fidelity, roundtrip benchmark, repo-specific optimizer, context compaction과 transfer failure를 팀 문서 운영 체크리스트로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, documentation, context-engineering, evaluation]
+- status: idea
+
+### 2026-09-29 — [논문 리뷰] Multi-agent Scaling — task 구조에 따라 agent 수 확장의 효과가 달라진다
+- type: paper
+- source: http://arxiv.org/abs/2609.31563
+- why-now: multi-agent LLM 시스템은 agent 수를 늘리면 좋아진다는 직관이 강하지만, 실제로는 task가 disjunctive인지 compensatory인지에 따라 aggregation과 scaling behavior가 달라진다. 이 논문은 Steiner의 group task taxonomy로 multi-agent scaling을 분석한다.
+- angle: “multi-agent 설계의 첫 질문은 몇 명을 붙일지가 아니라 어떤 task topology인가” — disjunctive/compensatory task, independent sampling assumption, verifier/aggregation strategy, agent fleet sizing 기준으로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, scaling, evaluation, agent-architecture]
+- status: idea
+
+### 2026-09-29 — [논문 리뷰] Checkability Boundary — local LLM network automation의 안전한 위임 기준
+- type: paper
+- source: http://arxiv.org/abs/2609.31540
+- why-now: 네트워크 자동화에서 설정·로그·토폴로지를 외부 frontier LLM으로 보내기 어렵고, local SLM은 직접 실행하기엔 오류 위험이 있다. 이 논문은 local model에게 맡길 수 있는 작업을 “검증 가능한가”로 나누는 checkability criterion을 제안한다.
+- angle: “private infra agent의 핵심은 모델 크기보다 output을 로컬에서 검증할 수 있는 task boundary” — checkability, deterministic verifier, network automation tool policy, local-first agent 배포 기준으로 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [local-llm, network-automation, verification, private-agent]
+- status: idea
+
+### 2026-09-29 — [논문 리뷰] PriceBench — 구매 agent의 가격·품질·브랜드 선호를 진단하기
+- type: paper
+- source: http://arxiv.org/abs/2609.31468
+- why-now: LLM이 사용자를 대신해 호텔·상품을 고르는 purchasing agent가 되면, 모델의 숨은 가격·브랜드·품질 선호가 실제 지출을 결정한다. PriceBench는 booking agent 선택에서 이런 preference를 진단하는 benchmark로 agent alignment를 더 현실적인 구매 의사결정 문제로 끌고 온다.
+- angle: “agent alignment는 유해 답변뿐 아니라 대신 결제하는 선택의 preference audit까지 포함한다” — finite-choice booking task, price/quality/brand trade-off, user preference contract, monetary action approval gate로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-alignment, purchasing-agent, benchmark, decision-making]
+- status: idea
+
+### 2026-09-29 — mcp-use — MCP app과 server를 한 코드베이스에서 개발하는 fullstack framework
+- type: tech
+- source: https://github.com/mcp-use/mcp-use
+- why-now: MCP가 단순 tool server 규격을 넘어 ChatGPT/Claude 앱, 서버, client runtime을 함께 묶는 fullstack 개발 표면으로 확장되고 있다. mcp-use는 활발히 업데이트되는 MCP framework라 agent app 개발 경험과 배포 경계를 살펴보기 좋다.
+- angle: “MCP의 다음 경쟁력은 server 하나가 아니라 app/server/client를 관통하는 developer experience” — app contract, server authoring, client integration, auth/deploy boundary, Skybridge·Mastra류와 비교한 도입 기준으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [mcp, agent-framework, developer-experience, github-repo]
+- status: idea
+
+### 2026-09-29 — remnic — provenance와 correction boundary를 갖춘 user-aware agent memory
+- type: tech
+- source: https://github.com/joshuaswarren/remnic
+- why-now: agent memory가 단순 recall에서 사용자별 scoped memory, provenance, correction, retrieval quality, boundary management를 요구하는 단계로 이동하고 있다. remnic은 MCP/HTTP access와 eval을 포함한 open-source memory/context system이라 personal/coding agent memory 설계 사례로 좋다.
+- angle: “user-aware memory에는 잘 찾는 것보다 출처·수정·범위 경계가 먼저 필요하다” — scoped memory, provenance, correction workflow, MCP/HTTP interface, personal agent memory QA 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-memory, mcp, provenance, personal-agent]
+- status: idea
+
+### 2026-09-29 — coder_eval — coding agent용 Playwright처럼 쓰는 sandboxed eval suite
+- type: tech
+- source: https://github.com/UiPath/coder_eval
+- why-now: coding agent를 팀에 넣으면 prompt 품질보다 실제 skills, MCP servers, CLIs가 agent 손에서 재현 가능하게 동작하는지 CI에서 검증하는 일이 중요해진다. coder_eval은 YAML suite, sandbox, A/B experiment, CI gate를 제공하는 eval repo라 운영형 소개 가치가 높다.
+- angle: “coding agent eval은 benchmark 리더보드가 아니라 우리 toolchain이 agent에게 안전하게 작동하는지 보는 Playwright” — sandboxed task, skill/MCP regression, A/B harness, CI gate와 failure artifact를 실무 튜토리얼로 소개한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-eval, ci, github-repo]
+- status: idea
+
 ### 2026-09-28 — [논문 리뷰] Return or Revise — RAG 답변을 고칠지 그대로 낼지 결정하기
 - type: paper
 - source: http://arxiv.org/abs/2609.30087
