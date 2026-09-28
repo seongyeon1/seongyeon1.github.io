@@ -21,6 +21,97 @@
 
 ## Active Queue
 
+### 2026-09-28 — [논문 리뷰] Return or Revise — RAG 답변을 고칠지 그대로 낼지 결정하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30087
+- why-now: production RAG는 retrieval을 붙였다고 항상 답변이 좋아지지 않는다. draft confidence만 보는 방식은 “현재 답이 맞는가”는 추정하지만, 검색 근거로 revision을 했을 때 실제로 개선될지까지 판단하지 못한다. answer revision gate는 RAG agent의 latency와 품질을 같이 좌우하는 운영 문제다.
+- angle: “RAG의 다음 gate는 검색 여부가 아니라 수정할 가치가 있는지 예측하는 decision layer” — draft confidence, revision benefit estimation, evidence-aware answer gate, agentic RAG에서 return/revise/abstain policy를 실무 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, answer-revision, evaluation, agentic-rag]
+- status: idea
+
+### 2026-09-28 — [논문 리뷰] Asymmetric Dynamic Routing — Hypergraph RAG에서 query별 reasoning 깊이 조절하기
+- type: paper
+- source: http://arxiv.org/abs/2609.29282
+- why-now: Graph/Hypergraph RAG는 multi-hop reasoning에 유리하지만 모든 query에 같은 traversal depth와 graph expansion을 쓰면 latency와 token cost가 빠르게 커진다. 이 논문은 query complexity에 따라 reasoning depth와 계산량을 동적으로 조절하는 구조를 제안한다.
+- angle: “Graph RAG 운영의 병목은 그래프를 만들었느냐가 아니라 언제 얼마나 타고 들어갈지” — asymmetric routing, hypergraph traversal, query complexity estimator, latency/quality budget을 enterprise RAG control plane 관점으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, graphrag, hypergraph, routing]
+- status: idea
+
+### 2026-09-28 — [논문 리뷰] GRASP — 복잡한 작업 계획을 생성·수정·평가하는 agentic planning loop
+- type: paper
+- source: http://arxiv.org/abs/2609.30147
+- why-now: LLM agent는 task complexity가 올라갈수록 첫 계획의 신뢰도가 급격히 떨어진다. GRASP는 Generating, Revising, Assessing 루프로 executable natural-language plan 품질을 올리려는 접근이라 workflow agent의 planning/eval 분리 설계에 바로 연결된다.
+- angle: “agent planner는 한 번에 계획을 쓰는 모듈이 아니라 계획 후보를 평가·수정하는 loop” — plan generation, revision operator, assessment rubric, complex workflow에서 verifier와 planner를 분리하는 패턴을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-planning, workflow, reasoning, evaluation]
+- status: idea
+
+### 2026-09-28 — [논문 리뷰] Multimodal Thinking with Renderable Programs — 이미지 추론을 렌더 가능한 프로그램으로 확장하기
+- type: paper
+- source: http://arxiv.org/abs/2609.30130
+- why-now: VLM reasoning이 텍스트 chain만으로 이미지를 다루면 중간 시각 상태를 명시적으로 검증하기 어렵다. Renderable program을 reasoning chain에 넣는 접근은 multimodal agent가 intermediate artifact를 만들고 실행·검토하는 방향과 맞닿아 있다.
+- angle: “멀티모달 reasoning의 중간 산출물은 설명 문장이 아니라 렌더 가능한 artifact일 수 있다” — renderable program, visual intermediate state, verification surface, GUI/robot/multimodal agent에서 artifact-based reasoning 패턴을 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multimodal-agent, vlm, reasoning, program-synthesis]
+- status: idea
+
+### 2026-09-28 — [논문 리뷰] MILO — many-shot ICL의 KV cache 병목을 block-wise low-rank compression으로 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.29913
+- why-now: agent/RAG workload는 긴 demonstration, tool schema, 반복 prefix 때문에 many-shot context와 KV cache 비용이 커진다. MILO는 block-wise low-rank compression으로 many-shot ICL의 메모리 병목을 줄이는 접근이라 long-context serving 최적화 글감으로 좋다.
+- angle: “many-shot agent serving의 병목은 prompt 길이보다 KV cache memory layout” — block-wise low-rank compression, accuracy/latency trade-off, prefix reuse·context packing과 비교한 serving 체크리스트로 풀어낸다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, kv-cache, many-shot-icl, serving]
+- status: idea
+
+### 2026-09-28 — VoltAgent — TypeScript AI agent engineering platform의 orchestration surface 보기
+- type: tech
+- source: https://github.com/VoltAgent/voltagent
+- why-now: TypeScript agent framework가 단순 SDK를 넘어 workflow, observability, eval, tool lifecycle, deployment까지 포함하는 “agent engineering platform”으로 확장되고 있다. VoltAgent는 활발한 업데이트와 큰 사용자 기반을 가진 후보라 Mastra/LangGraph류와 비교하기 좋다.
+- angle: “TS agent framework 선택 기준은 agent 객체 API보다 운영 surface의 폭” — agent/workflow abstraction, tool contract, observability/eval, backend 통합과 vendor lock-in 위험을 도입 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-framework, typescript, observability, github-repo]
+- status: idea
+
+### 2026-09-28 — memtrace-public — coding agent memory를 bi-temporal graph와 MCP로 운영하기
+- type: tech
+- source: https://github.com/syncable-dev/memtrace-public
+- why-now: coding agent memory가 단순 대화 요약이나 vector search를 넘어서 “언제 알았고 언제 유효했는지”를 추적해야 하는 단계로 가고 있다. memtrace-public은 structural memory, bi-temporal graph, MCP-native 접근을 내세워 agent memory governance 사례로 좋다.
+- angle: “coding agent memory에는 recall뿐 아니라 시간·provenance·무효화 정책이 필요하다” — bi-temporal graph, zero-LLM hot path, MCP access, Claude Code/Codex 간 memory portability와 deletion/correction policy를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, mcp, github-repo]
+- status: idea
+
 ### 2026-09-28 — [논문 리뷰] AD-WM — counterfactual MPC를 위해 action을 구분하는 world model
 - type: paper
 - source: http://arxiv.org/abs/2609.30264
