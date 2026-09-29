@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 27 Sep 2026 15:01:10 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 29 Sep 2026 01:12:02 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Learning to Stop — reasoning token은 stop rule보다 confidence signal로 줄일 수 있을까</title>
+      <link>https://seongyeon1.github.io/blog/2026-09-29-learning-to-stop-confidence-supervision-reasoning-efficiency/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-09-29-learning-to-stop-confidence-supervision-reasoning-efficiency/</guid>
+      <description>ConfSFT 논문을 통해 reasoning model의 토큰 비용을 explicit stop policy가 아니라 confidence supervision 관점에서 해석한다.</description>
+      <pubDate>Tue, 29 Sep 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>reasoning</category>
+      <category>inference-efficiency</category>
+      <category>confidence</category>
+      <category>agent-serving</category>
+    </item>
     <item>
       <title>Jev는 정말 그냥 분류기일까? — 일반화가 바꾸는 자동화 모델의 의미</title>
       <link>https://seongyeon1.github.io/blog/2026-09-27-jev-generalization-classifier-raschka/</link>

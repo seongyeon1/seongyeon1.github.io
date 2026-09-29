@@ -32,7 +32,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [reasoning, inference-efficiency, confidence, agent-serving]
-- status: idea
+- status: published
+- draft: content/posts/2026-09-29-learning-to-stop-confidence-supervision-reasoning-efficiency.mdx
 
 ### 2026-09-29 — [논문 리뷰] Compact Documentation for Coding Agents — 문서 압축이 agent 성능에 정말 도움 되는가
 - type: paper

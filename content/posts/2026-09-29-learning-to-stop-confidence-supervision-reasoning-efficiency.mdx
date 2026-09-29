@@ -1,0 +1,226 @@
+---
+title: "[논문 리뷰] Learning to Stop — reasoning token은 stop rule보다 confidence signal로 줄일 수 있을까"
+date: "2026-09-29"
+category: "paper-review"
+tags: ["reasoning", "inference-efficiency", "confidence", "agent-serving"]
+summary: "ConfSFT 논문을 통해 reasoning model의 토큰 비용을 explicit stop policy가 아니라 confidence supervision 관점에서 해석한다."
+---
+
+<Paper
+  title="Learning to Stop without Learning to Stop: Self-Supervised Confidence Training Improves Reasoning Efficiency"
+  authors="Parsa Hosseini, Akasha Tigalappanavara, Sumit Nawathe, Chenrui Fan, Sourya Basu, Genta Indra Winata, Anirban Das, Soheil Feizi, Nima Chitsazan"
+  year="2026"
+  venue="arXiv"
+  arxiv="2609.31619"
+/>
+
+## 한 줄 요약
+
+이 논문의 주장은 꽤 흥미롭다. reasoning model에게 “짧게 생각하라”거나 “여기서 멈춰라”를 직접 가르치지 않고, 중간 reasoning state에서 **현재 답에 대한 confidence를 예측하는 법**만 학습시켜도 생성 토큰이 줄어든다는 것이다.
+
+저자들은 이 방법을 ConfSFT라고 부른다. 핵심은 다음 세 가지다.
+
+1. 모델이 자기 reasoning trajectory를 만든다.
+2. trajectory 중간 지점에서 임시 답을 뽑고, 그 답의 token probability로 confidence label을 만든다.
+3. fine-tuning loss는 confidence label token에만 걸고, reasoning 길이·효율·stop 여부에는 loss를 걸지 않는다.
+
+그런데 inference 때는 confidence를 묻지도 않고, early stopping도 쓰지 않는다. 그냥 fine-tuned model을 평소처럼 생성한다. 그럼에도 논문은 Gemma, Qwen, Nemotron, GPT-OSS 계열에서 accuracy를 대체로 유지하면서 평균 생성 토큰을 줄였다고 보고한다.
+
+내 해석은 이렇다. 이 논문은 “stop policy” 논문이라기보다 **reasoning state representation을 calibration하는 논문**에 가깝다. agent serving에서 중요한 질문도 “몇 토큰 뒤에 자를까?”보다 “모델이 현재 자기 답의 충분성을 내부적으로 더 잘 알게 만들 수 있나?”일 수 있다.
+
+## 왜 지금 중요한가
+
+Reasoning model과 agent는 답변 품질을 올리기 위해 점점 더 긴 trace를 만든다. 문제는 긴 trace가 곧바로 운영 비용이 된다는 점이다.
+
+- latency가 늘어난다.
+- output token 비용이 늘어난다.
+- context compaction과 trace 저장 비용도 같이 커진다.
+- tool-using agent에서는 긴 reasoning이 불필요한 tool call이나 재검증 루프로 이어질 수 있다.
+
+기존 접근은 보통 두 방향이다.
+
+- **Inference-time control**: confidence, uncertainty, answer stability 같은 신호를 보고 중간에 멈춘다.
+- **Training-time efficiency objective**: length penalty, concise trajectory SFT, RL objective 등으로 짧은 답변을 직접 선호하게 만든다.
+
+둘 다 실용적이지만, production에서는 부담이 있다. early stopping은 task별 threshold와 failure mode가 생긴다. length penalty는 모델이 필요한 검증까지 줄이는 방향으로 학습될 수 있다. 특히 coding, math, science처럼 틀린 짧은 답이 비싼 도메인에서는 “짧게” 자체를 목표로 삼는 게 위험하다.
+
+ConfSFT가 재미있는 이유는 효율을 직접 최적화하지 않는다는 점이다. 모델에게 가르치는 것은 짧은 trace가 아니라 **중간 상태의 답변 신뢰도**다.
+
+## ConfSFT의 방법
+
+논문이 제안하는 학습 루프는 단순하다.
+
+### 1. reasoning rollout 생성
+
+먼저 작은 training problem subset에서 현재 policy가 일반적인 reasoning trajectory를 생성한다. 논문은 AIME2000-2023 문제를 training data로 쓰고, AIME2024를 validation으로 둔다고 설명한다. 초록 기준으로는 600개 training problem만 사용했다고 밝힌다.
+
+중요한 점은 rollout 생성 단계에서 모델에게 “짧게 풀어라” 또는 “confidence를 말해라”라고 요구하지 않는다는 것이다.
+
+### 2. 중간 decision point 선택
+
+저자들은 reasoning trace 안의 특정 marker를 중간 상태로 사용한다. 기본 설정은 `Wait` 같은 textual marker다. 너무 많은 decision point가 한 trace에서 나오면 일부만 균등하게 샘플링한다.
+
+이 부분은 실무 적용 시 조심해야 한다. `Wait` marker는 특정 reasoning model의 스타일에 의존한다. 논문은 paragraph break를 marker로 쓰는 ablation도 다루지만, 실제 서비스 모델마다 “중간 사고 지점”을 어떻게 잡을지는 별도 설계가 필요하다.
+
+### 3. confidence label 만들기
+
+각 중간 reasoning prefix 뒤에 고정된 answer-elicitation prompt를 붙여 임시 답을 greedy decoding으로 생성한다. 그리고 그 임시 답 token들의 확률을 길이 정규화된 방식으로 집계해 confidence target을 만든다.
+
+이 target은 외부 judge나 gold answer 없이 모델 자신의 분포에서 나온다. confidence는 0-100% 텍스트 label로 양자화된다. 논문 설정에서는 2% 단위, 즉 50개 level로 나눈다.
+
+여기서 좋은 점은 self-supervised라는 점이다. 나쁜 점도 같다. confidence label은 모델 자신의 확률에서 나오므로, 확률이 잘못 calibrated된 모델에서는 label 자체가 편향될 수 있다. 논문은 결과적으로 효과가 있었다고 보고하지만, 모든 도메인에서 confidence가 correctness 또는 더 생각할 가치와 잘 맞는다고 가정하면 안 된다.
+
+### 4. confidence label token에만 loss 적용
+
+학습 예시는 대략 이런 형태다.
+
+```text
+[problem prompt]
+[reasoning prefix]
+From 0% (very low) to 100% (very high), my confidence in the answer so far is
+[confidence label]
+```
+
+loss는 마지막 confidence label token에만 걸린다. problem, reasoning prefix, priming prefix는 모두 mask한다. 따라서 모델은 reasoning trajectory를 모방하도록 학습되는 것이 아니라, 주어진 reasoning state에서 confidence label을 예측하도록 학습된다.
+
+Inference 때는 이 prefix를 붙이지 않는다. confidence도 출력하지 않는다. 모델은 그냥 답을 생성한다.
+
+## 실험 결과를 어떻게 읽어야 하나
+
+논문은 네 모델 계열을 평가한다.
+
+- Gemma-4-E2B
+- Qwen3-4B
+- Nemotron-Nano-8B
+- GPT-OSS-20B
+
+평가 benchmark는 AIME2025, GSM8K, GPQA-Diamond, LiveCodeBench, HumanEval이다. 각 문제당 16개 completion을 샘플링해 accuracy와 평균 생성 token 수를 본다.
+
+메인 테이블에서 ConfSFT는 평균적으로 다음 수준의 token reduction을 보고한다.
+
+- Nemotron-Nano-8B: 11.1% 감소
+- Gemma-4-E2B: 10.3% 감소
+- Qwen3-4B: 19.2% 감소
+- GPT-OSS-20B: 11.1% 감소
+
+초록에서는 matched accuracy 조건에서 최대 25% token reduction도 언급한다. 다만 이 숫자는 “항상 25% 줄어든다”로 읽으면 안 된다. 모델과 task별 편차가 있고, 평균 reduction은 위처럼 10-20%대에 가깝다.
+
+가장 눈에 띄는 부분은 transfer다. 학습은 AIME 기반 수학 문제에서 했지만, 논문은 science와 coding benchmark에서도 token reduction이 나타난다고 보고한다. 이게 재현된다면 꽤 실용적이다. 서비스 팀 입장에서는 모든 도메인별로 length objective를 새로 만들지 않고도 reasoning efficiency를 개선할 수 있다는 뜻이기 때문이다.
+
+## early stopping과 다른 점
+
+ConfSFT를 “confidence-based early stopping”으로 오해하면 안 된다. inference-time early stopping은 보통 이런 구조다.
+
+```text
+reasoning 생성 중
+→ confidence/uncertainty 측정
+→ threshold 넘으면 stop
+```
+
+ConfSFT는 다르다.
+
+```text
+학습 중: 중간 state confidence를 예측하도록 fine-tune
+inference 중: 일반 생성만 수행
+```
+
+이 차이는 운영적으로 크다.
+
+- 별도 confidence probe를 매 step 실행하지 않아도 된다.
+- threshold tuning이 없다.
+- stop decision이 잘못되어 필요한 검증을 잘라먹는 문제가 줄어들 수 있다.
+- 대신 fine-tuning 비용과 model variant 관리 비용이 생긴다.
+
+논문은 DEER 같은 inference-time early stopping baseline도 비교한다. DEER는 token을 더 많이 줄이는 경우가 있지만, task에 따라 accuracy 손실이 커질 수 있다고 보고한다. 특히 coding benchmark에서 손실이 크게 나타난 사례가 있다. 이건 production agent에서 중요한 시그널이다. 강한 stop rule은 비용을 줄이지만, domain shift가 오면 “생각을 멈추면 안 되는 순간”까지 잘라낼 수 있다.
+
+## 왜 confidence만으로 token이 줄어들까
+
+논문이 완전히 증명했다고 보기는 어렵지만, 그럴듯한 설명은 있다.
+
+Reasoning trace에는 실제 문제 해결에 필요한 계산도 있지만, 이미 답이 정해진 뒤 반복 확인하거나 같은 사실을 다시 유도하는 구간도 많다. 논문은 Nemotron에서 confidence가 0.95 이상인 상태에 도달한 뒤에도 median 1,766 token을 더 생성하는 사례를 제시한다.
+
+모델이 중간 state의 confidence를 더 잘 예측하도록 학습되면, 내부적으로 “현재 답이 충분한가”에 대한 representation이 더 선명해질 수 있다. 그 결과 inference에서 explicit stop signal이 없어도 불필요한 재확인 루프가 줄어드는 것처럼 보인다.
+
+다만 이건 아직 조심해서 읽어야 한다. confidence supervision이 실제로 어떤 내부 회로를 바꾸는지, 단순히 특정 reasoning style을 약화시키는지, 또는 AIME류 reasoning marker에 적응한 것인지는 더 많은 분석이 필요하다.
+
+논문은 reasoning episode taxonomy로 분석했을 때 ConfSFT가 특정 reasoning behavior만 강하게 억제하기보다 base model의 high-level reasoning composition을 비교적 유지한다고 주장한다. 이 결과가 맞다면 “검증 단계를 통째로 줄였다”기보다 전체 trace가 더 압축된 쪽에 가깝다.
+
+## Ablation에서 중요한 부분
+
+논문은 confidence target이 정말 중요한지 보려고 몇 가지 대체 target을 실험한다.
+
+- position: trajectory 안의 위치 기반 target
+- binary correctness: 임시 답이 맞으면 100%, 틀리면 2%
+- shuffled confidence: confidence label 분포는 유지하되 example과 label 대응을 섞음
+
+결과적으로 shuffled confidence는 효과가 거의 사라지거나 악화되고, position이나 binary correctness도 ConfSFT보다 약하거나 일관성이 낮다고 보고한다. 즉 “중간 state에 뭔가 label을 붙여 SFT했다”만으로 설명하기 어렵고, **그 state와 graded confidence target의 대응**이 중요하다는 해석을 뒷받침한다.
+
+개인적으로 이 ablation이 논문의 설득력을 꽤 올린다. length를 직접 주지 않았는데 token이 줄었다는 주장은 쉽게 우연처럼 보일 수 있다. 하지만 label correspondence를 깨면 효과가 약해진다면, 적어도 confidence signal이 그냥 장식은 아니라는 뜻이다.
+
+## agent serving 관점의 적용 포인트
+
+이 논문을 바로 production recipe로 쓰기보다는, 다음 네 가지 설계 아이디어로 가져가는 게 좋다.
+
+### 1. stop policy 이전에 commitment state를 학습하라
+
+agent가 답변하거나 action을 실행하기 전에는 “지금 commit해도 되는가”를 판단해야 한다. 보통은 rule, verifier, human approval로 처리한다. ConfSFT식 접근은 이 판단을 모델 내부의 metacognitive signal로 보강할 수 있다는 힌트를 준다.
+
+예를 들어 RAG agent라면 다음을 분리해서 볼 수 있다.
+
+- answer confidence
+- evidence sufficiency
+- retrieval revision benefit
+- tool call necessity
+
+단순히 “N token 넘으면 stop”보다, 현재 state가 commit 가능한지 학습시키는 쪽이 더 안정적일 수 있다.
+
+### 2. latency-quality control을 학습 문제로 바꿀 수 있다
+
+서비스에서는 latency budget이 고정되어 있다. 지금은 대체로 max token, timeout, early stop heuristic으로 제어한다. 하지만 모델이 자신의 reasoning state를 더 잘 calibrate하도록 post-training하면, 같은 budget 안에서 덜 낭비하는 모델 variant를 만들 수 있다.
+
+이건 특히 agent fleet 운영에서 유용하다. cheap model/router/verifier 조합보다, base reasoning model 자체가 불필요한 overthinking을 덜 하게 만드는 접근이 더 단순할 때가 있다.
+
+### 3. domain별 confidence calibration은 별도 검증이 필요하다
+
+수학에서 배운 confidence signal이 coding이나 science로 어느 정도 transfer됐다는 결과는 좋다. 하지만 사내 운영 agent, 네트워크 자동화, 금융 의사결정 같은 도메인에 그대로 적용하면 안 된다.
+
+실무에서는 최소한 다음을 따로 봐야 한다.
+
+- confidence와 correctness의 상관
+- confidence와 “더 생각했을 때 개선될 확률”의 상관
+- confidence가 높지만 틀린 high-risk case
+- confidence fine-tuning 후 verifier 통과율 변화
+- token 감소가 tool-call quality를 떨어뜨리는지 여부
+
+### 4. confidence는 action approval과 결합해야 한다
+
+ConfSFT가 token을 줄인다고 해서 agent에게 더 많은 권한을 줘도 된다는 뜻은 아니다. 오히려 confidence는 approval gate의 feature 중 하나로 봐야 한다.
+
+예를 들어 coding agent가 patch를 만들었다면 high confidence만으로 merge하면 안 된다. 테스트, diff size, touched file risk, static analysis, reviewer policy와 함께 봐야 한다. confidence supervision은 “모델이 자기 상태를 더 잘 읽게 만드는 신호”이지, 외부 검증을 대체하는 장치가 아니다.
+
+## 한계와 주의점
+
+이 논문을 좋게 보지만, 몇 가지는 보수적으로 읽어야 한다.
+
+첫째, confidence target은 모델 자신의 token probability에서 나온다. self-supervised라 싸지만, 모델의 확률이 잘못된 도메인에서는 잘못된 confidence를 학습할 수 있다.
+
+둘째, decision point 추출이 reasoning style에 의존한다. `Wait` marker가 잘 나오는 모델에서는 자연스럽지만, 다른 모델이나 terse reasoning policy에서는 중간 state를 어떻게 잡을지 애매하다.
+
+셋째, output token reduction은 좋지만, training cost와 운영 복잡도도 봐야 한다. fine-tuned variant를 유지하려면 eval, rollback, regression suite가 필요하다.
+
+넷째, 논문 결과는 평균 지표다. production에서는 평균 token이 줄어도 tail failure가 늘면 안 된다. 특히 agent는 한 번의 잘못된 action이 비용을 크게 만들 수 있으므로 p95 latency와 high-confidence wrong answer를 함께 봐야 한다.
+
+## 내 결론
+
+ConfSFT는 “reasoning을 빨리 끊는 법”보다 “모델이 자신의 reasoning state를 읽는 법”을 가르치는 접근이다. 그래서 개인적으로는 이 논문을 inference efficiency 논문이면서 동시에 agent control plane 논문으로 읽는다.
+
+실무적으로 가장 쓸 만한 메시지는 이거다.
+
+> reasoning token 비용을 줄이고 싶다면, max token과 stop rule만 만지지 말고 모델이 현재 답의 충분성을 더 잘 표현하도록 학습시킬 수 있는지 보라.
+
+물론 바로 production에 넣기엔 검증할 게 많다. 그래도 “짧게 답하라”를 직접 학습시키는 것보다 confidence supervision으로 overthinking을 줄이는 방향은 꽤 건강한 설계다. 답을 빨리 내는 모델보다, **언제 더 생각할 가치가 낮은지 아는 모델**이 agent serving에는 더 필요하다.
+
+## 참고 자료
+
+- arXiv: [Learning to Stop without Learning to Stop: Self-Supervised Confidence Training Improves Reasoning Efficiency](https://arxiv.org/abs/2609.31619)
+- PDF: [2609.31619](https://arxiv.org/pdf/2609.31619)
