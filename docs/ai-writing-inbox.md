@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-09-30 — [논문 리뷰] TokenCast — LLM agent 실행 중 token consumption을 예측하기
+- type: paper
+- source: http://arxiv.org/abs/2609.35760
+- why-now: 같은 agent task도 tool feedback과 중간 결과에 따라 token consumption이 한 자릿수 이상 흔들리며, context가 커질수록 이후 호출 비용까지 연쇄적으로 커진다. TokenCast는 실행 전 예측과 실행 중 갱신을 함께 다뤄 agent serving의 cost SLO와 budget guard에 바로 연결된다.
+- angle: “agent cost control은 평균 token 사용량이 아니라 trajectory 중간의 consumption forecast 문제” — pre-run estimate, online forecast, tool feedback 기반 budget recalibration, kill/continue/compact decision gate를 운영 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-serving, cost-control, token-budget, llmops]
+- status: idea
+
+### 2026-09-30 — [논문 리뷰] KV-streams — agentic RL의 context compaction prefill 병목 줄이기
+- type: paper
+- source: http://arxiv.org/abs/2609.35750
+- why-now: long-horizon agentic RL은 긴 trace를 GPU memory에 유지해야 하고, 기존 context compaction은 반복 prefill 때문에 training throughput을 갉아먹는다. KV-streams는 trainable compaction을 효율화하려는 접근이라 agent RL/serving 양쪽의 memory-cost 병목을 설명하기 좋다.
+- angle: “agent compaction의 숨은 비용은 요약 품질보다 반복 prefill throughput” — KV stream abstraction, trainable compaction, rollout horizon, GPU memory/throughput trade-off를 agentic RL pipeline 설계로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, context-compaction, kv-cache, inference-efficiency]
+- status: idea
+
+### 2026-09-30 — [논문 리뷰] RAGWarrant — RAG policy promotion을 evidence decision으로 다루기
+- type: paper
+- source: http://arxiv.org/abs/2609.34179
+- why-now: production RAG는 metric, benchmark, trace, LLM judge가 많아도 “이 retrieval/rerank/generation policy를 배포해도 되는가”를 자동으로 결정하기 어렵다. RAGWarrant는 quality, cost, latency, risk constraint 아래 promotion control을 다뤄 RAG 운영 글감으로 좋다.
+- angle: “RAG 배포는 리더보드 점수가 아니라 evidence-preserving release gate” — evaluator normalization, operational telemetry, predeclared constraint, promotion dossier, rollback 기준을 LLMOps checklist로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [rag, llmops, evaluation, release-gate]
+- status: idea
+
+### 2026-09-30 — [논문 리뷰] Harness Learning — 실행 feedback으로 agent harness를 test-time adaptation하기
+- type: paper
+- source: http://arxiv.org/abs/2609.35738
+- why-now: agent 성능은 모델뿐 아니라 tool use와 information flow를 조직하는 harness에 좌우되며, task마다 좋은 harness 구조가 다르다. Harness Learning은 execution feedback으로 solver harness를 고치는 proposer를 학습해 agent runtime 자체를 적응 대상으로 본다.
+- angle: “agent adaptation의 단위는 prompt가 아니라 executable harness” — proposer/solver 분리, execution feedback, harness revision, regression guard와 sandbox boundary를 production agent 운영 패턴으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, test-time-adaptation, tool-use, evaluation]
+- status: idea
+
+### 2026-09-30 — [논문 리뷰] SEABench — self-evolving agent의 endogenous misalignment 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.35596
+- why-now: self-evolving agent가 instruction, memory protocol, reusable tool/skill을 배포 후 수정하면 당장의 성능 개선이 이후 task에서 안전하지 않은 행동으로 남을 수 있다. SEABench는 외부 공격 없이 agent 내부 개선 loop에서 생기는 misalignment를 평가한다.
+- angle: “self-improving agent의 위험은 prompt injection만이 아니라 유용해 보이는 업데이트의 장기 잔존성” — harness mutation, persistent skill/memory update, cross-task safety regression, approval/rollback policy로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-safety, self-evolving-agent, benchmark, alignment]
+- status: idea
+
+### 2026-09-30 — sandbase-harness — local-first agent runtime과 MCP bridge의 운영 표면 보기
+- type: tech
+- source: https://github.com/sandbaseai/sandbase-harness
+- why-now: coding/research agent를 로컬에서 안전하게 돌리려면 sandboxed session, memory, credentials, audit/replay, MCP bridge가 한 control plane에 있어야 한다. sandbase-harness는 self-hosted local-first agent runtime 사례로 agent 운영 표면을 비교하기 좋다.
+- angle: “agent runtime은 채팅 UI가 아니라 sandbox·credential·audit·memory를 묶는 control plane” — local console, MCP bridge, session replay, credential boundary, Claude Code/Codex류와 함께 쓰는 도입 기준으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-runtime, sandbox, mcp, github-repo]
+- status: idea
+
+### 2026-09-30 — Claxedo — desktop app과 TypeScript framework를 묶은 coding-agent workspace
+- type: tech
+- source: https://github.com/kyashrathore/Claxedo
+- why-now: coding-agent 제품은 CLI 하나에서 desktop workspace, repo context, tool orchestration, extension framework를 묶는 방향으로 확장되고 있다. Claxedo는 desktop app과 composable TypeScript framework를 함께 제공하는 사례라 agent product architecture 관점에서 볼 만하다.
+- angle: “coding agent UX의 다음 경쟁력은 CLI 명령보다 workspace와 framework boundary” — desktop workspace, TypeScript extension surface, repo/tool context, 제품형 coding agent와 사내 harness의 경계를 비교한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, typescript, developer-workflow, github-repo]
+- status: idea
+
+### 2026-09-30 — tracedecay — local semantic code intelligence와 project memory를 agent에게 제공하기
+- type: tech
+- source: https://github.com/ScriptedAlchemy/tracedecay
+- why-now: coding agent가 repo를 이해하려면 vector search만으로는 부족하고, project memory와 workflow context, code intelligence를 로컬에서 지속적으로 축적해야 한다. tracedecay는 semantic code intelligence와 project memory를 묶은 최신 repo라 cross-agent coding memory 사례로 좋다.
+- angle: “coding agent memory는 대화 요약보다 코드 의미와 workflow trace를 같이 저장해야 한다” — local semantic index, project memory, context decay/refresh, repo 작업 agent의 retrieval QA와 stale-memory boundary를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, code-intelligence, agent-memory, github-repo]
+- status: idea
+
 ### 2026-09-29 — [논문 리뷰] Learning to Stop — confidence supervision으로 reasoning token 줄이기
 - type: paper
 - source: http://arxiv.org/abs/2609.31619
