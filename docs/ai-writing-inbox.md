@@ -21,6 +21,97 @@
 
 ## Active Queue
 
+### 2026-10-01 — [논문 리뷰] Thinking Before Thinking — agentic inference를 meta-reasoning으로 제어하기
+- type: paper
+- source: http://arxiv.org/abs/2609.38147
+- why-now: 장기 agent 실행에서는 답을 생성하는 일만큼 어떤 partial work를 이어갈지, 언제 새로 시작할지, 언제 멈출지를 정하는 control decision이 비용과 품질을 좌우한다. 이 논문은 inference-time harness 자체를 meta-reasoning 문제로 정의해 agent serving과 test-time scaling 운영에 바로 연결된다.
+- angle: “agent의 다음 성능 향상 지점은 더 긴 reasoning이 아니라 reasoning 실행을 관리하는 controller” — partial work selection, restart/continue/stop decision, compute allocation, verifier와 결합한 latency-quality gate를 운영 체크리스트로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agentic-inference, meta-reasoning, test-time-scaling, agent-harness]
+- status: idea
+
+### 2026-10-01 — [논문 리뷰] Meta-Skills for Agent Harness Design — test-time AI4AI에서 reusable harness skill 배우기
+- type: paper
+- source: http://arxiv.org/abs/2609.38143
+- why-now: agent 성능은 모델 가중치뿐 아니라 실행 환경·tool boundary·context layout을 설계하는 harness에 크게 묶인다. 이 논문은 Builder가 Target 모델의 가중치를 바꾸지 않고 더 나은 execution environment를 구성하는 meta-skill을 학습한다는 점에서 harness optimization을 재사용 가능한 능력으로 다룬다.
+- angle: “agent harness 튜닝은 ad-hoc prompt edit가 아니라 재사용 가능한 설계 skill 학습 문제” — builder/target 분리, environment construction, test-time adaptation, regression guard와 internal agent platform 운영 기준으로 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, ai4ai, test-time-adaptation, tool-use]
+- status: idea
+
+### 2026-10-01 — [논문 리뷰] LongHarness Bench — long-context reasoning harness를 stress test하기
+- type: paper
+- source: http://arxiv.org/abs/2609.38137
+- why-now: long-context 모델 평가가 포화되면서 단순 accuracy만으로는 추가 compute를 쓰는 harness 간 차이가 잘 보이지 않는다. LongHarness Bench는 긴 context 위에서 harness의 비용·품질·실패 모드를 분리해 보려는 최신 benchmark라 coding/research agent runtime 비교에 유용하다.
+- angle: “long-context agent 평가는 context window 크기가 아니라 harness가 정보를 어떻게 압축·탐색·검증하는지 봐야 한다” — saturated benchmark 문제, harness cost profile, stress-case 설계, CI용 long-context regression suite로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [long-context, agent-eval, harness, reasoning]
+- status: idea
+
+### 2026-10-01 — [논문 리뷰] Do LLM Agents Execute the Plans They Declare? — 계획 선언과 실행 충실도 분리하기
+- type: paper
+- source: http://arxiv.org/abs/2609.38108
+- why-now: planner-executor agent는 그럴듯한 계획을 세워도 실제 환경에서 같은 패턴으로 실행하지 못할 수 있다. 이 논문은 plan selection과 faithful execution을 분리해 측정하므로 workflow agent의 trace audit, plan adherence eval, recovery policy에 바로 쓸 수 있다.
+- angle: “agent plan 평가는 계획이 좋아 보이는지가 아니라 실행 trace가 선언한 계획을 얼마나 지켰는지” — planning-mode declaration, pattern-specific execution, plan adherence metric, monitor와 replanning gate 설계를 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-planning, execution-trace, evaluation, workflow]
+- status: idea
+
+### 2026-10-01 — [논문 리뷰] WUSH-KV — data-adaptive transform으로 KV cache quantization하기
+- type: paper
+- source: http://arxiv.org/abs/2609.38121
+- why-now: long-context agent/RAG serving은 context length와 batch size가 늘수록 KV cache memory와 bandwidth가 병목이 된다. WUSH-KV는 second-order statistics 기반 data-aware transform을 KV cache 저비트 양자화에 적용해 long-context inference 비용 절감 글감으로 좋다.
+- angle: “agent serving 최적화는 attention 알고리즘뿐 아니라 KV cache의 data distribution을 이용한 압축 문제” — transform 기반 quantization, memory/bandwidth trade-off, long-context RAG prefix reuse와 함께 보는 배포 체크리스트를 만든다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [llm-inference, kv-cache, quantization, long-context]
+- status: idea
+
+### 2026-10-01 — Mastercard Developers Agent Toolkit — 결제 API discovery를 agent framework에 안전하게 연결하기
+- type: tech
+- source: https://github.com/Mastercard/developers-agent-toolkit
+- why-now: agent가 결제·금융 API 같은 high-impact tool을 다루려면 단순 function call보다 service discovery, integration guide, authorization boundary가 명확해야 한다. Mastercard의 toolkit은 popular agent framework와 개발자 플랫폼을 잇는 사례라 monetary/action agent의 도구 연결 표면을 분석하기 좋다.
+- angle: “high-impact API tool은 MCP server 하나보다 discovery·auth·approval·audit contract가 먼저” — service metadata, framework adapter, developer guide grounding, payment action approval gate와 enterprise tool onboarding 체크리스트로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-toolkit, payment-agent, tool-use, github-repo]
+- status: idea
+
+### 2026-10-01 — EGC — 여러 coding agent에 shared memory와 skills를 제공하는 공통 brain
+- type: tech
+- source: https://github.com/Fmarzochi/EGC
+- why-now: Cursor, Claude Code, Copilot, Aider처럼 coding agent가 늘수록 각 도구별 memory·skill·context silo가 생긴다. EGC는 여러 coding tool에 shared memory, skills, live context를 제공한다는 점에서 cross-agent developer workflow와 governance 문제를 다루기 좋다.
+- angle: “coding agent 운영의 병목은 모델 선택보다 memory와 skill artifact를 여러 도구에서 일관되게 쓰는 것” — shared brain architecture, skill/context portability, tool-specific boundary, privacy·staleness·conflict policy를 실무 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, skills, github-repo]
+- status: idea
+
 ### 2026-09-30 — [논문 리뷰] TokenCast — LLM agent 실행 중 token consumption을 예측하기
 - type: paper
 - source: http://arxiv.org/abs/2609.35760
