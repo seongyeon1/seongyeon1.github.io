@@ -21,6 +21,110 @@
 
 ## Active Queue
 
+### 2026-10-02 — [논문 리뷰] Turbo Harness — instance별로 agent harness를 동적으로 고르기
+- type: paper
+- source: http://arxiv.org/abs/2609.40330
+- why-now: agent self-improvement 연구가 global prompt/harness 최적화에서 task instance별 adaptive control로 이동하고 있다. Turbo Harness는 평균적으로 좋은 하나의 harness보다 instance 특성에 맞춘 harness selection/optimization이 필요한 상황을 직접 다룬다.
+- angle: “agent harness 최적화의 다음 병목은 좋은 기본값이 아니라 instance routing” — task feature, harness portfolio, 비용/품질 gate, production agent에서 adaptive harness를 안전하게 켜는 regression guard를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-harness, self-improvement, routing, evaluation]
+- status: idea
+
+### 2026-10-02 — [논문 리뷰] EvoDuet — 과학 발견 agent에서 검색 질의와 해법을 함께 진화시키기
+- type: paper
+- source: http://arxiv.org/abs/2609.40340
+- why-now: research agent가 외부 지식을 써도 검색 query가 고정되면 같은 문서만 반복해서 가져오고, solution space가 바뀌는 속도를 따라가지 못한다. EvoDuet은 web searching과 task solving을 bilevel co-evolution으로 묶어 scientific discovery agent의 검색 루프를 개선한다.
+- angle: “research agent의 검색은 retrieval step이 아니라 hypothesis와 함께 진화하는 control loop” — query evolution, solution evolution, stale search result 회피, 논문/코드 탐색 agent의 evidence refresh 정책으로 풀어낸다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [research-agent, web-search, scientific-discovery, retrieval]
+- status: idea
+
+### 2026-10-02 — [논문 리뷰] Cogentic — 자동 증명 발견을 위한 multi-agent orchestration
+- type: paper
+- source: http://arxiv.org/abs/2609.40324
+- why-now: 수학·과학 문제에서 frontier model의 single-shot 아이디어는 강해졌지만 open problem은 competing conjecture 탐색, 실패 분기, 검증·병합 루프가 필요하다. Cogentic은 proof discovery를 multi-agent harness로 구성해 장기 research agent 설계 사례를 제공한다.
+- angle: “research agent orchestration은 역할 이름 나누기가 아니라 conjecture 탐색과 검증 artifact를 관리하는 일” — agent role, proof branch, verifier loop, 실패 trace를 다음 시도로 재사용하는 workflow를 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [multi-agent, research-agent, theorem-proving, orchestration]
+- status: idea
+
+### 2026-10-02 — [논문 리뷰] PivotOPD — multi-turn agent의 pivotal mistake를 복구하게 학습하기
+- type: paper
+- source: http://arxiv.org/abs/2609.40285
+- why-now: multi-turn agent는 한 번 잘못된 action을 하면 이후 state distribution 자체가 바뀌어 token-level teacher supervision만으로는 오류가 누적된다. PivotOPD는 pivotal mistake 이후 회복을 학습 대상으로 삼아 agent RL/OPD의 실제 실패 모드에 가깝다.
+- angle: “agent 학습에서 중요한 것은 실수 없는 trajectory보다 실수 뒤 복구 능력” — pivotal action, compounding error, on-policy distillation, browser/coding agent post-training의 recovery eval로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [agent-rl, on-policy-distillation, recovery, multi-turn-agent]
+- status: idea
+
+### 2026-10-02 — [논문 리뷰] cua-speedrun — computer-use agent를 정확도만이 아니라 속도로 평가하기
+- type: paper
+- source: http://arxiv.org/abs/2609.40284
+- why-now: computer-use agent benchmark가 성공률 중심으로 포화되면서 실제 배포의 큰 장벽인 task completion time, step latency, human 대비 속도가 잘 보이지 않는다. cua-speedrun은 CUA 속도 평가를 표준화하려는 최신 benchmark다.
+- angle: “GUI agent의 제품성은 성공률 다음에 속도와 interaction cost가 결정한다” — speed metric, step budget, long-horizon GUI task, desktop/browser automation CI에서 latency regression을 잡는 법을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [computer-use-agent, gui-agent, benchmark, latency]
+- status: idea
+
+### 2026-10-02 — [논문 리뷰] Cheap to Draw, Expensive to Trust — test-time scaling curve를 신뢰구간으로 검증하기
+- type: paper
+- source: http://arxiv.org/abs/2609.40190
+- why-now: verifier로 여러 샘플 중 best answer를 고르는 test-time scaling은 curve를 그리기 쉽지만, curve를 본 뒤 budget을 고르면 선택 편향과 불확실성이 숨어든다. 이 논문은 scaling curve의 통계적 certification을 다뤄 reasoning/agent serving 예산 결정에 바로 연결된다.
+- angle: “test-time scaling 운영은 k를 키우는 문제가 아니라 curve를 믿을 수 있는지 검증하는 문제” — post-selection bias, confidence band, verifier budget, agent serving의 latency-quality SLO 결정 절차로 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: paper-review
+- suggested-tags: [test-time-scaling, evaluation, statistics, reasoning]
+- status: idea
+
+### 2026-10-02 — Gentle-AI — 여러 coding agent 설정·메모리·조직 규칙을 한 번에 관리하기
+- type: tech
+- source: https://github.com/Gentleman-Programming/gentle-ai
+- why-now: Claude Code, Cursor, OpenCode, Codex를 함께 쓰는 팀은 각 도구별 설정, persistent memory, 조직 convention, skill 배포가 빠르게 분산된다. Gentle-AI는 기존 coding agent를 감싸는 configuration layer를 표방해 multi-agent developer workflow 운영 글감으로 좋다.
+- angle: “coding agent 생산성의 병목은 새 모델보다 설정과 memory policy의 일관성” — agent별 adapter, shared convention, persistent memory 선택, 팀 onboarding과 security boundary를 체크리스트로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [coding-agent, agent-memory, developer-workflow, github-repo]
+- status: idea
+
+### 2026-10-02 — CUA — computer-use agent용 cross-OS driver와 benchmark 스택 보기
+- type: tech
+- source: https://github.com/trycua/cua
+- why-now: GUI agent를 실무에 쓰려면 모델 prompt보다 OS별 driver, VM/container fleet, benchmark, data generation, replay infrastructure가 먼저 필요하다. CUA는 computer-use 2.0을 위한 open-source driver와 benchmark stack을 제공해 agent runtime infra 관점에서 볼 만하다.
+- angle: “computer-use agent 운영은 화면을 보는 모델이 아니라 cross-OS 실행 인프라와 benchmark fleet 문제” — driver abstraction, environment scaling, eval/data generation, desktop automation agent의 sandbox·observability 기준으로 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [computer-use-agent, agent-runtime, benchmark, github-repo]
+- status: idea
+
 ### 2026-10-01 — [논문 리뷰] Thinking Before Thinking — agentic inference를 meta-reasoning으로 제어하기
 - type: paper
 - source: http://arxiv.org/abs/2609.38147
@@ -32,7 +136,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agentic-inference, meta-reasoning, test-time-scaling, agent-harness]
-- status: idea
+- status: drafted
+- draft: content/posts/2026-10-01-thinking-before-thinking-meta-reasoning-agentic-inference.mdx
 
 ### 2026-10-01 — [논문 리뷰] Meta-Skills for Agent Harness Design — test-time AI4AI에서 reusable harness skill 배우기
 - type: paper
