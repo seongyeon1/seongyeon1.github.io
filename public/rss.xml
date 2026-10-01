@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Tue, 29 Sep 2026 01:12:02 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 01 Oct 2026 01:11:52 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Thinking Before Thinking — agentic inference를 meta-reasoning으로 제어하기</title>
+      <link>https://seongyeon1.github.io/blog/2026-10-01-thinking-before-thinking-meta-reasoning-agentic-inference/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-10-01-thinking-before-thinking-meta-reasoning-agentic-inference/</guid>
+      <description>Meta-Reasoning Agent 논문을 통해 장기 agent 실행에서 control plane을 별도 추론 문제로 분리하는 방법을 살펴본다.</description>
+      <pubDate>Thu, 01 Oct 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agentic-inference</category>
+      <category>meta-reasoning</category>
+      <category>test-time-scaling</category>
+      <category>agent-harness</category>
+    </item>
     <item>
       <title>[논문 리뷰] Learning to Stop — reasoning token은 stop rule보다 confidence signal로 줄일 수 있을까</title>
       <link>https://seongyeon1.github.io/blog/2026-09-29-learning-to-stop-confidence-supervision-reasoning-efficiency/</link>

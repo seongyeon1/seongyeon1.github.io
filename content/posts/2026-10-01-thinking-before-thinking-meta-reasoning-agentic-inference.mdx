@@ -1,0 +1,245 @@
+---
+title: "[논문 리뷰] Thinking Before Thinking — agentic inference를 meta-reasoning으로 제어하기"
+date: "2026-10-01"
+category: "paper-review"
+tags: ["agentic-inference", "meta-reasoning", "test-time-scaling", "agent-harness"]
+summary: "Meta-Reasoning Agent 논문을 통해 장기 agent 실행에서 control plane을 별도 추론 문제로 분리하는 방법을 살펴본다."
+---
+
+<Paper
+  title="Thinking Before Thinking: Scaling Agentic Inference Through Meta-Reasoning"
+  authors="Paras Dahal, Anton Bakhtin, Taco Cohen, Zhengxing Chen, Carole-Jean Wu, Rob Fergus, Scott Yih, Gabriel Synnaeve, Ruslan Salakhutdinov, Sanjeev Arora, Jason Weston, Anirudh Goyal"
+  year="2026"
+  venue="arXiv"
+  arxiv="2609.38147"
+/>
+
+## 한 줄 요약
+
+이 논문은 agent 성능을 올리는 다음 지점이 “더 긴 reasoning” 자체가 아니라, **어떤 중간 산출물을 이어갈지, 언제 새 시도를 만들지, 언제 멈출지를 결정하는 control plane**일 수 있다고 주장한다.
+
+저자들은 이를 agentic meta-reasoning이라고 부른다. 핵심 구조는 단순하다.
+
+1. worker는 문제 풀이, 코드 작성, 증명 시도 같은 object-level work를 수행한다.
+2. controller는 worker가 만든 산출물을 읽고, 다음에 쓸 compute를 어디에 배정할지 결정한다.
+3. 전체 history를 계속 context에 밀어 넣지 않고, compact state와 persistent memory를 분리한다.
+4. 각 산출물의 의존 관계를 artifact graph로 남겨 어떤 시도가 무엇을 재사용했는지 분석한다.
+
+내 해석은 이렇다. 이 논문은 “agent에게 생각을 더 시키자”가 아니라 **agent가 자기 실행을 운영하게 만들자**에 가깝다. 장기 실행 agent에서 진짜 병목은 종종 모델의 단일 답변 능력이 아니라, 이미 나온 부분 결과를 재사용하고 버리고 검증하는 실행 관리 능력이다.
+
+## 왜 지금 중요한가
+
+최근 coding agent, research agent, browser agent는 한 문제에 여러 번의 모델 호출과 tool call을 쓴다. 이때 매 step은 단순히 다음 답을 쓰는 일이 아니다.
+
+- 현재 후보 답안을 더 검증할지
+- 다른 접근을 새로 시작할지
+- 실패한 branch를 버릴지
+- 기존 산출물을 다른 worker에게 넘겨 재사용할지
+- 남은 budget에서 더 돌릴 가치가 있는지
+
+이런 decision이 성능과 비용을 같이 좌우한다.
+
+기존 agent harness는 대체로 control decision과 object-level work가 섞여 있다. agent가 긴 history를 보고 “다음 action”을 한 번에 고른다. 짧은 작업에서는 괜찮다. 하지만 작업이 길어질수록 history는 노이즈가 되고, 중요한 증거는 buried context가 된다. 같은 실패를 반복하거나, 이미 맞는 후보를 찾고도 final selection에서 놓치는 일이 생긴다.
+
+그래서 이 논문의 관점은 꽤 실용적이다. production agent에서 compute budget을 늘렸는데 성능이 plateau에 걸린다면, 더 강한 worker model만 볼 게 아니라 **control loop가 compute를 제대로 배분하고 있는지**를 봐야 한다.
+
+## Meta-Reasoning Agent의 구조
+
+논문이 제안하는 Meta-Reasoning Agent는 controller와 worker를 명확히 나눈다.
+
+```text
+task + budget
+→ controller: 현재 run 상태를 compact하게 재구성
+→ controller: 다음에 할 computation 후보 제안
+→ controller: 남은 budget 기준으로 후보 가치 평가
+→ controller: 선택한 worker에게 필요한 context만 전달
+→ worker: object-level work 수행
+→ persistent memory와 artifact graph에 결과 저장
+→ 반복 또는 stop
+```
+
+중요한 포인트는 controller가 full history를 계속 들고 다니지 않는다는 점이다. worker output은 persistent memory에 남기고, controller는 매 cycle마다 compact account를 재계산한다. 이건 context compression과 비슷해 보이지만 목적이 조금 다르다. 단순히 토큰을 줄이는 게 아니라 **control decision에 필요한 상태 표현**을 만드는 것이다.
+
+논문은 controller cycle을 네 단계로 설명한다.
+
+### 1. Assess: 무엇이 확립됐는가
+
+controller는 지금까지의 worker 산출물과 notes를 보고 현재 progress를 정리한다. 여기서 중요한 건 “대화 요약”이 아니라 다음 compute 배정에 필요한 판단이다.
+
+예를 들면 coding task라면 이런 상태가 필요하다.
+
+- 어떤 접근이 이미 실패했는가
+- 어떤 테스트가 통과했는가
+- 어떤 파일 변경이 promising한가
+- 어떤 가정이 아직 검증되지 않았는가
+- 어떤 branch를 이어가면 비용 대비 이득이 큰가
+
+### 2. Propose: 다음 computation 후보 만들기
+
+controller는 다음에 시도할 수 있는 작업 후보를 만든다. worker에게 새 풀이를 시킬 수도 있고, 기존 후보를 검증하게 할 수도 있고, 특정 lemma나 함수만 따로 점검하게 할 수도 있다.
+
+이 부분이 일반적인 multi-sampling과 다르다. 단순히 답변 N개를 독립 샘플링하는 게 아니라, run 중간에 생긴 artifact를 기준으로 다음 일을 구성한다.
+
+### 3. Evaluate: 남은 budget에서 무엇이 가치 있는가
+
+모든 후보를 실행하면 좋겠지만 budget은 제한되어 있다. controller는 각 후보가 남은 budget 대비 얼마나 가치 있는지 판단한다.
+
+이 단계가 production에서는 latency-quality gate와 직접 연결된다. 예를 들어 agent serving 시스템이라면 다음과 같은 policy가 붙을 수 있다.
+
+- user-facing latency budget이 얼마 남았는가
+- 현재 답변 confidence가 충분한가
+- 검증 worker를 하나 더 돌리면 실패 비용을 줄일 수 있는가
+- 새 branch 탐색보다 기존 branch repair가 나은가
+- 여기서 stop하고 human handoff하는 게 나은가
+
+### 4. Dispatch: 필요한 context만 worker에게 전달
+
+마지막으로 controller는 선택한 worker에게 필요한 산출물과 지시만 넘긴다. 이때 persistent memory에서 관련 artifact를 꺼내 context로 붙인다.
+
+이 설계가 마음에 드는 이유는 worker context를 “현재 전체 대화”가 아니라 “이 worker가 할 일에 필요한 증거 묶음”으로 다룬다는 점이다. 장기 agent가 흔히 겪는 context bloat를 줄이고, 동시에 유용한 이전 결과 재사용을 늘릴 수 있다.
+
+## Artifact graph가 주는 운영상 이점
+
+논문은 run 결과를 artifact graph로 기록한다. worker output, controller note 같은 저장된 결과가 artifact이고, 어떤 artifact가 다른 artifact 생성에 context로 쓰였는지 edge로 남긴다.
+
+이건 단순 tracing보다 유용하다. 일반 trace는 “무슨 순서로 실행됐나”를 보여준다. artifact graph는 “어떤 산출물이 후속 작업에 실제로 재사용됐나”를 보여준다.
+
+장기 agent 운영에서 보고 싶은 건 보통 이런 질문이다.
+
+- 같은 실패 접근을 계속 반복했나?
+- 맞는 후보가 중간에 있었는데 final selection이 놓쳤나?
+- verifier가 어떤 worker output을 근거로 판단했나?
+- context compaction 이후 중요한 artifact가 끊겼나?
+- parallel worker들이 독립 샘플처럼 낭비됐나, 서로의 결과를 조합했나?
+
+artifact graph는 이런 질문에 답하기 위한 최소한의 구조다. 개인적으로는 이 논문의 가장 실무적인 부분이 여기라고 본다. agent eval은 final score만으로는 부족하고, **compute가 어떤 작업 그래프로 바뀌었는지**를 봐야 한다.
+
+## 실험 결과를 어떻게 읽어야 하나
+
+논문은 IMO ProofBench-Advanced, ARC-AGI-2, LongCoT-mini, ProgramBench에서 평가했다고 설명한다. 모델은 Gemini 3.1 Pro, GPT-5.5, Opus 4.8을 사용한다. worker는 단일 model call일 수도 있고, tool을 쓰는 coding agent일 수도 있다.
+
+초록과 본문 초반 기준으로 보고된 주요 숫자는 다음과 같다.
+
+- ProgramBench에서 GPT-5.5 기반 meta-reasoning은 71.5%를 기록했고, Codex baseline은 58.0%로 보고된다.
+- 같은 ProgramBench에서 Opus 4.8 기반 meta-reasoning은 67.2%, Claude Code baseline은 65.5%로 보고된다.
+- 다른 benchmark들에서는 direct control 대비 평균 3.6에서 4.2 point gain을 보였다고 한다.
+- budget이 커질수록 direct control은 plateau를 보이는 반면, meta-reasoning은 테스트한 budget range에서 계속 개선되는 경향을 보였다고 주장한다.
+- 다만 작은 budget에서는 controller overhead 때문에 손해가 날 수 있다고 명시한다.
+
+마지막 caveat가 중요하다. meta-reasoning은 공짜가 아니다. controller가 Assess, Propose, Evaluate, Dispatch를 수행하는 데도 모델 호출과 토큰이 든다. 짧은 task, 간단한 QA, budget이 작은 interactive request에서는 오히려 손해일 수 있다.
+
+따라서 이 논문을 “모든 agent에 controller를 하나 더 붙이면 좋아진다”로 읽으면 안 된다. 더 정확한 해석은 이렇다.
+
+> 작업이 길고, 중간 산출물 재사용 가능성이 높고, 잘못된 branch 유지 비용이 큰 경우에는 control plane을 별도 추론 문제로 분리할 가치가 커진다.
+
+## Direct control과 무엇이 다른가
+
+비교 대상으로 흥미로운 것은 Direct Control Agent다. 논문은 같은 worker와 같은 compute budget allowance를 두고, control만 다르게 만든 baseline을 둔다. 즉 “더 많은 모델 호출을 썼기 때문에 좋아졌다”는 설명을 줄이려는 설계다.
+
+Direct control은 accumulated history를 보고 각 action을 한 번에 고르는 방식에 가깝다. 반면 Meta-Reasoning Agent는 controller 자체가 작은 agentic process다. 중간 산출물을 읽고, 후보를 만들고, 평가하고, context를 선별해서 dispatch한다.
+
+이 차이는 production 코드로 옮기면 다음처럼 보인다.
+
+```text
+Direct control:
+  history 전체 + system prompt → 다음 action 하나
+
+Meta-reasoning control:
+  memory/artifacts → compact state
+  compact state → candidate computations
+  candidates + budget → selected work
+  selected work → worker-specific context package
+```
+
+차이는 미묘하지만 크다. direct control은 context가 길어질수록 decision quality가 흔들릴 수 있다. meta-reasoning은 control state를 따로 관리하므로, context window가 커지는 것과 control이 똑똑해지는 것을 분리한다.
+
+## 실무 적용 체크리스트
+
+바로 production agent에 붙인다면 나는 아래 기준으로 볼 것 같다.
+
+### 1. Controller 비용을 별도 SLO로 잡기
+
+controller가 쓰는 token, latency, model call 수를 worker와 분리해 계측해야 한다. meta-reasoning은 overhead가 핵심 trade-off다. “최종 성공률이 올랐다”만 보고 넣으면 interactive UX가 망가질 수 있다.
+
+추천 metric은 다음 정도다.
+
+- controller token ratio
+- worker token ratio
+- artifact reuse rate
+- branch abandonment rate
+- verified candidate discovery rate
+- final selection failure rate
+- budget remaining at stop
+
+### 2. Persistent memory를 무작정 vector DB로 만들지 않기
+
+이 논문의 memory는 단순 검색 저장소라기보다 artifact store에 가깝다. worker output, controller note, verifier result, dependency edge가 함께 있어야 한다.
+
+최소 schema는 이런 식이면 된다.
+
+```text
+artifact_id
+artifact_type: worker_attempt | controller_note | verifier_result | patch | test_output
+created_by
+input_artifact_ids
+summary
+full_content_ref
+confidence_or_status
+cost
+```
+
+이 정도는 있어야 controller가 “무엇을 재사용할지” 판단할 수 있다.
+
+### 3. Stop decision을 first-class action으로 만들기
+
+agent는 계속 일하는 것보다 멈추는 게 더 어렵다. 이 논문에서도 stop은 control decision의 일부다. production에서는 stop을 다음 중 하나로 나눠야 한다.
+
+- answer now
+- ask human
+- request more budget
+- run verifier once more
+- abandon current branch
+- compact and continue
+
+특히 high-impact workflow에서는 “답변 생성”과 “실제 변경 승인” 사이에 별도 gate가 있어야 한다. meta-reasoning controller가 stop을 결정해도, 실행 권한까지 자동으로 주면 안 된다.
+
+### 4. Artifact graph를 eval에 넣기
+
+성공률만 보면 meta-reasoning이 왜 좋아졌는지 알기 어렵다. artifact graph에서 다음을 봐야 한다.
+
+- correct candidate가 중간에 존재했는가
+- 존재했다면 final answer로 선택됐는가
+- verifier가 correct candidate를 강화했는가, 오히려 버렸는가
+- 실패 branch가 얼마나 오래 살아남았는가
+- controller note가 실제 dispatch에 반영됐는가
+
+이런 분석이 있어야 controller prompt나 policy를 고칠 수 있다.
+
+## 한계와 조심할 점
+
+첫째, controller도 모델이다. controller의 판단이 틀리면 좋은 worker output을 버리거나, 나쁜 branch에 budget을 태울 수 있다. control plane을 분리한다고 control이 자동으로 신뢰 가능해지는 것은 아니다.
+
+둘째, benchmark gain이 production gain으로 바로 이어지지는 않는다. 논문 benchmark는 proof, abstract reasoning, long-horizon reasoning, program reconstruction 중심이다. 실제 서비스 workflow에서는 tool latency, permission, flaky environment, user interruption, compliance gate가 섞인다.
+
+셋째, 작은 budget에서는 overhead가 손해일 수 있다. 논문도 이 점을 인정한다. 따라서 meta-reasoning은 기본값이라기보다 **long-running mode** 또는 **expensive task mode**로 켜는 편이 안전하다.
+
+넷째, artifact memory가 privacy와 보안 표면을 키운다. 장기 실행에서 모든 worker output을 persistent memory에 남기면 나중에 좋은 evidence가 되지만, 민감 정보와 secret도 같이 남을 수 있다. artifact store에는 retention, redaction, access control이 반드시 필요하다.
+
+## 내 의견
+
+나는 이 방향이 꽤 맞다고 본다. agent 성능 논의는 자주 “모델이 더 똑똑해지면 해결”로 흐르지만, 장기 작업에서는 모델보다 **실행 구조**가 더 먼저 병목이 된다. 사람이 복잡한 일을 할 때도 계속 생각만 하지 않는다. 메모를 만들고, 중간 결과를 분류하고, 검토자를 붙이고, 어디에 시간을 더 쓸지 정한다. agent도 마찬가지다.
+
+다만 이 논문을 구현 레시피로 그대로 받아들이기보다는, 다음 원칙으로 가져가는 게 낫다.
+
+- long-horizon task에서는 worker와 controller를 분리한다.
+- controller context는 full history가 아니라 compact state여야 한다.
+- worker output은 artifact graph로 남긴다.
+- budget allocation과 stop decision을 명시적 policy로 만든다.
+- overhead가 이득을 넘는 task에만 켠다.
+
+결국 agentic inference의 핵심 질문은 “얼마나 오래 생각할까?”가 아니라 **남은 compute로 어떤 일을 시킬까?**다. 이 논문은 그 질문을 꽤 정면으로 다룬다.
+
+## 참고 자료
+
+- arXiv: [Thinking Before Thinking: Scaling Agentic Inference Through Meta-Reasoning](https://arxiv.org/abs/2609.38147)
+- PDF: [arXiv PDF 2609.38147](https://arxiv.org/pdf/2609.38147)
