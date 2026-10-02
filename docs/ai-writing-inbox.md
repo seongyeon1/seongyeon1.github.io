@@ -12301,3 +12301,108 @@
 - suggested-category: project
 - suggested-tags: [mcp, agent-memory, developer-workflow, portable-agent]
 - status: idea
+
+
+### 2026-10-03 — [논문 리뷰] AutoCompact: long-horizon coding agent가 언제 context를 접어야 하나
+- type: paper
+- source: https://arxiv.org/abs/2610.02163
+- why-now: 장시간 coding agent가 repo 탐색·수정·테스트를 반복할수록 context overflow보다 “언제 요약하고 무엇을 보존할지”가 성공률과 비용을 좌우하는 운영 문제가 되었다.
+- angle: “context compaction은 후처리 요약이 아니라 agent policy의 일부”라는 관점으로 compaction decision, judge-corrected trajectory, SFT+RL, task success/비용 trade-off를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [coding-agent, context-compaction, reinforcement-learning, long-horizon]
+- status: idea
+
+### 2026-10-03 — [논문 리뷰] VISTA: multimodal agent에 lossless visual memory 붙이기
+- type: paper
+- source: https://arxiv.org/abs/2610.02200
+- why-now: browser·desktop·robot agent가 텍스트 trace만으로는 interactive world의 장기 상태를 잃기 쉬워, 시각 관찰을 원본 형태로 보존하고 검색하는 harness 설계가 중요해졌다.
+- angle: “멀티모달 reasoning 성능은 모델만이 아니라 시각 기억을 어떻게 조직하느냐에 달려 있다” — visual observation memory, active retrieval, ARC-AGI-3 결과, UI agent harness로의 확장을 분석한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [multimodal-agent, visual-memory, harness, interactive-world]
+- status: idea
+
+### 2026-10-03 — [논문 리뷰] KaliBench: cybersecurity agent의 CLI tool-use를 세밀하게 평가하기
+- type: paper
+- source: https://arxiv.org/abs/2610.02206
+- why-now: 보안 운영 agent는 “무슨 도구를 쓸지”뿐 아니라 flag 순서·인자 binding까지 맞는 실행 가능한 명령을 만들어야 해서, 지식형 QA보다 tool-use syntax 평가가 더 현실적인 병목이다.
+- angle: “cybersecurity agent eval은 end-to-end CTF 점수 전에 CLI contract fidelity를 봐야 한다” — Kali Linux 1,642개 도구, canonicalization, runtime-free verifiable reward, 내부 보안 자동화 guardrail을 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [cybersecurity-agent, tool-use, benchmark, cli]
+- status: idea
+
+### 2026-10-03 — [논문 리뷰] ScholarCatalyst: research agent가 “영감을 주는 논문”을 찾는가
+- type: paper
+- source: https://arxiv.org/abs/2610.02202
+- why-now: AI research agent가 논문 요약을 넘어 새 연구 아이디어를 돕게 하려면, 단순 유사 논문 검색이 아니라 문제를 전진시키는 prior work를 찾아내는 능력을 평가해야 한다.
+- angle: “research RAG의 목표는 top-k 관련도가 아니라 프로젝트를 진전시키는 source discovery” — author annotation, time-bounded retrieval, agentic search 한계, literature review workflow를 분석한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [research-agent, retrieval, benchmark, literature-review]
+- status: idea
+
+### 2026-10-03 — [논문 리뷰] RPG: embodied agent가 simulation practice로 skill library를 개선하기
+- type: paper
+- source: https://arxiv.org/abs/2610.02204
+- why-now: 로봇·브라우저·데스크톱 agent 모두 weight update 없이 실행 feedback으로 skill과 prompt를 개선하는 self-improvement loop가 핵심 패턴으로 떠오르고 있다.
+- angle: “agent self-improvement는 모델 재학습보다 reusable skill library와 cross-task regression gate 문제” — offline dataset reconstruction, simulator practice, symbolic skill revision, real-world transfer를 정리한다.
+- difficulty: high
+- freshness: 5
+- practicality: 4
+- confidence: 5
+- suggested-category: paper-review
+- suggested-tags: [embodied-agent, self-improvement, skill-library, simulation]
+- status: idea
+
+### 2026-10-03 — AssetOpsBench: 산업 설비 운영 agent를 MCP와 multi-agent blueprint로 평가하기
+- type: tech
+- source: https://github.com/IBM/AssetOpsBench
+- why-now: agent benchmark가 웹·코딩 task에 치우친 사이, 실제 산업 현장은 IoT·정비·시계열·워크오더가 얽힌 domain-specific multi-agent orchestration을 요구한다.
+- angle: “production agent 도입은 범용 SWE benchmark보다 domain workflow artifact에서 검증해야 한다” — 460+ scenario, specialist agent, MCP tool boundary, MetaAgent/AgentHive orchestration blueprint를 소개한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 4
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-benchmark, mcp, industrial-ai, multi-agent]
+- status: idea
+
+### 2026-10-03 — OpenGeni: governed credential과 memory를 갖춘 self-hostable agent session runtime
+- type: tech
+- source: https://github.com/Cloudgeni-ai/opengeni
+- why-now: 조직에서 agent를 운영하려면 단발성 chat보다 replayable session, human approval, credential governance, sandbox 실행이 함께 묶인 runtime이 필요하다.
+- angle: “enterprise agent runtime의 최소 단위는 prompt가 아니라 승인·자격증명·메모리·샌드박스가 붙은 durable session” — self-hosting, replay, governed memory, approval workflow를 production 체크리스트로 정리한다.
+- difficulty: medium
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: tutorial
+- suggested-tags: [agent-runtime, governance, sandbox, enterprise-ai]
+- status: idea
+
+### 2026-10-03 — deja-vu: 로컬 디스크의 coding agent session history를 검색 가능한 memory로 쓰기
+- type: tech
+- source: https://github.com/vshulcz/deja-vu
+- why-now: Claude Code·Codex·Cursor 같은 coding agent를 번갈아 쓰면 이미 디스크에 쌓인 session trace가 가장 풍부한 메모리인데, 이를 LLM 없이 빠르게 검색하는 패턴이 실용적이다.
+- angle: “coding agent memory의 첫 단계는 새 vector DB가 아니라 기존 session history를 index하는 것” — local-first Go binary, searchable trace, privacy boundary, failure replay workflow를 repo 소개로 정리한다.
+- difficulty: low
+- freshness: 5
+- practicality: 5
+- confidence: 4
+- suggested-category: project
+- suggested-tags: [coding-agent, memory, local-first, developer-workflow]
+- status: idea
