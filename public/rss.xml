@@ -6,7 +6,19 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 01 Oct 2026 01:11:52 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 03 Oct 2026 01:13:00 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Turbo Harness — instance별로 agent harness를 동적으로 고르기</title>
+      <link>https://seongyeon1.github.io/blog/2026-10-03-turbo-harness-instance-adaptive-harness-optimization/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-10-03-turbo-harness-instance-adaptive-harness-optimization/</guid>
+      <description>Turbo Harness 논문을 통해 평균적으로 좋은 harness가 아니라 task instance별로 조정되는 agent 실행 환경을 살펴본다.</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent-harness</category>
+      <category>self-improvement</category>
+      <category>routing</category>
+      <category>evaluation</category>
+    </item>
     <item>
       <title>[논문 리뷰] Thinking Before Thinking — agentic inference를 meta-reasoning으로 제어하기</title>
       <link>https://seongyeon1.github.io/blog/2026-10-01-thinking-before-thinking-meta-reasoning-agentic-inference/</link>

@@ -1,0 +1,255 @@
+---
+title: "[논문 리뷰] Turbo Harness — instance별로 agent harness를 동적으로 고르기"
+date: "2026-10-03"
+category: "paper-review"
+tags: ["agent-harness", "self-improvement", "routing", "evaluation"]
+summary: "Turbo Harness 논문을 통해 평균적으로 좋은 harness가 아니라 task instance별로 조정되는 agent 실행 환경을 살펴본다."
+---
+
+<Paper
+  title="Turbo Harness: Instance-Adaptive Harness Optimization"
+  authors="Tunyu Zhang, Hao Wang, Kai Xu, Dimitris N. Metaxas"
+  year="2026"
+  venue="arXiv"
+  arxiv="2609.40330"
+/>
+
+## 한 줄 요약
+
+Turbo Harness는 agent harness 최적화를 “전체 작업에 하나의 좋은 harness를 찾는 문제”에서 **각 task instance에 맞게 기존 harness를 패치하는 문제**로 바꾼다.
+
+논문 초록 기준으로 핵심 흐름은 이렇다.
+
+1. 먼저 global harness optimization을 수행한다.
+2. 그 과정에서 나온 artifact를 버리지 않고 structured playbook으로 요약한다.
+3. harness editor를 학습해 instance와 playbook을 보고 global harness에 instance-specific patch를 만든다.
+4. inference time에는 실행 모델이 이 패치된 harness 안에서 작업한다.
+
+내 해석은 단순하다. production agent에서 중요한 것은 “제일 좋은 prompt 하나”가 아니라 **어떤 요청에는 어떤 실행 환경을 붙일지 고르는 routing/control 문제**다. Turbo Harness는 그 방향을 꽤 노골적으로 밀고 간다.
+
+## 왜 지금 중요한가
+
+최근 agent 성능 개선은 모델 자체보다 harness 쪽에서 많이 나온다. system prompt, tool set, context layout, retry policy, verifier, memory format, sandbox boundary를 어떻게 묶느냐에 따라 같은 모델도 전혀 다르게 움직인다.
+
+문제는 global optimization의 한계다. benchmark 평균을 올리는 harness는 만들 수 있다. 하지만 평균적으로 좋은 설정이 모든 instance에서 좋은 것은 아니다.
+
+예를 들어 coding agent를 생각해보자.
+
+- 작은 버그 수정에는 빠른 탐색과 테스트 실행이 중요하다.
+- 큰 리팩터링에는 repo map, dependency graph, staged plan이 더 중요하다.
+- 터미널 작업에는 command retry와 state observation이 중요하다.
+- interactive 환경에서는 tool call budget과 recovery policy가 중요하다.
+
+이들을 같은 harness로 처리하면 어느 쪽에서는 과하고, 어느 쪽에서는 부족하다. 그래서 instance-adaptive harness는 자연스러운 다음 단계다. 모델 라우팅만 하는 게 아니라 **harness 자체를 라우팅하거나 편집**해야 한다.
+
+## Turbo Harness가 하려는 일
+
+Turbo Harness가 흥미로운 지점은 “매 instance마다 처음부터 최적화하자”가 아니라는 점이다. 그건 너무 비싸다. 대신 이미 끝난 global optimization run에서 나온 정보를 재사용한다.
+
+논문 초록에 드러난 구성은 다음과 같이 볼 수 있다.
+
+```text
+global harness optimization
+→ optimization artifacts 수집
+→ structured playbook 생성
+→ harness editor 학습
+→ inference-time instance 입력
+→ global harness + instance-specific patch
+→ execution model 실행
+```
+
+여기서 playbook은 단순 요약문이 아니라 과거 최적화 경험을 재사용하기 위한 중간 표현에 가깝다. 어떤 harness 변경이 어떤 류의 instance에서 유효했는지, 어떤 실패 패턴이 있었는지, 어떤 trade-off가 있었는지를 editor가 참조할 수 있어야 한다.
+
+이 구조의 장점은 두 가지다.
+
+첫째, global optimization에 들어간 비용을 amortize한다. 한 번 찾은 최적화 흔적을 다음 instance adaptation에 재사용한다.
+
+둘째, adaptation을 무작위 prompt edit가 아니라 제한된 patch 생성 문제로 만든다. production 관점에서는 이 차이가 크다. 전체 harness를 매번 새로 쓰게 하면 regression surface가 너무 넓다. patch 단위로 관리하면 diff, approval, rollback, eval을 붙일 수 있다.
+
+## Global harness 하나로는 부족한 이유
+
+Agent harness는 보통 여러 요소가 얽힌다.
+
+- instruction hierarchy
+- tool 목록과 tool description
+- context에 넣는 문서·trace·memory
+- planner/verifier/retry loop
+- budget과 stop condition
+- failure recovery policy
+
+global harness optimization은 이 조합을 평균 성능 기준으로 맞춘다. 하지만 평균 성능은 instance-level decision을 가린다.
+
+예를 들어 어떤 instance는 verifier를 강하게 붙여야 하고, 어떤 instance는 verifier보다 exploration을 늘리는 게 낫다. 어떤 작업은 과거 memory를 많이 넣으면 도움이 되지만, 어떤 작업은 stale memory 때문에 오히려 흔들린다. 어떤 task는 tool call을 아껴야 하고, 어떤 task는 초반에 과감하게 inspection tool을 써야 한다.
+
+따라서 agent platform을 운영한다면 “harness v3가 v2보다 좋다”보다 더 중요한 질문은 이것이다.
+
+> 어떤 instance feature에서 어떤 harness variant가 좋아지는가?
+
+Turbo Harness는 이 질문을 정면으로 다룬다. 좋은 기본값을 찾는 데서 멈추지 않고, 기본값을 instance별로 어떻게 바꿀지 학습한다.
+
+## Production agent로 옮기면 어떤 모양인가
+
+실무 시스템에 바로 적용한다면 나는 Turbo Harness를 세 층으로 나눠 볼 것 같다.
+
+### 1. Harness portfolio
+
+먼저 harness를 하나의 prompt 파일로 보지 말고 artifact 묶음으로 관리해야 한다.
+
+```text
+harness/
+  system.md
+  tools.yaml
+  context_policy.yaml
+  verifier.md
+  retry_policy.yaml
+  budget_policy.yaml
+```
+
+Turbo Harness식 adaptation은 이 중 일부를 patch한다. 예를 들어 long-horizon task에서는 budget policy와 context policy를 바꾸고, high-risk tool task에서는 verifier와 approval policy를 강화하는 식이다.
+
+### 2. Instance feature extraction
+
+Instance-adaptive가 되려면 입력 instance를 설명하는 feature가 필요하다.
+
+가능한 feature는 다음 정도다.
+
+- task type: coding, terminal, browser, research, data analysis
+- expected horizon: short, medium, long
+- tool risk: read-only, write, external side effect
+- verification availability: deterministic test 있음/없음
+- context dependency: repo/document/history 의존도
+- latency budget: interactive/async/batch
+- failure cost: low/high
+
+중요한 건 이 feature extractor도 eval 대상이라는 점이다. 잘못 분류하면 좋은 harness editor가 있어도 엉뚱한 patch가 붙는다.
+
+### 3. Patch gate
+
+Harness editor가 만든 patch를 그대로 실행하면 위험하다. 특히 tool boundary, credential scope, external action policy가 바뀔 수 있는 harness라면 더 그렇다.
+
+그래서 최소한 아래 gate가 필요하다.
+
+- patch schema validation
+- forbidden field 변경 차단
+- tool permission escalation 감지
+- baseline harness 대비 diff 저장
+- canary eval 또는 lightweight regression
+- 실패 시 global harness로 fallback
+
+Turbo Harness를 production에 넣는다면 성능 개선보다 이 patch gate가 먼저다. agent harness는 코드만큼 위험한 실행 정책이다.
+
+## 실험 결과는 어떻게 읽어야 하나
+
+논문은 Turbo Harness를 7개 benchmark에서 본다. 네 개는 agentic task(ALFWorld, ScienceWorld, DBBench, WebShop), 두 개는 software engineering(SWE-smith-MR, SWE-bench Verified), 하나는 long-horizon terminal task(Terminal-Bench-2.1)다.
+
+결과를 숫자로 보면 방향은 꽤 일관적이다.
+
+- 네 개 agentic benchmark 평균은 Default 39.6, Meta-Harness 50.2, Turbo Harness 56.1이다.
+- ALFWorld는 Meta-Harness 60.7%에서 Turbo Harness 70.7%로 오른다.
+- ScienceWorld는 35.1에서 42.4로 오른다.
+- DBBench는 65.0%에서 69.2%로 오른다.
+- WebShop은 40.0%에서 42.0%로 소폭 오른다. Harness-R1의 42.2%와 거의 같은 수준이다.
+
+Coding benchmark 쪽도 흥미롭다. SWE-smith-MR에서는 Turbo Harness가 Meta-Harness 대비 Haiku 4.5에서 50.7% → 64.0%, Gemini 3.7 Flash에서 70.7% → 88.0%로 오른다. SWE-bench Verified에서도 Gemini는 38.4% → 54.4%, Haiku는 56.7% → 59.3%로 오른다.
+
+더 중요한 건 비용이다. 논문은 Turbo Harness가 일부 coding setting에서 실행 step과 API cost도 줄였다고 보고한다. 특히 SWE-smith-MR + Gemini에서는 평균 step이 23.1에서 8.7로 줄고, issue당 비용이 $0.310에서 $0.046으로 내려간다. instance별 patch가 단순히 “더 많이 생각하게 하는 장치”가 아니라, 올바른 실행 경로를 더 빨리 잡게 만들 수 있다는 뜻이다.
+
+물론 모든 곳에서 압도적인 것은 아니다. SWE-bench Verified + Haiku처럼 Meta-Harness가 이미 강하게 작동하는 setting에서는 개선 폭이 2.7%p로 작고, 비용도 약간 늘어난다. 그래서 이 논문은 “adaptive harness가 항상 이긴다”가 아니라 **global harness가 놓친 instance-level headroom이 있을 때 크게 먹힌다**로 읽는 편이 안전하다.
+
+이 논문에서 내가 가장 중요하게 보는 지점은 평균 성능보다 slice별 해석이다. instance-adaptive system은 평균 개선만 보면 배포 사고가 난다. 어떤 repo, 어떤 task type, 어떤 tool-risk level에서 좋아지고 나빠지는지를 같이 봐야 한다.
+
+## 실무 적용 체크리스트
+
+Turbo Harness 아이디어를 내부 agent 플랫폼에 적용한다면 아래 순서가 현실적이다.
+
+### 1. Harness를 버전 관리 가능한 artifact로 쪼개기
+
+prompt 하나를 통째로 편집하는 방식은 추적이 어렵다. tool policy, context policy, verifier, budget policy를 분리해야 patch 단위 관리가 가능하다.
+
+### 2. Instance taxonomy부터 만들기
+
+처음부터 editor를 학습시키기보다 task를 사람이 읽을 수 있는 taxonomy로 나누는 게 먼저다.
+
+예를 들면 다음처럼 시작할 수 있다.
+
+```yaml
+instance_type:
+  - short_readonly_qa
+  - repo_bugfix_with_tests
+  - repo_refactor_without_tests
+  - terminal_long_horizon
+  - browser_purchase_like_high_risk
+```
+
+이 분류가 안정적이어야 routing도, patch도 의미가 있다.
+
+### 3. Harness patch를 diff로 남기기
+
+각 run마다 어떤 patch가 붙었는지 저장해야 한다.
+
+```text
+run_id
+base_harness_version
+instance_features
+patch
+editor_version
+result
+cost
+latency
+verifier_outcome
+```
+
+나중에 regression이 터졌을 때 “모델이 이상했다”로 끝내지 않으려면 harness diff와 결과를 연결해야 한다.
+
+### 4. Global fallback을 항상 유지하기
+
+Instance adaptation은 실패할 수 있다. feature extractor가 틀릴 수도 있고, editor가 과하게 바꿀 수도 있다. 따라서 안전한 default global harness와 fallback 조건이 있어야 한다.
+
+추천 fallback 조건은 다음과 같다.
+
+- patch validation 실패
+- tool permission 변경 감지
+- latency budget 초과 예상
+- verifier unavailable
+- 해당 instance cluster의 최근 success rate 하락
+
+### 5. 평균 점수보다 slice regression을 본다
+
+Turbo Harness류 시스템은 평균 성능이 올라도 특정 slice가 망가질 수 있다. 특히 high-risk tool task, 외부 action task, 긴 terminal task는 따로 봐야 한다.
+
+운영 metric은 최소한 이렇게 나눠야 한다.
+
+- base harness 대비 success delta
+- instance cluster별 success delta
+- token/latency overhead
+- verifier failure rate
+- rollback rate
+- unsafe patch rejection rate
+- human intervention rate
+
+## 내 의견
+
+Turbo Harness의 방향은 맞다. Agent 성능 개선을 모델 선택이나 prompt 튜닝으로만 보면 금방 막힌다. 실제 병목은 “이 요청에 어떤 실행 환경을 붙일 것인가”로 이동하고 있다.
+
+다만 이 접근은 공짜가 아니다. Instance-adaptive harness는 운영 복잡도를 크게 늘린다. harness version, patch, editor model, instance classifier, eval slice, fallback policy가 모두 생긴다. 개인 프로젝트나 단순 QA 봇에는 과하다.
+
+반대로 아래 조건이면 진지하게 볼 만하다.
+
+- task 종류가 다양하다.
+- tool-use와 long-horizon 실행이 많다.
+- deterministic verifier나 regression suite가 있다.
+- 실패 비용이 커서 평균 성능보다 slice 안정성이 중요하다.
+- agent harness를 이미 여러 버전으로 운영 중이다.
+
+한 문장으로 정리하면 이렇다.
+
+> Turbo Harness는 “좋은 agent prompt 찾기”가 아니라 “agent 실행 환경을 instance별로 운영하는 control plane”에 가깝다.
+
+이 관점이 마음에 든다. 앞으로 agent platform의 차별점은 모델 wrapper가 아니라, 이런 harness routing·patching·검증 계층에서 더 많이 날 가능성이 크다.
+
+## 참고 자료
+
+- arXiv: [Turbo Harness: Instance-Adaptive Harness Optimization](https://arxiv.org/abs/2609.40330)
+- PDF: [https://arxiv.org/pdf/2609.40330](https://arxiv.org/pdf/2609.40330)
+- Code: [Tyrion58/turbo-harness](https://github.com/Tyrion58/turbo-harness)
+- arXiv API metadata: [https://export.arxiv.org/api/query?id_list=2609.40330](https://export.arxiv.org/api/query?id_list=2609.40330)

@@ -32,7 +32,8 @@
 - confidence: 4
 - suggested-category: paper-review
 - suggested-tags: [agent-harness, self-improvement, routing, evaluation]
-- status: idea
+- status: published
+- draft: content/posts/2026-10-03-turbo-harness-instance-adaptive-harness-optimization.mdx
 
 ### 2026-10-02 — [논문 리뷰] EvoDuet — 과학 발견 agent에서 검색 질의와 해법을 함께 진화시키기
 - type: paper
