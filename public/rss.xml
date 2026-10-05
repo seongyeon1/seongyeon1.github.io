@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 03 Oct 2026 01:13:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 05 Oct 2026 02:05:49 GMT</lastBuildDate>
+    <item>
+      <title>AI 시대에 몸값이 오르는 사람들의 공통점</title>
+      <link>https://seongyeon1.github.io/blog/2026-10-05-ai-era-market-value-openai-engineer-jay/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-10-05-ai-era-market-value-openai-engineer-jay/</guid>
+      <description>OpenAI 엔지니어 Jay의 인터뷰를 바탕으로 AI 시대의 시장가치, 호기심, 시장 선택, 빌더십, 로보틱스와 버티컬 AI 기회를 정리한다.</description>
+      <pubDate>Mon, 05 Oct 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>ai</category>
+      <category>career</category>
+      <category>openai</category>
+      <category>engineering</category>
+      <category>builder</category>
+    </item>
     <item>
       <title>[논문 리뷰] Turbo Harness — instance별로 agent harness를 동적으로 고르기</title>
       <link>https://seongyeon1.github.io/blog/2026-10-03-turbo-harness-instance-adaptive-harness-optimization/</link>
