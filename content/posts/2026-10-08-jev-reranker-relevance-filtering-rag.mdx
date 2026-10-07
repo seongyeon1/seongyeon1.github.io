@@ -1,0 +1,41 @@
+---
+title: "jev-reranker: RAG에서는 검색 순서만큼 무엇을 제외할지가 중요하다"
+date: "2026-10-08"
+category: "tool"
+tags: ["rag", "jev", "reranking", "retrieval", "relevance-filtering"]
+summary: "jev-reranker의 재정렬과 관련성 필터링을 정리하고, NanoHotpotQA의 문서 92.38% 제거 결과와 실무 적용 시 주의점을 살펴본다."
+---
+
+**jev-reranker**는 TypeSafe.AI의 Jev API로 검색 결과를 재정렬하고 불필요한 문서를 걸러내는 Python 라이브러리다.
+
+## 재정렬과 필터링의 차이
+
+재정렬은 문서의 순서를, 관련성 필터링은 답변에 필요한 문서인지를 판단한다. 같은 모델에 전달하는 지시문으로 판단 기준을 조정한다.
+
+## 실험에서 확인한 결과
+
+저자가 공개한 NanoHotpotQA 50개 질문 평가다. 질문마다 후보 100개를 사용했다.
+
+| 방법 | nDCG@10 | 평균 유지 문서 수 |
+| --- | ---: | ---: |
+| 하이브리드 검색 | 0.833 | 100 |
+| 재정렬 | 0.969 | 100 |
+| 관련성 필터링·임계값 0.2 | 0.975 | 7.62 |
+
+후보의 **92.38%를 제거**하면서 정답 근거 97개를 모두 유지했다. 검색 단계에서 누락된 근거 3개는 복구하지 못했다.
+
+## 도입 전에 구분할 점
+
+검색 품질 평가이지 최종 답변의 정확도나 환각 감소를 입증한 결과는 아니다. `jev-1.13.0` 기준이며, 임계값은 서비스 데이터와 모델 버전에 맞춰 검증해야 한다.
+
+listwise·pointwise 평가, 입력 분할, 동시 요청, 재시도를 지원한다. 외부 Jev API를 이용한다는 점도 고려해야 한다.
+
+## 실무적으로 생각해볼 점
+
+문서 수 감소를 같은 비율의 비용 절감으로 해석해서는 안 된다. 실제 토큰과 API 비용을 함께 측정해야 한다. 필터링 후 근거가 없을 때 재검색할지, 답변을 보류할지도 함께 설계하면 좋겠다.
+
+---
+
+출처: Yuichi Tateno, [Introducing jev-reranker: Reranking and Relevance Filtering for RAG](https://huggingface.co/blog/hotchpotch/introducing-jev-reranker), 2026-09-19. 원문을 요약하고 실무 관점을 덧붙였으며, 실험 수치는 저자가 공개한 결과로 직접 재현하지 않았다.
+
+프로젝트: [hotchpotch/jev-reranker](https://github.com/hotchpotch/jev-reranker/)

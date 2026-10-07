@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Mon, 05 Oct 2026 02:05:49 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 07 Oct 2026 22:56:43 GMT</lastBuildDate>
+    <item>
+      <title>jev-reranker: RAG에서는 검색 순서만큼 무엇을 제외할지가 중요하다</title>
+      <link>https://seongyeon1.github.io/blog/2026-10-08-jev-reranker-relevance-filtering-rag/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-10-08-jev-reranker-relevance-filtering-rag/</guid>
+      <description>jev-reranker의 재정렬과 관련성 필터링을 정리하고, NanoHotpotQA의 문서 92.38% 제거 결과와 실무 적용 시 주의점을 살펴본다.</description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+      <category>tool</category>
+      <category>rag</category>
+      <category>jev</category>
+      <category>reranking</category>
+      <category>retrieval</category>
+      <category>relevance-filtering</category>
+    </item>
     <item>
       <title>AI 시대에 몸값이 오르는 사람들의 공통점</title>
       <link>https://seongyeon1.github.io/blog/2026-10-05-ai-era-market-value-openai-engineer-jay/</link>
