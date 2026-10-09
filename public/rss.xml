@@ -6,7 +6,21 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 07 Oct 2026 22:56:43 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 09 Oct 2026 14:50:40 GMT</lastBuildDate>
+    <item>
+      <title>AI 코딩 에이전트를 믿으려면: Lauren Tan의 검증·스킬·CI 설계</title>
+      <link>https://seongyeon1.github.io/blog/2026-10-09-lauren-tan-agent-verification-guardrails/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-10-09-lauren-tan-agent-verification-guardrails/</guid>
+      <description>Lauren Tan의 발표를 통해 에이전트 신뢰를 만드는 실행 검증, feature map, 스킬 평가, 아키텍처와 CI의 역할을 정리한다.</description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+      <category>concept</category>
+      <category>coding-agent</category>
+      <category>verification</category>
+      <category>agent-skills</category>
+      <category>eval</category>
+      <category>ci</category>
+      <category>architecture</category>
+    </item>
     <item>
       <title>jev-reranker: RAG에서는 검색 순서만큼 무엇을 제외할지가 중요하다</title>
       <link>https://seongyeon1.github.io/blog/2026-10-08-jev-reranker-relevance-filtering-rag/</link>
