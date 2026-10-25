@@ -6,7 +6,20 @@
     <description>AI 공부기록, 논문 리뷰, 프로젝트 후기를 담는 기술 블로그</description>
     <language>ko</language>
     <atom:link href="https://seongyeon1.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 09 Oct 2026 14:50:40 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 25 Oct 2026 12:12:05 GMT</lastBuildDate>
+    <item>
+      <title>[논문 리뷰] Coco — 업무용 에이전트의 신뢰는 데이터와 맥락에서 나온다</title>
+      <link>https://seongyeon1.github.io/blog/2026-10-25-coco-agentic-copilot-hardware-software-codesign/</link>
+      <guid isPermaLink="true">https://seongyeon1.github.io/blog/2026-10-25-coco-agentic-copilot-hardware-software-codesign/</guid>
+      <description>TPU 설계용 Copilot Coco의 네 계층, 동일 실행 조건 비교, UI 기반 맥락 수집을 살펴보고 초기 사례와 검증의 한계를 구분한다.</description>
+      <pubDate>Sun, 25 Oct 2026 00:00:00 GMT</pubDate>
+      <category>paper-review</category>
+      <category>agent</category>
+      <category>hardware-software-codesign</category>
+      <category>TPU</category>
+      <category>grounding</category>
+      <category>context-engineering</category>
+    </item>
     <item>
       <title>AI 코딩 에이전트를 믿으려면: Lauren Tan의 검증·스킬·CI 설계</title>
       <link>https://seongyeon1.github.io/blog/2026-10-09-lauren-tan-agent-verification-guardrails/</link>
