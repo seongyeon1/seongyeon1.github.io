@@ -1,4 +1,4 @@
-export type Category = "concept" | "guide" | "paper-review" | "project" | "tool";
+export type Category = "concept" | "guide" | "paper-review" | "project" | "tool" | "basics";
 
 export type Frontmatter = {
   title: string;

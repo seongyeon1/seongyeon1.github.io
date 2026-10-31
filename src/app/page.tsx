@@ -40,6 +40,12 @@ const categoryMeta: Record<Category, { label: string; icon: string; tone: string
     tone: "from-rose-500/15 to-rose-500/0 text-rose-600 dark:text-rose-400",
     stripe: "from-rose-500/40 via-red-500/40 to-rose-500/40",
   },
+  basics: {
+    label: "Basics",
+    icon: "M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z",
+    tone: "from-slate-500/15 to-slate-500/0 text-slate-600 dark:text-slate-400",
+    stripe: "from-slate-500/40 via-gray-500/40 to-slate-500/40",
+  },
 };
 
 const HomePage = () => {

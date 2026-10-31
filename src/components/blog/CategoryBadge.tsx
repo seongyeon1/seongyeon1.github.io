@@ -21,6 +21,10 @@ const categoryConfig: Record<Category, { label: string; color: string }> = {
     label: "Tool",
     color: "bg-rose-50 text-rose-600 ring-1 ring-rose-500/20 dark:bg-rose-900/20 dark:text-rose-400 dark:ring-rose-400/20",
   },
+  basics: {
+    label: "Basics",
+    color: "bg-slate-100 text-slate-600 ring-1 ring-slate-500/20 dark:bg-slate-800/40 dark:text-slate-400 dark:ring-slate-400/20",
+  },
 };
 
 const CategoryBadge = ({ category }: { category: Category }) => {
